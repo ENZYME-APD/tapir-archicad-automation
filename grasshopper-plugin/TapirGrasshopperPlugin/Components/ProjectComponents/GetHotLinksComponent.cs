@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Project;
 
@@ -39,6 +40,20 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutTextTree(
                 "TreeHierarchy",
                 "Nested text tree object of hotlink module names.");
+
+            // Appended after the original outputs, so saved definitions keep their wiring.
+            OutGenerics(
+                "HotlinkNodeIds",
+                "Identifier of each hotlink node, in the order of Locations; the input of " +
+                "CreateHotlinkInstances.");
+
+            OutTexts(
+                "Names",
+                "Display name of each hotlink node, in the order of Locations.");
+
+            OutTexts(
+                "Types",
+                "Module or XRef, for each hotlink node in the order of Locations.");
         }
 
         protected override void Solve(
@@ -58,6 +73,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 0,
                 response.Hotlinks.GetLocations());
 
+            var nodes = response.Hotlinks.Flatten()
+                .Where(link => !string.IsNullOrEmpty(link.Location))
+                .ToList();
+
             da.SetData(
                 1,
                 JsonConvert.SerializeObject(
@@ -67,6 +86,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.SetDataTree(
                 2,
                 response.GetTree());
+
+            da.SetDataList(
+                3,
+                nodes.Select(link => link.HotlinkNodeId));
+
+            da.SetDataList(
+                4,
+                nodes.Select(link => link.Name));
+
+            da.SetDataList(
+                5,
+                nodes.Select(link => link.Type));
         }
     }
 }

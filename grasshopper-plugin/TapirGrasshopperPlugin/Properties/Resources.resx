@@ -274,6 +274,15 @@
   <data name="SetWallDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetWallDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="LabelDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LabelDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetTextDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetTextDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="TextDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TextDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="SlabDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SlabDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -927,5 +936,74 @@
   </data>
   <data name="CreateInteriorElevations" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CreateInteriorElevations.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPointFromUser" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPointFromUser.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateHotlinkNodes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateHotlinkNodes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateHotlinkInstances" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateHotlinkInstances.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ChangeHotlinkInstances" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ChangeHotlinkInstances.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SaveAsModuleFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SaveAsModuleFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AddLibraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddLibraries.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="TrimElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TrimElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RemoveElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemoveElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyTexts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyTexts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyLabels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyLabels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAutoTextKeys" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAutoTextKeys.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAutoTextName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAutoTextName.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RoofDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RoofDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SaveProjectAsArchive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SaveProjectAsArchive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetIFCExportTranslators" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetIFCExportTranslators.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IFCElementsToExport" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IFCElementsToExport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdatePropertyGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdatePropertyGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateClassificationSystems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateClassificationSystems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateClassificationItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateClassificationItems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImportPropertiesXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImportPropertiesXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImportClassificationsXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImportClassificationsXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

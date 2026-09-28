@@ -697,3 +697,72 @@ GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetUserGSID requires Archicad 27 or later.");
 #endif
 }
+
+// ---------------------------------------------------------------------------
+// GetPointFromUser
+// ---------------------------------------------------------------------------
+
+GetPointFromUserCommand::GetPointFromUserCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPointFromUserCommand::GetName () const
+{
+    return "GetPointFromUser";
+}
+
+GS::Optional<GS::UniString> GetPointFromUserCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetPointFromUserCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate3D",
+                "description": "The clicked point in the project's coordinates."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position"
+        ]
+    })";
+}
+
+GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Hands the input to the designer: Archicad waits for a click in the current
+    // window (snapping to element hotspots), and the command returns with the point,
+    // or with an error when the input is cancelled with Escape.
+    GS::UniString prompt = "Click a point";
+    parameters.Get ("prompt", prompt);
+
+    API_GetPointType pointInfo = {};
+    CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
+    pointInfo.enableQuickSelection = true;
+
+    const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "No point was given - the input was cancelled or could not start (a modal dialog or a non-model window).");
+    }
+
+    GS::ObjectState response;
+    response.Add ("position", Create3DCoordinateObjectState (pointInfo.pos));
+    return response;
+}
+

@@ -1,0 +1,94 @@
+name: Discord Issue Bot
+
+# Scans the project's Discord channels for messages that read like a bug
+# report or a feature request, files each as a GitHub issue, and replies on
+# Discord with the created issue number. Duplicate protection lives in the
+# script itself (a ✅ reaction on handled messages plus an issue search for
+# the message ID), so overlapping or re-run jobs are harmless.
+#
+# Setup and tuning: tools/discord-issue-bot/README.md. Until the secrets
+# and the DISCORD_CHANNEL_IDS variable are configured, runs exit quietly
+# without doing anything.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Classify and log only, without creating issues or posting to Discord
+        type: boolean
+        default: false
+      lookback_minutes:
+        description: Override how far back this run scans (e.g. after a schedule pause); empty uses the default
+        type: string
+        default: ''
+
+concurrency:
+  group: discord-issue-bot
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    # Scheduled runs should not fire on forks.
+    if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # Each message is classified in its own CLI call (prompt-injection
+    # isolation), so a raised-lookback catch-up run can take a while; the
+    # marks persist, so even a timed-out run keeps its progress and the
+    # next one continues where it stopped. The concurrency group queues
+    # the next scheduled run instead of overlapping.
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # The job feeds untrusted Discord content to an LLM; the script
+          # only reads its own source, so no git credential needs to stay
+          # in .git/config.
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        # Deliberately without the OAuth token in the environment: pip can
+        # run transitive install hooks that must not see it.
+        run: pip install -r tools/discord-issue-bot/requirements.txt
+
+      - name: Run the bot's unit tests
+        # Offline, stub-based and fast - a regression gate on every run,
+        # cheaper than debugging a silently broken scan afterwards.
+        run: python -m unittest test_discord_issue_bot
+        working-directory: tools/discord-issue-bot
+
+      - name: Install the Claude Code CLI
+        env:
+          # Only the fact that the token exists - npm install scripts must
+          # not see the secret itself any more than pip's may.
+          HAVE_CLAUDE_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: |
+          # Classification runs through the Claude Code CLI, authorized by
+          # the OAuth token on the Pro/Max subscription. Pinned so a bad CLI
+          # release cannot break every half-hourly run; bump deliberately.
+          # Skipped only in the unconfigured pre-setup state, where the bot
+          # exits before classifying anyway.
+          if [ "$HAVE_CLAUDE_TOKEN" = "true" ]; then
+            npm install -g @anthropic-ai/claude-code@2.1.251
+          fi
+
+      - name: Scan Discord channels
+        run: python tools/discord-issue-bot/discord_issue_bot.py
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_IDS: ${{ vars.DISCORD_CHANNEL_IDS }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          LOOKBACK_MINUTES: ${{ inputs.lookback_minutes }}

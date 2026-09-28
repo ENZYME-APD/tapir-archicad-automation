@@ -1,0 +1,101 @@
+Command: TrimElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetElementTrims
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elementTrims": [
+        {
+            "trimmedBy": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    },
+                    "trimType": "KeepInside"
+                }
+            ],
+            "trims": []
+        },
+        {
+            "trimmedBy": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    },
+                    "trimType": "KeepInside"
+                }
+            ],
+            "trims": []
+        }
+    ]
+}
+Command: RemoveElementTrims
+Parameters:
+{
+    "elementPairs": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "trimmingElementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "trimmingElementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}

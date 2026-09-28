@@ -42,7 +42,14 @@ namespace TapirGrasshopperPlugin.Components
             ElementGuid,
             AttributeGuid,
             PointsTree2D,
-            PointsTree3D
+            PointsTree3D,
+            // A closed curve per element, written as polygonCoordinates plus the
+            // polygonArcs of its arc segments. Its JsonKey names the coordinate
+            // field; the arcs go next to it under polygonArcs.
+            OutlineCurve,
+            // One branch of closed curves per element, written as the element's
+            // holes - each hole an object of polygonCoordinates and polygonArcs.
+            HoleCurvesTree
         }
 
         protected sealed class Field
@@ -85,9 +92,28 @@ namespace TapirGrasshopperPlugin.Components
         // first field.
         protected abstract IReadOnlyList<Field> Fields { get; }
 
+        private static readonly IReadOnlyList<Field> NoFields = new List<Field>();
+
+        // Optional typed fields added after the component was released. Their
+        // inputs come after every other input (AdditionalSettings and the
+        // metadata toggles), so the inputs of saved definitions, which
+        // Grasshopper binds by index, keep their places. Tree kinds are not
+        // supported here.
+        protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
+
+        private int FirstTrailingFieldInputIndex =>
+            Fields.Count +
+            (HasAdditionalSettingsInput ? 1 : 0) +
+            (SupportsElementMetadata ? 2 : 0);
+
         // Override with false when the typed inputs cover the command's
         // complete item schema.
         protected virtual bool HasAdditionalSettingsInput => true;
+
+        // Override with false when the command does not create new elements
+        // the Tapir GH metadata could be embedded into (e.g. it modifies
+        // existing ones).
+        protected virtual bool SupportsElementMetadata => true;
 
         protected CreateElementsComponentBase(
             string name,
@@ -114,44 +140,7 @@ namespace TapirGrasshopperPlugin.Components
                         : " Input only 1 to use the same value for all elements. Optional.";
                 }
 
-                switch (field.Kind)
-                {
-                    case FieldKind.Number:
-                        InNumbers(field.InputName, description);
-                        break;
-                    case FieldKind.Integer:
-                        InIntegers(field.InputName, description);
-                        break;
-                    case FieldKind.Boolean:
-                        InBooleans(field.InputName, description);
-                        break;
-                    case FieldKind.Text:
-                        InTexts(field.InputName, description);
-                        break;
-                    case FieldKind.Point2D:
-                    case FieldKind.Point3D:
-                        InPoints(field.InputName, description);
-                        break;
-                    case FieldKind.Line:
-                        inManager.AddLineParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.list);
-                        break;
-                    case FieldKind.ElementGuid:
-                    case FieldKind.AttributeGuid:
-                        InGenerics(field.InputName, description);
-                        break;
-                    case FieldKind.PointsTree2D:
-                    case FieldKind.PointsTree3D:
-                        inManager.AddPointParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.tree);
-                        break;
-                }
+                AddFieldInput(field, description);
 
                 if (!field.Required)
                 {
@@ -167,6 +156,86 @@ namespace TapirGrasshopperPlugin.Components
                     "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
                 SetOptionality(fields.Count);
             }
+
+            if (SupportsElementMetadata)
+            {
+                InBoolean(
+                    ElementMetadata.EmbedMetadataInputName,
+                    ElementMetadata.EmbedMetadataDescription,
+                    true);
+                InBoolean(
+                    ElementMetadata.ReplaceExistingInputName,
+                    ElementMetadata.ReplaceExistingDescription,
+                    false);
+            }
+
+            var trailingFields = TrailingFields;
+            for (var index = 0; index < trailingFields.Count; index++)
+            {
+                var field = trailingFields[index];
+                AddFieldInput(
+                    field,
+                    field.Description + " Input only 1 to use the same value for all elements. Optional.");
+                SetOptionality(FirstTrailingFieldInputIndex + index);
+            }
+        }
+
+        private void AddFieldInput(
+            Field field,
+            string description)
+        {
+            switch (field.Kind)
+            {
+                case FieldKind.Number:
+                    InNumbers(field.InputName, description);
+                    break;
+                case FieldKind.Integer:
+                    InIntegers(field.InputName, description);
+                    break;
+                case FieldKind.Boolean:
+                    InBooleans(field.InputName, description);
+                    break;
+                case FieldKind.Text:
+                    InTexts(field.InputName, description);
+                    break;
+                case FieldKind.Point2D:
+                case FieldKind.Point3D:
+                    InPoints(field.InputName, description);
+                    break;
+                case FieldKind.Line:
+                    inManager.AddLineParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.list);
+                    break;
+                case FieldKind.ElementGuid:
+                case FieldKind.AttributeGuid:
+                    InGenerics(field.InputName, description);
+                    break;
+                case FieldKind.PointsTree2D:
+                case FieldKind.PointsTree3D:
+                    inManager.AddPointParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.tree);
+                    break;
+                case FieldKind.OutlineCurve:
+                    inManager.AddCurveParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.list);
+                    break;
+                case FieldKind.HoleCurvesTree:
+                    inManager.AddCurveParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.tree);
+                    break;
+            }
         }
 
         public override void AddedToDocument(
@@ -178,6 +247,14 @@ namespace TapirGrasshopperPlugin.Components
             for (var i = 0; i < fields.Count; i++)
             {
                 fields[i].ValueList?.Invoke ().AddAsSource(this, i);
+            }
+
+            var trailingFields = TrailingFields;
+            for (var i = 0; i < trailingFields.Count; i++)
+            {
+                trailingFields[i].ValueList?.Invoke ().AddAsSource(
+                    this,
+                    FirstTrailingFieldInputIndex + i);
             }
         }
 
@@ -249,6 +326,159 @@ namespace TapirGrasshopperPlugin.Components
             return coordinates;
         }
 
+        // Turns a closed planar curve into the polygon Archicad expects: the node
+        // coordinates, plus one polygonArcs entry per arc segment.
+        //
+        // begIndex/endIndex are 0 based within this contour's polygonCoordinates,
+        // and the contour is closed implicitly - the add-on appends the first node
+        // again itself, so the closing segment runs from the last index back to 0.
+        //
+        // arcAngle is positive when the arc bulges to the right of the straight
+        // segment from beg to end. A Rhino arc whose plane normal points up (+Z) in
+        // the world XY plane turns counter clockwise, which bulges to the left, so
+        // its angle is negated.
+        private static bool TryConvertCurveToPolygon(
+            Curve curve,
+            out JArray coordinates,
+            out JArray arcs,
+            out string error)
+        {
+            coordinates = new JArray();
+            arcs = new JArray();
+            error = null;
+
+            if (curve == null)
+            {
+                error = "a curve is null";
+                return false;
+            }
+
+            if (!curve.IsClosed)
+            {
+                error = "every outline curve has to be closed";
+                return false;
+            }
+
+            var segments = curve is PolyCurve polyCurve
+                ? polyCurve.DuplicateSegments()
+                : new[] { curve };
+
+            if (segments == null || segments.Length == 0)
+            {
+                error = "a curve has no segments";
+                return false;
+            }
+
+            // A single closed segment has no corners to read - a circle, an ellipse,
+            // a nurbs loop, or a polyline curve that is one object - so it is
+            // approximated with a polyline. A closed arc in particular cannot be
+            // expressed as one polygon arc: that would need a begIndex and an
+            // endIndex that are the same node.
+            if (segments.Length == 1 && segments[0].IsClosed)
+            {
+                var polyline = TessellateToPolyline(segments[0]);
+                if (polyline == null)
+                {
+                    error = "a curve could not be approximated with a polyline";
+                    return false;
+                }
+                // The polyline of a closed curve repeats its first point at the end;
+                // the add-on closes the contour itself, so that repeat is dropped.
+                for (var i = 0; i < polyline.Count - 1; i++)
+                {
+                    coordinates.Add(new JObject
+                    {
+                        ["x"] = polyline[i].X,
+                        ["y"] = polyline[i].Y
+                    });
+                }
+                return coordinates.Count >= 3;
+            }
+
+            foreach (var segment in segments)
+            {
+                var start = segment.PointAtStart;
+                var nodeIndex = coordinates.Count;
+                coordinates.Add(new JObject
+                {
+                    ["x"] = start.X,
+                    ["y"] = start.Y
+                });
+
+                if (segment.IsLinear())
+                {
+                    continue;
+                }
+
+                if (segment.TryGetArc(out Rhino.Geometry.Arc arc))
+                {
+                    var angle = arc.Angle;
+                    if (arc.Plane.Normal.Z > 0.0)
+                    {
+                        angle = -angle;
+                    }
+                    arcs.Add(new JObject
+                    {
+                        ["begIndex"] = nodeIndex,
+                        // The last segment closes back onto the first node.
+                        ["endIndex"] = nodeIndex + 1,
+                        ["arcAngle"] = angle
+                    });
+                    continue;
+                }
+
+                var tessellated = TessellateToPolyline(segment);
+                if (tessellated == null)
+                {
+                    error = "a curve segment could not be approximated with a polyline";
+                    return false;
+                }
+                // The segment's own start is already in, and its end is the next
+                // segment's start, so only the points in between are added.
+                for (var i = 1; i < tessellated.Count - 1; i++)
+                {
+                    coordinates.Add(new JObject
+                    {
+                        ["x"] = tessellated[i].X,
+                        ["y"] = tessellated[i].Y
+                    });
+                }
+            }
+
+            if (coordinates.Count < 3)
+            {
+                error = "an outline needs at least three points";
+                return false;
+            }
+
+            // Fix up the closing arc: its end node is 0, not the count.
+            foreach (var arcToken in arcs)
+            {
+                if ((int)arcToken["endIndex"] >= coordinates.Count)
+                {
+                    arcToken["endIndex"] = 0;
+                }
+            }
+
+            return true;
+        }
+
+        private static Polyline TessellateToPolyline(
+            Curve curve)
+        {
+            var polylineCurve = curve.ToPolyline(
+                0,
+                0,
+                0.05,
+                0.0,
+                0.0,
+                0.01,
+                0.0,
+                0.0,
+                true);
+            return polylineCurve?.ToPolyline();
+        }
+
         private static JToken ConvertGuidWrapper<T>(
             GH_ObjectWrapper wrapper)
             where T : GuidObject<T>, new()
@@ -286,6 +516,63 @@ namespace TapirGrasshopperPlugin.Components
         {
             switch (field.Kind)
             {
+                case FieldKind.OutlineCurve:
+                    {
+                        var curves = new List<Curve>();
+                        da.GetDataList(inputIndex, curves);
+                        tokens = new List<JToken>();
+                        foreach (var curve in curves)
+                        {
+                            if (!TryConvertCurveToPolygon(curve, out JArray coordinates, out JArray arcs, out string error))
+                            {
+                                this.AddError($"The input {field.InputName} is invalid: {error}.");
+                                tokens = null;
+                                return false;
+                            }
+
+                            var outline = new JObject { [field.JsonKey] = coordinates };
+                            if (arcs.Count > 0)
+                            {
+                                outline["polygonArcs"] = arcs;
+                            }
+                            tokens.Add(outline);
+                        }
+                        break;
+                    }
+                case FieldKind.HoleCurvesTree:
+                    {
+                        tokens = new List<JToken>();
+                        if (!da.TryGetTree(inputIndex, out GH_Structure<GH_Curve> holeTree))
+                        {
+                            break;
+                        }
+                        foreach (var branch in holeTree.Branches)
+                        {
+                            var holes = new JArray();
+                            foreach (var ghCurve in branch)
+                            {
+                                if (ghCurve == null)
+                                {
+                                    continue;
+                                }
+                                if (!TryConvertCurveToPolygon(ghCurve.Value, out JArray coordinates, out JArray arcs, out string error))
+                                {
+                                    this.AddError($"The input {field.InputName} is invalid: {error}.");
+                                    tokens = null;
+                                    return false;
+                                }
+
+                                var hole = new JObject { ["polygonCoordinates"] = coordinates };
+                                if (arcs.Count > 0)
+                                {
+                                    hole["polygonArcs"] = arcs;
+                                }
+                                holes.Add(hole);
+                            }
+                            tokens.Add(holes);
+                        }
+                        break;
+                    }
                 case FieldKind.Number:
                     {
                         var values = new List<double>();
@@ -379,7 +666,7 @@ namespace TapirGrasshopperPlugin.Components
             Field field,
             JToken token)
         {
-            if (field.Kind == FieldKind.Line)
+            if (field.Kind == FieldKind.Line || field.Kind == FieldKind.OutlineCurve)
             {
                 foreach (var property in ((JObject)token).Properties())
                 {
@@ -399,6 +686,8 @@ namespace TapirGrasshopperPlugin.Components
             var firstField = fields[0];
             var isTreeFirst = firstField.Kind == FieldKind.PointsTree2D ||
                               firstField.Kind == FieldKind.PointsTree3D;
+            // OutlineCurve is read as a plain list, so it needs no special casing
+            // here - TryReadTokens turns each curve into the item's polygon.
 
             int itemCount;
             var items = new List<JObject>();
@@ -454,10 +743,21 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
+            var typedInputs = new List<(Field Field, int InputIndex)>();
             for (var fieldIndex = 1; fieldIndex < fields.Count; fieldIndex++)
             {
-                var field = fields[fieldIndex];
-                if (!TryReadTokens(da, fieldIndex, field, out List<JToken> tokens))
+                typedInputs.Add((fields[fieldIndex], fieldIndex));
+            }
+            var trailingFields = TrailingFields;
+            for (var trailingIndex = 0; trailingIndex < trailingFields.Count; trailingIndex++)
+            {
+                typedInputs.Add(
+                    (trailingFields[trailingIndex], FirstTrailingFieldInputIndex + trailingIndex));
+            }
+
+            foreach (var (field, inputIndex) in typedInputs)
+            {
+                if (!TryReadTokens(da, inputIndex, field, out List<JToken> tokens))
                 {
                     return;
                 }
@@ -532,6 +832,26 @@ namespace TapirGrasshopperPlugin.Components
             }
             var parameters = new JObject { [ArrayKey] = itemsArray };
 
+            var embedMetadata = false;
+            var replaceExisting = false;
+            if (SupportsElementMetadata)
+            {
+                var metadataInputIndex =
+                    fields.Count + (HasAdditionalSettingsInput ? 1 : 0);
+                embedMetadata = da.GetOptional(metadataInputIndex, true);
+                replaceExisting = da.GetOptional(metadataInputIndex + 1, false);
+            }
+
+            var metadata = new ElementMetadata(this, ToAddOn, ToArchicad);
+            // The previous elements are collected before the creation (so the
+            // new elements are never in the set), but only deleted after it
+            // succeeded, so a failed run does not lose them.
+            JArray previousElements = null;
+            if (replaceExisting)
+            {
+                previousElements = metadata.FindPreviouslyCreatedElements();
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -539,6 +859,15 @@ namespace TapirGrasshopperPlugin.Components
                     out JObject response))
             {
                 return;
+            }
+
+            if (embedMetadata)
+            {
+                metadata.StampCreatedElements(response);
+            }
+            if (replaceExisting)
+            {
+                metadata.DeletePreviouslyCreatedElements(previousElements);
             }
 
             SetCreatedElementsOutputs(da, response, 0, 1);

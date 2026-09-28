@@ -632,6 +632,174 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Guid("f942eece-cc80-4945-a911-fe548dae4ae8");
     }
 
+    public class GetDetailsOfRoofsComponent : AbsGetDetailsComponent
+    {
+        protected override string InputFieldName => "RoofGuids";
+
+        public GetDetailsOfRoofsComponent()
+            : base("RoofDetails")
+        {
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "RoofGuids",
+                "Elements Guids of the found roofs.");
+
+            OutCurves(
+                "Polygons",
+                "The outline polygon of each roof (the plane roof's outline, the multi-plane roof's contour), at the roof's pivot level.");
+
+            OutCurveTree(
+                "HolePolygons",
+                "The outline polygons of the holes in the roofs, one branch per roof.");
+
+            OutTexts(
+                "RoofClasses",
+                "SinglePlane or MultiPlane.");
+
+            OutTexts(
+                "StructureTypes",
+                "Basic or Composite.");
+
+            OutNumberList(
+                "Thicknesses",
+                "Thickness of each roof.");
+
+            OutCurves(
+                "PivotCurves",
+                "The pivot line of a single-plane roof, or the pivot polygon of a multi-plane roof, at the roof's pivot level.");
+
+            OutNumbers(
+                "Slopes",
+                "Slope in radians, one branch per roof: the plane's slope of a single-plane roof, one value per level of a multi-plane roof.");
+
+            OutNumbers(
+                "LevelHeights",
+                "One branch per roof: the height of each level above the previous one of a multi-plane roof; empty for a single-plane roof.");
+        }
+
+        protected override void ManageResponse(
+            IGH_DataAccess da)
+        {
+            var roofs = new List<ElementGuidWrapper>();
+            var polygons = new List<PolyCurve>();
+            var holePolygonsTree = new DataTree<PolyCurve>();
+            var roofClasses = new List<string>();
+            var structureTypes = new List<string>();
+            var thicknesses = new List<double>();
+            var pivotCurves = new List<Curve>();
+            var slopesTree = new DataTree<double>();
+            var levelHeightsTree = new DataTree<double>();
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
+            {
+                var detailsOfElement = response.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Roof")
+                {
+                    continue;
+                }
+
+                var roofDetails =
+                    detailsOfElement.Details.ToObject<RoofDetails>();
+                if (roofDetails == null || roofDetails.PolygonCoordinates == null)
+                {
+                    continue;
+                }
+
+                roofs.Add(
+                    new ElementGuidWrapper()
+                    {
+                        ElementId = inputs.Elements[i].ElementId
+                    });
+                var path = new GH_Path(roofs.Count);
+
+                polygons.Add(
+                    Helps.Convert.ToPolyCurve(
+                        roofDetails.PolygonCoordinates,
+                        roofDetails.PolygonArcs,
+                        roofDetails.ZCoordinate));
+
+                var holePolygons = new List<PolyCurve>();
+                foreach (var holeDetail in roofDetails.Holes ?? new List<HoleDetails>())
+                {
+                    holePolygons.Add(
+                        Helps.Convert.ToPolyCurve(
+                            holeDetail.PolygonCoordinates,
+                            holeDetail.PolygonArcs,
+                            roofDetails.ZCoordinate));
+                }
+                holePolygonsTree.EnsurePath(path);
+                holePolygonsTree.AddRange(
+                    holePolygons,
+                    path);
+
+                roofClasses.Add(roofDetails.RoofClass);
+                structureTypes.Add(roofDetails.StructureType);
+                thicknesses.Add(roofDetails.Thickness);
+
+                slopesTree.EnsurePath(path);
+                levelHeightsTree.EnsurePath(path);
+                if (roofDetails.PivotLine != null)
+                {
+                    pivotCurves.Add(
+                        new LineCurve(
+                            new Point3d(
+                                roofDetails.PivotLine.Begin.X,
+                                roofDetails.PivotLine.Begin.Y,
+                                roofDetails.ZCoordinate),
+                            new Point3d(
+                                roofDetails.PivotLine.End.X,
+                                roofDetails.PivotLine.End.Y,
+                                roofDetails.ZCoordinate)));
+                }
+                else if (roofDetails.PivotPolygonOutline != null &&
+                         roofDetails.PivotPolygonOutline.Count > 1)
+                {
+                    pivotCurves.Add(
+                        Helps.Convert.ToPolyCurve(
+                            roofDetails.PivotPolygonOutline,
+                            new List<Arc>(),
+                            roofDetails.ZCoordinate));
+                }
+                else
+                {
+                    pivotCurves.Add(null);
+                }
+
+                if (roofDetails.Levels != null)
+                {
+                    foreach (var level in roofDetails.Levels)
+                    {
+                        slopesTree.Add(level.Angle, path);
+                        levelHeightsTree.Add(level.Height, path);
+                    }
+                }
+                else if (roofDetails.Angle.HasValue)
+                {
+                    slopesTree.Add(roofDetails.Angle.Value, path);
+                }
+            }
+
+            da.SetDataList(0, roofs);
+            da.SetDataList(1, polygons);
+            da.SetDataTree(2, holePolygonsTree);
+            da.SetDataList(3, roofClasses);
+            da.SetDataList(4, structureTypes);
+            da.SetDataList(5, thicknesses);
+            da.SetDataList(6, pivotCurves);
+            da.SetDataTree(7, slopesTree);
+            da.SetDataTree(8, levelHeightsTree);
+        }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.RoofDetails;
+
+        public override Guid ComponentGuid =>
+            new Guid("6b6411f1-7831-473c-bbc3-d82fa5873583");
+    }
+
     public class GetDetailsOfPolylinesComponent : AbsGetDetailsComponent
     {
         protected override string InputFieldName => "PolylineGuids";
@@ -838,5 +1006,183 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public override Guid ComponentGuid =>
             new Guid("65b5952f-fc7d-4d9e-9742-9be32ac3c5d1");
+    }
+
+    public class GetDetailsOfTextsComponent : AbsGetDetailsComponent
+    {
+        protected override string InputFieldName => "TextGuids";
+
+        public GetDetailsOfTextsComponent()
+            : base("TextDetails")
+        {
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "TextGuids",
+                "Elements Guids of the found texts.");
+
+            OutTexts(
+                "Texts",
+                "Content of the text elements.");
+
+            OutPoints(
+                "Positions",
+                "Position of each text element.");
+
+            OutNumbers(
+                "Angles",
+                "Rotation angles in radians.");
+
+            OutNumbers(
+                "Heights",
+                "Text heights in millimeters.");
+
+            OutTexts(
+                "Justifications",
+                "Justification: Left, Center, Right or Full.");
+
+            OutIntegers(
+                "Pens",
+                "Pen indices of the texts.");
+        }
+
+        protected override void ManageResponse(
+            IGH_DataAccess da)
+        {
+            var texts = new List<ElementGuidWrapper>();
+            var contents = new List<string>();
+            var positions = new List<Point3d>();
+            var angles = new List<double>();
+            var heights = new List<double>();
+            var justifications = new List<string>();
+            var pens = new List<int>();
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
+            {
+                var detailsOfElement = response.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Text")
+                {
+                    continue;
+                }
+
+                var textDetails =
+                    detailsOfElement.Details.ToObject<TextDetails>();
+                if (textDetails == null)
+                {
+                    continue;
+                }
+
+                texts.Add(
+                    new ElementGuidWrapper()
+                    {
+                        ElementId = inputs.Elements[i].ElementId
+                    });
+                contents.Add(textDetails.Text);
+                positions.Add(
+                    new Point3d(
+                        textDetails.Position.X,
+                        textDetails.Position.Y,
+                        textDetails.ZCoordinate));
+                angles.Add(textDetails.Angle);
+                heights.Add(textDetails.Height);
+                justifications.Add(textDetails.Justification);
+                pens.Add(textDetails.Pen);
+            }
+
+            da.SetDataList(
+                0,
+                texts);
+            da.SetDataList(
+                1,
+                contents);
+            da.SetDataList(
+                2,
+                positions);
+            da.SetDataList(
+                3,
+                angles);
+            da.SetDataList(
+                4,
+                heights);
+            da.SetDataList(
+                5,
+                justifications);
+            da.SetDataList(
+                6,
+                pens);
+        }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.TextDetails;
+
+        public override Guid ComponentGuid =>
+            new Guid("22b1ba93-b2b7-426c-bded-deafd1adeb26");
+    }
+
+    public class GetDetailsOfLabelsComponent : AbsGetDetailsComponent
+    {
+        protected override string InputFieldName => "LabelGuids";
+
+        public GetDetailsOfLabelsComponent()
+            : base("LabelDetails")
+        {
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "LabelGuids",
+                "Elements Guids of the found text-type labels " +
+                "(symbol labels have no text content and are skipped).");
+
+            OutTexts(
+                "Texts",
+                "Content of the text-type labels.");
+        }
+
+        protected override void ManageResponse(
+            IGH_DataAccess da)
+        {
+            var labels = new List<ElementGuidWrapper>();
+            var contents = new List<string>();
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
+            {
+                var detailsOfElement = response.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Label")
+                {
+                    continue;
+                }
+
+                var labelDetails =
+                    detailsOfElement.Details.ToObject<LabelDetails>();
+                if (labelDetails == null || labelDetails.Text == null)
+                {
+                    continue;
+                }
+
+                labels.Add(
+                    new ElementGuidWrapper()
+                    {
+                        ElementId = inputs.Elements[i].ElementId
+                    });
+                contents.Add(labelDetails.Text);
+            }
+
+            da.SetDataList(
+                0,
+                labels);
+            da.SetDataList(
+                1,
+                contents);
+        }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.LabelDetails;
+
+        public override Guid ComponentGuid =>
+            new Guid("abfc4414-8a8a-46cb-bed0-911bf952c6ba");
     }
 }

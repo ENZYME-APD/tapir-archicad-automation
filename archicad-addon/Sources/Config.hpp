@@ -50,6 +50,7 @@ public:
     const std::vector<Repository>& Repositories () const { return repositories; }
     bool AskUpdatingAddOnBeforeEachExecution () const { return askUpdatingAddOnBeforeEachExecution; }
     const GS::UniString& uvLocation() const { return uvLocationStr; }
+    const GS::UniString& pythonLocation () const { return pythonLocationStr; }
 
 private:
     Config ();
@@ -66,4 +67,5 @@ private:
     std::vector<Repository> repositories;
     bool askUpdatingAddOnBeforeEachExecution;
     GS::UniString uvLocationStr;
+    GS::UniString pythonLocationStr;
 };

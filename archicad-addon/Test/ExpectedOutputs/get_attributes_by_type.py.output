@@ -11,287 +11,328 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "\u0014"
+            "name": "\u0014",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Interior - Partition"
+            "name": "Interior - Partition",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Interior - Furniture "
+            "name": "Interior - Furniture ",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Shell - Roof"
+            "name": "Shell - Roof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Site & Landscape - General"
+            "name": "Site & Landscape - General",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Interior - Stair & Railing"
+            "name": "Interior - Stair & Railing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Annotation - Structure"
+            "name": "Annotation - Structure",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Dimensioning - Structure"
+            "name": "Dimensioning - Structure",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Annotation - General"
+            "name": "Annotation - General",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "2D Drafting - Hotspot"
+            "name": "2D Drafting - Hotspot",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "MEP - HVAC"
+            "name": "MEP - HVAC",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "MEP - Electrical"
+            "name": "MEP - Electrical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 26,
-            "name": "Dimensioning - Site "
+            "name": "Dimensioning - Site ",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 29,
-            "name": "Annotation - Label"
+            "name": "Annotation - Label",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 31,
-            "name": "Marker - Section"
+            "name": "Marker - Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 32,
-            "name": "Structural - Shear"
+            "name": "Structural - Shear",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 33,
-            "name": "Structural - Bearing"
+            "name": "Structural - Bearing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 34,
-            "name": "Structural - Stair & Railing"
+            "name": "Structural - Stair & Railing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 35,
-            "name": "Interior - Lamp"
+            "name": "Interior - Lamp",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 36,
-            "name": "Model Unit - Zone"
+            "name": "Model Unit - Zone",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 38,
-            "name": "Dimensioning - Detail"
+            "name": "Dimensioning - Detail",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 39,
-            "name": "MEP - Plumbing"
+            "name": "MEP - Plumbing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 42,
-            "name": "Annotation - Text"
+            "name": "Annotation - Text",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 44,
-            "name": "2D Drafting - General"
+            "name": "2D Drafting - General",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 45,
-            "name": "Site & Landscape - Terrain"
+            "name": "Site & Landscape - Terrain",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 46,
-            "name": "Model Unit - Module"
+            "name": "Model Unit - Module",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 47,
-            "name": "Marker - Detail"
+            "name": "Marker - Detail",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 48,
-            "name": "Drawing & Figure"
+            "name": "Drawing & Figure",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 49,
-            "name": "Finish - Ceiling"
+            "name": "Finish - Ceiling",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 50,
-            "name": "Marker - Elevation"
+            "name": "Marker - Elevation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 51,
-            "name": "Finish - Floor"
+            "name": "Finish - Floor",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 52,
-            "name": "Interior - Equipment"
+            "name": "Interior - Equipment",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 53,
-            "name": "Finish - Wall"
+            "name": "Finish - Wall",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 54,
-            "name": "Shell - General"
+            "name": "Shell - General",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 55,
-            "name": "Dimensioning - General"
+            "name": "Dimensioning - General",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 56,
-            "name": "- Hidden"
+            "name": "- Hidden",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 57,
-            "name": "Structural - Grid"
+            "name": "Structural - Grid",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 58,
-            "name": "Marker - Interior Elevation"
+            "name": "Marker - Interior Elevation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 59,
-            "name": "Marker - Worksheet"
+            "name": "Marker - Worksheet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 60,
-            "name": "Morph - General"
+            "name": "Morph - General",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 61,
-            "name": "Marker - Change"
+            "name": "Marker - Change",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -308,175 +349,200 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Solid"
+            "name": "Solid",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Dotted Dense"
+            "name": "Dotted Dense",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Dotted"
+            "name": "Dotted",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Dashed"
+            "name": "Dashed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Dashed Long"
+            "name": "Dashed Long",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Dot & Dashed"
+            "name": "Dot & Dashed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Dashed Double"
+            "name": "Dashed Double",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "Dashed Triple"
+            "name": "Dashed Triple",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Zigzag"
+            "name": "Zigzag",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Double"
+            "name": "Double",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Break"
+            "name": "Break",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Slash"
+            "name": "Slash",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "Arrow"
+            "name": "Arrow",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Wave"
+            "name": "Wave",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "X"
+            "name": "X",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "Slash Double"
+            "name": "Slash Double",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "Circle"
+            "name": "Circle",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Square"
+            "name": "Square",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Zigzag Big"
+            "name": "Zigzag Big",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Crossed"
+            "name": "Crossed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Hidden"
+            "name": "Hidden",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "Sketch"
+            "name": "Sketch",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "Insulation"
+            "name": "Insulation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "Bubble"
+            "name": "Bubble",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Dashed Small"
+            "name": "Dashed Small",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -493,1127 +559,1288 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Common Brick"
+            "name": "Common Brick",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Face Brick"
+            "name": "Face Brick",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Fire Brick"
+            "name": "Fire Brick",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Masonry Block"
+            "name": "Masonry Block",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Concrete Block"
+            "name": "Concrete Block",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Structural Concrete"
+            "name": "Structural Concrete",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Lightweight Concrete"
+            "name": "Lightweight Concrete",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "Plaster"
+            "name": "Plaster",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Gypsum"
+            "name": "Gypsum",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Facing Tile"
+            "name": "Facing Tile",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Steel"
+            "name": "Steel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Aluminium"
+            "name": "Aluminium",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "Brass/Bronze"
+            "name": "Brass/Bronze",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Cut Stone"
+            "name": "Cut Stone",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "Rubble"
+            "name": "Rubble",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "Air Space"
+            "name": "Air Space",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "Rigid Insulation"
+            "name": "Rigid Insulation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Batt Insulation"
+            "name": "Batt Insulation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Wood"
+            "name": "Wood",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Plywood"
+            "name": "Plywood",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Insulation 02"
+            "name": "Insulation 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "75 %"
+            "name": "75 %",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "50 %"
+            "name": "50 %",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "25 %"
+            "name": "25 %",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Solid + Dot & Dashed"
+            "name": "Solid + Dot & Dashed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 26,
-            "name": "Solid + Dashed"
+            "name": "Solid + Dashed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 27,
-            "name": "Dot & Dashed"
+            "name": "Dot & Dashed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 28,
-            "name": "Dashed"
+            "name": "Dashed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 29,
-            "name": "Double 1:4"
+            "name": "Double 1:4",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 30,
-            "name": "Double 1:8"
+            "name": "Double 1:8",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 31,
-            "name": "Triangular Grid"
+            "name": "Triangular Grid",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 32,
-            "name": "Triangles"
+            "name": "Triangles",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 33,
-            "name": "Hexagonal"
+            "name": "Hexagonal",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 34,
-            "name": "Grass"
+            "name": "Grass",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 35,
-            "name": "Facing Tile - Large Scale"
+            "name": "Facing Tile - Large Scale",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 36,
-            "name": "Rubble - Large Scale"
+            "name": "Rubble - Large Scale",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 37,
-            "name": "Plywood - Large Scale"
+            "name": "Plywood - Large Scale",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 38,
-            "name": "Earth"
+            "name": "Earth",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 39,
-            "name": "Plank Floor"
+            "name": "Plank Floor",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 40,
-            "name": "Strip Floor 1:3"
+            "name": "Strip Floor 1:3",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 41,
-            "name": "Strip Floor 1:4"
+            "name": "Strip Floor 1:4",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 42,
-            "name": "Block Floor 1:3"
+            "name": "Block Floor 1:3",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 43,
-            "name": "Block Floor 1:4"
+            "name": "Block Floor 1:4",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 44,
-            "name": "Grid 25x25"
+            "name": "Grid 25x25",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 45,
-            "name": "Glazed Tile"
+            "name": "Glazed Tile",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 46,
-            "name": "Brick Floor - Laid Flat"
+            "name": "Brick Floor - Laid Flat",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 47,
-            "name": "Brick Floor - Laid on Edge"
+            "name": "Brick Floor - Laid on Edge",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 48,
-            "name": "Stone Mosaic Paving"
+            "name": "Stone Mosaic Paving",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 49,
-            "name": "Carpet"
+            "name": "Carpet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 50,
-            "name": "Brick - Running Bond"
+            "name": "Brick - Running Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 51,
-            "name": "Brick - Common Bond"
+            "name": "Brick - Common Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 52,
-            "name": "Brick - Flemish Bond"
+            "name": "Brick - Flemish Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 53,
-            "name": "Brick - English Bond"
+            "name": "Brick - English Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 54,
-            "name": "Brick - Stack Bond"
+            "name": "Brick - Stack Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 55,
-            "name": "Block - Running Bond"
+            "name": "Block - Running Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 56,
-            "name": "Block - Stack Bond"
+            "name": "Block - Stack Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 57,
-            "name": "Long Brick - Running Bond"
+            "name": "Long Brick - Running Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 58,
-            "name": "Long Brick - Stack Bond"
+            "name": "Long Brick - Stack Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 59,
-            "name": "2x4 Stud Wall 16 O.C."
+            "name": "2x4 Stud Wall 16 O.C.",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 60,
-            "name": "Roof Tiles"
+            "name": "Roof Tiles",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 61,
-            "name": "Circles 1"
+            "name": "Circles 1",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 62,
-            "name": "Circles 2"
+            "name": "Circles 2",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 63,
-            "name": "Fire Proofing"
+            "name": "Fire Proofing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 64,
-            "name": "Foreground"
+            "name": "Foreground",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 65,
-            "name": "Background"
+            "name": "Background",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 66,
-            "name": "Insulation"
+            "name": "Insulation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 67,
-            "name": "Stars"
+            "name": "Stars",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 68,
-            "name": "Gravel"
+            "name": "Gravel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 69,
-            "name": "Roof Tile"
+            "name": "Roof Tile",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 70,
-            "name": "Pavement 01"
+            "name": "Pavement 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 71,
-            "name": "Pavement 02"
+            "name": "Pavement 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 72,
-            "name": "Pavement 03"
+            "name": "Pavement 03",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 73,
-            "name": "Pavement 04"
+            "name": "Pavement 04",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 74,
-            "name": "Pavement 05"
+            "name": "Pavement 05",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 75,
-            "name": "Pavement 06"
+            "name": "Pavement 06",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 76,
-            "name": "Pavement 07"
+            "name": "Pavement 07",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 77,
-            "name": "Pavement 08"
+            "name": "Pavement 08",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 78,
-            "name": "Pavement 09"
+            "name": "Pavement 09",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 79,
-            "name": "Pavement 10"
+            "name": "Pavement 10",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 80,
-            "name": "Pavement 11"
+            "name": "Pavement 11",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 81,
-            "name": "Pavement 12"
+            "name": "Pavement 12",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 82,
-            "name": "Pavement 13"
+            "name": "Pavement 13",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 83,
-            "name": "Pavement 14"
+            "name": "Pavement 14",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 84,
-            "name": "Pavement 15"
+            "name": "Pavement 15",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 85,
-            "name": "Pavement 16"
+            "name": "Pavement 16",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 86,
-            "name": "Pavement 17"
+            "name": "Pavement 17",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 87,
-            "name": "Pavement 18"
+            "name": "Pavement 18",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 88,
-            "name": "Pavement 19"
+            "name": "Pavement 19",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 89,
-            "name": "Render"
+            "name": "Render",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 90,
-            "name": "Roof Tile 01"
+            "name": "Roof Tile 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 91,
-            "name": "Roof Tile 02"
+            "name": "Roof Tile 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 92,
-            "name": "Roof Tile 03"
+            "name": "Roof Tile 03",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 93,
-            "name": "Roof Tile 04"
+            "name": "Roof Tile 04",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 94,
-            "name": "Roof Tile 05"
+            "name": "Roof Tile 05",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 95,
-            "name": "Roof Tile 06"
+            "name": "Roof Tile 06",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 96,
-            "name": "Roof Tile 07"
+            "name": "Roof Tile 07",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 97,
-            "name": "Roof Tile 08"
+            "name": "Roof Tile 08",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 98,
-            "name": "Roof Tile 09"
+            "name": "Roof Tile 09",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 99,
-            "name": "Roof Tile Blank"
+            "name": "Roof Tile Blank",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 100,
-            "name": "Roof Tile Stack"
+            "name": "Roof Tile Stack",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 101,
-            "name": "Shakes"
+            "name": "Shakes",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 102,
-            "name": "Stacked Stone"
+            "name": "Stacked Stone",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 103,
-            "name": "Stone 1 Course"
+            "name": "Stone 1 Course",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 104,
-            "name": "Stone 2 Course "
+            "name": "Stone 2 Course ",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 105,
-            "name": "Styrofoam SM Insulation"
+            "name": "Styrofoam SM Insulation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 106,
-            "name": "Thermal Block"
+            "name": "Thermal Block",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 107,
-            "name": "Wood  00"
+            "name": "Wood  00",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 108,
-            "name": "Wood  45"
+            "name": "Wood  45",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 109,
-            "name": "Wood  90"
+            "name": "Wood  90",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 110,
-            "name": "Wood 135"
+            "name": "Wood 135",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 111,
-            "name": "Wood 180"
+            "name": "Wood 180",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 112,
-            "name": "Fieldstone 01"
+            "name": "Fieldstone 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 113,
-            "name": "Fieldstone 02"
+            "name": "Fieldstone 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 114,
-            "name": "Brick - Common Bond + Mortar"
+            "name": "Brick - Common Bond + Mortar",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 115,
-            "name": "Brick - English Bond + Mortar"
+            "name": "Brick - English Bond + Mortar",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 116,
-            "name": "Brick - Stack Bond + Mortar"
+            "name": "Brick - Stack Bond + Mortar",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 117,
-            "name": "Brick Flemish Bond + Mortar "
+            "name": "Brick Flemish Bond + Mortar ",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 118,
-            "name": "Brick Running Bond + Mortar"
+            "name": "Brick Running Bond + Mortar",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 119,
-            "name": "Linear Gradient Fill"
+            "name": "Linear Gradient Fill",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 120,
-            "name": "Radial Gradient Fill"
+            "name": "Radial Gradient Fill",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 121,
-            "name": "Standing Seam"
+            "name": "Standing Seam",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 122,
-            "name": "Shingle"
+            "name": "Shingle",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 123,
-            "name": "Brick - Soldier Bond"
+            "name": "Brick - Soldier Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 124,
-            "name": "River Rock "
+            "name": "River Rock ",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 125,
-            "name": "Grid 30x30"
+            "name": "Grid 30x30",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 126,
-            "name": "Grid 15x15"
+            "name": "Grid 15x15",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 127,
-            "name": "Grid 60x60"
+            "name": "Grid 60x60",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 128,
-            "name": "Grid 60x120"
+            "name": "Grid 60x120",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 129,
-            "name": "Grid 90x90"
+            "name": "Grid 90x90",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 130,
-            "name": "Grid 5x5 Diagonal"
+            "name": "Grid 5x5 Diagonal",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 131,
-            "name": "Normal Tiles"
+            "name": "Normal Tiles",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 132,
-            "name": "Gray Carpet"
+            "name": "Gray Carpet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 133,
-            "name": "Wood Parquet"
+            "name": "Wood Parquet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 134,
-            "name": "Insulation 01"
+            "name": "Insulation 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 135,
-            "name": "Waterproofing"
+            "name": "Waterproofing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 136,
-            "name": "Brick - Running Bond - 20.3/6.8"
+            "name": "Brick - Running Bond - 20.3/6.8",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 137,
-            "name": "Grid 100x100"
+            "name": "Grid 100x100",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 138,
-            "name": "Shingle - 30/12.5"
+            "name": "Shingle - 30/12.5",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 139,
-            "name": "Brick - Common Bond - 20.3/6.76"
+            "name": "Brick - Common Bond - 20.3/6.76",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 140,
-            "name": "Roof Tile 15"
+            "name": "Roof Tile 15",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 141,
-            "name": "Grid 50x100"
+            "name": "Grid 50x100",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 142,
-            "name": "Grid Checkered 25x25"
+            "name": "Grid Checkered 25x25",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 143,
-            "name": "Brick - Herringbone"
+            "name": "Brick - Herringbone",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 144,
-            "name": "Brick - Flemish Bond - 10.16/6.8"
+            "name": "Brick - Flemish Bond - 10.16/6.8",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 145,
-            "name": "Brick - Stack Bond - 20.3/6.76"
+            "name": "Brick - Stack Bond - 20.3/6.76",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 146,
-            "name": "Brick - Running Bond - 19.9/6.78"
+            "name": "Brick - Running Bond - 19.9/6.78",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 147,
-            "name": "Parquet 01"
+            "name": "Parquet 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 148,
-            "name": "Roof Shingle 01"
+            "name": "Roof Shingle 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 149,
-            "name": "Shingle - 20/30"
+            "name": "Shingle - 20/30",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 150,
-            "name": "Roof Tile 11"
+            "name": "Roof Tile 11",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 151,
-            "name": "Wooden Plank Horizontal - 10"
+            "name": "Wooden Plank Horizontal - 10",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 152,
-            "name": "Brick - Running Bond - 26/7.5"
+            "name": "Brick - Running Bond - 26/7.5",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 153,
-            "name": "Roof Tile 12"
+            "name": "Roof Tile 12",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 154,
-            "name": "Stonework 13"
+            "name": "Stonework 13",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 155,
-            "name": "Stonework 02"
+            "name": "Stonework 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 156,
-            "name": "Stonework 12"
+            "name": "Stonework 12",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 157,
-            "name": "Grid 2.5x2.5"
+            "name": "Grid 2.5x2.5",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 158,
-            "name": "Wooden Plank Vertical - 10"
+            "name": "Wooden Plank Vertical - 10",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 159,
-            "name": "Wooden Plank Horizontal - 14.15"
+            "name": "Wooden Plank Horizontal - 14.15",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 160,
-            "name": "Panel 100x50"
+            "name": "Panel 100x50",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 161,
-            "name": "Concrete Pavement 01"
+            "name": "Concrete Pavement 01",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -1630,175 +1857,200 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Concrete Floor Insulated with Parquet"
+            "name": "Concrete Floor Insulated with Parquet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Concrete Floor Insulated with 10mm Tile"
+            "name": "Concrete Floor Insulated with 10mm Tile",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Concrete Floor with 10mm Tile"
+            "name": "Concrete Floor with 10mm Tile",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "100 Block Insulated Cavity Plastered"
+            "name": "100 Block Insulated Cavity Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "100 Block Double Plastered"
+            "name": "100 Block Double Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "100 Block Insulated Cavity"
+            "name": "100 Block Insulated Cavity",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "215 Block Insulated Cavity Plastered"
+            "name": "215 Block Insulated Cavity Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Double 50 Block Cavity Plastered"
+            "name": "Double 50 Block Cavity Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Stud Partition"
+            "name": "Stud Partition",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Double 50 Block Cavity"
+            "name": "Double 50 Block Cavity",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Brick Double Plastered"
+            "name": "Brick Double Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "Brick Single Plastered"
+            "name": "Brick Single Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "140 Block Insulated Cavity"
+            "name": "140 Block Insulated Cavity",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "Concrete Floor with Parquet"
+            "name": "Concrete Floor with Parquet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "215 Block Insulated Cavity"
+            "name": "215 Block Insulated Cavity",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "140 Block Insulated Cavity Plastered"
+            "name": "140 Block Insulated Cavity Plastered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Roof Aluminium"
+            "name": "Roof Aluminium",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Roof Tiled"
+            "name": "Roof Tiled",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Basement Wall"
+            "name": "Basement Wall",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Roof Zinc"
+            "name": "Roof Zinc",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "Flat Roof"
+            "name": "Flat Roof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "Generic Wall/Shell"
+            "name": "Generic Wall/Shell",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "Generic Slab/Roof"
+            "name": "Generic Slab/Roof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Generic Roof/Shell"
+            "name": "Generic Roof/Shell",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "New Composite"
+            "name": "New Composite",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -1815,924 +2067,1056 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Brick - Running Bond"
+            "name": "Brick - Running Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Stucco - White Rough"
+            "name": "Stucco - White Rough",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Paint - Dark Gray"
+            "name": "Paint - Dark Gray",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Concrete - 02"
+            "name": "Concrete - 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Stone - Limestone Fine"
+            "name": "Stone - Limestone Fine",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Stone - Marble Carrara White"
+            "name": "Stone - Marble Carrara White",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Stone - Granite Gray"
+            "name": "Stone - Granite Gray",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "Stone - Granite Red"
+            "name": "Stone - Granite Red",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Roof - Asphalt Shingle Gray"
+            "name": "Roof - Asphalt Shingle Gray",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Paint - Anthracite"
+            "name": "Paint - Anthracite",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Metal - Stainless Steel"
+            "name": "Metal - Stainless Steel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Metal - Copper New"
+            "name": "Metal - Copper New",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "Metal - Chrome 01"
+            "name": "Metal - Chrome 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Wood - Pine Grained Vertical"
+            "name": "Wood - Pine Grained Vertical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "Wood - Pine Grained Horizontal"
+            "name": "Wood - Pine Grained Horizontal",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "Wood - Walnut Horizontal"
+            "name": "Wood - Walnut Horizontal",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "Wood - Walnut Vertical"
+            "name": "Wood - Walnut Vertical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Paint - Titanium White"
+            "name": "Paint - Titanium White",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Paint - Vermilion"
+            "name": "Paint - Vermilion",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Paint - Ultramarine Violet"
+            "name": "Paint - Ultramarine Violet",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Tiles - Tan 30x30"
+            "name": "Tiles - Tan 30x30",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "Ceramic - Porcelain"
+            "name": "Ceramic - Porcelain",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "Plastic - Laminate"
+            "name": "Plastic - Laminate",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "Glass - Clear Fast"
+            "name": "Glass - Clear Fast",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Leather - Tabac"
+            "name": "Leather - Tabac",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 26,
-            "name": "Textile - 01"
+            "name": "Textile - 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 27,
-            "name": "Carpet - 03"
+            "name": "Carpet - 03",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 28,
-            "name": "Water - Pond"
+            "name": "Water - Pond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 29,
-            "name": "Glass - Blue"
+            "name": "Glass - Blue",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 30,
-            "name": "Grass - Green"
+            "name": "Grass - Green",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 31,
-            "name": "Foliage - Leaves Tree Small"
+            "name": "Foliage - Leaves Tree Small",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 32,
-            "name": "Paint - Bordeaux"
+            "name": "Paint - Bordeaux",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 33,
-            "name": "Earth - Brown"
+            "name": "Earth - Brown",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 34,
-            "name": "Glass - Lamp"
+            "name": "Glass - Lamp",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 35,
-            "name": "Brick - Common Bond"
+            "name": "Brick - Common Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 36,
-            "name": "Roof Tiles - French Red"
+            "name": "Roof Tiles - French Red",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 37,
-            "name": "Stone - Sandstone 01"
+            "name": "Stone - Sandstone 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 38,
-            "name": "Stone - Marble Black"
+            "name": "Stone - Marble Black",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 39,
-            "name": "Stone - Marble Pink"
+            "name": "Stone - Marble Pink",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 40,
-            "name": "Metal - Iron"
+            "name": "Metal - Iron",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 41,
-            "name": "Metal - Copper Aged"
+            "name": "Metal - Copper Aged",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 42,
-            "name": "Metal - Bronze"
+            "name": "Metal - Bronze",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 43,
-            "name": "Metal - Brass"
+            "name": "Metal - Brass",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 44,
-            "name": "Metal - Nickel"
+            "name": "Metal - Nickel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 45,
-            "name": "Metal - Aluminium"
+            "name": "Metal - Aluminium",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 46,
-            "name": "Metal - Gold"
+            "name": "Metal - Gold",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 47,
-            "name": "Metal - Zinc"
+            "name": "Metal - Zinc",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 48,
-            "name": "Paint - Cobalt Blue"
+            "name": "Paint - Cobalt Blue",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 49,
-            "name": "Paint - Ivory Black"
+            "name": "Paint - Ivory Black",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 50,
-            "name": "Roof - Asphalt Shingle Green"
+            "name": "Roof - Asphalt Shingle Green",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 51,
-            "name": "Pavement - Brick Moss"
+            "name": "Pavement - Brick Moss",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 52,
-            "name": "Wood - Oak Light"
+            "name": "Wood - Oak Light",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 53,
-            "name": "Concrete - 04"
+            "name": "Concrete - 04",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 54,
-            "name": "Siding - Dark"
+            "name": "Siding - Dark",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 55,
-            "name": "Lino - Checkered"
+            "name": "Lino - Checkered",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 56,
-            "name": "Brick - Red"
+            "name": "Brick - Red",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 57,
-            "name": "Siding - Medium"
+            "name": "Siding - Medium",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 58,
-            "name": "Siding - Light"
+            "name": "Siding - Light",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 59,
-            "name": "Wood - Mahogany Vertical"
+            "name": "Wood - Mahogany Vertical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 60,
-            "name": "Paint - Glossy White"
+            "name": "Paint - Glossy White",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 61,
-            "name": "Brick - Red Herringbone"
+            "name": "Brick - Red Herringbone",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 62,
-            "name": "Brick - Flemish Bond"
+            "name": "Brick - Flemish Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 63,
-            "name": "Brick - Soldier Bond"
+            "name": "Brick - Soldier Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 64,
-            "name": "Brick - Stack Bond"
+            "name": "Brick - Stack Bond",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 65,
-            "name": "Brick - Aged Natural"
+            "name": "Brick - Aged Natural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 66,
-            "name": "Paint - Sand Beige"
+            "name": "Paint - Sand Beige",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 67,
-            "name": "Paint - Golden Beige"
+            "name": "Paint - Golden Beige",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 68,
-            "name": "Paint - Sienna Sand"
+            "name": "Paint - Sienna Sand",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 69,
-            "name": "Paint - Celadon"
+            "name": "Paint - Celadon",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 70,
-            "name": "Paint - Pale Jade"
+            "name": "Paint - Pale Jade",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 71,
-            "name": "Paint - Peach"
+            "name": "Paint - Peach",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 72,
-            "name": "Paint - Pink Blush"
+            "name": "Paint - Pink Blush",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 73,
-            "name": "Paint - Golden Ochre"
+            "name": "Paint - Golden Ochre",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 74,
-            "name": "Paint - Yellow Ochre"
+            "name": "Paint - Yellow Ochre",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 75,
-            "name": "Paint - Royal Blue"
+            "name": "Paint - Royal Blue",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 76,
-            "name": "Paint - Forest Green"
+            "name": "Paint - Forest Green",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 77,
-            "name": "Paint - Cadmium Orange"
+            "name": "Paint - Cadmium Orange",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 78,
-            "name": "Paint - Cadmium Yellow"
+            "name": "Paint - Cadmium Yellow",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 79,
-            "name": "Paint - Alizarin Carmine"
+            "name": "Paint - Alizarin Carmine",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 80,
-            "name": "Brick - Brown"
+            "name": "Brick - Brown",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 81,
-            "name": "Stucco - White Fine"
+            "name": "Stucco - White Fine",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 82,
-            "name": "Parquet - 01"
+            "name": "Parquet - 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 83,
-            "name": "Brick - Surface Colour"
+            "name": "Brick - Surface Colour",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 84,
-            "name": "Pavement - Asphalt Dark"
+            "name": "Pavement - Asphalt Dark",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 85,
-            "name": "Roof - Asphalt Shingle Drop"
+            "name": "Roof - Asphalt Shingle Drop",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 86,
-            "name": "Roof - Cedar Shingle Light"
+            "name": "Roof - Cedar Shingle Light",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 87,
-            "name": "Roof Tiles - Dutch"
+            "name": "Roof Tiles - Dutch",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 88,
-            "name": "Roof - Asphalt Shingle Brown"
+            "name": "Roof - Asphalt Shingle Brown",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 89,
-            "name": "Textile - 02"
+            "name": "Textile - 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 90,
-            "name": "Floorboards - 01"
+            "name": "Floorboards - 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 91,
-            "name": "Glass - Mirror"
+            "name": "Glass - Mirror",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 92,
-            "name": "Brick - White Natural"
+            "name": "Brick - White Natural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 93,
-            "name": "Carpet - 01"
+            "name": "Carpet - 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 94,
-            "name": "Carpet - 02"
+            "name": "Carpet - 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 95,
-            "name": "Grass - Brown"
+            "name": "Grass - Brown",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 96,
-            "name": "Bark - Deciduous"
+            "name": "Bark - Deciduous",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 97,
-            "name": "Foliage - Wild grapes"
+            "name": "Foliage - Wild grapes",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 98,
-            "name": "Water - Wavy"
+            "name": "Water - Wavy",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 99,
-            "name": "Paint - Light Gray"
+            "name": "Paint - Light Gray",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 100,
-            "name": "Paint - Pale Blue"
+            "name": "Paint - Pale Blue",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 101,
-            "name": "Paint - Lead Oxide Yellow"
+            "name": "Paint - Lead Oxide Yellow",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 102,
-            "name": "Pavement - Asphalt Light"
+            "name": "Pavement - Asphalt Light",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 103,
-            "name": "Roof Tiles - Spanish 01"
+            "name": "Roof Tiles - Spanish 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 104,
-            "name": "Tiles - White Matte 15x15"
+            "name": "Tiles - White Matte 15x15",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 105,
-            "name": "Metal - Perforated Small Dots"
+            "name": "Metal - Perforated Small Dots",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 106,
-            "name": "Tiles - Tan 25x25"
+            "name": "Tiles - Tan 25x25",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 107,
-            "name": "Roof - Corrugated Sheet Matte"
+            "name": "Roof - Corrugated Sheet Matte",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 108,
-            "name": "Ceiling - Tile 60x60"
+            "name": "Ceiling - Tile 60x60",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 109,
-            "name": "Ceiling - Tile 60x120"
+            "name": "Ceiling - Tile 60x120",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 110,
-            "name": "Metal - Fence Chainlink"
+            "name": "Metal - Fence Chainlink",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 111,
-            "name": "Stonework - 13"
+            "name": "Stonework - 13",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 112,
-            "name": "Stonework - 02"
+            "name": "Stonework - 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 113,
-            "name": "Stonework - 12"
+            "name": "Stonework - 12",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 114,
-            "name": "Tiles - Light Brown 15x15"
+            "name": "Tiles - Light Brown 15x15",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 115,
-            "name": "Tiles - Mosaic Blue"
+            "name": "Tiles - Mosaic Blue",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 116,
-            "name": "Parquet - 02"
+            "name": "Parquet - 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 117,
-            "name": "Stucco - Yellow Rough"
+            "name": "Stucco - Yellow Rough",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 118,
-            "name": "Stucco - Red Rough"
+            "name": "Stucco - Red Rough",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 119,
-            "name": "Stucco - Beige Rough"
+            "name": "Stucco - Beige Rough",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 120,
-            "name": "Lino - Blue"
+            "name": "Lino - Blue",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 121,
-            "name": "Lino - Gray"
+            "name": "Lino - Gray",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 122,
-            "name": "Roof Tiles - French Brown"
+            "name": "Roof Tiles - French Brown",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 123,
-            "name": "Floorboards - 03"
+            "name": "Floorboards - 03",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 124,
-            "name": "Wood - Mahogany Horizontal"
+            "name": "Wood - Mahogany Horizontal",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 125,
-            "name": "Glass - Satin"
+            "name": "Glass - Satin",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 126,
-            "name": "Metal - Steel"
+            "name": "Metal - Steel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 127,
-            "name": "Insulation - Bubble Wrap"
+            "name": "Insulation - Bubble Wrap",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 128,
-            "name": "Insulation - Cellulose"
+            "name": "Insulation - Cellulose",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 129,
-            "name": "Insulation - Fiberglass"
+            "name": "Insulation - Fiberglass",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 130,
-            "name": "Insulation - Solid Brown"
+            "name": "Insulation - Solid Brown",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 131,
-            "name": "Air"
+            "name": "Air",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 132,
-            "name": "Concrete - 10"
+            "name": "Concrete - 10",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -2749,70 +3133,80 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "02 Drafting"
+            "name": "02 Drafting",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "06 Plans - Mechanical"
+            "name": "06 Plans - Mechanical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "07 Plans - Structural"
+            "name": "07 Plans - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "09 Layouting"
+            "name": "09 Layouting",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "01 Site"
+            "name": "01 Site",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "04 Plans - Approval"
+            "name": "04 Plans - Approval",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "08 Rendering"
+            "name": "08 Rendering",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "05 Plans - Detailed"
+            "name": "05 Plans - Detailed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "03 Plans - Preliminary"
+            "name": "03 Plans - Preliminary",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "10 Show 3D Zones as Solid"
+            "name": "10 Show 3D Zones as Solid",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -2829,77 +3223,88 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Medical Treatment"
+            "name": "Medical Treatment",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Other Usage"
+            "name": "Other Usage",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Education & Culture"
+            "name": "Education & Culture",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Office"
+            "name": "Office",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Residential and Recreation"
+            "name": "Residential and Recreation",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Communication & Access"
+            "name": "Communication & Access",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "Storage & Sales"
+            "name": "Storage & Sales",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Technical Equipment"
+            "name": "Technical Equipment",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Production & Research"
+            "name": "Production & Research",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "GROSS AREA"
+            "name": "GROSS AREA",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Generic"
+            "name": "Generic",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -2916,336 +3321,384 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Brick Wall w Concrete Lintel"
+            "name": "Brick Wall w Concrete Lintel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Brick Veneer Block Wall"
+            "name": "Brick Veneer Block Wall",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Precast Double Tee"
+            "name": "Precast Double Tee",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Precast Single Tee"
+            "name": "Precast Single Tee",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Precast Inverted Tee"
+            "name": "Precast Inverted Tee",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Precast Girder 02"
+            "name": "Precast Girder 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Precast Girder 01"
+            "name": "Precast Girder 01",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "I Joist - Wood"
+            "name": "I Joist - Wood",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Joist - Timber"
+            "name": "Joist - Timber",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Steel C Section"
+            "name": "Steel C Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Steel Z Section"
+            "name": "Steel Z Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Steel L Section"
+            "name": "Steel L Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "I Joist - Steel"
+            "name": "I Joist - Steel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Steel Rectangular Hollow"
+            "name": "Steel Rectangular Hollow",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "Steel T Section"
+            "name": "Steel T Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "Steel Universal Section"
+            "name": "Steel Universal Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "Concrete Column/Beam w Cover"
+            "name": "Concrete Column/Beam w Cover",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Plaster Cornice/Coving"
+            "name": "Plaster Cornice/Coving",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Brick Wall w Footing"
+            "name": "Brick Wall w Footing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Concrete Slab Edge Footing"
+            "name": "Concrete Slab Edge Footing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Generic Beam"
+            "name": "Generic Beam",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "Generic Column"
+            "name": "Generic Column",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "IPE 240"
+            "name": "IPE 240",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "Stair Nosing Classic"
+            "name": "Stair Nosing Classic",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Stair Riser Slanted 150 "
+            "name": "Stair Riser Slanted 150 ",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 26,
-            "name": "Stair Interlacing Block 150/300"
+            "name": "Stair Interlacing Block 150/300",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 27,
-            "name": "Stair Tread 300 for Riser Slanted 150"
+            "name": "Stair Tread 300 for Riser Slanted 150",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 28,
-            "name": "Stair Edge Protection with Non-Slip Band"
+            "name": "Stair Edge Protection with Non-Slip Band",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 29,
-            "name": "Rail Wood on Steel"
+            "name": "Rail Wood on Steel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 30,
-            "name": "Rail Wood Simple"
+            "name": "Rail Wood Simple",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 31,
-            "name": "Rail Wood Complex"
+            "name": "Rail Wood Complex",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 32,
-            "name": "Railing Revolved Profile"
+            "name": "Railing Revolved Profile",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 33,
-            "name": "Rail Double Steel Bars"
+            "name": "Rail Double Steel Bars",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 34,
-            "name": "Stair Stringer C Section"
+            "name": "Stair Stringer C Section",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 35,
-            "name": "CW Frame 80/160"
+            "name": "CW Frame 80/160",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 36,
-            "name": "CW Frame Butt-glazed 80/160"
+            "name": "CW Frame Butt-glazed 80/160",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 37,
-            "name": "CW Cap 80/20"
+            "name": "CW Cap 80/20",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 38,
-            "name": "CW Window Frame 48/48"
+            "name": "CW Window Frame 48/48",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 39,
-            "name": "CW Corner Frame 80/160"
+            "name": "CW Corner Frame 80/160",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 40,
-            "name": "CW Corner Frame Butt-glazed 80/160"
+            "name": "CW Corner Frame Butt-glazed 80/160",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 41,
-            "name": "CW Corner Cap 80/20"
+            "name": "CW Corner Cap 80/20",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 42,
-            "name": "Precast Single Tee 02"
+            "name": "Precast Single Tee 02",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 43,
-            "name": "IPE300"
+            "name": "IPE300",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 44,
-            "name": "HEA200"
+            "name": "HEA200",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 45,
-            "name": "UPE100"
+            "name": "UPE100",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 46,
-            "name": "L100X50X10"
+            "name": "L100X50X10",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 47,
-            "name": "RHS100X100X5"
+            "name": "RHS100X100X5",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 48,
-            "name": "CHS48.3X5.0"
+            "name": "CHS48.3X5.0",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -3262,77 +3715,88 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "09 Color"
+            "name": "09 Color",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "10 Grayscale"
+            "name": "10 Grayscale",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "11 Archicad 9"
+            "name": "11 Archicad 9",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "04 Building plans 50"
+            "name": "04 Building plans 50",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "03 Architectural 100"
+            "name": "03 Architectural 100",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "02 Site 500"
+            "name": "02 Site 500",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "08 Electrical"
+            "name": "08 Electrical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "06 Structural"
+            "name": "06 Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "05 Detailing"
+            "name": "05 Detailing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "07 Mechanical"
+            "name": "07 Mechanical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "01 Color Conceptual"
+            "name": "01 Color Conceptual",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -3349,42 +3813,48 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Exhaust Air [Ductwork]"
+            "name": "Exhaust Air [Ductwork]",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Fresh Air [Ductwork]"
+            "name": "Fresh Air [Ductwork]",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Heating [Pipework]"
+            "name": "Heating [Pipework]",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Cooling [Pipework]"
+            "name": "Cooling [Pipework]",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Cabling [Cable Tray]"
+            "name": "Cabling [Cable Tray]",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Sprinkler [Pipework]"
+            "name": "Sprinkler [Pipework]",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -3401,231 +3871,264 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Personal office"
+            "name": "Personal office",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Landscaped office"
+            "name": "Landscaped office",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Meeting, conference or seminar room"
+            "name": "Meeting, conference or seminar room",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Booking hall"
+            "name": "Booking hall",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Retail shop/department store"
+            "name": "Retail shop/department store",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Classroom"
+            "name": "Classroom",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Lecture room, auditorium"
+            "name": "Lecture room, auditorium",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "Hospital ward or dormitory"
+            "name": "Hospital ward or dormitory",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Hotel room"
+            "name": "Hotel room",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Canteen"
+            "name": "Canteen",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Restaurant"
+            "name": "Restaurant",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Kitchen (non residential)"
+            "name": "Kitchen (non residential)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "Kitchen (preparation or store room)"
+            "name": "Kitchen (preparation or store room)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Toilets and sanitary facilities (non residential)"
+            "name": "Toilets and sanitary facilities (non residential)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "Other habitable rooms (non residential)"
+            "name": "Other habitable rooms (non residential)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "Auxiliary spaces (non residential)"
+            "name": "Auxiliary spaces (non residential)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "Circulation and traffic areas"
+            "name": "Circulation and traffic areas",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Storeroom"
+            "name": "Storeroom",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Server room, computer center"
+            "name": "Server room, computer center",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Workshop"
+            "name": "Workshop",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Spectator and audience areas"
+            "name": "Spectator and audience areas",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "Theatre foyer"
+            "name": "Theatre foyer",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "Stage"
+            "name": "Stage",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "Fair/congress building"
+            "name": "Fair/congress building",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Showroom and museums"
+            "name": "Showroom and museums",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 26,
-            "name": "Library (reading room)"
+            "name": "Library (reading room)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 27,
-            "name": "Library (open stacks area)"
+            "name": "Library (open stacks area)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 28,
-            "name": "Library (magazine and stores)"
+            "name": "Library (magazine and stores)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 29,
-            "name": "Sports hall"
+            "name": "Sports hall",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 30,
-            "name": "Garage buildings (offices and private use)"
+            "name": "Garage buildings (offices and private use)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 31,
-            "name": "Garage buildings (public use)"
+            "name": "Garage buildings (public use)",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 32,
-            "name": "Residential"
+            "name": "Residential",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 33,
-            "name": "Unconditioned"
+            "name": "Unconditioned",
+            "modificationTime": <TIME>
         }
     ]
 }
@@ -3642,483 +4145,553 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Brick"
+            "name": "Brick",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Brick - Structural"
+            "name": "Brick - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Brick - Finish"
+            "name": "Brick - Finish",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Masonry Block - Structural"
+            "name": "Masonry Block - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Masonry Block - Filler"
+            "name": "Masonry Block - Filler",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Concrete"
+            "name": "Concrete",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "Concrete - Structural"
+            "name": "Concrete - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "Concrete Block - Structural"
+            "name": "Concrete Block - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 9,
-            "name": "Concrete Block - Filler"
+            "name": "Concrete Block - Filler",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "Reinforced Concrete - Structural"
+            "name": "Reinforced Concrete - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "Reinforced Concrete - Prefab"
+            "name": "Reinforced Concrete - Prefab",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 12,
-            "name": "Insulation - Fiber Hard"
+            "name": "Insulation - Fiber Hard",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 13,
-            "name": "Insulation - Fiber Soft"
+            "name": "Insulation - Fiber Soft",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "Insulation - Mineral Hard"
+            "name": "Insulation - Mineral Hard",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 15,
-            "name": "Insulation - Mineral Soft"
+            "name": "Insulation - Mineral Soft",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "Insulation - Plastic Hard"
+            "name": "Insulation - Plastic Hard",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 17,
-            "name": "Insulation - Plastic Soft"
+            "name": "Insulation - Plastic Soft",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 18,
-            "name": "Insulation - Thermal Break"
+            "name": "Insulation - Thermal Break",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 19,
-            "name": "Fire Proofing"
+            "name": "Fire Proofing",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 20,
-            "name": "Membrane - Vapor Barrier"
+            "name": "Membrane - Vapor Barrier",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 21,
-            "name": "Membrane - Waterproof"
+            "name": "Membrane - Waterproof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 22,
-            "name": "Membrane - Rainproof"
+            "name": "Membrane - Rainproof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 23,
-            "name": "Timber - Roof"
+            "name": "Timber - Roof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 24,
-            "name": "Timber - Floor"
+            "name": "Timber - Floor",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 25,
-            "name": "Plywood"
+            "name": "Plywood",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 26,
-            "name": "Fiberboard"
+            "name": "Fiberboard",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 27,
-            "name": "Tile - Roof"
+            "name": "Tile - Roof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 28,
-            "name": "Tile - Floor"
+            "name": "Tile - Floor",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 29,
-            "name": "Plaster - Lime Sand"
+            "name": "Plaster - Lime Sand",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 30,
-            "name": "Plaster - Gypsum"
+            "name": "Plaster - Gypsum",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 31,
-            "name": "Gypsum Plasterboard"
+            "name": "Gypsum Plasterboard",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 32,
-            "name": "Gypsum Plasterboard - Waterproof"
+            "name": "Gypsum Plasterboard - Waterproof",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 33,
-            "name": "Aluminium"
+            "name": "Aluminium",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 34,
-            "name": "Iron"
+            "name": "Iron",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 35,
-            "name": "Steel"
+            "name": "Steel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 36,
-            "name": "Steel - Structural"
+            "name": "Steel - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 37,
-            "name": "Steel - Stainless"
+            "name": "Steel - Stainless",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 38,
-            "name": "Titanium Zinc"
+            "name": "Titanium Zinc",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 39,
-            "name": "Stone - Structural"
+            "name": "Stone - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 40,
-            "name": "Stone - Finish"
+            "name": "Stone - Finish",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 41,
-            "name": "Plastic - Solid"
+            "name": "Plastic - Solid",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 42,
-            "name": "Air Space"
+            "name": "Air Space",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 43,
-            "name": "Air Space - Frame"
+            "name": "Air Space - Frame",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 44,
-            "name": "Gravel"
+            "name": "Gravel",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 45,
-            "name": "Glass"
+            "name": "Glass",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 46,
-            "name": "Soil"
+            "name": "Soil",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 47,
-            "name": "Water"
+            "name": "Water",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 48,
-            "name": "Sand"
+            "name": "Sand",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 49,
-            "name": "Timber - Structural"
+            "name": "Timber - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 50,
-            "name": "Tile - Wall"
+            "name": "Tile - Wall",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 51,
-            "name": "GENERIC - EXTERNAL CLADDING"
+            "name": "GENERIC - EXTERNAL CLADDING",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 52,
-            "name": "GENERIC - EXTERNAL FILLER"
+            "name": "GENERIC - EXTERNAL FILLER",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 53,
-            "name": "GENERIC - EXTERNAL MEMBRANE"
+            "name": "GENERIC - EXTERNAL MEMBRANE",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 54,
-            "name": "GENERIC - PREFABRICATED"
+            "name": "GENERIC - PREFABRICATED",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 56,
-            "name": "GENERIC - ENVIRONMENT"
+            "name": "GENERIC - ENVIRONMENT",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 57,
-            "name": "GENERIC - INTERNAL FILLER"
+            "name": "GENERIC - INTERNAL FILLER",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 58,
-            "name": "GENERIC - INSULATION"
+            "name": "GENERIC - INSULATION",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 59,
-            "name": "GENERIC - STRUCTURAL"
+            "name": "GENERIC - STRUCTURAL",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 60,
-            "name": "GENERIC - INTERNAL CLADDING"
+            "name": "GENERIC - INTERNAL CLADDING",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 55,
-            "name": "New Building Material 1"
+            "name": "New Building Material 1",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 61,
-            "name": "New Building Material 2"
+            "name": "New Building Material 2",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 62,
-            "name": "New Building Material 3"
+            "name": "New Building Material 3",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 63,
-            "name": "New Building Material 4"
+            "name": "New Building Material 4",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 64,
-            "name": "New Building Material 5"
+            "name": "New Building Material 5",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 65,
-            "name": "New Building Material 6"
+            "name": "New Building Material 6",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 66,
-            "name": "New Building Material 7"
+            "name": "New Building Material 7",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 67,
-            "name": "New Building Material 8"
+            "name": "New Building Material 8",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 68,
-            "name": "New Building Material 9"
+            "name": "New Building Material 9",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 69,
-            "name": "New Building Material 10"
+            "name": "New Building Material 10",
+            "modificationTime": <TIME>
         }
     ]
 }
+all attributes have a modification time: True

@@ -16,6 +16,40 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "fileType",
             NullValueHandling = NullValueHandling.Ignore)]
         public string FileType;
+
+        [JsonProperty(
+            "translatorName",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslatorName;
+
+        [JsonProperty(
+            "elementsToExport",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string ElementsToExport;
+    }
+
+    public enum IFCElementsToExport
+    {
+        EntireProject,
+        VisibleElementsOnAllStories,
+        AllElementsOnCurrentStory,
+        VisibleElementsOnCurrentStory,
+        SelectedElementsOnly
+    }
+
+    public class IFCExportTranslator
+    {
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("preview")]
+        public bool Preview;
+    }
+
+    public class GetIFCExportTranslatorsResponse
+    {
+        [JsonProperty("translators")]
+        public List<IFCExportTranslator> Translators;
     }
 
     public class GetElementsByIFCIdsParameters

@@ -4,8 +4,16 @@ on:
   push:
     tags:
       - '*'
+  # The Monthly Release workflow pushes its tag with the workflow's own
+  # GITHUB_TOKEN, which does not trigger on-push workflows - so it starts
+  # this pipeline explicitly, dispatched on the tag ref.
+  workflow_dispatch:
 
 jobs:
+  # When adding or removing an Archicad version in the matrices below, also
+  # update EXPECTED_ASSETS in monthly_release.yml - it is the number of
+  # release assets (Win + Mac per version) the monthly release waits for
+  # before publishing.
   build_win:
     strategy:
       matrix:
@@ -48,6 +56,10 @@ jobs:
         artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
         draft: true
         allowUpdates: true
+        # The release flow only ever updates drafts; a stray dispatch on an
+        # already-shipped tag must fail instead of flipping the published
+        # release back to draft and overwriting its assets.
+        updateOnlyUnreleased: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
   build_mac:
@@ -102,4 +114,6 @@ jobs:
         artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
         draft: true
         allowUpdates: true
+        # Same guard as the Windows job: only drafts may be updated.
+        updateOnlyUnreleased: true
         token: ${{ secrets.GITHUB_TOKEN }}

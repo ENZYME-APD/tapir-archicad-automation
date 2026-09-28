@@ -1501,6 +1501,14 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     itemOS.Add ("customName",    item.customName);
     itemOS.Add ("isIndependent", item.isIndependent);
 
+    // The navigator item this one was created from: the Project Map item
+    // behind a view, or the source view behind a placed Drawing's Layout Book
+    // entry. Only present when the item has such a source; Project Map items
+    // never do.
+    if (item.sourceGuid != APINULLGuid) {
+        itemOS.Add ("sourceNavigatorItemId", CreateGuidObjectState (item.sourceGuid));
+    }
+
     item.mapId = mapId;
     GS::Array<API_NavigatorItem> children;
     if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {
@@ -1542,6 +1550,24 @@ GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchem
         },
         "additionalProperties": false,
         "required": ["navigatorMapId"]
+    })";
+}
+
+// NavigatorItem refers back to itself through NavigatorItemArrayItem, which is
+// what the children recursion needs. Only the documentation reads this schema -
+// see the comment on CommandBase::GetResponseSchema - and its renderer stops at
+// a reference it is already resolving, so the cycle is safe here.
+GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemTree": {
+                "$ref": "#/NavigatorItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemTree"]
     })";
 }
 
