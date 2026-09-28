@@ -49,7 +49,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             {
                 names.Add(response.Stories[i].Name);
                 elevations.Add(response.Stories[i].Level);
-                if (i < response.Stories.Count - 1)
+                if (response.Stories[i].Height.HasValue)
+                {
+                    heights.Add(response.Stories[i].Height.Value);
+                }
+                else if (i < response.Stories.Count - 1)
                 {
                     heights.Add(
                         response.Stories[i + 1].Level -

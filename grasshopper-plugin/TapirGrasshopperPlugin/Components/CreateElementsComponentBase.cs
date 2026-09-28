@@ -92,9 +92,28 @@ namespace TapirGrasshopperPlugin.Components
         // first field.
         protected abstract IReadOnlyList<Field> Fields { get; }
 
+        private static readonly IReadOnlyList<Field> NoFields = new List<Field>();
+
+        // Optional typed fields added after the component was released. Their
+        // inputs come after every other input (AdditionalSettings and the
+        // metadata toggles), so the inputs of saved definitions, which
+        // Grasshopper binds by index, keep their places. Tree kinds are not
+        // supported here.
+        protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
+
+        private int FirstTrailingFieldInputIndex =>
+            Fields.Count +
+            (HasAdditionalSettingsInput ? 1 : 0) +
+            (SupportsElementMetadata ? 2 : 0);
+
         // Override with false when the typed inputs cover the command's
         // complete item schema.
         protected virtual bool HasAdditionalSettingsInput => true;
+
+        // Override with false when the command does not create new elements
+        // the Tapir GH metadata could be embedded into (e.g. it modifies
+        // existing ones).
+        protected virtual bool SupportsElementMetadata => true;
 
         protected CreateElementsComponentBase(
             string name,
@@ -121,58 +140,7 @@ namespace TapirGrasshopperPlugin.Components
                         : " Input only 1 to use the same value for all elements. Optional.";
                 }
 
-                switch (field.Kind)
-                {
-                    case FieldKind.Number:
-                        InNumbers(field.InputName, description);
-                        break;
-                    case FieldKind.Integer:
-                        InIntegers(field.InputName, description);
-                        break;
-                    case FieldKind.Boolean:
-                        InBooleans(field.InputName, description);
-                        break;
-                    case FieldKind.Text:
-                        InTexts(field.InputName, description);
-                        break;
-                    case FieldKind.Point2D:
-                    case FieldKind.Point3D:
-                        InPoints(field.InputName, description);
-                        break;
-                    case FieldKind.Line:
-                        inManager.AddLineParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.list);
-                        break;
-                    case FieldKind.ElementGuid:
-                    case FieldKind.AttributeGuid:
-                        InGenerics(field.InputName, description);
-                        break;
-                    case FieldKind.PointsTree2D:
-                    case FieldKind.PointsTree3D:
-                        inManager.AddPointParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.tree);
-                        break;
-                    case FieldKind.OutlineCurve:
-                        inManager.AddCurveParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.list);
-                        break;
-                    case FieldKind.HoleCurvesTree:
-                        inManager.AddCurveParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.tree);
-                        break;
-                }
+                AddFieldInput(field, description);
 
                 if (!field.Required)
                 {
@@ -188,6 +156,86 @@ namespace TapirGrasshopperPlugin.Components
                     "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
                 SetOptionality(fields.Count);
             }
+
+            if (SupportsElementMetadata)
+            {
+                InBoolean(
+                    ElementMetadata.EmbedMetadataInputName,
+                    ElementMetadata.EmbedMetadataDescription,
+                    true);
+                InBoolean(
+                    ElementMetadata.ReplaceExistingInputName,
+                    ElementMetadata.ReplaceExistingDescription,
+                    false);
+            }
+
+            var trailingFields = TrailingFields;
+            for (var index = 0; index < trailingFields.Count; index++)
+            {
+                var field = trailingFields[index];
+                AddFieldInput(
+                    field,
+                    field.Description + " Input only 1 to use the same value for all elements. Optional.");
+                SetOptionality(FirstTrailingFieldInputIndex + index);
+            }
+        }
+
+        private void AddFieldInput(
+            Field field,
+            string description)
+        {
+            switch (field.Kind)
+            {
+                case FieldKind.Number:
+                    InNumbers(field.InputName, description);
+                    break;
+                case FieldKind.Integer:
+                    InIntegers(field.InputName, description);
+                    break;
+                case FieldKind.Boolean:
+                    InBooleans(field.InputName, description);
+                    break;
+                case FieldKind.Text:
+                    InTexts(field.InputName, description);
+                    break;
+                case FieldKind.Point2D:
+                case FieldKind.Point3D:
+                    InPoints(field.InputName, description);
+                    break;
+                case FieldKind.Line:
+                    inManager.AddLineParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.list);
+                    break;
+                case FieldKind.ElementGuid:
+                case FieldKind.AttributeGuid:
+                    InGenerics(field.InputName, description);
+                    break;
+                case FieldKind.PointsTree2D:
+                case FieldKind.PointsTree3D:
+                    inManager.AddPointParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.tree);
+                    break;
+                case FieldKind.OutlineCurve:
+                    inManager.AddCurveParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.list);
+                    break;
+                case FieldKind.HoleCurvesTree:
+                    inManager.AddCurveParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.tree);
+                    break;
+            }
         }
 
         public override void AddedToDocument(
@@ -199,6 +247,14 @@ namespace TapirGrasshopperPlugin.Components
             for (var i = 0; i < fields.Count; i++)
             {
                 fields[i].ValueList?.Invoke ().AddAsSource(this, i);
+            }
+
+            var trailingFields = TrailingFields;
+            for (var i = 0; i < trailingFields.Count; i++)
+            {
+                trailingFields[i].ValueList?.Invoke ().AddAsSource(
+                    this,
+                    FirstTrailingFieldInputIndex + i);
             }
         }
 
@@ -687,10 +743,21 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
+            var typedInputs = new List<(Field Field, int InputIndex)>();
             for (var fieldIndex = 1; fieldIndex < fields.Count; fieldIndex++)
             {
-                var field = fields[fieldIndex];
-                if (!TryReadTokens(da, fieldIndex, field, out List<JToken> tokens))
+                typedInputs.Add((fields[fieldIndex], fieldIndex));
+            }
+            var trailingFields = TrailingFields;
+            for (var trailingIndex = 0; trailingIndex < trailingFields.Count; trailingIndex++)
+            {
+                typedInputs.Add(
+                    (trailingFields[trailingIndex], FirstTrailingFieldInputIndex + trailingIndex));
+            }
+
+            foreach (var (field, inputIndex) in typedInputs)
+            {
+                if (!TryReadTokens(da, inputIndex, field, out List<JToken> tokens))
                 {
                     return;
                 }
@@ -765,6 +832,26 @@ namespace TapirGrasshopperPlugin.Components
             }
             var parameters = new JObject { [ArrayKey] = itemsArray };
 
+            var embedMetadata = false;
+            var replaceExisting = false;
+            if (SupportsElementMetadata)
+            {
+                var metadataInputIndex =
+                    fields.Count + (HasAdditionalSettingsInput ? 1 : 0);
+                embedMetadata = da.GetOptional(metadataInputIndex, true);
+                replaceExisting = da.GetOptional(metadataInputIndex + 1, false);
+            }
+
+            var metadata = new ElementMetadata(this, ToAddOn, ToArchicad);
+            // The previous elements are collected before the creation (so the
+            // new elements are never in the set), but only deleted after it
+            // succeeded, so a failed run does not lose them.
+            JArray previousElements = null;
+            if (replaceExisting)
+            {
+                previousElements = metadata.FindPreviouslyCreatedElements();
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -772,6 +859,15 @@ namespace TapirGrasshopperPlugin.Components
                     out JObject response))
             {
                 return;
+            }
+
+            if (embedMetadata)
+            {
+                metadata.StampCreatedElements(response);
+            }
+            if (replaceExisting)
+            {
+                metadata.DeletePreviouslyCreatedElements(previousElements);
             }
 
             SetCreatedElementsOutputs(da, response, 0, 1);

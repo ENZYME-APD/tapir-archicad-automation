@@ -158,6 +158,9 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
         attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
         attributeDetails.Add ("name", GS::UniString (attr.header.name));
+        // API_Attr_Head::modiTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC) in a UInt64,
+        // the same stamp the Attribute Manager writes as ModiTime into its XML export.
+        attributeDetails.Add ("modificationTime", static_cast<Int64> (attr.header.modiTime));
         attributes (attributeDetails);
 
         DisposeAttribute (attr);

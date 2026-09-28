@@ -42,9 +42,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
+            // A generic parameter hands its tree out as IGH_Goo; asking for GH_ObjectWrapper
+            // makes GetDataTree throw (see #634). The items are converted one by one below.
             if (!da.TryGetTree(
                     0,
-                    out GH_Structure<GH_ObjectWrapper> tree))
+                    out GH_Structure<IGH_Goo> tree))
             {
                 return;
             }
@@ -57,8 +59,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             foreach (var branch in tree.Branches)
             {
                 var elements = new List<ElementGuidWrapper>();
-                foreach (var wrapper in branch)
+                foreach (var goo in branch)
                 {
+                    var wrapper = goo as GH_ObjectWrapper ?? new GH_ObjectWrapper(goo);
                     var id = GuidObject<ElementGuid>.CreateFromWrapper(wrapper);
                     if (id == null)
                     {

@@ -37,6 +37,48 @@ var gSchemaDefinitions = {
             "$ref": "#/ElementIdOrError"
         }
     },
+    "ElementTrims": {
+        "type": "object",
+        "description": "The trims of one element: the roofs and shells trimming it, and the elements it trims.",
+        "properties": {
+            "trimmedBy": {
+                "type": "array",
+                "description": "The roofs and shells trimming this element, with the trim type.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "trimType": {
+                            "type": "string",
+                            "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "elementId", "trimType" ]
+                }
+            },
+            "trims": {
+                "$ref": "#/Elements",
+                "description": "The elements this roof or shell trims."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "trimmedBy", "trims" ]
+    },
+    "ElementTrimsOrError": {
+        "type": "object",
+        "description": "The trims of one element, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementTrims"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "MEPRoutingSegmentDetails": {
         "type": "object",
         "description": "The details of an MEP routing segment.",
@@ -520,6 +562,36 @@ var gSchemaDefinitions = {
         "description": "A list of keynote autotext tokens or errors.",
         "items": {
             "$ref": "#/KeynoteAutoTextTokensOrError"
+        }
+    },
+    "AutoTextName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The autotext's display name, as shown in the Insert Autotext dialog of Archicad."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "name" ]
+    },
+    "AutoTextNameOrError": {
+        "type": "object",
+        "description": "The display name of one autotext key, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/AutoTextName"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "AutoTextNamesOrErrors": {
+        "type": "array",
+        "description": "One result per input key, in the same order.",
+        "items": {
+            "$ref": "#/AutoTextNameOrError"
         }
     },
     "KeynoteItemDetails": {
@@ -1694,6 +1766,18 @@ var gSchemaDefinitions = {
                 "type": "string",
                 "description": "The path of the hotlink file."
             },
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the hotlink node."
+            },
+            "type": {
+                "type": "string",
+                "description": "Module or XRef.",
+                "enum": ["Module", "XRef"]
+            },
             "children": {
                 "$ref": "#/Hotlinks",
                 "description": "The children of the hotlink node if it has any."
@@ -1702,6 +1786,115 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "location"
+        ]
+    },
+    "HotlinkNodeId": {
+        "type": "object",
+        "description": "The identifier of a hotlink node - the reference to a module source file, which instances are placed from.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "HotlinkOrigin": {
+        "type": "object",
+        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional: CreateHotlinkInstances places at 0 when it is omitted, ChangeHotlinkInstances keeps the instance's current z.",
+        "properties": {
+            "x": {
+                "type": "number"
+            },
+            "y": {
+                "type": "number"
+            },
+            "z": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "x",
+            "y"
+        ]
+    },
+    "HotlinkDetails": {
+        "type": "object",
+        "description": "Details of a placed hotlink instance: which node it comes from and where it sits.",
+        "properties": {
+            "hotlinkType": {
+                "type": "string",
+                "enum": ["Module", "XRef"]
+            },
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "origin": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Counter-clockwise rotation about the origin, in radians."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "True when the module's local X axis is reflected."
+            },
+            "floorDifference": {
+                "type": "integer"
+            },
+            "skipNested": {
+                "type": "boolean"
+            },
+            "suspendFixAngle": {
+                "type": "boolean"
+            },
+            "ignoreTopFloorLinks": {
+                "type": "boolean"
+            },
+            "relinkWallOpenings": {
+                "type": "boolean"
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkType",
+            "hotlinkNodeId",
+            "origin",
+            "rotationAngle",
+            "mirrored"
+        ]
+    },
+    "HotlinkNodeCreated": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "existing": {
+                "type": "boolean",
+                "description": "True when a node for the same source file already existed and was returned instead of created."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "hotlinkNodeId", "existing" ]
+    },
+    "HotlinkNodeCreatedOrError": {
+        "type": "object",
+        "description": "The created (or already existing) node's guid, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/HotlinkNodeCreated"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
         ]
     },
     "SetGDLParameterArray": {
@@ -2511,6 +2704,9 @@ var gSchemaDefinitions = {
         "type": "object",
         "description": "The details of the property.",
         "properties": {
+            "possibleEnumValues": {
+                "$ref": "#/PossibleEnumValues"
+            },
             "propertyId": {
                 "$ref": "#/PropertyId"
             },
@@ -2572,6 +2768,39 @@ var gSchemaDefinitions = {
                 "description": "The expression strings of an expression-based property. Only present when isExpressionBased is true.",
                 "items": {
                     "type": "string"
+                }
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "propertyDescription": {
+                "type": "string"
+            },
+            "defaultValueDisplay": {
+                "type": "string",
+                "description": "The basic default value as text. Only for custom, non expression-based properties whose default is set."
+            },
+            "availability": {
+                "type": "array",
+                "description": "Classification items a custom property is available for.",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "defaultEnumValueIds": {
+                "type": "array",
+                "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": {
+                            "$ref": "#/Guid"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid"
+                    ]
                 }
             }
         },
@@ -4036,6 +4265,10 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "True when the item is independent, that is when its link to the Project Map is broken."
             },
+            "sourceNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The identifier of the navigator item this one was created from: the Project Map item behind a view, or the source view behind a placed Drawing's Layout Book entry. Missing when the item has no such source; Project Map items never do."
+            },
             "children": {
                 "type": "array",
                 "description": "The children of the navigator item. Missing when the item has no children.",
@@ -4616,6 +4849,10 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "Cross section height of the beam (all segments)."
             },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round beam cross section, false for rectangular."
+            },
             "isWidthAndHeightLinked": {
                 "type": "boolean",
                 "description": "When true, Archicad keeps width and height equal - set to false via ModifyBeams/CreateBeams to give them independent values."
@@ -4639,6 +4876,106 @@ var gSchemaDefinitions = {
             "slantAngle",
             "arcAngle",
             "verticalCurveHeight"
+        ]
+    },
+    "RoofDetails": {
+        "type": "object",
+        "properties": {
+            "roofClass": {
+                "type": "string",
+                "enum": [ "SinglePlane", "MultiPlane" ]
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Composite" ]
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "level": {
+                "type": "number",
+                "description": "Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the floor level."
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "angle": {
+                "type": "number",
+                "description": "Single-plane: the slope in radians."
+            },
+            "pivotLine": {
+                "type": "object",
+                "description": "Single-plane: the pivot line the plane rotates about.",
+                "properties": {
+                    "begin": {
+                        "$ref": "#/Coordinate2D"
+                    },
+                    "end": {
+                        "$ref": "#/Coordinate2D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "begin", "end" ]
+            },
+            "eavesOverhang": {
+                "type": "number",
+                "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
+            },
+            "levels": {
+                "type": "array",
+                "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "height": {
+                            "type": "number"
+                        },
+                        "angle": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "height", "angle" ]
+                }
+            },
+            "pivotPolygonOutline": {
+                "type": "array",
+                "description": "Multi-plane: the pivot polygon the planes rise from. Arcs are not carried; a curved pivot edge comes back as its end points.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonOutline": {
+                "type": "array",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofClass",
+            "structureType",
+            "thickness",
+            "level",
+            "zCoordinate",
+            "polygonOutline"
         ]
     },
     "SlabDetails": {
@@ -6156,6 +6493,34 @@ var gSchemaDefinitions = {
           },
           "hasLeaderLine": {
             "type": "boolean"
+          },
+          "labelClass": {
+            "type": "string",
+            "enum": ["Text", "Symbol"]
+          },
+          "leaderLine": {
+            "$ref": "#/LabelLeaderLineDetails"
+          },
+          "style": {
+            "$ref": "#/TextStyleDetails",
+            "description": "Present only when labelClass is 'Text'."
+          },
+          "symbolStyle": {
+            "$ref": "#/LabelSymbolStyleSettableDetails",
+            "description": "Present only when labelClass is 'Symbol'."
+          },
+          "text": {
+            "type": "string",
+            "description": "Present only when labelClass is 'Text'."
+          },
+          "paragraphCount": {
+            "type": "integer",
+            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+          },
+          "runs": {
+            "type": "array",
+            "description": "Present only when labelClass is 'Text' and the content has paragraphs (always for content Tapir created): one entry per styled run, a single run too.",
+            "items": { "$ref": "#/TextRunDetails" }
           }
         },
         "additionalProperties": false,
@@ -6163,9 +6528,70 @@ var gSchemaDefinitions = {
               "begCoordinate",
               "midCoordinate",
               "endCoordinate",
-              "hasLeaderLine"
+              "hasLeaderLine",
+              "labelClass",
+              "leaderLine"
           ]
-    },    
+    },
+    "TextDetails": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines separate the lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians (same as style.angle)."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters (same as style.height)."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen attribute index (same as style.penIndex)."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"],
+                "description": "Same as style.justification."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "The level of the text's floor."
+            },
+            "style": {
+                "$ref": "#/TextStyleDetails",
+                "description": "The full style state; the flat fields above are the subset SetDetailsOfElements takes back."
+            },
+            "paragraphCount": {
+                "type": "integer",
+                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+            },
+            "runs": {
+                "type": "array",
+                "description": "The styled runs of the content, present whenever the content has paragraphs (always for content Tapir created); one entry per run, a single run too, as a run may carry a pen, font, face or size of its own. Concatenating the runs' text in order gives the full content.",
+                "items": { "$ref": "#/TextRunDetails" }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "text",
+            "position",
+            "angle",
+            "height",
+            "pen",
+            "justification",
+            "zCoordinate",
+            "style",
+            "paragraphCount"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -6183,6 +6609,9 @@ var gSchemaDefinitions = {
         "type": "object",
         "oneOf": [
             {
+                "$ref": "#/HotlinkDetails"
+            },
+            {
                 "$ref": "#/WallDetails"
             },
             {
@@ -6190,6 +6619,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/SlabDetails"
+            },
+            {
+                "$ref": "#/RoofDetails"
             },
             {
                 "$ref": "#/ColumnDetails"
@@ -6237,6 +6669,9 @@ var gSchemaDefinitions = {
                 "$ref": "#/LabelDetails"
             },
             {
+                "$ref": "#/TextDetails"
+            },
+            {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
             }
         ]
@@ -6251,7 +6686,8 @@ var gSchemaDefinitions = {
             "layerIndex",
             "drawIndex",
             "details",
-            "floorPlanPolygons"
+            "floorPlanPolygons",
+            "hotlinkId"
         ]
     },
     "RevisionIssueId": {
@@ -6555,7 +6991,7 @@ var gSchemaDefinitions = {
             },
             "height": {
                 "type": "number",
-                "description": "Story height, calculated as the level of the story above minus this story's level. Omitted for the topmost story, which has no story above."
+                "description": "Story height, calculated as the level of the story above minus this story's level. The topmost story gets its height from the virtual story that Archicad keeps above it in the story settings; only an Archicad that did not report that virtual story would leave the top story without a height."
             },
             "name": {
                 "type": "string",
@@ -6916,9 +7352,13 @@ var gSchemaDefinitions = {
                 "$ref": "#/Coordinate2D",
                 "description": "Offset of the model origin within the drawing."
             },
+            "isCutWithFrame": {
+                "type": "boolean",
+                "description": "Whether the drawing is clipped by a custom polygon. Set to false to clear an existing crop and restore the drawing's full auto-fit extent. Only consulted when no clipPolygon is supplied in the same call - supplying a clipPolygon always enables clipping. Setting it to true without a clipPolygon merely re-enables the clip polygon already stored on the Drawing."
+            },
             "clipPolygon": {
                 "type": "array",
-                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (useDrawingPolyClip).",
+                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
@@ -6953,6 +7393,35 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false
     },
+    "TextSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Text element or a text-type Label. For Labels only the text field is applied. Setting text replaces the whole content (any per-run formatting of the old content is dropped) and switches the element to automatic width, matching the behavior of CreateTexts/CreateLabels.",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The new text content. Newlines create multiple lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text. Only applied to Text elements."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians. Only applied to Text elements."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"],
+                "description": "The text justification. Only applied to Text elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
@@ -6983,6 +7452,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/DrawingSettings"
+            },
+            {
+                "$ref": "#/TextSettings"
             }
         ]
     },
@@ -7015,78 +7487,85 @@ var gSchemaDefinitions = {
             "propertyGroup"
         ]
     },
-    "PropertyDefinition": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string"
-            },
-            "description": {
-                "type": "string"
-            },
-            "type": {
-                "$ref": "#/PropertyDataType"
-            },
-            "isEditable": {
-                "type": "boolean"
-            },
-            "defaultValue": {
-                "$ref": "#/PropertyDefaultValue"
-            },
-            "possibleEnumValues": {
-                "type": "array",
-                "description": "The possible enum values of the property when the property type is enumeration.",
-                "items": {
+    "PossibleEnumValues": {
+        "type": "array",
+        "description": "The possible enum values of the property when the property type is enumeration.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
                     "type": "object",
+                    "description": "The description of an enumeration value.",
                     "properties": {
-                        "enumValue": {
-                            "type": "object",
-                            "description": "The description of an enumeration value.",
-                            "properties": {
-                                "enumValueId": {
-                                    "$ref": "#/EnumValueId"
-                                },
-                                "displayValue": {
-                                    "type": "string",
-                                    "description": "Displayed value of the enumeration."
-                                },
-                                "nonLocalizedValue": {
-                                    "type": "string",
-                                    "description": "Nonlocalized value of the enumeration if there is one."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "displayValue"
-                            ]
+                        "enumValueId": {
+                            "$ref": "#/EnumValueId"
+                        },
+                "guid": {
+                    "$ref": "#/Guid",
+                    "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+                },
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "enumValue"
+                        "displayValue"
                     ]
                 }
             },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
+        }
+            },
+    "PropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "name": {
+        "type": "string"
+            },
+            "description": {
+        "type": "string"
+            },
+            "type": {
+        "$ref": "#/PropertyDataType"
+            },
+            "isEditable": {
+        "type": "boolean"
+            },
+            "defaultValue": {
+        "$ref": "#/PropertyDefaultValue"
+            },
+            "possibleEnumValues": {
+        "$ref": "#/PossibleEnumValues"
+            },
             "availability": {
-                "type": "array",
-                "description": "The identifiers of classification items the new property is available for.",
-                "items": {
-                    "$ref": "#/ClassificationItemIdArrayItem"
-                }
+        "type": "array",
+        "description": "The identifiers of classification items the new property is available for.",
+        "items": {
+            "$ref": "#/ClassificationItemIdArrayItem"
+        }
             },
             "group": {
-                "type": "object",
-                "description": "The property group defined by name or id. If both fields exists the id will be used.",
-                "properties": {
-                    "propertyGroupId": {
-                        "$ref": "#/PropertyGroupId"
-                    },
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": []
+        "type": "object",
+        "description": "The property group defined by name or id. If both fields exists the id will be used.",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
             }
         },
         "additionalProperties": false,
@@ -7099,6 +7578,37 @@ var gSchemaDefinitions = {
             "group"
         ]
 
+    },
+    "EnumValuesToAdd": {
+        "type": "array",
+        "description": "Enumeration values to add to a property.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
+                    "type": "object",
+                    "description": "The description of an enumeration value.",
+                    "properties": {
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "displayValue"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
+        }
     },
     "PropertyDefinitionArrayItem": {
         "description": "A wrapper containing a property definition",
@@ -7465,13 +7975,18 @@ var gSchemaDefinitions = {
                 "name": {
                     "type": "string",
                     "description": "Name of the attribute."
+                },
+                "modificationTime": {
+                    "type": "integer",
+                    "description": "The last modification time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same stamp the Attribute Manager writes as ModiTime into its XML export."
                 }
             },
             "additionalProperties": false,
             "required": [
                 "attributeId",
                 "index",
-                "name"
+                "name",
+                "modificationTime"
             ]
 
         }
@@ -7617,6 +8132,7 @@ var gSchemaDefinitions = {
             },
             "witnessPoints": {
                 "type": "array",
+                "description": "The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -7641,6 +8157,30 @@ var gSchemaDefinitions = {
                         },
                         "baseElementId": {
                             "$ref": "#/ElementId"
+                        },
+                        "line": {
+                            "type": "boolean",
+                            "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
+                        },
+                        "inIndex": {
+                            "type": "integer",
+                            "description": "Subindex of the base element's node (API_Neig inIndex)."
+                        },
+                        "special": {
+                            "type": "integer",
+                            "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
+                        },
+                        "nodeType": {
+                            "type": "integer",
+                            "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
+                        },
+                        "nodeStatus": {
+                            "type": "integer",
+                            "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
+                        },
+                        "nodeId": {
+                            "type": "number",
+                            "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
                         }
                     }
                 }
@@ -8228,6 +8768,178 @@ var gSchemaDefinitions = {
         "required": [
             "overridden"
         ]
+    },
+    "TextRunDetails": {
+        "type": "object",
+        "description": "One monostyle run of text (API_RunType). Concatenating 'text' across all runs in order gives the full content; a newline character starts a new line.",
+        "properties": {
+            "text": { "type": "string", "description": "The run's text content." },
+            "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
+            "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "heightOverride": { "type": "number", "description": "Character height in mm for this run only. Optional; defaults to the style's height." },
+            "effectStrikeout": { "type": "boolean", "description": "Optional; defaults to the style's effectStrikeout." },
+            "effectSuperscript": { "type": "boolean", "description": "Optional; defaults to the style's effectSuperscript." },
+            "effectSubscript": { "type": "boolean", "description": "Optional; defaults to the style's effectSubscript." },
+            "effectProtected": { "type": "boolean", "description": "Optional; defaults to the style's effectProtected." }
+        },
+        "additionalProperties": false,
+        "required": ["text"]
+    },
+    "TextStyleSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable style setting of a Text or a text-class Label (API_TextType). Shared by CreateTexts/CreateLabels ('style'), ModifyTexts/ModifyLabels ('style'), and the Get response.",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index." },
+            "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "height": { "type": "number", "description": "Character height in mm." },
+            "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
+            "angle": { "type": "number", "description": "Rotation angle in radians." },
+            "effectStrikeout": { "type": "boolean" },
+            "effectSuperscript": { "type": "boolean" },
+            "effectSubscript": { "type": "boolean" },
+            "effectProtected": { "type": "boolean", "description": "Protected text (autotext reference)." },
+            "widthFactor": { "type": "number", "description": "Width scale of the text, between 0.75 and 10.0." },
+            "charSpaceFactor": { "type": "number", "description": "Character spacing scale, between 0.75 and 10.0." },
+            "fixedSize": { "type": "boolean", "description": "Size does not depend on output scale." },
+            "usedContour": { "type": "boolean", "description": "Draw the frame of the text block." },
+            "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
+            "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
+            "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
+            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
+            "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
+            "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
+            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
+            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
+            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." }
+        },
+        "additionalProperties": false
+    },
+    "TextStyleDetails": {
+        "type": "object",
+        "description": "Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight).",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index." },
+            "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "height": { "type": "number", "description": "Character height in mm." },
+            "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
+            "angle": { "type": "number", "description": "Rotation angle in radians." },
+            "effectStrikeout": { "type": "boolean" },
+            "effectSuperscript": { "type": "boolean" },
+            "effectSubscript": { "type": "boolean" },
+            "effectProtected": { "type": "boolean", "description": "Protected text (autotext reference)." },
+            "widthFactor": { "type": "number", "description": "Width scale of the text, between 0.75 and 10.0." },
+            "charSpaceFactor": { "type": "number", "description": "Character spacing scale, between 0.75 and 10.0." },
+            "fixedSize": { "type": "boolean", "description": "Size does not depend on output scale." },
+            "usedContour": { "type": "boolean", "description": "Draw the frame of the text block." },
+            "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
+            "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
+            "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
+            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
+            "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
+            "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
+            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
+            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
+            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
+            "lineCount": { "type": "integer", "description": "Read-only: number of text lines (API_TextType::nLine)." },
+            "boxWidth": { "type": "number", "description": "Read-only: horizontal size of the text box in mm, auto-computed by Archicad." },
+            "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." }
+        },
+        "additionalProperties": false
+    },
+    "LabelLeaderLineSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable leader-line/frame setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
+            "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
+            "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
+            "framed": { "type": "boolean", "description": "Put a frame around the content." },
+            "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
+            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
+            "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
+            "arrowType": { "$ref": "#/LabelArrowType" },
+            "arrowVisible": { "type": "boolean" },
+            "arrowPenIndex": { "type": "integer" },
+            "arrowSize": { "type": "number", "description": "Arrow size in mm." },
+            "hideWithBaseElem": { "type": "boolean", "description": "Hide the label together with its parent element." }
+        },
+        "additionalProperties": false
+    },
+    "LabelLeaderLineDetails": {
+        "type": "object",
+        "description": "Full readable leader-line/frame state of a Label: every field of LabelLeaderLineSettableDetails plus the leader line's coordinates.",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
+            "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
+            "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
+            "framed": { "type": "boolean", "description": "Put a frame around the content." },
+            "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
+            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
+            "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
+            "arrowType": { "$ref": "#/LabelArrowType" },
+            "arrowVisible": { "type": "boolean" },
+            "arrowPenIndex": { "type": "integer" },
+            "arrowSize": { "type": "number", "description": "Arrow size in mm." },
+            "hideWithBaseElem": { "type": "boolean", "description": "Hide the label together with its parent element." },
+            "begCoordinate": { "$ref": "#/Coordinate2D" },
+            "midCoordinate": { "$ref": "#/Coordinate2D" },
+            "endCoordinate": { "$ref": "#/Coordinate2D" }
+        },
+        "additionalProperties": false
+    },
+    "LabelArrowType": {
+        "type": "string",
+        "description": "Arrow head shape for a Label's leader line.",
+        "enum": [
+            "EmptyCircle", "CrossCircle", "FullCircle",
+            "SlashLine15", "OpenArrow15", "ClosedArrow15", "FullArrow15",
+            "SlashLine30", "OpenArrow30", "ClosedArrow30", "FullArrow30",
+            "SlashLine45", "OpenArrow45", "ClosedArrow45", "FullArrow45",
+            "SlashLine60", "OpenArrow60", "ClosedArrow60", "FullArrow60",
+            "SlashLine90",
+            "PepitaCircle", "BandArrow",
+            "HalfArrowCcw15", "HalfArrowCw15", "HalfArrowCcw30", "HalfArrowCw30",
+            "HalfArrowCcw45", "HalfArrowCw45", "HalfArrowCcw60", "HalfArrowCw60",
+            "SlashLine75"
+        ]
+    },
+    "LabelSymbolStyleSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
+        "properties": {
+            "textWay": { "type": "string", "enum": ["Parallel", "Horizontal", "Vertical", "General"], "description": "Direction of the symbol label's text." },
+            "fontIndex": { "type": "integer" },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "flipEnabled": { "type": "boolean", "description": "'Always Readable' toggle." },
+            "nonBreaking": { "type": "boolean", "description": "'Wrap Text' turned off when true." },
+            "textSize": { "type": "number", "description": "Character height in mm." },
+            "useBackgroundFill": { "type": "boolean" },
+            "backgroundFillPenIndex": { "type": "integer", "description": "Effective only if useBackgroundFill is true." },
+            "effectStrikeout": { "type": "boolean" },
+            "effectSuperscript": { "type": "boolean" },
+            "effectSubscript": { "type": "boolean" },
+            "effectProtected": { "type": "boolean" }
+        },
+        "additionalProperties": false
     }
 }
 ;

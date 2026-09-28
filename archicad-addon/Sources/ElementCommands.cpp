@@ -1,4 +1,5 @@
 #include "ElementCommands.hpp"
+
 #include "ElementCreationCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
@@ -15,6 +16,29 @@
 
 #include <algorithm>
 #include <cmath>
+
+// The pivot polygon of a multi-plane roof lives in the memo's additional polygon
+// (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
+// not carried: a curved pivot edge comes back as its end points (schema says so).
+static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AdditionalPolygon) != NoError || memo.additionalPolyCoords == nullptr) {
+        ACAPI_DisposeElemMemoHdls (&memo);
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+    GSIndex last = nCoords - 1;
+    if (memo.additionalPolyPends != nullptr && BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32) > 1) {
+        last = (*memo.additionalPolyPends)[1];
+    }
+    const auto& coords = os.AddList<GS::ObjectState> ("pivotPolygonOutline");
+    for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
+        coords (Create2DCoordinateObjectState ((*memo.additionalPolyCoords)[i]));
+    }
+    ACAPI_DisposeElemMemoHdls (&memo);
+}
+
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -96,25 +120,6 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     if (filter == "IsOverriddenByRenovation")
         return APIFilt_IsOverridden;
     return APIFilt_None;
-}
-
-static GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
-{
-    switch (nameType) {
-        case APIName_ViewIdAndName:  return "ViewIdAndName";
-        case APIName_CustomName:     return "CustomName";
-        default:
-        case APIName_ViewOrSrcFileName: return "ViewOrSourceFileName";
-    }
-}
-
-static API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str)
-{
-    if (str == "ViewIdAndName")
-        return APIName_ViewIdAndName;
-    if (str == "CustomName")
-        return APIName_CustomName;
-    return APIName_ViewOrSrcFileName;
 }
 
 static GS::UniString DrawingNumberingTypeToString (API_NumberingTypeValues numberingType)
@@ -520,6 +525,10 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                         "drawIndex": {
                             "type": "number"
                         },
+                        "hotlinkId": {
+                            "$ref": "#/ElementId",
+                            "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
+                        },
                         "details": {
                             "$ref": "#/TypeSpecificDetails"
                         },
@@ -646,33 +655,6 @@ static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectSta
 static GS::ObjectState CreateColorObjectState (const API_RGBColor& color)
 {
     return GS::ObjectState ("red", color.f_red, "green", color.f_green, "blue", color.f_blue);
-}
-
-static const char* TextJustificationToString (API_JustID just)
-{
-    switch (just) {
-        case APIJust_Center: return "Center";
-        case APIJust_Right:  return "Right";
-        case APIJust_Full:   return "Full";
-        default:             return "Left";
-    }
-}
-
-// Reads the content of a Text element or a text-type Label. The memo stores it as a
-// GS::UniString from AC28, as a handle of unicode characters before (the inverse of how
-// SetTextContentAndParagraphs writes it).
-static GS::UniString GetTextContentFromMemo (const API_Guid& guid)
-{
-    API_ElementMemo memo = {};
-    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_TextContent) != NoError || memo.textContent == nullptr) {
-        return GS::EmptyUniString;
-    }
-#ifdef ServerMainVers_2800
-    return *memo.textContent;
-#else
-    return GS::UniString (reinterpret_cast<const GS::uchar_t*> (*memo.textContent));
-#endif
 }
 
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
@@ -887,6 +869,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         if (isFieldRequested ("drawIndex")) {
             detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
         }
+        if (isFieldRequested ("hotlinkId") && elem.header.hotlinkGuid != APINULLGuid) {
+            detailsOfElement.Add ("hotlinkId", CreateGuidObjectState (elem.header.hotlinkGuid));
+        }
 
         if (isFieldRequested ("id")) {
             API_ElementMemo memo = {};
@@ -1098,26 +1083,56 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("oSide", elem.window.openingBase.oSide);
                 break;
 
-            case API_LabelID:
+            case API_LabelID: {
                 AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));
                 typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
                 typeSpecificDetails.Add ("hasLeaderLine", elem.label.hasLeaderLine);
+
+                typeSpecificDetails.Add ("labelClass", elem.label.labelClass == APILblClass_Symbol ? "Symbol" : "Text");
+
+                GS::ObjectState leaderLineOS;
+                TextLabelDetails::AddLabelLeaderLineDetails (leaderLineOS, elem.label);
+                typeSpecificDetails.Add ("leaderLine", leaderLineOS);
+
                 if (elem.label.labelClass == APILblClass_Text) {
-                    typeSpecificDetails.Add ("text", GetTextContentFromMemo (elem.header.guid));
+                    GS::ObjectState styleOS;
+                    TextLabelDetails::AddTextStyleDetails (styleOS, elem.label.u.text, true);
+                    typeSpecificDetails.Add ("style", styleOS);
+                    if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
+                        // The fields are required by the schema; an unreadable memo reads as empty content.
+                        typeSpecificDetails.Add ("text", GS::EmptyUniString);
+                        typeSpecificDetails.Add ("paragraphCount", 0);
+                    }
+                } else {
+                    GS::ObjectState symbolStyleOS;
+                    TextLabelDetails::AddLabelSymbolStyleDetails (symbolStyleOS, elem.label);
+                    typeSpecificDetails.Add ("symbolStyle", symbolStyleOS);
                 }
                 break;
+            }
 
-            case API_TextID:
-                typeSpecificDetails.Add ("text", GetTextContentFromMemo (elem.header.guid));
+            case API_TextID: {
+                // The flat fields are the ones SetDetailsOfElements takes back (position, angle, height,
+                // justification) and the Grasshopper TextDetails type reads; "style" carries the full
+                // style state and AddTextContent adds "text", "paragraphCount" and the styled "runs".
                 typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (elem.text.loc));
                 typeSpecificDetails.Add ("angle", elem.text.angle);
                 typeSpecificDetails.Add ("height", elem.text.size);
                 typeSpecificDetails.Add ("pen", (Int32) elem.text.pen);
-                typeSpecificDetails.Add ("justification", TextJustificationToString (static_cast<API_JustID> (elem.text.just)));
+                typeSpecificDetails.Add ("justification", JustificationToString (static_cast<API_JustID> (elem.text.just)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+                GS::ObjectState styleOS;
+                TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
+                typeSpecificDetails.Add ("style", styleOS);
+                if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
+                    // The fields are required by the schema; an unreadable memo reads as empty content.
+                    typeSpecificDetails.Add ("text", GS::EmptyUniString);
+                    typeSpecificDetails.Add ("paragraphCount", 0);
+                }
                 break;
+            }
 
             case API_ObjectID:
             case API_LampID:
@@ -1419,6 +1434,57 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_MorphID:
                 AddMorphBodyFromMemo (elem, typeSpecificDetails);
                 break;
+
+            case API_RoofID: {
+                const API_ShellBaseType& base = elem.roof.shellBase;
+                typeSpecificDetails.Add ("roofClass", elem.roof.roofClass == API_PolyRoofID ? "MultiPlane" : "SinglePlane");
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
+                typeSpecificDetails.Add ("thickness", base.thickness);
+                typeSpecificDetails.Add ("level", base.level);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, base.level, stories));
+                if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
+                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
+                } else {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
+                }
+                if (elem.roof.roofClass == API_PlaneRoofID) {
+                    typeSpecificDetails.Add ("angle", elem.roof.u.planeRoof.angle);
+                    GS::ObjectState pivotLine;
+                    pivotLine.Add ("begin", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c1));
+                    pivotLine.Add ("end", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c2));
+                    typeSpecificDetails.Add ("pivotLine", pivotLine);
+                } else {
+                    typeSpecificDetails.Add ("eavesOverhang", elem.roof.u.polyRoof.eavesOverHang);
+                    const auto& levels = typeSpecificDetails.AddList<GS::ObjectState> ("levels");
+                    for (short i = 0; i < elem.roof.u.polyRoof.levelNum && i < 16; ++i) {
+                        GS::ObjectState level;
+                        level.Add ("height", elem.roof.u.polyRoof.levelData[i].levelHeight);
+                        level.Add ("angle", elem.roof.u.polyRoof.levelData[i].levelAngle);
+                        levels (level);
+                    }
+                    AddPivotPolygonFromMemo (elem.header.guid, typeSpecificDetails);
+                }
+                // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
+                AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+            } break;
+
+            case API_HotlinkID: {
+                API_Coord3D origin;
+                double rotationAngle;
+                bool mirrored;
+                DecomposeHotlinkTransformation (elem.hotlink.transformation, origin, rotationAngle, mirrored);
+                typeSpecificDetails.Add ("hotlinkType", elem.hotlink.type == APIHotlink_XRef ? "XRef" : "Module");
+                typeSpecificDetails.Add ("hotlinkNodeId", CreateGuidObjectState (elem.hotlink.hotlinkNodeGuid));
+                typeSpecificDetails.Add ("origin", Create3DCoordinateObjectState (origin));
+                typeSpecificDetails.Add ("rotationAngle", rotationAngle);
+                typeSpecificDetails.Add ("mirrored", mirrored);
+                typeSpecificDetails.Add ("floorDifference", elem.hotlink.floorDifference);
+                typeSpecificDetails.Add ("skipNested", elem.hotlink.skipNested);
+                typeSpecificDetails.Add ("suspendFixAngle", elem.hotlink.suspendFixAngle);
+                typeSpecificDetails.Add ("ignoreTopFloorLinks", elem.hotlink.ignoreTopFloorLinks);
+                typeSpecificDetails.Add ("relinkWallOpenings", elem.hotlink.relinkWallOpenings);
+                typeSpecificDetails.Add ("adjustLevelDiffs", elem.hotlink.adjustLevelDiffs);
+            } break;
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
@@ -1921,6 +1987,11 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.drawing.poly.nArcs        = 0;
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, poly);
+                        } else if (typeSpecificDetails->Get ("isCutWithFrame", elem.drawing.isCutWithFrame)) {
+                            // No clipPolygon supplied: only the flag itself is changed. false clears
+                            // cropping and restores the full extent (#651); true re-enables whatever
+                            // clip polygon is still stored on the Drawing.
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
@@ -1976,7 +2047,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("angle", elem.text.angle)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, angle);
                         }
-                        if (typeSpecificDetails->Get ("height", elem.text.size)) {
+                        const bool heightChanged = typeSpecificDetails->Get ("height", elem.text.size);
+                        if (heightChanged) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, size);
                         }
                         GS::UniString justification;
@@ -1990,7 +2062,33 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             // and the paragraphs memo is rebuilt as a single paragraph/run, so any
                             // per-run formatting of the old content is dropped and the element becomes
                             // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
+                            // A new height given alongside is carried into the rebuilt run via elem.text.size.
                             SetTextContentAndParagraphs (clipMemo, elem.text, text);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
+                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            hasMemoChanges = true;
+                        } else if (heightChanged) {
+                            // A multistyle Text (which every UI-placed or Tapir-created Text is) takes
+                            // its character height from the per-run sizes in the paragraphs memo, not
+                            // from API_TextType::size, so masking size alone is silently ignored (see
+                            // ModifyTexts). Rebuild the content from its read-back with the new height
+                            // merged into every run; the runs' own pen/font/faces/effects are kept.
+                            GS::ObjectState heightStyle;
+                            heightStyle.Add ("height", elem.text.size);
+                            GS::ObjectState contentParams;
+                            auto contentError = TextLabelDetails::ReadContentForStyleOnlyModify (elem.header.guid, heightStyle, contentParams);
+                            if (!contentError.HasValue ()) {
+                                contentError = TextLabelDetails::ApplyTextContent (clipMemo, elem.text, contentParams);
+                            }
+                            if (contentError.HasValue ()) {
+                                ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                executionResults (CreateFailedExecutionResult (*contentError));
+                                continue;
+                            }
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
@@ -4094,7 +4192,15 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         const API_ElemTypeID typeID = GetElemTypeId (elemHead);
 
         API_Box3D box3D = {};
-        if (typeID == API_RoofID || typeID == API_ZoneID) {
+        if (typeID == API_RoofID || typeID == API_ZoneID || typeID == API_SlabID) {
+            // The Slab is routed here to avoid a crash, not for precision: for a Slab,
+            // ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
+            // dereferences the current window's draw environment - null when the slab is not
+            // drawn in that window (another story is displayed, its layer is hidden, or a
+            // non-floor-plan window is active), so Archicad dies with a SIGSEGV instead of
+            // returning an error (#686). Deliberately no CalcBounds fallback for the Slab:
+            // the situations that leave it without a solid body are the very ones in which
+            // CalcBounds crashes.
             err = CalculateSolidBodyBounds (elemHead, box3D);
         } else if (typeID == API_StairID) {
             err = CalculateStairBounds (elemHead, box3D);
@@ -4152,7 +4258,16 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
 GS::Optional<GS::UniString> DeleteElementsCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     })";
 }
 
@@ -4161,17 +4276,46 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GSErrCode err = NoError;
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
-    ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-        err = ACAPI_Element_Delete (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem));
+    GSErrCode deleteErr = NoError;
+    if (!elemGuids.IsEmpty ()) {
+        ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
+            deleteErr = ACAPI_Element_Delete (elemGuids);
 
-        return err;
-    });
+            return deleteErr;
+        });
+    }
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to delete elements.");
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // ACAPI_Element_Delete reports NoError even when it skips elements it is
+    // not allowed to delete (locked layer, locked element, teamwork access),
+    // so success is decided per element by whether the element is really gone
+    // afterwards. An element that is gone is the asked-for outcome however it
+    // got there: deleted by this call, deleted with its owner, or never in the
+    // project to begin with.
+    for (const API_Guid& elemGuid : elemGuids) {
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateSuccessfulExecutionResult ());
+            continue;
+        }
+
+        API_Attribute layerAttr = {};
+        layerAttr.header.typeID = API_LayerID;
+        layerAttr.header.index = elemHead.layer;
+        if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
+            executionResults (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The element was not deleted, because its layer is locked."));
+        } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
+            executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
+        } else {
+            executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
+        }
+    }
+
+    return response;
 }
 
 LockElementsCommand::LockElementsCommand () :
