@@ -360,23 +360,43 @@ class _FunctionState:
         if top:
             raise GeneratorError ('Function does not return a value')
 
-    def SkipStatement (self):
-        depth = 0
-        while True:
+    def SkipBalanced (self, opening, closing):
+        self.Expect (opening)
+        depth = 1
+        while depth:
             token = self.Next ()
             if token[0] == 'eof':
-                return
-            if token == ('op', '{'):
+                raise GeneratorError ('Unbalanced "' + opening + '"')
+            if token == ('op', opening):
                 depth += 1
-            elif token == ('op', '}'):
+            elif token == ('op', closing):
                 depth -= 1
-                if depth == 0:
-                    if self.Peek () == ('ident', 'else'):
-                        self.Next ()
-                        self.SkipStatement ()
-                    return
-            elif token == ('op', ';') and depth == 0:
+
+    def SkipStatement (self):
+        # Skips exactly one statement without running it; a nested if takes
+        # its own else along, the caller's else is left to the caller.
+        token = self.Peek ()
+        if token == ('ident', 'if'):
+            self.Next ()
+            self.SkipBalanced ('(', ')')
+            self.SkipStatement ()
+            if self.Peek () == ('ident', 'else'):
+                self.Next ()
+                self.SkipStatement ()
+            return
+        if token == ('op', '{'):
+            self.SkipBalanced ('{', '}')
+            return
+        while True:
+            token = self.Next ()
+            if token[0] == 'eof' or token == ('op', ';'):
                 return
+            if token == ('op', '('):
+                self.pos -= 1
+                self.SkipBalanced ('(', ')')
+            elif token == ('op', '{'):
+                self.pos -= 1
+                self.SkipBalanced ('{', '}')
 
     def RunBody (self, execute):
         if not execute:
