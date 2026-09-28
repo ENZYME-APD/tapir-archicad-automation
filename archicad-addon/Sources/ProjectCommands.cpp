@@ -1,6 +1,8 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -198,6 +200,212 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
     }
 
     return {};
+}
+
+GetAutoTextKeysCommand::GetAutoTextKeysCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAutoTextKeysCommand::GetName () const
+{
+    return "GetAutoTextKeys";
+}
+
+GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the autotext keys common to all element types are returned."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextKeys": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The autotext's name, as shown in the Insert Autotext dialog of Archicad."
+                        },
+                        "key": {
+                            "type": "string",
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "key"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextKeys"
+        ]
+    })";
+}
+
+GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // guid can legitimately be APINULLGuid here (no elementId given) - per the DevKit doc this
+    // still returns the autotext keys common to all element types (e.g. "Element ID", "Area"),
+    // just not the ones specific to a single element's own type (e.g. "Thickness of the wall").
+    const GS::ObjectState* elementIdOS = parameters.Get ("elementId");
+    API_Guid guid = (elementIdOS != nullptr) ? GetGuidFromObjectState (*elementIdOS) : APINULLGuid;
+    if (elementIdOS != nullptr && guid == APINULLGuid) {
+        // A given but unparseable guid must not fall back to the generic list.
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid elementId.");
+    }
+
+    // Before AC27 the call is the APIAny_GetPropertyAutoTextKeyTableID goodie, wrapped in
+    // MigrationHelper.hpp like the other ACAPI_AutoText_* functions.
+    GS::HashTable<GS::UniString, GS::UniString> keyTable;
+    GSErrCode err = ACAPI_AutoText_GetPropertyAutoTextKeyTable (&guid, &keyTable);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the autotext keys.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextKeys");
+
+    // GS::HashTable's pair iterator hands out references from AC28 and pointers before
+    // (GSRoot/HashTable.hpp: ConstCurrentPair::key is `const Key&` vs `const Key*`).
+    for (const auto& keyPair : keyTable) {
+        GS::ObjectState keyData;
+#ifdef ServerMainVers_2800
+        keyData.Add ("name", keyPair.key);
+        keyData.Add ("key", keyPair.value);
+#else
+        keyData.Add ("name", *keyPair.key);
+        keyData.Add ("key", *keyPair.value);
+#endif
+        listAdder (keyData);
+    }
+
+    return response;
+}
+
+GetAutoTextNameCommand::GetAutoTextNameCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAutoTextNameCommand::GetName () const
+{
+    return "GetAutoTextName";
+}
+
+GS::Optional<GS::UniString> GetAutoTextNameCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keys": {
+                "type": "array",
+                "description": "Autotext keys as returned by GetAutoTextKeys or GetProjectInfoFields (without the surrounding '<' and '>'), e.g. 'PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548' or 'PROJECTNAME'.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keys"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAutoTextNameCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextNames": {
+                "$ref": "#/AutoTextNamesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextNames"
+        ]
+    })";
+}
+
+// Resolves a single key against an already-fetched generic autotext list (avoids
+// re-enumerating the project info fields once per key when called from a batch).
+static GS::ObjectState ResolveAutoTextName (const GS::UniString& key, GSErrCode genericAutoTextsErr, const GS::Array<GS::ArrayFB<GS::UniString, 3>>& genericAutoTexts)
+{
+    if (key.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Empty autotext key.");
+    }
+
+    static const GS::UniString propertyPrefix ("PROPERTY-");
+    if (key.BeginsWith (propertyPrefix)) {
+        // Property-based (context dependent) autotext key: everything after the prefix is the
+        // guid of a real property definition. A single direct lookup by guid - no need to
+        // enumerate every property definition in the project just to resolve one name.
+        const GS::UniString guidPart (key.ToCStr () + propertyPrefix.GetLength ());
+
+        API_PropertyDefinition definition = {};
+        definition.guid = APIGuidFromString (guidPart.ToCStr ());
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to find a property definition for this autotext key.");
+        }
+        return GS::ObjectState ("name", definition.name);
+    }
+
+    // Generic (project-level) autotext key: the SDK has no single-key metadata lookup for
+    // these (ACAPI_AutoText_InterpretAutoText resolves the *value*, not the name), so the
+    // small, fixed list of project info fields is matched against the list fetched once
+    // upfront by the caller, instead of being re-fetched for every key in the batch. A failed
+    // fetch is reported as such, not as an unknown key.
+    if (genericAutoTextsErr != NoError) {
+        return CreateErrorResponse (genericAutoTextsErr, "Failed to retrieve the autotexts.");
+    }
+    for (const auto& autoText : genericAutoTexts) {
+        if (autoText[1] == key) {
+            return GS::ObjectState ("name", autoText[0]);
+        }
+    }
+
+    return CreateErrorResponse (APIERR_BADID, "No autotext found for this key.");
+}
+
+GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> keys;
+    if (!parameters.Get ("keys", keys) || keys.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'keys' parameter.");
+    }
+
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> genericAutoTexts;
+    const GSErrCode genericAutoTextsErr = ACAPI_AutoText_GetAutoTexts (&genericAutoTexts, APIAutoText_All);
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextNames");
+    for (const GS::UniString& key : keys) {
+        listAdder (ResolveAutoTextName (key, genericAutoTextsErr, genericAutoTexts));
+    }
+
+    return response;
 }
 
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
@@ -449,6 +657,16 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
         hotlinkNodeOS.Add ("location", location.Get ());
     }
 
+    // The node guid is what CreateHotlinkInstances needs; the name and type
+    // are what a caller shows. All three are additions to the original shape.
+    hotlinkNodeOS.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkGuid));
+    API_HotlinkNode hotlinkNode = {};
+    hotlinkNode.guid = hotlinkGuid;
+    if (ACAPI_Hotlink_GetHotlinkNode (&hotlinkNode) == NoError) {
+        hotlinkNodeOS.Add ("name", GS::UniString (hotlinkNode.name));
+        hotlinkNodeOS.Add ("type", hotlinkNode.type == APIHotlink_XRef ? "XRef" : "Module");
+    }
+
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
     if (!children.IsEmpty ()) {
         const auto& listAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("children");
@@ -545,6 +763,11 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
 
     short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    // The array holds one record more than there are stories: the virtual story above
+    // the top one, whose level is where the top story ends (API_StoryInfo says it is
+    // there so that the height of the top story can be calculated). The record count
+    // comes from the handle itself, so a level is never read past the array.
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
     for (short i = 0; i < storyCount; i++) {
         const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
@@ -554,7 +777,7 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
         storyData.Add ("floorId", story.floorId);
         storyData.Add ("dispOnSections", story.dispOnSections);
         storyData.Add ("level", story.level);
-        if (i + 1 < storyCount) {
+        if (i + 1 < recordCount) {
             storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
         }
         storyData.Add ("name", uName);
@@ -565,6 +788,90 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
 
     return response;
+}
+
+// The requested stories are matched to the existing ones positionally, bottom-up. The
+// optional index of any of them pins the numbering of the whole list: the story at
+// position i is meant to become story (index - i). Without an index the numbering of
+// the existing structure is kept, so the list can only grow and shrink on the top.
+static bool GetNewFirstStoryIndex (const GS::Array<GS::ObjectState>& stories, const short currentFirstStory, short& newFirstStory)
+{
+    newFirstStory = currentFirstStory;
+
+    bool isPinned = false;
+    for (GS::UIndex i = 0; i < stories.GetSize (); ++i) {
+        short index = 0;
+        if (!stories[i].Get ("index", index)) {
+            continue;
+        }
+
+        const short firstStoryFromIndex = index - static_cast<short> (i);
+        if (!isPinned) {
+            newFirstStory = firstStoryFromIndex;
+            isPinned = true;
+        } else if (firstStoryFromIndex != newFirstStory) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Two story levels closer to each other than this are considered to be the same.
+constexpr double StoryLevelTolerance = 0.0001;
+
+static void FillNewStoryCmd (const GS::Array<GS::ObjectState>& stories, const GS::UIndex storyPos, API_StoryCmdType& storyCmd)
+{
+    if (storyPos >= stories.GetSize ()) {
+        return;
+    }
+
+    stories[storyPos].Get ("dispOnSections", storyCmd.dispOnSections);
+    stories[storyPos].Get ("level", storyCmd.elevation);
+
+    // The story at the top of the requested list has no next one to take the height
+    // from, so fall back to the height of the story below it. The levels are set
+    // exactly later on anyway, this is only to avoid creating zero height stories.
+    double neighbourLevel = 0.0;
+    if (storyPos + 1 < stories.GetSize () && stories[storyPos + 1].Get ("level", neighbourLevel)) {
+        storyCmd.height = neighbourLevel - storyCmd.elevation;
+    } else if (storyPos > 0 && stories[storyPos - 1].Get ("level", neighbourLevel)) {
+        storyCmd.height = storyCmd.elevation - neighbourLevel;
+    }
+
+    GS::UniString name;
+    stories[storyPos].Get ("name", name);
+    GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
+}
+
+// A copy of what a story looks like right now. API_StoryInfo::data is a handle which every
+// refresh disposes and reallocates, so anything read out of it has to be copied before the
+// next ChangeStorySettings call rather than referenced.
+struct StorySnapshot {
+    short           index;
+    double          level;
+    bool            dispOnSections;
+    GS::UniString   name;
+};
+
+static void TakeStorySnapshot (const API_StoryInfo& storyInfo, GS::Array<StorySnapshot>& snapshot)
+{
+    snapshot.Clear ();
+
+    if (storyInfo.data == nullptr) {
+        return;
+    }
+
+    for (short index = storyInfo.firstStory; index <= storyInfo.lastStory; ++index) {
+        const API_StoryType& story = (*storyInfo.data)[index - storyInfo.firstStory];
+        snapshot.Push (StorySnapshot { story.index, story.level, story.dispOnSections, GS::UniString (story.uName) });
+    }
+}
+
+static GSErrCode RefreshStoryInfo (API_StoryInfo& storyInfo)
+{
+    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    return ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
 }
 
 SetStoriesCommand::SetStoriesCommand () :
@@ -606,6 +913,10 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
     GS::Array<GS::ObjectState> stories;
     parameters.Get ("stories", stories);
 
+    if (stories.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "stories is missing or empty.");
+    }
+
     API_StoryInfo storyInfo = {};
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
@@ -613,140 +924,267 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
     }
 
-    GS::USize storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    short newFirstStory = storyInfo.firstStory;
+    if (!GetNewFirstStoryIndex (stories, storyInfo.firstStory, newFirstStory)) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The given story indices are not consecutive.");
+    }
 
-    if (storyCount != stories.GetSize ()) {
-        if (storyCount < stories.GetSize ()) {
-            for (GS::UIndex i = storyCount; i < stories.GetSize (); ++i) {
-                API_StoryCmdType storyCmd = {};
-                storyCmd.action = APIStory_InsAbove;
-                storyCmd.index  = storyInfo.lastStory;
+    const short newLastStory = newFirstStory + static_cast<short> (stories.GetSize ()) - 1;
 
-                stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
-                stories[i].Get ("level", storyCmd.elevation);
-                if (storyCount > 1) {
-                    storyCmd.height = (*storyInfo.data)[i - 1].level - (*storyInfo.data)[i - 2].level;
-                }
+    // Grow the structure first - downwards and upwards - and only then cut off the
+    // stories which are not needed any more, so the project never runs out of stories.
+    while (storyInfo.firstStory > newFirstStory) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_InsBelow;
+        storyCmd.index  = storyInfo.firstStory;
+        FillNewStoryCmd (stories, static_cast<GS::UIndex> (storyInfo.firstStory - 1 - newFirstStory), storyCmd);
 
-                GS::UniString name;
-                stories[i].Get ("name", name);
-                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
-            
-                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-                if (err != NoError) {
-                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                    return CreateFailedExecutionResult (err, "Failed to create new story.");
-                }
-            }
-        } else {
-            for (GS::UIndex i = storyCount - 1; i >= stories.GetSize (); --i) {
-                API_StoryCmdType storyCmd = {};
-                storyCmd.action = APIStory_Delete;
-                storyCmd.index  = (*storyInfo.data)[i].index;
-            
-                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-                if (err != NoError) {
-                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                    return CreateFailedExecutionResult (err, "Failed to delete story.");
-                }
-            }
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to create new story below the first one.");
         }
 
-        err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        const short prevFirstStory = storyInfo.firstStory;
+        err = RefreshStoryInfo (storyInfo);
         if (err != NoError) {
             BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
             return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
         }
-        
-        storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+
+        if (storyInfo.firstStory >= prevFirstStory) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to create new story below the first one.");
+        }
     }
 
-    GS::USize recursionCount = 0;
-    constexpr GS::USize maxRecursion = 3;
-    for (GS::UIndex i = 0; i < storyCount;) {
-        const API_StoryType& story = (*storyInfo.data)[i];
+    while (storyInfo.lastStory < newLastStory) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_InsAbove;
+        storyCmd.index  = storyInfo.lastStory;
+        FillNewStoryCmd (stories, static_cast<GS::UIndex> (storyInfo.lastStory + 1 - newFirstStory), storyCmd);
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to create new story.");
+        }
+
+        const short prevLastStory = storyInfo.lastStory;
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+
+        if (storyInfo.lastStory <= prevLastStory) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to create new story.");
+        }
+    }
+
+    // Deleting a story deletes its elements as well, so never delete more stories than
+    // the number the grown structure has above the requested one.
+    GS::USize storiesToDelete = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) - stories.GetSize ();
+
+    while (storiesToDelete > 0 && (storyInfo.firstStory < newFirstStory || storyInfo.lastStory > newLastStory)) {
+        const bool deleteFromBottom = storyInfo.firstStory < newFirstStory;
 
         API_StoryCmdType storyCmd = {};
-        storyCmd.index  = story.index;
+        storyCmd.action = APIStory_Delete;
+        storyCmd.index  = deleteFromBottom ? storyInfo.firstStory : storyInfo.lastStory;
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to delete story.");
+        }
+
+        const short prevFirstStory = storyInfo.firstStory;
+        const short prevLastStory  = storyInfo.lastStory;
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+
+        if (storyInfo.lastStory - storyInfo.firstStory >= prevLastStory - prevFirstStory) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to delete story.");
+        }
+
+        --storiesToDelete;
+    }
+
+    const GS::USize storyCount = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1);
+
+    if (storyCount != stories.GetSize ()) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to set up the requested story structure.");
+    }
+
+    // Everything below works off snapshots rather than off storyInfo.data: that handle is
+    // disposed and reallocated by every refresh, so a reference into it does not survive a
+    // single ChangeStorySettings call - which is where the garbage story indices in the
+    // error messages came from.
+    GS::Array<StorySnapshot> currentStories;
+    TakeStorySnapshot (storyInfo, currentStories);
+    if (currentStories.GetSize () != storyCount) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read the story structure.");
+    }
+
+    // Neither renaming a story nor changing its display setting moves any of them, so
+    // these can be set in one pass on the state read above.
+    bool storySettingsChanged = false;
+
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.index = currentStories[i].index;
 
         stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
 
-        bool changed = false;
-
-        if (story.dispOnSections != storyCmd.dispOnSections) {
+        if (currentStories[i].dispOnSections != storyCmd.dispOnSections) {
             storyCmd.action = APIStory_SetDispOnSections;
-        
+
             err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
             if (err != NoError) {
                 BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
                 return CreateFailedExecutionResult (err, "Failed to modify dispOnSections settings.");
             }
 
-            changed = true;
+            storySettingsChanged = true;
         }
 
         GS::UniString name;
         stories[i].Get ("name", name);
 
-        if (story.uName != name) {
-            GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+        if (currentStories[i].name != name) {
+            GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
             storyCmd.action = APIStory_Rename;
-        
+
             err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
             if (err != NoError) {
                 BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
                 return CreateFailedExecutionResult (err, "Failed to rename story.");
             }
 
-            changed = true;
+            storySettingsChanged = true;
         }
+    }
 
-        stories[i].Get ("level", storyCmd.elevation);
-
-        if (std::abs (story.level - storyCmd.elevation) >= 0.0001) {
-            storyCmd.action = APIStory_SetElevation;
-        
-            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to change story level.");
-            }
-
-            changed = true;
-        } else {
-            const API_StoryType*   actNextStory = i + 1 < storyCount ? &(*storyInfo.data)[i + 1] : nullptr;
-            const GS::ObjectState* newNextStory = i + 1 < stories.GetSize () ? &stories[i + 1] : nullptr;
-
-            double newNextLevel = 0;
-            if (actNextStory != nullptr && newNextStory != nullptr &&
-                newNextStory->Get ("level", newNextLevel) &&
-                std::abs ((newNextLevel - storyCmd.elevation) - (actNextStory->level - story.level)) >= 0.0001) {
-                storyCmd.height = newNextLevel - storyCmd.elevation;
-                storyCmd.action = APIStory_SetHeight;
-            
-                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-                if (err != NoError) {
-                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                    return CreateFailedExecutionResult (err, "Failed to change story height.");
-                }
-
-                changed = true;
-            }
-        }
-
-        if (changed) {
+    if (storySettingsChanged) {
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
             BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-            }
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
         }
 
-        if (!changed || ++recursionCount >= maxRecursion) {
-            recursionCount = 0;
-            ++i;
-            continue;
+        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
+        }
+
+        TakeStorySnapshot (storyInfo, currentStories);
+    }
+
+    // The requested levels, defaulting to where the story already sits when the caller did
+    // not ask for one.
+    GS::Array<double> targetLevels;
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        double level = currentStories[i].level;
+        stories[i].Get ("level", level);
+        targetLevels.Push (level);
+    }
+
+    // Levels are set in two steps, because Archicad anchors the story ladder on the active
+    // story: that one never moves, and every other story is positioned relative to it.
+    // Measured on a live AC29: APIStory_SetElevation moves only the story it names, and
+    // APIStory_SetHeight moves whichever side of the boundary is further from the anchor.
+    //
+    // Step one puts the anchor on its requested level. It has to come first - moving the
+    // anchor afterwards would change the gap to its neighbour and undo a distance already
+    // set. The anchor is the active story, the only one SetElevation is known to move.
+    const GS::UIndex anchor =
+        (storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory)
+            ? static_cast<GS::UIndex> (storyInfo.actStory - storyInfo.firstStory)
+            : 0;
+
+    if (std::abs (currentStories[anchor].level - targetLevels[anchor]) >= StoryLevelTolerance) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action    = APIStory_SetElevation;
+        storyCmd.index     = currentStories[anchor].index;
+        storyCmd.elevation = targetLevels[anchor];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story elevation.");
+        }
+
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
+        }
+        TakeStorySnapshot (storyInfo, currentStories);
+    }
+
+    // Step two sets the distances, working outwards from the anchor in both directions so
+    // that every height is set against a story which is already on its requested level and
+    // positions exactly one story that is not.
+    for (GS::UIndex i = anchor; i + 1 < storyCount; ++i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_SetHeight;
+        storyCmd.index  = currentStories[i].index;
+        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story height.");
+        }
+    }
+
+    for (GS::UIndex i = anchor; i > 0; --i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_SetHeight;
+        storyCmd.index  = currentStories[i - 1].index;
+        storyCmd.height = targetLevels[i] - targetLevels[i - 1];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story height.");
+        }
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+    }
+    if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+    TakeStorySnapshot (storyInfo, currentStories);
+
+    // A structure which silently ended up somewhere else than requested is worse than an
+    // error, so report the first level which could not be set, naming both levels so the
+    // message says what actually happened.
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
+            const GS::UniString message = GS::UniString::Printf (
+                "Failed to set the level of story %d: requested %.4f, got %.4f.",
+                static_cast<int> (currentStories[i].index), targetLevels[i], currentStories[i].level);
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, message);
         }
     }
 
@@ -872,9 +1310,196 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_ProjectOperation_Save ();
+    // The parameterless save acts on the current window - "saves the content of
+    // the current window", ACAPI_Automate.h - so from a 3D, section or other
+    // non-plan window it tries to save that window's content, which has no file
+    // of its own, and answers APIERR_READONLY (#681). So the Floor Plan window
+    // is activated around the save and the previous window restored afterwards.
+    //
+    // Two shortcuts were measured on Archicad 29 and rejected. Switching only
+    // the current database leaves the save failing exactly as before. Saving
+    // as a plan file to the project's own location does work from the 3D
+    // window, but it also overwrites a project that Archicad opened read-only
+    // (a stale lock, another user editing it), where File > Save refuses -
+    // and API_ProjectInfo has no read-only flag to check first. The plain save
+    // keeps every one of those refusals, so it is the one to use.
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError &&
+        previousWindow.typeID != APIWind_FloorPlanID) {
+        API_WindowInfo floorPlanWindow = {};
+        floorPlanWindow.typeID = APIWind_FloorPlanID;
+        windowSwitched = ACAPI_Window_ChangeWindow (&floorPlanWindow) == NoError;
+    }
+    const GS::OnExit restoreWindow ([&] () {
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    });
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save ();
     if (err != NoError) {
-        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to save the project.");
+        return CreateFailedExecutionResult (err, "Failed to save the project.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+SaveAsModuleFileCommand::SaveAsModuleFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveAsModuleFileCommand::GetName () const
+{
+    return "SaveAsModuleFile";
+}
+
+GS::Optional<GS::UniString> SaveAsModuleFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "moduleFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .mod file to write. An existing file is overwritten. The current window must be a floor plan, section, elevation or detail."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional. The elements that go into the module; omitted, the current selection does, as Save Selection as Module would. Pass GetAllElements for the whole project. Archicad 25 and 26 support the selection form only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "moduleFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveAsModuleFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString moduleFilePath;
+    if (!parameters.Get ("moduleFilePath", moduleFilePath) || moduleFilePath.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "moduleFilePath is missing.");
+    }
+    IO::Location location (moduleFilePath);
+
+    GS::Array<GS::ObjectState> elements;
+    const bool listGiven = parameters.Get ("elements", elements);
+    GS::Array<API_Elem_Head> heads;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            continue;
+        }
+        API_Elem_Head head = {};
+        head.guid = GetGuidFromObjectState (*elementId);
+        heads.Push (head);
+    }
+    if (listGiven && heads.IsEmpty ()) {
+        // A given-but-empty list must not fall back to whatever is selected.
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elements was given but holds no item with an elementId; omit the parameter to export the current selection.");
+    }
+
+#ifndef ServerMainVers_2700
+    if (!heads.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "An element list needs Archicad 27 or later; on 25 and 26 select the elements and omit the list.");
+    }
+#endif
+    const GSErrCode err = ACAPI_ProjectOperation_SaveAsModuleFile (&location, heads.IsEmpty () ? nullptr : &heads);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the module file: no elements to save (nothing selected?), the current window is not a model window, or the file cannot be written.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+SaveProjectAsArchiveCommand::SaveProjectAsArchiveCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveProjectAsArchiveCommand::GetName () const
+{
+    return "SaveProjectAsArchive";
+}
+
+GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "archiveFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does."
+            },
+            "includeLibraryParts": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the library parts the project uses go into the archive, which makes the archive usable as a linked library of another project."
+            },
+            "includeProperties": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the properties go into the archive."
+            },
+            "includeTextures": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the linked textures go into the archive."
+            },
+            "includeBackgroundPicture": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the background picture goes into the archive."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "archiveFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SaveProjectAsArchiveCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString archiveFilePath;
+    if (!parameters.Get ("archiveFilePath", archiveFilePath) || archiveFilePath.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "archiveFilePath is missing.");
+    }
+    IO::Location location (archiveFilePath);
+
+    bool includeLibraryParts = true;
+    bool includeProperties = true;
+    bool includeTextures = false;
+    bool includeBackgroundPicture = false;
+    parameters.Get ("includeLibraryParts", includeLibraryParts);
+    parameters.Get ("includeProperties", includeProperties);
+    parameters.Get ("includeTextures", includeTextures);
+    parameters.Get ("includeBackgroundPicture", includeBackgroundPicture);
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_A_PlanFile;
+    fileSavePars.file = &location;
+
+    API_SavePars_Archive savePars = {};
+    savePars.picturesInTIFF = false;
+    savePars.texturesOn = includeTextures;
+    savePars.backgroundPictOn = includeBackgroundPicture;
+    savePars.propertiesOn = includeProperties;
+    savePars.libraryPartsOn = includeLibraryParts;
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the project as an archive: no project is open, or the file cannot be written.");
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -1394,6 +2019,97 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "accuracy", unitPrefs.angle.accuracy));
 }
 
+static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
+{
+    if (str == "EntireProject") {
+        result = API_EntireProject;
+    } else if (str == "VisibleElementsOnAllStories") {
+        result = API_VisibleElementsOnAllStories;
+    } else if (str == "AllElementsOnCurrentStory") {
+        result = API_AllElementsOnCurrentStorey;
+    } else if (str == "VisibleElementsOnCurrentStory") {
+        result = API_VisibleElementsOnCurrentStorey;
+    } else if (str == "SelectedElementsOnly") {
+        result = API_SelectedElementsOnly;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Saves the project as IFC with an export translator chosen by name, through the
+// Automate API. The add-on communication path in Execute cannot choose one: the IFC
+// add-on saves with the translator Archicad remembers from its own Save dialog, which
+// an automated caller can neither see nor set. The floor plan or the 3D window has to
+// be the front window, as for any IFC save.
+static GS::ObjectState SaveProjectAsIfcWithTranslator (const GS::ObjectState& parameters, IO::Location& ifcFileLocation, Int32 fileTypeRefCon, const GS::UniString& translatorName)
+{
+    // The Automate API saves plain IFC and one packed form: IFC ZIP from Archicad 27
+    // on, IFC XML before that.
+    API_IfcTypeID subType;
+    if (fileTypeRefCon == 1) {
+        subType = API_IFC;
+#ifdef ServerMainVers_2700
+    } else if (fileTypeRefCon == 3) {
+        subType = API_IFCZIP;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName needs a fileType of ifc or ifczip");
+#else
+    } else if (fileTypeRefCon == 2) {
+        subType = API_IFCXML;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName needs a fileType of ifc or ifcxml on this Archicad version");
+#endif
+    }
+
+    API_ElementsToIfcExportID elementsToExport = API_VisibleElementsOnAllStories;
+    GS::UniString elementsToExportStr;
+    if (parameters.Get ("elementsToExport", elementsToExportStr) && !ParseElementsToIfcExport (elementsToExportStr, elementsToExport)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport parameter is invalid");
+    }
+
+    GS::Array<API_IFCTranslatorIdentifier> translators;
+    GSErrCode err = ACAPI_IFC_GetIFCExportTranslatorsList (translators);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to list the IFC export translators of the project");
+    }
+
+    const API_IFCTranslatorIdentifier* translator = nullptr;
+    GS::UniString availableNames;
+    for (const API_IFCTranslatorIdentifier& candidate : translators) {
+        if (candidate.name == translatorName) {
+            translator = &candidate;
+        }
+        if (!availableNames.IsEmpty ()) {
+            availableNames += ", ";
+        }
+        availableNames += "\"" + candidate.name + "\"";
+    }
+    if (translator == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no IFC export translator named \"" + translatorName + "\". Its translators: " + availableNames);
+    }
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_IfcFile;
+    fileSavePars.file = &ifcFileLocation;
+
+    API_SavePars_Ifc savePars = {};
+    savePars.subType = subType;
+    savePars.translatorIdentifier = *translator;
+    savePars.elementsToIfcExport = elementsToExport;
+    savePars.elementsSet = nullptr;
+#ifdef ServerMainVers_2600
+    savePars.includeBoundingBoxGeometry = false;
+#endif
+
+    err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the project as IFC");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 IFCFileOperationCommand::IFCFileOperationCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1422,6 +2138,15 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
                 "type": "string",
                 "description": "The type of the IFC file. The default is 'ifc'.",
                 "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
+            },
+            "elementsToExport": {
+                "type": "string",
+                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
+                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
             }
         },
         "additionalProperties": false,
@@ -1485,6 +2210,19 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
     if (ifcFileLocation.GetLastLocalName (&lastLocalName) != NoError) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is invalid");
     }
+    GS::UniString translatorName;
+    if (parameters.Get ("translatorName", translatorName) && !translatorName.IsEmpty ()) {
+        if (ioParams.method != IO_SAVEAS) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName is only valid with the save method");
+        }
+        return SaveProjectAsIfcWithTranslator (parameters, ifcFileLocation, ioParams.refCon, translatorName);
+    }
+    if (parameters.Contains ("elementsToExport")) {
+        // The add-on path below has no element filter, so a filter without a translator
+        // would be dropped without a word.
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport is only valid together with translatorName");
+    }
+
     ioParams.fileLoc = &ifcFileLocation;
     ioParams.saveFileIOName = &lastLocalName;
     ioParams.noDialog = true;
@@ -1623,4 +2361,583 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+
+// ---------------------------------------------------------------------------
+// Hotlink nodes and instances.
+//
+// A hotlink module is two things in Archicad: a NODE (the reference to the
+// source file, with its cache) and any number of INSTANCES (elements of type
+// API_HotlinkID, each placed by a transformation). GetHotlinks lists the
+// nodes; these three commands create nodes, place instances and move them.
+// Instances are ordinary elements otherwise: DeleteElements removes one,
+// GetDetailsOfElements reads its placement, and the elements inside a
+// placed instance report it as their hotlinkId.
+//
+// MoveElements and RotateElements do NOT work on an instance - the drag edit
+// returns NoError and moves nothing - which is why ChangeHotlinkInstances
+// exists: an instance moves by changing its transformation.
+// ---------------------------------------------------------------------------
+
+static GS::Optional<API_Guid> FindHotlinkNodeBySource (const IO::Location& sourceLocation)
+{
+    // A node that has been created and not placed yet is "unplaced": the node
+    // reads skip it unless asked (AC26 and later; AC25's database calls have no
+    // such flag). Without this a second CreateHotlinkNodes for the same file could
+    // not see the first, and CreateHotlinkInstances could not read the node it was
+    // given (measured on AC28).
+    bool enableUnplaced = true;
+    API_HotlinkTypeID type = APIHotlink_Module;
+    GS::Array<API_Guid> nodes;
+    if (ACAPI_Hotlink_GetHotlinkNodes (&type, &nodes, &enableUnplaced) != NoError) {
+        return GS::NoValue;
+    }
+    for (const API_Guid& nodeGuid : nodes) {
+        API_HotlinkNode node = {};
+        node.guid = nodeGuid;
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) == NoError && node.sourceLocation != nullptr) {
+            // Case-insensitive: on Windows a differently cased path is the same file.
+            if (node.sourceLocation->ToDisplayText ().Compare (sourceLocation.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal) {
+                return nodeGuid;
+            }
+        }
+    }
+    return GS::NoValue;
+}
+
+CreateHotlinkNodesCommand::CreateHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateHotlinkNodesCommand::GetName () const
+{
+    return "CreateHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "sourceLocation": {
+                            "type": "string",
+                            "description": "Absolute path of the module source file (.mod or .pln)."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Optional display name of the node. Defaults to the file name. Ignored when a node for the same file already exists."
+                        },
+                        "storyRangeType": {
+                            "type": "string",
+                            "description": "Optional. Which stories of the source are placed: all of them, or the single reference story. Ignored when a node for the same file already exists.",
+                            "enum": ["AllStories", "SingleStory"]
+                        },
+                        "refFloorIndex": {
+                            "type": "integer",
+                            "description": "Optional index of the reference story in the source file. Defaults to 0. Ignored when a node for the same file already exists."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "sourceLocation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "One item per requested node, in order: the node guid with its existing flag, or an error.",
+                "items": {
+                    "$ref": "#/HotlinkNodeCreatedOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("hotlinkNodes");
+
+    // One undo step for the whole call, as the repo's other creating commands do.
+    ACAPI_CallUndoableCommand ("Create Hotlink Nodes", [&] () -> GSErrCode {
+        for (const GS::ObjectState& nodeData : hotlinkNodes) {
+            GS::UniString sourcePath;
+            if (!nodeData.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+                results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is missing"));
+                continue;
+            }
+            IO::Location sourceLocation (sourcePath);
+            IO::Name lastLocalName;
+            if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+                results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is not a valid path"));
+                continue;
+            }
+
+            const GS::Optional<API_Guid> existing = FindHotlinkNodeBySource (sourceLocation);
+            if (existing.HasValue ()) {
+                GS::ObjectState item;
+                item.Add ("hotlinkNodeId", CreateGuidObjectState (existing.Get ()));
+                item.Add ("existing", true);
+                results (item);
+                continue;
+            }
+
+            API_HotlinkNode hotlinkNode = {};
+            hotlinkNode.type = APIHotlink_Module;
+            hotlinkNode.storyRangeType = APIHotlink_AllStories;
+            GS::UniString storyRangeType;
+            if (nodeData.Get ("storyRangeType", storyRangeType) && storyRangeType == "SingleStory") {
+                hotlinkNode.storyRangeType = APIHotlink_SingleStory;
+            }
+            Int32 refFloorIndex = 0;
+            nodeData.Get ("refFloorIndex", refFloorIndex);
+            hotlinkNode.refFloorInd = static_cast<short> (refFloorIndex);
+            GS::UniString name;
+            if (!nodeData.Get ("name", name) || name.IsEmpty ()) {
+                name = lastLocalName.ToString ();
+            }
+            GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
+            hotlinkNode.name[API_UniLongNameLen - 1] = 0;
+            // API_HotlinkNode's destructor frees sourceLocation itself ("make sure
+            // those point to memory on heap" - APIdefs_Database.h, AC25 to AC29),
+            // which is also why the node reads elsewhere in this file do not leak.
+            // On failure the location is freed here and nulled so the destructor
+            // does not free it twice.
+            IO::Location* ownedLocation = new IO::Location (sourceLocation);
+            hotlinkNode.sourceLocation = ownedLocation;
+
+    #ifdef ServerMainVers_2800
+            // Fills the story info from the source so the node is created with
+            // the right story settings. Not available before 28; creation works
+            // without it.
+            ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
+    #endif
+
+            const GSErrCode err = ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+            if (err != NoError) {
+                delete ownedLocation;
+                hotlinkNode.sourceLocation = nullptr;
+                results (CreateErrorResponse (err, "Failed to create the hotlink node from " + sourcePath));
+                continue;
+            }
+
+            GS::ObjectState item;
+            item.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkNode.guid));
+            item.Add ("existing", false);
+            results (item);
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+CreateHotlinkInstancesCommand::CreateHotlinkInstancesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateHotlinkInstancesCommand::GetName () const
+{
+    return "CreateHotlinkInstances";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The hotlink instances to place.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId",
+                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
+                        },
+                        "origin": {
+                            "$ref": "#/HotlinkOrigin"
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional story the instance is placed on. Defaults to the current story."
+                        },
+                        "floorDifference": {
+                            "type": "integer",
+                            "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
+                        },
+                        "skipNested": {
+                            "type": "boolean",
+                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
+                        },
+                        "suspendFixAngle": {
+                            "type": "boolean",
+                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
+                        },
+                        "ignoreTopFloorLinks": {
+                            "type": "boolean",
+                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
+                        },
+                        "relinkWallOpenings": {
+                            "type": "boolean",
+                            "description": "Optional. Defaults to the hotlink tool's current default."
+                        },
+                        "adjustLevelDiffs": {
+                            "type": "boolean",
+                            "description": "Optional. Defaults to the hotlink tool's current default."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId",
+                        "origin"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    API_StoryInfo storyInfo = {};
+    const bool haveStoryInfo = ACAPI_ProjectSetting_GetStorySettings (&storyInfo) == NoError;
+    if (haveStoryInfo) {
+        BMKillHandle ((GSHandle*) &storyInfo.data);
+    }
+
+    ACAPI_CallUndoableCommand ("Create Hotlink Instances", [&] () -> GSErrCode {
+        for (const GS::ObjectState& instanceData : hotlinkInstances) {
+            const GS::ObjectState* hotlinkNodeId = instanceData.Get ("hotlinkNodeId");
+            const GS::ObjectState* origin = instanceData.Get ("origin");
+            if (hotlinkNodeId == nullptr || origin == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "hotlinkNodeId or origin is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+#ifdef ServerMainVers_2600
+            element.header.type   = API_HotlinkID;
+#else
+            element.header.typeID = API_HotlinkID;
+#endif
+            const GSErrCode defaultsErr = ACAPI_Element_GetDefaults (&element, nullptr);
+            if (defaultsErr != NoError) {
+                elements (CreateErrorResponse (defaultsErr, "Failed to get the hotlink instance defaults"));
+                continue;
+            }
+            Int32 layerIndex = 0;
+            if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+                element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+            }
+            Int32 floorIndex;
+            if (instanceData.Get ("floorIndex", floorIndex)) {
+                element.header.floorInd = static_cast<short> (floorIndex);
+            } else if (haveStoryInfo) {
+                element.header.floorInd = storyInfo.actStory;
+            }
+
+            // The instance takes the node's own type: GetHotlinks hands out XRef
+            // node ids as well as module ones, and a module instance of an XRef
+            // node is a mismatch.
+            API_HotlinkNode node = {};
+            node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+            bool enableUnplaced = true;     // the node may have been created and not placed yet
+            if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+                elements (CreateErrorResponse (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+                continue;
+            }
+            element.hotlink.type = node.type;
+            element.hotlink.hotlinkNodeGuid = node.guid;
+
+            double rotationAngle = 0.0;
+            instanceData.Get ("rotationAngle", rotationAngle);
+            bool mirrored = false;
+            instanceData.Get ("mirrored", mirrored);
+            element.hotlink.transformation = CreateHotlinkTransformation (Get3DCoordinateFromObjectState (*origin), rotationAngle, mirrored);
+
+            // The placement options keep the tool defaults unless the caller sets them.
+            Int32 floorDifference;
+            if (instanceData.Get ("floorDifference", floorDifference)) {
+                element.hotlink.floorDifference = static_cast<short> (floorDifference);
+            }
+            instanceData.Get ("skipNested", element.hotlink.skipNested);
+            instanceData.Get ("suspendFixAngle", element.hotlink.suspendFixAngle);
+            instanceData.Get ("ignoreTopFloorLinks", element.hotlink.ignoreTopFloorLinks);
+            instanceData.Get ("relinkWallOpenings", element.hotlink.relinkWallOpenings);
+            instanceData.Get ("adjustLevelDiffs", element.hotlink.adjustLevelDiffs);
+
+            const GSErrCode err = ACAPI_Element_Create (&element, nullptr);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to place the hotlink instance"));
+                continue;
+            }
+            elements (CreateElementIdObjectState (element.header.guid));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+ChangeHotlinkInstancesCommand::ChangeHotlinkInstancesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeHotlinkInstancesCommand::GetName () const
+{
+    return "ChangeHotlinkInstances";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances to change. Every field but elementId is optional; a field that is omitted keeps its current value.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "origin": {
+                            "$ref": "#/HotlinkOrigin"
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Rotation about the origin, counter-clockwise, in radians."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Reflect the module's local X axis before the rotation."
+                        },
+                        "floorDifference": {
+                            "type": "integer"
+                        },
+                        "skipNested": {
+                            "type": "boolean"
+                        },
+                        "suspendFixAngle": {
+                            "type": "boolean"
+                        },
+                        "ignoreTopFloorLinks": {
+                            "type": "boolean"
+                        },
+                        "relinkWallOpenings": {
+                            "type": "boolean"
+                        },
+                        "adjustLevelDiffs": {
+                            "type": "boolean"
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Move the instance to this layer."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Change Hotlink Instances", [&] () -> GSErrCode {
+        for (const GS::ObjectState& instanceData : hotlinkInstances) {
+            const GS::ObjectState* elementId = instanceData.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to get the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_HotlinkID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADELEMENTTYPE, "The element is not a hotlink instance"));
+                continue;
+            }
+
+            API_Element mask;
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const GS::ObjectState* newOrigin = instanceData.Get ("origin");
+            const bool hasRotation = instanceData.Contains ("rotationAngle");
+            const bool hasMirrored = instanceData.Contains ("mirrored");
+            if (newOrigin != nullptr && !hasRotation && !hasMirrored) {
+                // A move keeps the matrix as it is - scale, skew and all - and
+                // replaces only the translation.
+                const API_Coord3D given = Get3DCoordinateFromObjectState (*newOrigin);
+                element.hotlink.transformation.tmx[3] = given.x;
+                element.hotlink.transformation.tmx[7] = given.y;
+                if (newOrigin->Contains ("z")) {
+                    element.hotlink.transformation.tmx[11] = given.z;
+                }
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, transformation);
+            } else if (newOrigin != nullptr || hasRotation || hasMirrored) {
+                // A rotation or a mirror rebuilds the planar matrix from its
+                // decomposition; a scaled or non-planar placement loses that
+                // part, which is what asking for a new angle means.
+                API_Coord3D origin;
+                double rotationAngle;
+                bool mirrored;
+                DecomposeHotlinkTransformation (element.hotlink.transformation, origin, rotationAngle, mirrored);
+                if (newOrigin != nullptr) {
+                    const API_Coord3D given = Get3DCoordinateFromObjectState (*newOrigin);
+                    origin.x = given.x;
+                    origin.y = given.y;
+                    if (newOrigin->Contains ("z")) {
+                        origin.z = given.z;
+                    }
+                }
+                instanceData.Get ("rotationAngle", rotationAngle);
+                instanceData.Get ("mirrored", mirrored);
+                element.hotlink.transformation = CreateHotlinkTransformation (origin, rotationAngle, mirrored);
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, transformation);
+            }
+
+            Int32 floorDifference;
+            if (instanceData.Get ("floorDifference", floorDifference)) {
+                element.hotlink.floorDifference = static_cast<short> (floorDifference);
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, floorDifference);
+            }
+            if (instanceData.Get ("skipNested", element.hotlink.skipNested)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, skipNested);
+            }
+            if (instanceData.Get ("suspendFixAngle", element.hotlink.suspendFixAngle)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, suspendFixAngle);
+            }
+            if (instanceData.Get ("ignoreTopFloorLinks", element.hotlink.ignoreTopFloorLinks)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, ignoreTopFloorLinks);
+            }
+            if (instanceData.Get ("relinkWallOpenings", element.hotlink.relinkWallOpenings)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, relinkWallOpenings);
+            }
+            if (instanceData.Get ("adjustLevelDiffs", element.hotlink.adjustLevelDiffs)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, adjustLevelDiffs);
+            }
+            Int32 layerIndex = 0;
+            if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+                element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change the hotlink instance"));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }

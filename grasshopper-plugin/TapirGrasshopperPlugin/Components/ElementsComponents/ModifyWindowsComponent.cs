@@ -25,7 +25,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("CenterOffsets", "centerOffset", FieldKind.Number, "Distance of the window center from the beginning point of the owner wall."),
             new Field("Reflected", "reflected", FieldKind.Boolean, "Mirror the window on its vertical axis."),
             new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
-            new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall.")
+            new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall."),
+            new Field("Reveal", "reveal", FieldKind.Boolean, "Turn the reveal on or off."),
+            new Field("RevealDepthOffsets", "revealDepthOffset", FieldKind.Number, "Distance the frame plane is moved across the wall thickness, along the wall normal.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

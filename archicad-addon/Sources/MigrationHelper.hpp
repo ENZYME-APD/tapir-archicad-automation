@@ -152,6 +152,16 @@ inline GSErrCode ACAPI_ProjectOperation_Save ()
     return ACAPI_Automate (APIDo_SaveID);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Ifc* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Archive* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
 {
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
@@ -187,9 +197,25 @@ inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
     return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
 }
 
+// APIAny_GetPropertyAutoTextKeyTableID exists in APIdefs_Goodies.h from AC25 on: par1 is the
+// element guid (APINULLGuid for the keys common to every element), par2 the name -> key table.
+inline GSErrCode ACAPI_AutoText_GetPropertyAutoTextKeyTable (API_Guid* guid, GS::HashTable<GS::UniString, GS::UniString>* keyGuidTable)
+{
+    return ACAPI_Goodies (APIAny_GetPropertyAutoTextKeyTableID, (void*) guid, (void*) keyGuidTable);
+}
+
+// The unplaced-node flag (APIdefs_Database.h): AC26 takes it as par2 of
+// APIDb_GetHotlinkNodeID and par3 of APIDb_GetHotlinkNodesID; AC25 has neither
+// (par2 is "---" and the node list respectively), so on 25 the flag is accepted
+// for the callers' sake and dropped, and an unplaced node cannot be read.
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
 {
+#ifdef ServerMainVers_2600
     return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
+#else
+    (void) enableUnplaced;
+    return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode);
+#endif
 }
 
 inline GSErrCode ACAPI_Hotlink_GetHotlinkRootNodeGuid (const API_HotlinkTypeID* type, API_Guid* rootNodeGuid)
@@ -200,6 +226,21 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkRootNodeGuid (const API_HotlinkTypeID* 
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGuid, GS::HashTable<API_Guid, GS::Array<API_Guid>>* hotlinkNodeTree)
 {
     return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
+}
+
+inline GSErrCode ACAPI_Hotlink_CreateHotlinkNode (API_HotlinkNode* hotlinkNode)
+{
+    return ACAPI_Database (APIDb_CreateHotlinkNodeID, hotlinkNode);
+}
+
+inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, GS::Array<API_Guid>* nodeRefList, bool* enableUnplaced = nullptr)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList, (void*) enableUnplaced);
+#else
+    (void) enableUnplaced;
+    return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList);
+#endif
 }
 
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
@@ -250,6 +291,26 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
 inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo>* activeLibs, Int32* embeddedLibraryIndex = nullptr)
 {
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_LibraryInfo>* activeLibs)
+{
+    return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* location, GS::Array<API_Elem_Head>* elemHead = nullptr)
+{
+    // AC25/26 take the element list as a handle (APIDo_SaveAsModuleFileID par2:
+    // API_Elem_Head**); the selection form is what this shim supports.
+    if (elemHead != nullptr && !elemHead->IsEmpty ()) {
+        return APIERR_BADPARS;
+    }
+    return ACAPI_Automate (APIDo_SaveAsModuleFileID, (void*) location);
+}
+
+inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr, Get3DComponentProc* get3DComponentProc = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
 }
 
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
@@ -374,7 +435,7 @@ inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier i
     return ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &ifcTranslator, &ifcRelationshipData);
 }
 
-inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators)
+inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier>& ifcExportTranslators)
 {
     return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
 }
@@ -466,6 +527,15 @@ inline API_ElemTypeID GetElemTypeId (const API_Elem_Head& elemHead)
     return elemHead.type.typeID;
 #else
     return elemHead.typeID;
+#endif
+}
+
+inline void SetElemVariationId (API_Elem_Head& elemHead, API_ElemVariationID variationID)
+{
+#ifdef ServerMainVers_2600
+    elemHead.type.variationID = variationID;
+#else
+    elemHead.variationID = variationID;
 #endif
 }
 

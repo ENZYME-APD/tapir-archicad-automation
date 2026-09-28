@@ -43,3 +43,20 @@ else:
                 }
             ]
         })
+
+    # Multiple section elements can be merged into one continuous chain via
+    # sectionElementIds - e.g. all slabs of a section in a single vertical chain,
+    # dimensioning slab thicknesses and the clear storey heights between them.
+    slabSectionElements = [
+        s for s in sectionElements if s.get ('ownerElementType') == 'Slab'
+    ]
+    if slabSectionElements:
+        aclib.RunTapirCommand ('CreateAssociativeDimensionsOnSection', {
+            'dimensionsData': [
+                {
+                    'sectionElementIds': [s['sectionElementId'] for s in slabSectionElements],
+                    'referencePoint': { 'x': 0.0, 'y': 0.0 },
+                    'preset': 'SlabCompositeFaces'
+                }
+            ]
+        })
