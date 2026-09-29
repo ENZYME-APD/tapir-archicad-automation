@@ -1,0 +1,45 @@
+name: Tapir Installer Build Check
+
+on:
+  push:
+    paths:
+      - 'archicad-addon/Installer/**'
+      - '.github/workflows/installer_build_check.yml'
+  pull_request:
+    paths:
+      - 'archicad-addon/Installer/**'
+      - '.github/workflows/installer_build_check.yml'
+
+jobs:
+  build_installer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ windows-2022, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Syntax Check
+      run: python -m py_compile archicad-addon/Installer/tapir_installer.py
+    - name: Console Smoke Run
+      run: python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnsFolder "${{ runner.temp }}" --versions 29
+    - name: Install PyInstaller
+      run: pip install pyinstaller
+    - name: Build Executable Windows
+      if: runner.os == 'Windows'
+      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py
+    - name: Build Executable Mac
+      if: runner.os == 'macOS'
+      run: pyinstaller --noconfirm --windowed --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Installer ${{ runner.os }}
+        path: |
+          dist/TapirInstaller.exe
+          dist/TapirInstaller.app
