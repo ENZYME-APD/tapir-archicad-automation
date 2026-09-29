@@ -2089,7 +2089,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
                         },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -2251,7 +2251,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -2603,7 +2603,7 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -2724,12 +2724,27 @@ API_JustID ParseJustificationString (const GS::UniString& justification)
     return APIJust_Left;
 }
 
+// The content writers below treat '\n' as the only line separator when counting nLine and
+// filling eolPos, so a Windows-style "\r\n" (or a bare '\r') arriving through the JSON
+// interface would leave stray CR characters inside memo.textContent while the line
+// bookkeeping only accounts for the LFs - an inconsistent memo that Archicad renders wrong
+// (reported as only the first character of the text appearing). Every write path normalizes
+// the incoming content to '\n' separators first.
+static GS::UniString NormalizeLineBreaks (const GS::UniString& text)
+{
+    GS::UniString normalized = text;
+    normalized.ReplaceAll ("\r\n", "\n");
+    normalized.ReplaceAll ("\r", "\n");
+    return normalized;
+}
+
 // Used by SetDetailsOfElementsCommand's generic Text/Label write case (upstream official fix);
 // TextLabelDetails::ApplyTextContent below is Tapir's own, richer equivalent used by
 // CreateTexts/CreateLabels/ModifyTexts/ModifyLabels - both build memo.textContent/paragraphs but
 // only ApplyTextContent supports multi-run content.
-void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
+void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& rawText)
 {
+    const GS::UniString text = NormalizeLineBreaks (rawText);
 #ifdef ServerMainVers_2800
     delete memo.textContent;
     memo.textContent = new GS::UniString { text };
@@ -3051,6 +3066,9 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             if (!runOS.Get ("text", runText)) {
                 return CreateErrorResponse (APIERR_BADPARS, "Each entry in 'runs' requires a 'text' field.");
             }
+            // Normalized per run, before the run lengths are taken, so the run ranges set
+            // below stay consistent with the concatenated content.
+            runText = NormalizeLineBreaks (runText);
             short pen = textData.pen;
             runOS.Get ("penIndex", pen);
             short font = textData.font;
@@ -3082,6 +3100,8 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         }
     } else if (!parameters.Get ("text", text)) {
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter");
+    } else {
+        text = NormalizeLineBreaks (text);
     }
 
     // 'memo' may already carry content: the Create path gets its memo from ACAPI_Element_GetDefaults,
@@ -3626,7 +3646,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
