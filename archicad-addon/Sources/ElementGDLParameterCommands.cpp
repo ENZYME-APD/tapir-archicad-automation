@@ -1,6 +1,8 @@
 #include "ElementGDLParameterCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+
 constexpr const char* ParameterValueFieldName = "value";
 
 static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
@@ -184,6 +186,41 @@ static const API_AddParType* FindParameterByName (const API_GetParamsType& getPa
         }
     }
     return nullptr;
+}
+
+constexpr double SizeTolerance = 1e-6;
+
+// A or B as the parameter list holds it, in metres.
+static GS::Optional<double> GetSizeParameter (const API_GetParamsType& getParams, const char* name)
+{
+    const API_AddParType* param = FindParameterByName (getParams, name);
+    if (param == nullptr || param->typeMod != API_ParSimple) {
+        return {};
+    }
+    return param->value.real;
+}
+
+// API_ObjectType.xRatio/yRatio hold the placed size itself only when useXYFixSize is on; otherwise
+// they hold the size divided by the library part's own A/B (as documented). The parameter
+// interface uses that stored unit for getParams.a/b and for a written A or B, while the parameter
+// list and whatever the Parameter Script sets are in metres. The ratio of getParams.a/b to the
+// parameter list's A/B right after ACAPI_LibraryPart_OpenParameters converts between the two
+// (it is 1 with useXYFixSize on).
+static GS::Optional<double> GetStoredSizeScale (double storedSize, const GS::Optional<double>& size)
+{
+    if (!size.HasValue () || std::abs (*size) < SizeTolerance) {
+        return {};
+    }
+    return storedSize / *size;
+}
+
+// A or B in the stored unit; getParams.a/b as they are when there is no scale to convert with.
+static double ToStoredSize (double storedSize, const GS::Optional<double>& size, const GS::Optional<double>& scale)
+{
+    if (!size.HasValue () || !scale.HasValue ()) {
+        return storedSize;
+    }
+    return *size * *scale;
 }
 
 // Retrieving a list of numbers via ObjectState::Get<GS::Array<double>> does not convert integer items
@@ -753,6 +790,12 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             gdlParametersTypeDictionary.Add (name, actParam.typeID);
                         }
                     }
+                    GS::Optional<double> xRatioPerA;
+                    GS::Optional<double> yRatioPerB;
+                    if (GetElemTypeId (element.header) == API_ObjectID || GetElemTypeId (element.header) == API_LampID) {
+                        xRatioPerA = GetStoredSizeScale (getParams.a, GetSizeParameter (getParams, "A"));
+                        yRatioPerB = GetStoredSizeScale (getParams.b, GetSizeParameter (getParams, "B"));
+                    }
 
                     GS::Array<ArrayParameterChange> pendingArrayChanges;
                     for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
@@ -760,7 +803,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         if (elemGdlParametersItem.Get ("parameters", parameters)) {
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
-                                err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, pendingArrayChanges, errMessage);
+                                err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                                 if (err != NoError) {
                                     break;
                                 }
@@ -772,7 +815,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 break;
                             }
                         } else {
-                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, pendingArrayChanges, errMessage);
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                             if (err != NoError) {
                                 break;
                             }
@@ -794,8 +837,8 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         switch (GetElemTypeId (element.header)) {
                             case API_ObjectID:
                             case API_LampID:
-                                element.object.xRatio = getParams.a;
-                                element.object.yRatio = getParams.b;
+                                element.object.xRatio = ToStoredSize (getParams.a, GetSizeParameter (getParams, "A"), xRatioPerA);
+                                element.object.yRatio = ToStoredSize (getParams.b, GetSizeParameter (getParams, "B"), yRatioPerB);
                                 ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
                                 ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
                                 break;
@@ -849,6 +892,8 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     const API_GetParamsType& getParams,
     const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
     const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
+    const GS::Optional<double>& xRatioPerA,
+    const GS::Optional<double>& yRatioPerB,
     GS::Array<ArrayParameterChange>& pendingArrayChanges,
     GS::UniString& errMessage)
 {
@@ -976,6 +1021,13 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
         case APIParT_Dictionary:
             // Not supported by the Archicad API yet
             break;
+    }
+
+    // A written A or B is read in the stored size unit (see GetStoredSizeScale).
+    if (xRatioPerA.HasValue () && CHCompareCStrings (changeParam.name, "A") == 0) {
+        changeParam.realValue *= *xRatioPerA;
+    } else if (yRatioPerB.HasValue () && CHCompareCStrings (changeParam.name, "B") == 0) {
+        changeParam.realValue *= *yRatioPerB;
     }
 
     GSErrCode err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
