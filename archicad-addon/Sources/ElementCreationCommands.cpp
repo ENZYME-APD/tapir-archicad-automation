@@ -1664,7 +1664,7 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
 }
 
 // The library part's own A and B; a and b are left as they are when it has none to divide by.
-static void GetLibraryPartSize (Int32 libInd, double& a, double& b)
+static GSErrCode GetLibraryPartSize (Int32 libInd, double& a, double& b)
 {
     double libraryPartA = 0.0;
     double libraryPartB = 0.0;
@@ -1675,7 +1675,7 @@ static void GetLibraryPartSize (Int32 libInd, double& a, double& b)
         ACAPI_DisposeAddParHdl (&addPars);
     }
     if (err != NoError) {
-        return;
+        return err;
     }
     if (libraryPartA > 1e-6) {
         a = libraryPartA;
@@ -1683,6 +1683,7 @@ static void GetLibraryPartSize (Int32 libInd, double& a, double& b)
     if (libraryPartB > 1e-6) {
         b = libraryPartB;
     }
+    return NoError;
 }
 
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
@@ -1726,7 +1727,10 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
         double libraryPartA = 1.0;
         double libraryPartB = 1.0;
         if (!useFixSize) {
-            GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+            const GSErrCode err = GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the library part's own A and B, which 'dimensions' are converted with.");
+            }
         }
         element.object.xRatio = dims.x / libraryPartA;
         element.object.yRatio = dims.y / libraryPartB;
