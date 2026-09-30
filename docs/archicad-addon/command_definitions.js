@@ -4085,7 +4085,7 @@ var gCommands = [{
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -4170,7 +4170,7 @@ var gCommands = [{
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -4974,7 +4974,7 @@ var gCommands = [{
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
                         },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -5012,7 +5012,7 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
