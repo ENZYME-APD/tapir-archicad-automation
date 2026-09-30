@@ -802,7 +802,7 @@ var gCommands = [{
     }
             },{
                 "name": "SaveProjectAsArchive",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Saves the open project as an archive (.pla) file, with the library parts it uses inside.",
                 "inputScheme": {
         "type": "object",
@@ -6115,7 +6115,7 @@ var gCommands = [{
     }
             },{
                 "name": "UpdatePropertyGroups",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Updates the name and/or description of existing Custom Property Groups, keeping their guid.",
                 "inputScheme": {
         "type": "object",
@@ -6146,7 +6146,7 @@ var gCommands = [{
     }
             },{
                 "name": "ImportPropertiesXml",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed.",
                 "inputScheme": {
         "type": "object",
@@ -6345,7 +6345,7 @@ var gCommands = [{
     }
             },{
                 "name": "UpdateClassificationSystems",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid.",
                 "inputScheme": {
         "type": "object",
@@ -6379,7 +6379,7 @@ var gCommands = [{
     }
             },{
                 "name": "UpdateClassificationItems",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent.",
                 "inputScheme": {
         "type": "object",
@@ -6411,7 +6411,7 @@ var gCommands = [{
     }
             },{
                 "name": "ImportClassificationsXml",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed.",
                 "inputScheme": {
         "type": "object",
@@ -8285,7 +8285,7 @@ var gCommands = [{
     }
             },{
                 "name": "GetIFCExportTranslators",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName.",
                 "inputScheme": null,
                 "outputScheme": {
@@ -8538,7 +8538,7 @@ var gCommands = [{
     }
             },{
                 "name": "DeleteEmbeddedLibraryItems",
-                "version": "1.5.10",
+                "version": "1.6.0",
                 "description": "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27.",
                 "inputScheme": {
         "type": "object",

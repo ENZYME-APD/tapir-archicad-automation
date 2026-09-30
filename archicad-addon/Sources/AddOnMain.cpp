@@ -282,7 +282,7 @@ GSErrCode Initialize (void)
             "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
         );
         err |= RegisterCommand<SaveProjectAsArchiveCommand> (
-            projectCommands, "1.5.10",
+            projectCommands, "1.6.0",
             "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
@@ -699,11 +699,11 @@ GSErrCode Initialize (void)
             "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder)."
         );
         err |= RegisterCommand<UpdatePropertyGroupsCommand> (
-            propertyCommands, "1.5.10",
+            propertyCommands, "1.6.0",
             "Updates the name and/or description of existing Custom Property Groups, keeping their guid."
         );
         err |= RegisterCommand<ImportPropertiesXmlCommand> (
-            propertyCommands, "1.5.10",
+            propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
         AddCommandGroup (propertyCommands);
@@ -737,15 +737,15 @@ GSErrCode Initialize (void)
             "Deletes the given Classification Items."
         );
         err |= RegisterCommand<UpdateClassificationSystemsCommand> (
-            classificationCommands, "1.5.10",
+            classificationCommands, "1.6.0",
             "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid."
         );
         err |= RegisterCommand<UpdateClassificationItemsCommand> (
-            classificationCommands, "1.5.10",
+            classificationCommands, "1.6.0",
             "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent."
         );
         err |= RegisterCommand<ImportClassificationsXmlCommand> (
-            classificationCommands, "1.5.10",
+            classificationCommands, "1.6.0",
             "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed."
         );
         AddCommandGroup (classificationCommands);
@@ -863,7 +863,7 @@ GSErrCode Initialize (void)
             "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use."
         );
         err |= RegisterCommand<GetIFCExportTranslatorsCommand> (
-            ifcCommands, "1.5.10",
+            ifcCommands, "1.6.0",
             "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName."
         );
         err |= RegisterCommand<GetElementsByIFCIdsCommand> (
@@ -900,7 +900,7 @@ GSErrCode Initialize (void)
             "Adds the given files into the embedded library. With the overwriteExisting flag an embedded library item already existing on an outputPath is replaced (Archicad 27 or newer)."
         );
         err |= RegisterCommand<DeleteEmbeddedLibraryItemsCommand> (
-            libraryCommands, "1.5.10",
+            libraryCommands, "1.6.0",
             "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
         );
         err |= RegisterCommand<SetLibrariesCommand> (
