@@ -1663,6 +1663,28 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     return true;
 }
 
+// The library part's own A and B; a and b are left as they are when it has none to divide by.
+static void GetLibraryPartSize (Int32 libInd, double& a, double& b)
+{
+    double libraryPartA = 0.0;
+    double libraryPartB = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    const GSErrCode err = ACAPI_LibraryPart_GetParams (libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
+    if (addPars != nullptr) {
+        ACAPI_DisposeAddParHdl (&addPars);
+    }
+    if (err != NoError) {
+        return;
+    }
+    if (libraryPartA > 1e-6) {
+        a = libraryPartA;
+    }
+    if (libraryPartB > 1e-6) {
+        b = libraryPartB;
+    }
+}
+
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
 // dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
 // per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
@@ -1696,8 +1718,18 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     if (parameters.Get ("dimensions", dimensions)) {
         const API_Coord3D dims = Get3DCoordinateFromObjectState (dimensions);
 
-        element.object.xRatio = dims.x;
-        element.object.yRatio = dims.y;
+        // xRatio/yRatio hold the size itself only with useXYFixSize on; otherwise they hold the size
+        // divided by the library part's own A/B (as documented), so convert for the flag the element
+        // ends up with.
+        bool useFixSize = element.object.useXYFixSize;
+        parameters.Get ("useFixSize", useFixSize);
+        double libraryPartA = 1.0;
+        double libraryPartB = 1.0;
+        if (!useFixSize) {
+            GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+        }
+        element.object.xRatio = dims.x / libraryPartA;
+        element.object.yRatio = dims.y / libraryPartB;
         GS::ObjectState os (ParameterValueFieldName, dims.z);
         ChangeParams (memo.params, {{"ZZYZX", os}});
         if (mask != nullptr) {
