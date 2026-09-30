@@ -1730,8 +1730,14 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
         }
         element.object.xRatio = dims.x / libraryPartA;
         element.object.yRatio = dims.y / libraryPartB;
-        GS::ObjectState os (ParameterValueFieldName, dims.z);
-        ChangeParams (memo.params, {{"ZZYZX", os}});
+        // A and B in the parameter memo have to agree with xRatio/yRatio: Archicad reconciles the two
+        // on a change, and after CreateObjects the memo would keep the Object tool default's A and B,
+        // which a later ModifyObjects (even one changing only the angle) then applied.
+        ChangeParams (memo.params, {
+            {"A", GS::ObjectState (ParameterValueFieldName, dims.x)},
+            {"B", GS::ObjectState (ParameterValueFieldName, dims.y)},
+            {"ZZYZX", GS::ObjectState (ParameterValueFieldName, dims.z)}
+        });
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, xRatio);
             ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, yRatio);

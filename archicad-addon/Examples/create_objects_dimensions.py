@@ -1,8 +1,9 @@
 import aclib
 
-# CreateObjects and ModifyObjects must give an object exactly the 'dimensions' asked for. An object
-# placed without a fixed size (useFixSize off) stores its size divided by the library part's own A
-# and B, so both settings are checked. Chair 01 keeps A and B equal, so the sizes are square.
+# CreateObjects and ModifyObjects must give an object exactly the 'dimensions' asked for, and a
+# later ModifyObjects that does not name them must keep that size. An object placed without a fixed
+# size (useFixSize off) stores its size divided by the library part's own A and B, so both settings
+# are checked. Chair 01 keeps A and B equal, so the sizes are square.
 # The chairs are deleted at the end, so the project is left as it was.
 
 def GetAB (elementId):
@@ -27,6 +28,12 @@ for useFixSize in (False, True):
     }, debug = False)['elements'][0]['elementId']
     a, b = GetAB (elementId)
     print ('  CreateObjects places A and B as given:', IsNear (a, 0.55) and IsNear (b, 0.55))
+
+    aclib.RunTapirCommand ('ModifyObjects', {
+        'objectsWithDetails': [{ 'elementId': elementId, 'angle': 0.2 }]
+    }, debug = False)
+    a, b = GetAB (elementId)
+    print ('  ModifyObjects changing only the angle keeps A and B:', IsNear (a, 0.55) and IsNear (b, 0.55))
 
     aclib.RunTapirCommand ('ModifyObjects', {
         'objectsWithDetails': [{
