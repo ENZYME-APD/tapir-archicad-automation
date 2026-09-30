@@ -204,14 +204,19 @@ static GS::Optional<double> GetSizeParameter (const API_GetParamsType& getParams
 // they hold the size divided by the library part's own A/B (as documented). The parameter
 // interface uses that stored unit for getParams.a/b and for a written A or B, while the parameter
 // list and whatever the Parameter Script sets are in metres. The ratio of getParams.a/b to the
-// parameter list's A/B right after ACAPI_LibraryPart_OpenParameters converts between the two
-// (it is 1 with useXYFixSize on).
+// parameter list's A/B right after ACAPI_LibraryPart_OpenParameters converts between the two.
+// With useXYFixSize on both are metres, so the scale is only taken with it off. A degenerate
+// scale is no scale, which leaves getParams.a/b and the written values as they are.
 static GS::Optional<double> GetStoredSizeScale (double storedSize, const GS::Optional<double>& size)
 {
-    if (!size.HasValue () || std::abs (*size) < SizeTolerance) {
+    if (!size.HasValue () || std::abs (*size) < SizeTolerance || std::abs (storedSize) < SizeTolerance) {
         return {};
     }
-    return storedSize / *size;
+    const double scale = storedSize / *size;
+    if (!std::isfinite (scale)) {
+        return {};
+    }
+    return scale;
 }
 
 // A or B in the stored unit; getParams.a/b as they are when there is no scale to convert with.
@@ -792,7 +797,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     }
                     GS::Optional<double> xRatioPerA;
                     GS::Optional<double> yRatioPerB;
-                    if (GetElemTypeId (element.header) == API_ObjectID || GetElemTypeId (element.header) == API_LampID) {
+                    if ((GetElemTypeId (element.header) == API_ObjectID || GetElemTypeId (element.header) == API_LampID) && !element.object.useXYFixSize) {
                         xRatioPerA = GetStoredSizeScale (getParams.a, GetSizeParameter (getParams, "A"));
                         yRatioPerB = GetStoredSizeScale (getParams.b, GetSizeParameter (getParams, "B"));
                     }
