@@ -4,7 +4,8 @@ name: Monthly Release
 # (https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Release-process)
 # on a monthly schedule:
 #
-#   1. Skip when nothing changed since the last release tag.
+#   1. Skip when nothing changed since the last release tag, or when the
+#      previous release went out less than a week ago.
 #   2. Regenerate docs/archicad-addon from the Add-On sources
 #      (tools/generate_addon_docs.py, no Archicad needed) and push the
 #      result to main when it changed, so the release tags current docs.
@@ -16,7 +17,8 @@ name: Monthly Release
 #      workflow's own GITHUB_TOKEN does not trigger on-push workflows.
 #   5. When all artifacts are built, publish the draft release with
 #      auto-generated notes.
-#   6. Increment the patch version (tools/update_version.py) and commit, so
+#   6. Announce the published release in the project's Discord channel.
+#   7. Increment the patch version (tools/update_version.py) and commit, so
 #      development of the next version starts - the wiki's final step.
 #
 # A build failure stops the run before publishing and before the version
@@ -32,8 +34,12 @@ on:
         description: Release without regenerating docs/archicad-addon (only when the generator fails)
         type: boolean
         default: false
+      allow_early_release:
+        description: Release even though the previous release went out less than a week ago
+        type: boolean
+        default: false
       dry_run:
-        description: Only report what would be released - no tag, builds, publish or version bump
+        description: Only report what would be released - no tag, builds, publish, announcement or version bump
         type: boolean
         default: false
 
@@ -46,6 +52,15 @@ env:
   # executables - update together with the build matrix and the installer
   # jobs in archicad_addon.yml.
   EXPECTED_ASSETS: 12
+
+  # Where a published release is announced. The DISCORD_BOT_TOKEN secret
+  # that the Discord Issue Bot already uses must be able to post in this
+  # channel; without the secret the announcement step is a no-op.
+  DISCORD_RELEASE_CHANNEL_ID: '994704152703815762'
+
+  # A release this recent suppresses the next one, so the monthly schedule
+  # cannot cut a release days after a manual or hotfix release went out.
+  MIN_RELEASE_INTERVAL_SECONDS: 604800   # 1 week
 
 jobs:
   release:
@@ -116,6 +131,9 @@ jobs:
               # plus anything); --exclude keeps pre-release-style tags like
               # 1.6.0-rc1 from ever becoming LAST_TAG.
               LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' "$VERSION"^)
+              # The one-week guard in the else branch below deliberately
+              # does not apply here: resuming finishes a release that is
+              # already tagged, it does not cut a new one.
               echo "Tag $VERSION already points at HEAD - resuming the failed release (previous tag: $LAST_TAG)."
               echo "release=true" >> "$GITHUB_OUTPUT"
               echo "tag_exists=true" >> "$GITHUB_OUTPUT"
@@ -145,6 +163,18 @@ jobs:
             # --exclude for the same reason as in the resume branch above.
             LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' HEAD)
             echo "Current version: $VERSION, last release tag: $LAST_TAG"
+            # How long ago the previous release actually went out. A
+            # published release is what "there was a release" means, so ask
+            # the API for its publish time; a tag with no release behind it
+            # (an old one, or one released by hand) falls back to the date
+            # of the commit it points at.
+            LAST_RELEASE_AT=$(gh api "repos/${{ github.repository }}/releases/tags/$LAST_TAG" \
+              --jq '.published_at // empty' 2> /dev/null || true)
+            if [ -z "$LAST_RELEASE_AT" ]; then
+              LAST_RELEASE_AT=$(git log -1 --format=%cI "$LAST_TAG^{commit}")
+            fi
+            RELEASE_AGE=$(( $(date -u +%s) - $(date -u -d "$LAST_RELEASE_AT" +%s) ))
+            echo "$LAST_TAG was released at $LAST_RELEASE_AT ($((RELEASE_AGE / 3600))h ago)."
             # Every release ends with the "Update version after release"
             # commit on main, so a plain commit count since the last tag is
             # always at least 1. Only commits touching something other than
@@ -157,6 +187,15 @@ jobs:
               ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
             if [ "$COMMITS" -eq 0 ]; then
               echo "No changes since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
+              echo "release=false" >> "$GITHUB_OUTPUT"
+            elif [ "$RELEASE_AGE" -lt "$MIN_RELEASE_INTERVAL_SECONDS" ] \
+                 && [ '${{ inputs.allow_early_release }}' != 'true' ]; then
+              # Checked after the commit count so that the "nothing
+              # changed" summary, the more informative of the two, wins
+              # when both apply.
+              echo "$LAST_TAG was released $((RELEASE_AGE / 3600))h ago, less than" \
+                   "$((MIN_RELEASE_INTERVAL_SECONDS / 86400)) day(s) - not releasing again yet." \
+                   "Dispatch this workflow with 'allow_early_release' to release anyway." >> "$GITHUB_STEP_SUMMARY"
               echo "release=false" >> "$GITHUB_OUTPUT"
             else
               echo "$COMMITS commit(s) with changes since $LAST_TAG - releasing $VERSION."
@@ -204,7 +243,7 @@ jobs:
         run: |
           echo "DRY RUN: would release **${{ steps.plan.outputs.version }}**" \
                "(previous tag ${{ steps.plan.outputs.last_tag }}); no tag, build," \
-               "publish or version bump was performed." >> "$GITHUB_STEP_SUMMARY"
+               "publish, Discord announcement or version bump was performed." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create and push the release tag
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true && steps.plan.outputs.tag_exists != 'true'
@@ -406,6 +445,93 @@ jobs:
             gh api --method DELETE "repos/${{ github.repository }}/releases/$DUP_ID"
           done
           echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Announce the release on Discord
+        # continue-on-error on purpose: the release is already published by
+        # this point, so a Discord outage, a revoked token or a channel the
+        # bot cannot post in must not fail the run and block the version
+        # bump below - it is a warning, not a broken release. A missing
+        # secret stays quiet, as in the Discord Issue Bot.
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
+        continue-on-error: true
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.plan.outputs.version }}
+        run: |
+          set -eu
+          if [ -z "${DISCORD_BOT_TOKEN:-}" ]; then
+            echo "::warning::DISCORD_BOT_TOKEN is not configured - skipping the Discord announcement."
+            exit 0
+          fi
+          # urllib only: this job installs no Python dependencies, and one
+          # POST does not justify adding a pip step to the release path.
+          python3 - <<'EOF'
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://discord.com/api/v10'
+          CHANNEL = os.environ['DISCORD_RELEASE_CHANNEL_ID']
+          VERSION = os.environ['VERSION']
+          RELEASE_URL = os.environ['RELEASE_URL']
+          CONTENT = (
+              '**Tapir {} is out!** :tada:'
+              '\nRelease notes and downloads for the Archicad Add-On and the '
+              'Grasshopper plugin: {}'.format(VERSION, RELEASE_URL)
+          )
+
+
+          def request(method, path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              request_ = urllib.request.Request(API + path, data=data, method=method)
+              request_.add_header('Authorization', 'Bot ' + os.environ['DISCORD_BOT_TOKEN'])
+              request_.add_header('User-Agent', 'tapir-monthly-release')
+              if data is not None:
+                  request_.add_header('Content-Type', 'application/json')
+              with urllib.request.urlopen(request_, timeout=30) as response:
+                  return json.load(response)
+
+
+          # A resumed release re-runs this step after the release was
+          # already published, so look before posting a second time. The
+          # release URL carries the version and nothing else in the channel
+          # looks like it, so it identifies this announcement exactly. A
+          # channel the job cannot read is no reason to stay silent - a
+          # duplicate announcement beats a missing one.
+          try:
+              recent = request('GET', '/channels/{}/messages?limit=50'.format(CHANNEL))
+          except urllib.error.URLError as error:
+              print('::warning::Could not read channel {} to look for an earlier '
+                    'announcement ({}) - posting anyway.'.format(CHANNEL, error))
+              recent = []
+          if any(RELEASE_URL in (message.get('content') or '') for message in recent):
+              print('Channel {} already carries the announcement for {}.'.format(CHANNEL, VERSION))
+              raise SystemExit(0)
+
+          for attempt in (1, 2, 3):
+              try:
+                  request('POST', '/channels/{}/messages'.format(CHANNEL), {
+                      'content': CONTENT,
+                      # Nothing in the text is a mention, and an empty parse
+                      # list keeps that true whatever a later edit adds.
+                      'allowed_mentions': {'parse': []},
+                  })
+                  break
+              except urllib.error.URLError as error:
+                  if attempt == 3:
+                      raise
+                  print('Posting to Discord failed ({}) - retrying in 20s.'.format(error))
+                  time.sleep(20)
+
+          print('Announced {} in Discord channel {}.'.format(VERSION, CHANNEL))
+          summary = os.environ.get('GITHUB_STEP_SUMMARY')
+          if summary:
+              with open(summary, 'a') as handle:
+                  handle.write('Announced **{}** in the Discord release channel.\n'.format(VERSION))
+          EOF
 
       - name: Increment the version for the next cycle
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
