@@ -359,6 +359,8 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             segmentOs.Add ("crossSectionWidth", segment->GetCrossSectionWidth ());
             segmentOs.Add ("crossSectionHeight", segment->GetCrossSectionHeight ());
             segmentOs.Add ("crossSectionShape", ConnectorShapeToString (segment->GetCrossSectionShape ()));
+            segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (segment->GetCrossSectionReferenceId ()));
+            segmentOs.Add ("preferenceTableId", segment->GetPreferenceTableId ().GetGuid ().ToUniString ());
             segments (segmentOs);
         }
 
@@ -620,7 +622,11 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
-                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections)."
+                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "mepSystemId": {
                             "$ref": "#/AttributeId",
@@ -696,12 +702,19 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             double height = 0.0;
             GS::UniString shapeStr;
             Int32 referenceId = -1;
+            GS::UniString preferenceTableIdStr;
             const bool hasWidth = routingElementData.Get ("crossSectionWidth", width);
             const bool hasHeight = routingElementData.Get ("crossSectionHeight", height);
             const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
             const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
-            if (hasWidth || hasHeight || hasShape || hasReferenceId) {
+            const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
+            if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
                 segmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
+                    // The preference table is set before the reference id, because the reference id is
+                    // resolved against the table the segment uses.
+                    if (hasPreferenceTableId) {
+                        modifier.SetPreferenceTableId (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                    }
                     if (hasShape) {
                         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
                         if (shape.has_value ()) {
@@ -957,6 +970,14 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "description": "New cross section shape applied to all segments.",
                             "enum": ["Rectangular", "Circular", "Oval", "UShape"]
                         },
+                        "crossSectionReferenceId": {
+                            "type": "integer",
+                            "description": "New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
+                        },
                         "nodePositions": {
                             "type": "array",
                             "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
@@ -1032,10 +1053,14 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         double width = 0.0;
         double height = 0.0;
         GS::UniString shapeStr;
+        Int32 referenceId = -1;
+        GS::UniString preferenceTableIdStr;
         const bool hasWidth = routingElementData.Get ("crossSectionWidth", width);
         const bool hasHeight = routingElementData.Get ("crossSectionHeight", height);
         const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
-        if (hasWidth || hasHeight || hasShape) {
+        const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
+        const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
+        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
             for (const ACAPI::MEP::UniqueID& segmentId : routingElement->GetRoutingSegmentIds ()) {
                 ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
                 if (segment.IsErr ()) {
@@ -1043,6 +1068,11 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     continue;
                 }
                 ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
+                    // Same order as in CreateMEPRoutingElements: table first, then the reference id
+                    // that is resolved against it.
+                    if (hasPreferenceTableId) {
+                        modifier.SetPreferenceTableId (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                    }
                     if (hasShape) {
                         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
                         if (shape.has_value ()) {
@@ -1054,6 +1084,9 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     }
                     if (hasHeight) {
                         modifier.SetCrossSectionHeight (height);
+                    }
+                    if (hasReferenceId && referenceId >= 0) {
+                        modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId));
                     }
                 }, "Modify Cross Section of Routing Segment");
                 success &= result.IsOk ();

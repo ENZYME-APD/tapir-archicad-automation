@@ -94,6 +94,14 @@
             },
             "crossSectionShape": {
                 "type": "string"
+            },
+            "crossSectionReferenceId": {
+                "type": "integer",
+                "description": "The cross section reference id of the segment in its preference table (meaningful for circular cross sections)."
+            },
+            "preferenceTableId": {
+                "$ref": "#/Guid",
+                "description": "The guid of the segment preference table used by the segment (see GetMEPPreferenceTables)."
             }
         },
         "additionalProperties": false,
@@ -1162,6 +1170,14 @@
             },
             "centerLineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
+            },
+            "materialId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The surface (material) attribute applied to the 3D model of the elements of the system."
+            },
+            "insulationMaterialId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The surface (material) attribute applied to the insulation of the elements of the system."
             }
         },
         "additionalProperties": false,

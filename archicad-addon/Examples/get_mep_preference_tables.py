@@ -3,9 +3,10 @@ import aclib
 # Requires Archicad 28 or newer.
 
 # List the circular cross section preference tables of the Piping domain
-# (referenceId, diameter and description per row). The referenceId of a row
-# can be passed as crossSectionReferenceId to CreateMEPRoutingElements /
-# ModifyMEPRoutingElements to pick that exact cross section.
+# (referenceId, diameter and description per row). The guid of a table can be
+# passed as preferenceTableId and the referenceId of a row as
+# crossSectionReferenceId to CreateMEPRoutingElements / ModifyMEPRoutingElements
+# to pick that exact cross section (see mep_route_preference_table.py).
 pipeTables = aclib.RunTapirCommand ('GetMEPPreferenceTables', {
         'domain': 'Piping'
     })['tables']
