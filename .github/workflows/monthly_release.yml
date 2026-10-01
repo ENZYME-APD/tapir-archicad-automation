@@ -168,8 +168,14 @@ jobs:
             # the API for its publish time; a tag with no release behind it
             # (an old one, or one released by hand) falls back to the date
             # of the commit it points at.
-            LAST_RELEASE_AT=$(gh api "repos/${{ github.repository }}/releases/tags/$LAST_TAG" \
-              --jq '.published_at // empty' 2> /dev/null || true)
+            # On a 404 gh api copies the raw error body to stdout instead of
+            # applying --jq, so an empty-or-not test on the output would see
+            # '{"message":"Not Found",...}' and never fall back. Branch on the
+            # exit status instead.
+            if ! LAST_RELEASE_AT=$(gh api "repos/${{ github.repository }}/releases/tags/$LAST_TAG" \
+                 --jq '.published_at // empty' 2> /dev/null); then
+              LAST_RELEASE_AT=''
+            fi
             if [ -z "$LAST_RELEASE_AT" ]; then
               LAST_RELEASE_AT=$(git log -1 --format=%cI "$LAST_TAG^{commit}")
             fi
@@ -478,7 +484,7 @@ jobs:
           VERSION = os.environ['VERSION']
           RELEASE_URL = os.environ['RELEASE_URL']
           CONTENT = (
-              '**Tapir {} is out!** :tada:'
+              '**Tapir {} is out!** 🎉'
               '\nRelease notes and downloads for the Archicad Add-On and the '
               'Grasshopper plugin: {}'.format(VERSION, RELEASE_URL)
           )
