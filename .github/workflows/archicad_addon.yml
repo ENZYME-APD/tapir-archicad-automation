@@ -128,7 +128,7 @@ jobs:
       with:
         python-version: '3.12'
     - name: Install PyInstaller
-      run: pip install pyinstaller
+      run: pip install pyinstaller truststore certifi
     - name: Build Installer
       run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Rename Installer
@@ -159,7 +159,7 @@ jobs:
       with:
         python-version: '3.12'
     - name: Install PyInstaller
-      run: pip install pyinstaller
+      run: pip install pyinstaller truststore certifi
     - name: Build Installer
       run: pyinstaller --noconfirm --windowed --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Code sign and notarize

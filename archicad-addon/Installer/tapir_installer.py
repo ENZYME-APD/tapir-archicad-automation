@@ -16,6 +16,7 @@ import platform
 import re
 import shlex
 import shutil
+import ssl
 import subprocess
 import sys
 import tempfile
@@ -205,9 +206,39 @@ def DetectArchicadInstallations (mockRootPath = None):
     return installations
 
 
+def CreateSSLContext ():
+    # A PyInstaller-bundled Python ships its own OpenSSL, which does not see
+    # the macOS Keychain and has no CA bundle of its own, so HTTPS fails with
+    # CERTIFICATE_VERIFY_FAILED. Prefer the OS trust store (truststore, which
+    # also honors corporate root certificates), then the certifi bundle, and
+    # only then OpenSSL's defaults. Both packages are optional when running
+    # from source and are bundled into the released executables.
+    try:
+        import truststore
+        return truststore.SSLContext (ssl.PROTOCOL_TLS_CLIENT)
+    except Exception:
+        pass
+    try:
+        import certifi
+        return ssl.create_default_context (cafile = certifi.where ())
+    except Exception:
+        pass
+    return ssl.create_default_context ()
+
+
+SSL_CONTEXT = None
+
+
+def UrlOpen (request):
+    global SSL_CONTEXT
+    if SSL_CONTEXT is None:
+        SSL_CONTEXT = CreateSSLContext ()
+    return urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS, context = SSL_CONTEXT)
+
+
 def DownloadUrl (url):
     request = urllib.request.Request (url, headers = { 'User-Agent' : USER_AGENT })
-    with urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS) as response:
+    with UrlOpen (request) as response:
         return response.read ()
 
 
@@ -255,7 +286,7 @@ def FindAssetForVersion (releaseInfo, acVersion):
 def DownloadAsset (asset, targetFolderPath, progressCallback = None):
     targetPath = os.path.join (targetFolderPath, asset['name'])
     request = urllib.request.Request (asset['browser_download_url'], headers = { 'User-Agent' : USER_AGENT })
-    with urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS) as response:
+    with UrlOpen (request) as response:
         totalSize = int (response.headers.get ('Content-Length', 0))
         downloadedSize = 0
         with open (targetPath, 'wb') as targetFile:
