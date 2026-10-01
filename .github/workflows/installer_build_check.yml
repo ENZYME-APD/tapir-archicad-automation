@@ -29,7 +29,7 @@ jobs:
     - name: Console Smoke Run
       run: python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnsFolder "${{ runner.temp }}" --versions 29
     - name: Install PyInstaller
-      run: pip install pyinstaller
+      run: pip install pyinstaller truststore certifi
     - name: Build Executable Windows
       if: runner.os == 'Windows'
       run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py

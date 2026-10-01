@@ -16,6 +16,7 @@ import platform
 import re
 import shlex
 import shutil
+import ssl
 import subprocess
 import sys
 import tempfile
@@ -205,9 +206,39 @@ def DetectArchicadInstallations (mockRootPath = None):
     return installations
 
 
+def CreateSSLContext ():
+    # A PyInstaller-bundled Python ships its own OpenSSL, which does not see
+    # the macOS Keychain and has no CA bundle of its own, so HTTPS fails with
+    # CERTIFICATE_VERIFY_FAILED. Prefer the OS trust store (truststore, which
+    # also honors corporate root certificates), then the certifi bundle, and
+    # only then OpenSSL's defaults. Both packages are optional when running
+    # from source and are bundled into the released executables.
+    try:
+        import truststore
+        return truststore.SSLContext (ssl.PROTOCOL_TLS_CLIENT)
+    except Exception:
+        pass
+    try:
+        import certifi
+        return ssl.create_default_context (cafile = certifi.where ())
+    except Exception:
+        pass
+    return ssl.create_default_context ()
+
+
+SSL_CONTEXT = None
+
+
+def UrlOpen (request):
+    global SSL_CONTEXT
+    if SSL_CONTEXT is None:
+        SSL_CONTEXT = CreateSSLContext ()
+    return urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS, context = SSL_CONTEXT)
+
+
 def DownloadUrl (url):
     request = urllib.request.Request (url, headers = { 'User-Agent' : USER_AGENT })
-    with urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS) as response:
+    with UrlOpen (request) as response:
         return response.read ()
 
 
@@ -255,7 +286,7 @@ def FindAssetForVersion (releaseInfo, acVersion):
 def DownloadAsset (asset, targetFolderPath, progressCallback = None):
     targetPath = os.path.join (targetFolderPath, asset['name'])
     request = urllib.request.Request (asset['browser_download_url'], headers = { 'User-Agent' : USER_AGENT })
-    with urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS) as response:
+    with UrlOpen (request) as response:
         totalSize = int (response.headers.get ('Content-Length', 0))
         downloadedSize = 0
         with open (targetPath, 'wb') as targetFile:
@@ -433,6 +464,108 @@ def RunConsoleInstaller (args):
         return 1
 
 
+# The Tapir logo (branding/logo/png/tapir_logo_black_512.png on a light disc,
+# so it reads on both light and dark window backgrounds), 80x80 PNG, embedded
+# so that the installer stays a single file both from source and when bundled.
+TAPIR_LOGO_PNG_BASE64 = (
+    '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'
+    '0Zj2nAAAAABJRU5ErkJggg=='
+)
+
+
 def RunGuiInstaller (args):
     import tkinter
     import tkinter.font
@@ -459,7 +592,16 @@ def RunGuiInstaller (args):
             padding = { 'padx' : 10, 'pady' : 5 }
             titleFont = tkinter.font.nametofont ('TkDefaultFont').copy ()
             titleFont.configure (size = 14, weight = 'bold')
-            tkinter.Label (self, text = INSTALLER_TITLE, font = titleFont).pack (**padding)
+            headerFrame = tkinter.Frame (self)
+            headerFrame.pack (**padding)
+            try:
+                # Keep a reference, otherwise Tk drops the image.
+                self.logoImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64)
+                tkinter.Label (headerFrame, image = self.logoImage).pack (side = 'left', padx = (0, 10))
+            except tkinter.TclError:
+                # PNG support requires Tk 8.6; the logo is only decoration.
+                pass
+            tkinter.Label (headerFrame, text = INSTALLER_TITLE, font = titleFont).pack (side = 'left')
             self.releaseLabel = tkinter.Label (self, text = 'Getting the latest Tapir release...')
             self.releaseLabel.pack (**padding)
             self.rowsFrame = tkinter.Frame (self)
