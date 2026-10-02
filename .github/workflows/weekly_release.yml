@@ -1,24 +1,35 @@
-name: Monthly Release
+name: Weekly Release
 
 # Automates the release process described in the wiki
 # (https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Release-process)
-# on a monthly schedule:
+# on a weekly schedule:
 #
 #   1. Skip when nothing changed since the last release tag, or when the
-#      previous release went out less than a week ago.
-#   2. Regenerate docs/archicad-addon from the Add-On sources
+#      previous release went out less than MIN_RELEASE_INTERVAL_SECONDS ago.
+#   2. Pick the release type, which decides the version number. main
+#      carries the next patch version (1.6.1 after 1.6.0), so:
+#        patch - every week:           1.6.1 ships as 1.6.1
+#        minor - the first release of
+#                a calendar month:     1.6.1 ships as 1.7.0
+#        major - a PR merged since the
+#                last release carries
+#                the MAJOR_RELEASE_LABEL: 1.6.1 ships as 2.0.0
+#      A manual run can force the type with the release_type input. For a
+#      minor or major release, set that version in the version files and
+#      in the "introduced in" version of the commands registered with the
+#      skipped version (AddOnMain.cpp), and push it to main.
+#   3. Regenerate docs/archicad-addon from the Add-On sources
 #      (tools/generate_addon_docs.py, no Archicad needed) and push the
 #      result to main when it changed, so the release tags current docs.
-#   3. Tag HEAD with the current version from tools/package_info.json - the
-#      sources already carry this version, per the project's convention.
-#   4. Start the two existing release pipelines (Add-On build + release,
+#   4. Tag HEAD with the release version.
+#   5. Start the two existing release pipelines (Add-On build + release,
 #      Grasshopper build + yak deploy) on that tag and wait for them.
 #      They must be dispatched explicitly because a tag pushed with the
 #      workflow's own GITHUB_TOKEN does not trigger on-push workflows.
-#   5. When all artifacts are built, publish the draft release with
+#   6. When all artifacts are built, publish the draft release with
 #      auto-generated notes.
-#   6. Announce the published release in the project's Discord channel.
-#   7. Increment the patch version (tools/update_version.py) and commit, so
+#   7. Announce the published release in the project's Discord channel.
+#   8. Increment the patch version (tools/update_version.py) and commit, so
 #      development of the next version starts - the wiki's final step.
 #
 # A build failure stops the run before publishing and before the version
@@ -27,15 +38,20 @@ name: Monthly Release
 
 on:
   schedule:
-    - cron: '0 6 1 * *'   # 06:00 UTC on the 1st of every month
+    - cron: '0 6 * * 1'   # 06:00 UTC every Monday
   workflow_dispatch:
     inputs:
+      release_type:
+        description: "Which version to release: auto picks major, minor or patch as the schedule does (see the header of this file)"
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
       skip_docs_update:
         description: Release without regenerating docs/archicad-addon (only when the generator fails)
         type: boolean
         default: false
       allow_early_release:
-        description: Release even though the previous release went out less than a week ago
+        description: Release even though the previous release went out less than 3 days ago
         type: boolean
         default: false
       dry_run:
@@ -44,7 +60,7 @@ on:
         default: false
 
 concurrency:
-  group: monthly-release
+  group: weekly-release
   cancel-in-progress: false
 
 env:
@@ -58,9 +74,17 @@ env:
   # channel; without the secret the announcement step is a no-op.
   DISCORD_RELEASE_CHANNEL_ID: '994704152703815762'
 
-  # A release this recent suppresses the next one, so the monthly schedule
-  # cannot cut a release days after a manual or hotfix release went out.
-  MIN_RELEASE_INTERVAL_SECONDS: 604800   # 1 week
+  # A release this recent suppresses the next one, so the weekly schedule
+  # cannot cut a release a day after a manual or hotfix release went out.
+  # Well below a week on purpose: a release is published hours after its
+  # run starts, so the next Monday's run always finds it less than 7 days
+  # old.
+  MIN_RELEASE_INTERVAL_SECONDS: 259200   # 3 days
+
+  # A merged PR with this label makes the next release a major one
+  # (1.6.1 -> 2.0.0). Meant for significant changes, not for a new command
+  # or Grasshopper component.
+  MAJOR_RELEASE_LABEL: major-release
 
 jobs:
   release:
@@ -83,7 +107,7 @@ jobs:
         # version bump step.
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "::error::The Monthly Release runs only on main (dispatched on" \
+          echo "::error::The Weekly Release runs only on main (dispatched on" \
                "'${{ github.ref }}'). To resume a failed release, dispatch the" \
                "two pipeline workflows on the tag instead - this workflow" \
                "always runs from main."
@@ -192,7 +216,7 @@ jobs:
               ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs' \
               ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
             if [ "$COMMITS" -eq 0 ]; then
-              echo "No changes since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
+              echo "No changes since $LAST_TAG - nothing to release this week." >> "$GITHUB_STEP_SUMMARY"
               echo "release=false" >> "$GITHUB_OUTPUT"
             elif [ "$RELEASE_AGE" -lt "$MIN_RELEASE_INTERVAL_SECONDS" ] \
                  && [ '${{ inputs.allow_early_release }}' != 'true' ]; then
@@ -204,13 +228,98 @@ jobs:
                    "Dispatch this workflow with 'allow_early_release' to release anyway." >> "$GITHUB_STEP_SUMMARY"
               echo "release=false" >> "$GITHUB_OUTPUT"
             else
-              echo "$COMMITS commit(s) with changes since $LAST_TAG - releasing $VERSION."
               echo "release=true" >> "$GITHUB_OUTPUT"
+              RELEASE_TYPE='${{ inputs.release_type }}'
+              if [ -z "$RELEASE_TYPE" ] || [ "$RELEASE_TYPE" = 'auto' ]; then
+                # Merged since the last tag's commit landed on main - not
+                # since its release was published, which happens hours
+                # later and would miss PRs merged during the builds.
+                SINCE=$(date -u -d "$(git log -1 --format=%cI "$LAST_TAG^{commit}")" +%Y-%m-%dT%H:%M:%SZ)
+                MAJOR_PRS=$(gh api -X GET search/issues \
+                  -f q="repo:${{ github.repository }} is:pr is:merged base:main label:$MAJOR_RELEASE_LABEL merged:>=$SINCE" \
+                  --jq '[.items[].number | "#\(.)"] | join(", ")')
+                if [ -n "$MAJOR_PRS" ]; then
+                  RELEASE_TYPE=major
+                  echo "Merged with the $MAJOR_RELEASE_LABEL label since $LAST_TAG: $MAJOR_PRS."
+                elif [ "$(date -u -d "$LAST_RELEASE_AT" +%Y-%m)" != "$(date -u +%Y-%m)" ]; then
+                  RELEASE_TYPE=minor
+                  echo "$LAST_TAG went out in an earlier month - this is the month's minor release."
+                else
+                  RELEASE_TYPE=patch
+                fi
+              fi
+              IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+              # A version that already has the form of the type (set by
+              # hand, or by an earlier attempt of this run that pushed the
+              # version but failed later) is released as it is.
+              case "$RELEASE_TYPE" in
+                patch) RELEASE_VERSION="$VERSION" ;;
+                minor) if [ "$PATCH" -eq 0 ]; then RELEASE_VERSION="$VERSION"; else RELEASE_VERSION="$MAJOR.$((MINOR + 1)).0"; fi ;;
+                major) if [ "$MINOR" -eq 0 ] && [ "$PATCH" -eq 0 ]; then RELEASE_VERSION="$VERSION"; else RELEASE_VERSION="$((MAJOR + 1)).0.0"; fi ;;
+                *) echo "::error::Unknown release type '$RELEASE_TYPE'."; exit 1 ;;
+              esac
+              if git rev-parse -q --verify "refs/tags/$RELEASE_VERSION" > /dev/null; then
+                echo "::error::A $RELEASE_TYPE release would be $RELEASE_VERSION, but that tag already" \
+                     "exists. Set the next version in tools/package_info.json by hand, run" \
+                     "tools/update_version.py and commit it to main."
+                exit 1
+              fi
+              echo "$COMMITS commit(s) with changes since $LAST_TAG - $RELEASE_TYPE release $RELEASE_VERSION" \
+                   "(main carries $VERSION)." | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "dev_version=$VERSION" >> "$GITHUB_OUTPUT"
+              VERSION="$RELEASE_VERSION"
             fi
             echo "tag_exists=false" >> "$GITHUB_OUTPUT"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set the release version
+        # Only a minor or major release changes the version main carries.
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.tag_exists != 'true' && steps.plan.outputs.dev_version != steps.plan.outputs.version
+        env:
+          DEV_VERSION: ${{ steps.plan.outputs.dev_version }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          set -eu
+          python3 - <<'EOF'
+          import os
+          import re
+          dev_version = os.environ['DEV_VERSION']
+          version = os.environ['VERSION']
+          # Substituted in place, as in the version bump step below.
+          path = 'tools/package_info.json'
+          content = open(path).read()
+          content, count = re.subn(re.escape('"' + dev_version + '"'), '"' + version + '"', content)
+          if count != 1:
+              raise SystemExit('expected the version once in {}, found it {} times'.format(path, count))
+          open(path, 'w').write(content)
+          # Commands added since the last release are registered with the
+          # version main carried; dev_version never ships, so they are
+          # introduced in this release instead.
+          path = 'archicad-addon/Sources/AddOnMain.cpp'
+          content = open(path).read()
+          content, count = re.subn(r'(\w+Commands,\s*)"' + re.escape(dev_version) + '"',
+                                   r'\g<1>"' + version + '"', content)
+          open(path, 'w').write(content)
+          print('Set the version to {}; {} command(s) now introduced in it.'.format(version, count))
+          EOF
+          python3 tools/update_version.py
+          git diff --stat
+          if [ '${{ inputs.dry_run }}' = 'true' ]; then
+            echo "DRY RUN: the version would be set to $VERSION and pushed to main." >> "$GITHUB_STEP_SUMMARY"
+            git checkout -- .
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "Set the version to $VERSION for the release"
+          # No rebase, for the same reason as in the docs step below.
+          if ! git push origin HEAD:main; then
+            echo "::error::main moved while the version was set - re-run this workflow."
+            exit 1
+          fi
+          echo "Set the version to **$VERSION** (was $DEV_VERSION) and pushed it to main." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Regenerate the docs
         # A resumed release keeps its tag, which already fixed the docs.
@@ -494,7 +603,7 @@ jobs:
               data = None if payload is None else json.dumps(payload).encode()
               request_ = urllib.request.Request(API + path, data=data, method=method)
               request_.add_header('Authorization', 'Bot ' + os.environ['DISCORD_BOT_TOKEN'])
-              request_.add_header('User-Agent', 'tapir-monthly-release')
+              request_.add_header('User-Agent', 'tapir-weekly-release')
               if data is not None:
                   request_.add_header('Content-Type', 'application/json')
               with urllib.request.urlopen(request_, timeout=30) as response:

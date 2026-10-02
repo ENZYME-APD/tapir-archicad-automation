@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - '*'
-  # The Monthly Release workflow pushes its tag with the workflow's own
+  # The Weekly Release workflow pushes its tag with the workflow's own
   # GITHUB_TOKEN, which does not trigger on-push workflows - so it starts
   # this pipeline explicitly, dispatched on the tag ref.
   workflow_dispatch:
@@ -43,7 +43,7 @@ jobs:
         $pushExit = $LASTEXITCODE
         Write-Output $output
         if ($pushExit -ne 0) {
-          # A resumed release (the Monthly Release workflow re-dispatches
+          # A resumed release (the Weekly Release workflow re-dispatches
           # this pipeline when an earlier run failed after the push went
           # through) must not wedge on the version already being on the
           # package server - that is the state the push wanted. The pattern
