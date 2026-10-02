@@ -92,10 +92,16 @@ Classify as actionable only when the message clearly describes:
 - a concrete request for new or changed functionality in Tapir, such as a
   new command, parameter or component ("feature").
 
+Judge the substance, not the phrasing: a message worded as a question still
+counts when it points at something concrete that Tapir does not support or
+handles wrongly. For example "Command X does not support parameter Y, how
+should I handle that?" is a feature request, and "Why does command X return
+wrong values?" is a bug report.
+
 Do NOT classify as actionable: greetings and casual chat, questions and
-requests for help using the software, general Archicad or Grasshopper
-questions unrelated to Tapir, praise or thanks, announcements, vague wishes
-with no concrete ask, messages about the Discord server itself, or anything
+requests for help using the software that do not point at such a gap or
+defect, general Archicad or Grasshopper questions unrelated to Tapir, praise
+or thanks, announcements, vague wishes with no concrete ask, messages about the Discord server itself, or anything
 you cannot tell is about Tapir.
 
 Respond with ONLY a JSON array, one object per input message, no other

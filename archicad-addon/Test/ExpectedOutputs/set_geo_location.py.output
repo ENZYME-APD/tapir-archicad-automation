@@ -1,0 +1,21 @@
+Command: SetGeoLocation
+Parameters:
+{
+    "surveyPoint": {
+        "geoReferencingParameters": {
+            "xAxisAbscissa": 0.8,
+            "xAxisOrdinate": 0.6,
+            "scale": 0.5
+        }
+    }
+}
+Response:
+{
+    "success": true
+}
+Map conversion after SetGeoLocation:
+{
+    "xAxisAbscissa": 0.8,
+    "xAxisOrdinate": 0.6,
+    "scale": 0.5
+}
