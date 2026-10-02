@@ -100,7 +100,9 @@ Requires **CMake ≥ 3.17**, **Python** (for DevKit download + resource compilat
 and Visual Studio (Windows) / Xcode (macOS). The Archicad API DevKits are downloaded
 automatically by the build scripts.
 
-Windows, all supported versions (downloads DevKits, then builds AC25–AC29):
+Windows, all supported versions (downloads DevKits, then builds AC25–AC30; AC30 uses
+the release candidate DevKit and is built on Windows only, by the PR build check but
+not yet by the release pipeline):
 
 ```bat
 cd archicad-addon\Tools
@@ -119,7 +121,7 @@ cmake --build Build/AC29 --config RelWithDebInfo
 Notes:
 - `AC_VERSION` selects the target Archicad major version; `AC_API_DEVKIT_DIR` must
   point at the matching DevKit's `Support` folder.
-- Toolset: `v142` for AC25–AC28, `v143` for AC29 (see `build_all_win.bat`).
+- Toolset: `v142` for AC25–AC28, `v143` for AC29 and AC30 (see `build_all_win.bat`).
 - Build config produces `TapirAddOn_AC<version>_<Win|Mac>` (`.apx` on Windows,
   `.bundle`/`.zip` on macOS).
 - To iterate against a running Archicad, see
