@@ -30,8 +30,8 @@ jobs:
           - acVersion: 29
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip
           # Release candidate DevKit, not on the GitHub releases yet: switch
-          # to the final one when it is published. Only in this check - the
-          # release pipeline does not ship AC30 yet.
+          # to the final one (here and in archicad_addon.yml) when it is
+          # published.
           - acVersion: 30
             devKitUrl: https://dl.graphisoft.com/release-candidate/30/API.Development.Kit.WIN.30.2000.zip
     runs-on: [ windows-2022 ]

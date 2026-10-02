@@ -101,8 +101,7 @@ and Visual Studio (Windows) / Xcode (macOS). The Archicad API DevKits are downlo
 automatically by the build scripts.
 
 Windows, all supported versions (downloads DevKits, then builds AC25–AC30; AC30 uses
-the release candidate DevKit and is built by the PR build check on Windows and macOS,
-but not yet by the release pipeline):
+the release candidate DevKit until the final one is published):
 
 ```bat
 cd archicad-addon\Tools
