@@ -359,7 +359,10 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             segmentOs.Add ("crossSectionWidth", segment->GetCrossSectionWidth ());
             segmentOs.Add ("crossSectionHeight", segment->GetCrossSectionHeight ());
             segmentOs.Add ("crossSectionShape", ConnectorShapeToString (segment->GetCrossSectionShape ()));
-            segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (segment->GetCrossSectionReferenceId ()));
+            ACAPI::Result<uint32_t> referenceId = segment->GetCrossSectionReferenceId ();
+            if (referenceId.IsOk ()) {
+                segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (referenceId.Unwrap ()));
+            }
             segmentOs.Add ("preferenceTableId", segment->GetPreferenceTableId ().GetGuid ().ToUniString ());
             segments (segmentOs);
         }
