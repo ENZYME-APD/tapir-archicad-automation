@@ -26,4 +26,22 @@ print (aclib.JsonDumpDictionary ({
     'scale': geoReferencingParameters['scale']
 }))
 
+# The survey point can be moved in the project's coordinate system
+# (Options > Project Preferences > Location Settings > Survey Point > Position)
+# without changing its map coordinates in 'position'.
+aclib.RunTapirCommand (
+    'SetGeoLocation', {
+        'surveyPoint': {
+            'positionInProject': {
+                'x': 12.5,
+                'y': -7.25,
+                'z': 1.5
+            }
+        }
+    })
+
+geoLocation = aclib.RunTapirCommand ('GetGeoLocation', debug = False)
+print ('Survey point position in the project after SetGeoLocation:')
+print (aclib.JsonDumpDictionary (geoLocation['surveyPoint']['positionInProject']))
+
 aclib.RunTapirCommand ('SetGeoLocation', originalGeoLocation, debug = False)

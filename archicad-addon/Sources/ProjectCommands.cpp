@@ -1573,6 +1573,10 @@ GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
                             "elevation"
                         ]
                     },
+                    "positionInProject": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
+                    },
                     "geoReferencingParameters": {
                         "type": "object",
                         "properties": {
@@ -1630,6 +1634,7 @@ GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
                 "additionalProperties": false,
                 "required": [
                     "position",
+                    "positionInProject",
                     "geoReferencingParameters"
                 ]
             }
@@ -1658,6 +1663,7 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
                 "eastings", apiGeoLocation.geoReferenceData.eastings,
                 "northings", apiGeoLocation.geoReferenceData.northings,
                 "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
+            "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
             "geoReferencingParameters", GS::ObjectState (
                 "crsName", apiGeoLocation.geoReferenceData.name,
                 "description", apiGeoLocation.geoReferenceData.description,
@@ -1731,6 +1737,10 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetInputParametersSchema () c
                         "additionalProperties": false,
                         "required": [
                         ]
+                    },
+                    "positionInProject": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
                     },
                     "geoReferencingParameters": {
                         "type": "object",
@@ -1816,6 +1826,11 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
             hasAnyInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
             hasAnyInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
             hasAnyInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
+        }
+        GS::ObjectState positionInProject;
+        if (surveyPoint.Get ("positionInProject", positionInProject)) {
+            apiGeoLocation.surveyPointPosition = Get3DCoordinateFromObjectState (positionInProject);
+            hasAnyInput = true;
         }
         GS::ObjectState geoReferencingParameters;
         if (surveyPoint.Get ("geoReferencingParameters", geoReferencingParameters)) {
