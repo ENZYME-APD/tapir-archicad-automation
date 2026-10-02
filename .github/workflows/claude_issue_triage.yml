@@ -7,6 +7,13 @@ name: Claude Issue Triage
 # for (an issue body is text from anyone on the internet) for responsiveness.
 # The label still works as a manual way to re-run `fix` on an issue.
 #
+# Issues filed by the Discord issue bot reach `fix` through workflow_dispatch
+# (see the trigger below), so any Discord message the bot classifies as a
+# report starts a run as well, capped by the bot's daily issue limit. Those
+# dispatches run as github-actions[bot], which `fix` admits through
+# `allowed_bots`; nothing else can act as that account here, since events
+# caused by GITHUB_TOKEN start no run.
+#
 # What still bounds a run: GITHUB_TOKEN cannot touch .github/workflows (no
 # `workflows` permission), everything it opens is a draft authored by a bot -
 # which claude_auto_merge.yml never merges - and the limits below.
@@ -50,8 +57,9 @@ name: Claude Issue Triage
 # that is then pushed or posted publicly. Nothing in this file prevents that.
 # If it ever leaks, revoke it and run `claude setup-token` again. Cost is
 # unbounded too: any account can start 60-minute runs on the maintainer's
-# subscription - by opening an issue or commenting on one - one per issue at a
-# time but in parallel across issues.
+# subscription - by opening an issue or commenting on one, or through a
+# Discord message the bot files - one per issue at a time but in parallel
+# across issues.
 #
 # Authenticates with a Claude Code OAuth token from a Pro or Max subscription:
 # run `claude setup-token` locally and store the result as the repository
