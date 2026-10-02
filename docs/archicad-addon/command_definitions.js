@@ -1030,6 +1030,18 @@ var gCommands = [{
                             "mapZone": {
                                 "type": "string",
                                 "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            },
+                            "xAxisAbscissa": {
+                                "type": "number",
+                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+                            },
+                            "xAxisOrdinate": {
+                                "type": "number",
+                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+                            },
+                            "scale": {
+                                "type": "number",
+                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
                             }
                         },
                         "additionalProperties": false,
@@ -1039,7 +1051,10 @@ var gCommands = [{
                             "geodeticDatum",
                             "verticalDatum",
                             "mapProjection",
-                            "mapZone"
+                            "mapZone",
+                            "xAxisAbscissa",
+                            "xAxisOrdinate",
+                            "scale"
                         ]
                     }
                 },
@@ -1136,6 +1151,18 @@ var gCommands = [{
                             "mapZone": {
                                 "type": "string",
                                 "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            },
+                            "xAxisAbscissa": {
+                                "type": "number",
+                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+                            },
+                            "xAxisOrdinate": {
+                                "type": "number",
+                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+                            },
+                            "scale": {
+                                "type": "number",
+                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
                             }
                         },
                         "additionalProperties": false,
