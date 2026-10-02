@@ -367,7 +367,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "thickness": {
                         "type": "number",
-                        "description": "Optional slab thickness.",
+                        "description": "Optional slab thickness. Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. The new slab keeps the structure of the slab tool default (or the favorite), which may be a composite; switch it with ModifySlabs (structureType 'Basic') for the thickness to apply.",
                         "exclusiveMinimum": 0.0
                     },
                     "referencePlaneLocation": {
