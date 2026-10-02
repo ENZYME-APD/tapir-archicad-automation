@@ -2667,15 +2667,15 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
+                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided. Unless midCoordinate and endCoordinate are both given too, the label is created at its default position relative to the parent element (Archicad's 'createAtDefaultPosition'), so the label may not end up at begCoordinate - read it back with GetDetailsOfElements after creation."
                     },
                     "midCoordinate": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The mid coordinate of leader line. Optional parameter."
+                        "description": "The mid coordinate of leader line. Optional parameter; give it together with endCoordinate to place the label exactly where the coordinates say."
                     },
                     "endCoordinate": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The end coordinate of leader line. Optional parameter."
+                        "description": "The end coordinate of leader line. Optional parameter; give it together with midCoordinate to place the label exactly where the coordinates say."
                     },
 
                     "floorInd": {
@@ -3655,6 +3655,37 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         const GS::ObjectState* symbolStyleOS = parameters.Get ("symbolStyle");
         if (symbolStyleOS != nullptr) {
             TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+        }
+
+        // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library
+        // part's parameter list in memo.params - the same way Objects, Window/Door markers
+        // (PrepareWindowOrDoorDefaults) and interior elevation markers get theirs. Reported in
+        // #742 that the Label tool defaults come back without one for a Symbol label, even after
+        // a Symbol label favorite was applied: the label was then created with no GDL parameters
+        // at all - nothing but its hotspot drawn, and Get/SetGDLParametersOfElements refusing it.
+        // Fall back to the library part's own defaults in that case; tool defaults or a favorite
+        // that do carry parameters keep winning.
+        const GSSize paramNum = memo.params != nullptr
+            ? BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType)
+            : 0;
+        if (paramNum == 0) {
+            double a = 0.0;
+            double b = 0.0;
+            Int32 addParNum = 0;
+            API_AddParType** addPars = nullptr;
+            const GSErrCode paramsErr = ACAPI_LibraryPart_GetParams (element.label.u.symbol.libInd, &a, &b, &addParNum, &addPars);
+            if (paramsErr != NoError) {
+                if (addPars != nullptr) {
+                    ACAPI_DisposeAddParHdl (&addPars);
+                }
+                // Also the case when 'labelClass' switches a Text tool default to Symbol: the
+                // defaults then name no symbol library part, so there is nothing to place.
+                return CreateErrorResponse (paramsErr, "Failed to read the parameters of the symbol label's library part. The Label tool defaults do not name a valid symbol library part - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+            }
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = addPars;
         }
     }
 
