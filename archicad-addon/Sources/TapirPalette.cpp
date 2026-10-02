@@ -19,6 +19,7 @@
 
 #include <map>
 #include <regex>
+#include <vector>
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
@@ -28,6 +29,96 @@ static UShort GetConnectionPort ()
     UShort portNumber;
     ACAPI_Command_GetHttpConnectionPort (&portNumber);
     return portNumber;
+}
+
+// Returns the length of the UTF-8 sequence starting at bytes[0] if it is a complete, well-formed
+// sequence within the first 'available' bytes, otherwise 0.
+static USize GetValidUTF8SequenceLength (const unsigned char* bytes, USize available)
+{
+    const unsigned char lead = bytes[0];
+    USize length = 0;
+    if (lead < 0x80) {
+        return 1;
+    } else if (lead >= 0xC2 && lead <= 0xDF) {
+        length = 2;
+    } else if (lead >= 0xE0 && lead <= 0xEF) {
+        length = 3;
+    } else if (lead >= 0xF0 && lead <= 0xF4) {
+        length = 4;
+    } else {
+        return 0;
+    }
+    if (available < length) {
+        return 0;
+    }
+    for (USize i = 1; i < length; ++i) {
+        if ((bytes[i] & 0xC0) != 0x80) {
+            return 0;
+        }
+    }
+    // Reject overlong 3/4-byte forms, UTF-16 surrogates and code points above U+10FFFF.
+    if ((lead == 0xE0 && bytes[1] < 0xA0) || (lead == 0xED && bytes[1] > 0x9F) ||
+        (lead == 0xF0 && bytes[1] < 0x90) || (lead == 0xF4 && bytes[1] > 0x8F)) {
+        return 0;
+    }
+    return length;
+}
+
+static bool IsValidUTF8 (const char* bytes, USize length)
+{
+    const unsigned char* uBytes = reinterpret_cast<const unsigned char*> (bytes);
+    for (USize i = 0; i < length;) {
+        const USize sequenceLength = GetValidUTF8SequenceLength (uBytes + i, length - i);
+        if (sequenceLength == 0) {
+            return false;
+        }
+        i += sequenceLength;
+    }
+    return true;
+}
+
+// Archicad terminates the process with a fatal "UTF-8 assertion failed" when GS::UniString is
+// built from bytes that are not valid UTF-8 (#731). Bytes that may come from outside (stored
+// preferences written by older Tapir versions in the system code page, script output in the
+// console code page) are therefore validated first, and if they are not UTF-8 they are taken
+// byte by byte as Latin-1, which never fails and keeps ASCII and most Western accented letters.
+static GS::UniString BytesToUniString (const char* bytes, USize length)
+{
+    if (length == 0) {
+        return GS::EmptyUniString;
+    }
+    if (IsValidUTF8 (bytes, length)) {
+        return GS::UniString (bytes, length, CC_UTF8);
+    }
+    std::vector<GS::UniChar::Layout> chars (length);
+    for (USize i = 0; i < length; ++i) {
+        chars[i] = static_cast<GS::UniChar::Layout> (static_cast<unsigned char> (bytes[i]));
+    }
+    return GS::UniString (chars.data (), length);
+}
+
+// Returns how many bytes at the end of the buffer are the beginning of a UTF-8 sequence whose
+// remaining bytes have not been received yet. Those must be kept for the next read, otherwise a
+// character split between two reads (e.g. "\xC3" + "\x89") would reach GS::UniString as invalid UTF-8.
+static USize GetIncompleteUTF8TailLength (const char* bytes, USize length)
+{
+    const unsigned char* uBytes = reinterpret_cast<const unsigned char*> (bytes);
+    for (USize tail = 1; tail <= 3 && tail <= length; ++tail) {
+        const unsigned char byte = uBytes[length - tail];
+        if ((byte & 0xC0) == 0x80) {
+            continue; // continuation byte, look further back for the lead byte
+        }
+        USize expectedLength = 0;
+        if (byte >= 0xC2 && byte <= 0xDF) {
+            expectedLength = 2;
+        } else if (byte >= 0xE0 && byte <= 0xEF) {
+            expectedLength = 3;
+        } else if (byte >= 0xF0 && byte <= 0xF4) {
+            expectedLength = 4;
+        }
+        return expectedLength > tail ? tail : 0;
+    }
+    return 0;
 }
 
 static IO::Location GetTapirTemporaryFolder ()
@@ -677,6 +768,8 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
     class UIUpdaterThread : public GS::Runnable
     {
         GS::Process& process;
+        std::vector<char> pendingStdError;
+        std::vector<char> pendingStdOutput;
 
         class IconUpdateTask : public GS::Runnable {
         public:
@@ -725,25 +818,34 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         explicit UIUpdaterThread (GS::Process& p) : process(p)
         {
         }
-        GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
+
+        // A multi-byte UTF-8 character may be split between two reads, so the incomplete bytes at
+        // the end are kept in 'pending' and prepended to the next read. When 'flush' is set (the
+        // process has exited) everything left is converted.
+        GS::UniString ReadFromChannel (GS::IBinaryChannel& channel, std::vector<char>& pending, bool flush)
         {
-            if (channel.GetAvailable () <= 0) {
+            const auto available = channel.GetAvailable ();
+            if (available > 0) {
+                const size_t oldSize = pending.size ();
+                pending.resize (oldSize + static_cast<size_t> (available));
+                GS::IBinaryChannelUtilities::ReadFully (channel, pending.data () + oldSize, static_cast<GS::USize> (available));
+            }
+            if (pending.empty ()) {
                 return GS::EmptyUniString;
             }
 
-            const GS::USize uSize = static_cast<GS::USize> (channel.GetAvailable ());
-            std::unique_ptr<char> buffer;
-            buffer.reset (new char[uSize + 1]);
-
-            GS::IBinaryChannelUtilities::ReadFully (channel, buffer.get (), uSize);
-            return GS::UniString (buffer.get (), uSize, CC_UTF8);
+            const USize pendingSize = static_cast<USize> (pending.size ());
+            const USize convertSize = flush ? pendingSize : pendingSize - GetIncompleteUTF8TailLength (pending.data (), pendingSize);
+            const GS::UniString result = BytesToUniString (pending.data (), convertSize);
+            pending.erase (pending.begin (), pending.begin () + static_cast<std::ptrdiff_t> (convertSize));
+            return result;
         }
-        void ReadFromChannels ()
+        void ReadFromChannels (bool flush = false)
         {
-            const GS::UniString stdError = ReadFromChannel (process.GetStandardErrorChannel ());
+            const GS::UniString stdError = ReadFromChannel (process.GetStandardErrorChannel (), pendingStdError, flush);
             ProcessStderrBlock (stdError);
 
-            const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
+            const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel (), pendingStdOutput, flush);
             if (!stdOutput.IsEmpty ()) {
                 GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stdOutput));
             }
@@ -758,7 +860,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             }
 
             const int exitCode = process.GetExitCode ();
-            ReadFromChannels ();
+            ReadFromChannels (true);
             process = {}; // Reset the process to an invalid state
 
             GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
@@ -1134,7 +1236,9 @@ void TapirPalette::SaveScriptsToPreferences ()
         const GS::UniString& labelStr = scriptShortcutLabels[slot].IsEmpty () ? ShortcutLabelDefaultMarker : scriptShortcutLabels[slot];
         preferencesStr += '\n' + labelStr;
     }
-    auto cStr = preferencesStr.ToCStr ();
+    // Stored explicitly as UTF-8 so non-ASCII paths and labels read back the same on every
+    // system code page; AddScriptsFromPreferences still accepts non-UTF-8 data from older versions.
+    auto cStr = preferencesStr.ToCStr (CC_UTF8);
     ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
 }
 
@@ -1169,10 +1273,17 @@ short TapirPalette::AddScriptsFromPreferences ()
         return DG::PopUp::TopItem;
     }
 
-    std::unique_ptr<char> data(new char[nBytes]);
+    // The stored data is not null-terminated (SaveScriptsToPreferences writes strlen bytes), so it
+    // must be converted with its exact length: reading it as a C string ran past the buffer and
+    // could hand heap garbage to GS::UniString, which Archicad aborts on as invalid UTF-8 (#731).
+    std::unique_ptr<char[]> data (new char[nBytes]);
     ACAPI_GetPreferences (&version, &nBytes, data.get ());
+    GSSize dataLength = 0;
+    while (dataLength < nBytes && data[dataLength] != '\0') {
+        ++dataLength;
+    }
     GS::Array<GS::UniString> scriptPathArray;
-    GS::UniString (data.get ()).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
+    BytesToUniString (data.get (), static_cast<USize> (dataLength)).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
 
     if (version == PREFERENCES_VERSION && scriptPathArray.GetSize () >= 2 * ScriptShortcutSlotCount) {
         // Labels were appended last, so they must be popped first.
