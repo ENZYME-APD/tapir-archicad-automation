@@ -858,7 +858,7 @@ GS::Optional<GS::UniString> GetMEPSystemsCommand::GetInputParametersSchema () co
                 "description": "Names of the fields to return for each MEP System. If omitted, every field is returned.",
                 "items": {
                     "type": "string",
-                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId"]
+                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId", "materialId", "insulationMaterialId"]
                 }
             }
         },
@@ -957,6 +957,18 @@ GS::ObjectState GetMEPSystemsCommand::Execute (const GS::ObjectState& parameters
             GS::Optional<GS::ObjectState> lineTypeId = GetAttributeIdFromIndex (API_LinetypeID, attr.mepSystem.centerLTypeInd);
             if (lineTypeId.HasValue ()) {
                 mepSystem.Add ("centerLineTypeId", *lineTypeId);
+            }
+        }
+        if (wantsField.Wants ("materialId")) {
+            GS::Optional<GS::ObjectState> materialId = GetAttributeIdFromIndex (API_MaterialID, attr.mepSystem.materialInd);
+            if (materialId.HasValue ()) {
+                mepSystem.Add ("materialId", *materialId);
+            }
+        }
+        if (wantsField.Wants ("insulationMaterialId")) {
+            GS::Optional<GS::ObjectState> insulationMaterialId = GetAttributeIdFromIndex (API_MaterialID, attr.mepSystem.insulationMatInd);
+            if (insulationMaterialId.HasValue ()) {
+                mepSystem.Add ("insulationMaterialId", *insulationMaterialId);
             }
         }
 
@@ -4089,6 +4101,14 @@ GS::Optional<GS::UniString> CreateMEPSystemsCommand::GetInputParametersSchema ()
                         "centerLineTypeId": {
                             "description": "Identifier of the center line type attribute.",
                             "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "materialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the 3D model of the elements of the system.",
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "insulationMaterialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the insulation of the elements of the system.",
+                            "$ref": "#/AttributeIdArrayItem"
                         }
                     },
                     "additionalProperties": false,
@@ -4151,6 +4171,22 @@ void CreateMEPSystemsCommand::SetTypeSpecificParameters (const GS::ObjectState& 
         API_AttributeIndex lineTypeIndex;
         if (GetAttributeIndexFromAttributeId (centerLineTypeId, API_LinetypeID, lineTypeIndex)) {
             attribute.mepSystem.centerLTypeInd = lineTypeIndex;
+        }
+    }
+
+    GS::ObjectState materialId;
+    if (parameters.Get ("materialId", materialId)) {
+        API_AttributeIndex materialIndex;
+        if (GetAttributeIndexFromAttributeId (materialId, API_MaterialID, materialIndex)) {
+            attribute.mepSystem.materialInd = materialIndex;
+        }
+    }
+
+    GS::ObjectState insulationMaterialId;
+    if (parameters.Get ("insulationMaterialId", insulationMaterialId)) {
+        API_AttributeIndex insulationMaterialIndex;
+        if (GetAttributeIndexFromAttributeId (insulationMaterialId, API_MaterialID, insulationMaterialIndex)) {
+            attribute.mepSystem.insulationMatInd = insulationMaterialIndex;
         }
     }
 }

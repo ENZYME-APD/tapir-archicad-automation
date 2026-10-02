@@ -82,7 +82,8 @@ ATTRIBUTE_TYPES = {
     "MEPSystem": {
         "get_command": "GetMEPSystems", "response_key": "mepSystems",
         "create_command": "CreateMEPSystems", "array_field": "mepSystemDataArray",
-        "refs": {"fillId": ("id", "Fill"), "centerLineTypeId": ("id", "Line")},
+        "refs": {"fillId": ("id", "Fill"), "centerLineTypeId": ("id", "Line"),
+                 "materialId": ("id", "Surface"), "insulationMaterialId": ("id", "Surface")},
         "opaque_fields": [],
         "domain_list_to_scalar": True,  # Get returns ["Piping"], Create wants "Piping"
     },
