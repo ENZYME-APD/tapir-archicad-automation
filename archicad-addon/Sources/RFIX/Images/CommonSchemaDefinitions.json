@@ -7399,7 +7399,7 @@
         "properties": {
             "text": {
                 "type": "string",
-                "description": "The new text content. Newlines create multiple lines."
+                "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF."
             },
             "position": {
                 "$ref": "#/Coordinate2D",
@@ -8773,7 +8773,7 @@
         "type": "object",
         "description": "One monostyle run of text (API_RunType). Concatenating 'text' across all runs in order gives the full content; a newline character starts a new line.",
         "properties": {
-            "text": { "type": "string", "description": "The run's text content." },
+            "text": { "type": "string", "description": "The run's text content. Windows-style CRLF (and bare CR) line endings are normalized to LF." },
             "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
             "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
             "bold": { "type": "boolean" },

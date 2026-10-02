@@ -1689,6 +1689,18 @@ GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
                             "mapZone": {
                                 "type": "string",
                                 "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            },
+                            "xAxisAbscissa": {
+                                "type": "number",
+                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+                            },
+                            "xAxisOrdinate": {
+                                "type": "number",
+                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+                            },
+                            "scale": {
+                                "type": "number",
+                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
                             }
                         },
                         "additionalProperties": false,
@@ -1698,7 +1710,10 @@ GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
                             "geodeticDatum",
                             "verticalDatum",
                             "mapProjection",
-                            "mapZone"
+                            "mapZone",
+                            "xAxisAbscissa",
+                            "xAxisOrdinate",
+                            "scale"
                         ]
                     }
                 },
@@ -1739,7 +1754,10 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
                 "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
                 "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
                 "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
-                "mapZone", apiGeoLocation.geoReferenceData.mapZone)));
+                "mapZone", apiGeoLocation.geoReferenceData.mapZone,
+                "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
+                "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
+                "scale", apiGeoLocation.geoReferenceData.scale)));
 }
 
 SetGeoLocationCommand::SetGeoLocationCommand () :
@@ -1830,6 +1848,18 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetInputParametersSchema () c
                             "mapZone": {
                                 "type": "string",
                                 "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            },
+                            "xAxisAbscissa": {
+                                "type": "number",
+                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+                            },
+                            "xAxisOrdinate": {
+                                "type": "number",
+                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+                            },
+                            "scale": {
+                                "type": "number",
+                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
                             }
                         },
                         "additionalProperties": false,
@@ -1885,6 +1915,9 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
             hasAnyInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
             hasAnyInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
             hasAnyInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
+            hasAnyInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
+            hasAnyInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
+            hasAnyInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
         }
     }
 

@@ -32,6 +32,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutText(nameof(GeoReferencingParameters.VerticalDatum));
             OutText(nameof(GeoReferencingParameters.MapProjection));
             OutText(nameof(GeoReferencingParameters.MapZone));
+            OutText(nameof(GeoReferencingParameters.XAxisAbscissa));
+            OutText(nameof(GeoReferencingParameters.XAxisOrdinate));
+            OutText(nameof(GeoReferencingParameters.Scale));
         }
 
         protected override void Solve(
@@ -86,6 +89,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.SetData(
                 12,
                 response.Survey.GeoReferencingParams.MapZone);
+            da.SetData(
+                13,
+                response.Survey.GeoReferencingParams.XAxisAbscissa);
+            da.SetData(
+                14,
+                response.Survey.GeoReferencingParams.XAxisOrdinate);
+            da.SetData(
+                15,
+                response.Survey.GeoReferencingParams.Scale);
         }
 
         protected override System.Drawing.Bitmap Icon =>
