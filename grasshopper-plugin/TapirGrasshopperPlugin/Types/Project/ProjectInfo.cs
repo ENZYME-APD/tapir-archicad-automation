@@ -97,6 +97,15 @@ namespace TapirGrasshopperPlugin.Types.Project
 
         [JsonProperty("mapZone", NullValueHandling = NullValueHandling.Ignore)]
         public string MapZone;
+
+        [JsonProperty("xAxisAbscissa", NullValueHandling = NullValueHandling.Ignore)]
+        public double? XAxisAbscissa;
+
+        [JsonProperty("xAxisOrdinate", NullValueHandling = NullValueHandling.Ignore)]
+        public double? XAxisOrdinate;
+
+        [JsonProperty("scale", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Scale;
     }
 
     public class SurveyPoint

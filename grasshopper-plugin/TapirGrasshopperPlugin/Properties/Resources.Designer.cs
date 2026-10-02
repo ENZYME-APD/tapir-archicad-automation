@@ -2648,5 +2648,13 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap DeleteEmbeddedLibraryItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteEmbeddedLibraryItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

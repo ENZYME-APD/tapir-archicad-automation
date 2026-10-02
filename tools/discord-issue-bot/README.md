@@ -12,7 +12,9 @@ so no server hosting is needed. Every run:
 1. Fetches the recent messages (default: last 24 hours) of each configured
    channel over the Discord REST API.
 2. Asks Claude whether each message is an actionable Tapir bug report or
-   feature request. Casual chat, questions and help requests are ignored.
+   feature request. Casual chat, questions and help requests are ignored,
+   unless the question points at something concrete that Tapir lacks or
+   gets wrong ("command X does not support Y, how should I handle that?").
    Classification runs through the Claude Code CLI on a Pro/Max
    subscription, authorized by `CLAUDE_CODE_OAUTH_TOKEN` — the same
    credential the repository's other Claude workflows use. No Anthropic

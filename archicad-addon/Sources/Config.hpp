@@ -44,10 +44,37 @@ public:
         static Repository FromOS (const GS::ObjectState& os);
     };
 
+    // A folder on the local machine (or a mounted network drive) that holds scripts,
+    // used as an alternative to a GitHub repository. The same include/exclude pattern
+    // rules apply as for repositories: without patterns only the .py files directly in
+    // the folder are listed; the patterns are matched against the folder-relative path.
+    struct LocalFolder {
+        LocalFolder () = default;
+        LocalFolder (
+            const GS::UniString& _displayName,
+            const GS::UniString& _path,
+            const GS::UniString& _includePattern = GS::EmptyUniString,
+            const GS::UniString& _excludePattern = GS::EmptyUniString)
+            : displayName(_displayName)
+            , path(_path)
+            , includePattern(_includePattern)
+            , excludePattern(_excludePattern)
+        {}
+
+        GS::UniString displayName;
+        GS::UniString path;
+        GS::UniString includePattern;
+        GS::UniString excludePattern;
+
+        GS::ObjectState ToOS () const;
+        static LocalFolder FromOS (const GS::ObjectState& os);
+    };
+
 public:
     static Config& Instance ();
 
     const std::vector<Repository>& Repositories () const { return repositories; }
+    const std::vector<LocalFolder>& LocalFolders () const { return localFolders; }
     bool AskUpdatingAddOnBeforeEachExecution () const { return askUpdatingAddOnBeforeEachExecution; }
     const GS::UniString& uvLocation() const { return uvLocationStr; }
     const GS::UniString& pythonLocation () const { return pythonLocationStr; }
@@ -65,6 +92,7 @@ private:
     std::unique_ptr<IO::File> configFilePtr;
     GSTime configFileTimestamp = 0;
     std::vector<Repository> repositories;
+    std::vector<LocalFolder> localFolders;
     bool askUpdatingAddOnBeforeEachExecution;
     GS::UniString uvLocationStr;
     GS::UniString pythonLocationStr;

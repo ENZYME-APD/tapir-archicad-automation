@@ -37,6 +37,8 @@ private:
         const API_GetParamsType& getParams,
         const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
         const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
+        const GS::Optional<double>& xRatioPerA,
+        const GS::Optional<double>& yRatioPerB,
         GS::Array<ArrayParameterChange>& pendingArrayChanges,
         GS::UniString& errMessage);
 
