@@ -729,6 +729,34 @@ static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libI
     }
 }
 
+// The placed size in metres. xRatio/yRatio hold it directly only with useXYFixSize on; otherwise
+// they hold it divided by the library part's own A/B (as documented). Like the other library part
+// reads here, a failed lookup leaves the stored values as they are.
+static API_Coord GetObjectPlanSize (const API_Element& elem)
+{
+    API_Coord size = { elem.object.xRatio, elem.object.yRatio };
+    if (elem.object.useXYFixSize) {
+        return size;
+    }
+    double libraryPartA = 0.0;
+    double libraryPartB = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    const GSErrCode err = ACAPI_LibraryPart_GetParams (elem.object.libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
+    if (addPars != nullptr) {
+        ACAPI_DisposeAddParHdl (&addPars);
+    }
+    if (err == NoError) {
+        if (libraryPartA > 1e-6) {
+            size.x *= libraryPartA;
+        }
+        if (libraryPartB > 1e-6) {
+            size.y *= libraryPartB;
+        }
+    }
+    return size;
+}
+
 // Reads every non-reserved field of API_ObjectType (shared verbatim as API_LampType) into
 // `typeSpecificDetails`, in the shape the "ObjectDetails" schema definition
 // (CommonSchemaDefinitions.json) expects - the same shape CreateObjects/CreateLamps/ModifyObjects/
@@ -763,7 +791,8 @@ static void AddObjectLampDetails (GS::ObjectState& typeSpecificDetails, const AP
             break;
         }
     }
-    typeSpecificDetails.Add ("dimensions", Create3DCoordinateObjectState ({elem.object.xRatio, elem.object.yRatio, zDimension}));
+    const API_Coord planSize = GetObjectPlanSize (elem);
+    typeSpecificDetails.Add ("dimensions", Create3DCoordinateObjectState ({planSize.x, planSize.y, zDimension}));
     typeSpecificDetails.Add ("angle", elem.object.angle);
 
     typeSpecificDetails.Add ("pen", (Int32) elem.object.pen);
