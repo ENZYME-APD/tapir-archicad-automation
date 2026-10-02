@@ -12,8 +12,57 @@
 #include "StringConversion.hpp"
 
 #include <map>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <algorithm>
 
 static std::unique_ptr<VersionChecker> Intance;
+
+// Splits "1.5.10" (or "v1.5.10") into its numeric components, so that
+// versions compare by number and not as strings ("1.5.10" > "1.5.9").
+static std::vector<GS::UInt32> ParseVersion (const std::string& version)
+{
+    std::vector<GS::UInt32> components;
+    size_t i = 0;
+    while (i < version.size () && !std::isdigit (static_cast<unsigned char> (version[i]))) {
+        ++i;
+    }
+    while (i < version.size () && std::isdigit (static_cast<unsigned char> (version[i]))) {
+        GS::UInt32 component = 0;
+        while (i < version.size () && std::isdigit (static_cast<unsigned char> (version[i]))) {
+            component = component * 10 + static_cast<GS::UInt32> (version[i] - '0');
+            ++i;
+        }
+        components.push_back (component);
+        if (i < version.size () && version[i] == '.') {
+            ++i;
+        } else {
+            break;
+        }
+    }
+    return components;
+}
+
+// Returns true when version is not newer than referenceVersion.
+// An unparsable version (e.g. the GitHub query failed) counts as not newer.
+static bool IsVersionNotNewerThan (const std::string& version, const std::string& referenceVersion)
+{
+    std::vector<GS::UInt32> components = ParseVersion (version);
+    if (components.empty ()) {
+        return true;
+    }
+    std::vector<GS::UInt32> referenceComponents = ParseVersion (referenceVersion);
+    const size_t count = std::max (components.size (), referenceComponents.size ());
+    for (size_t i = 0; i < count; ++i) {
+        const GS::UInt32 component = i < components.size () ? components[i] : 0;
+        const GS::UInt32 referenceComponent = i < referenceComponents.size () ? referenceComponents[i] : 0;
+        if (component != referenceComponent) {
+            return component < referenceComponent;
+        }
+    }
+    return true;
+}
 
 void VersionChecker::CreateInstance (GS::UInt16 acMainVersion)
 {
@@ -26,7 +75,7 @@ bool VersionChecker::IsUsingLatestVersion ()
         return true;
     }
 
-    return Intance->latestVersion <= ADDON_VERSION;
+    return IsVersionNotNewerThan (Intance->latestVersion.ToCStr ().Get (), ADDON_VERSION);
 }
 
 const GS::UniString& VersionChecker::LatestVersion ()

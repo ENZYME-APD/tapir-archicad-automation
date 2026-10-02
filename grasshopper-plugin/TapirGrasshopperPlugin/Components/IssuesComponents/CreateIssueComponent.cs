@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Issues;
@@ -22,6 +23,21 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             InText(
                 "Name",
                 "Name.");
+
+            InGeneric(
+                "ParentIssueGuid",
+                "The new issue is created under this issue. Optional.");
+
+            InText(
+                "TagText",
+                "Tag text of the new issue. Optional.");
+
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2
+                });
         }
 
         protected override void AddOutputs()
@@ -39,9 +55,31 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
+            // Unset means a top-level issue; a given value that is not an
+            // issue is an error, not silently a top-level issue.
+            IssueGuid parentIssueId = null;
+            if (da.TryGet(
+                    1,
+                    out GH_ObjectWrapper parentWrapper) &&
+                !parentWrapper.TryBuildObject(out parentIssueId))
+            {
+                this.AddError("ParentIssueGuid is not a valid issue identifier.");
+                return;
+            }
+
+            var tagText = da.GetOptional<string>(
+                2,
+                null);
+
+            if (string.IsNullOrEmpty(tagText))
+            {
+                tagText = null;
+            }
+
+            // The unset optional fields are null, which is not sent.
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    new { name },
+                    new { name, parentIssueId, tagText },
                     ToAddOn,
                     JHelp.Deserialize<IssueGuidWrapper>,
                     out IssueGuidWrapper response))
