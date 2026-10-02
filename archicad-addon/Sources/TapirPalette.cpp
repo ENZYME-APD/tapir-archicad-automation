@@ -8,8 +8,6 @@
 #include "JSON/Value.hpp"
 #include "JSON/JDOMParser.hpp"
 #include "IBinaryChannelUtilities.hpp"
-#include "IOBinProtocolXs.hpp"
-#include "IChannelX.hpp"
 #include "StringConversion.hpp"
 #include "FileSystem.hpp"
 #include "Folder.hpp"
@@ -19,6 +17,7 @@
 
 #include <map>
 #include <regex>
+#include <vector>
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
@@ -38,7 +37,11 @@ static IO::Location GetTapirTemporaryFolder ()
     return tempFolder;
 }
 
-static IO::Location SaveBuiltInScript (const IO::Location& baseFolderLoc, const IO::RelativeLocation& relLoc, const GS::UniString& content)
+// The downloaded content is kept as raw bytes and written to disk unchanged.
+// The repositories may contain binary files (images, pdf, zip, ...) next to the
+// scripts, and those bytes are not valid UTF-8: converting them through
+// GS::UniString corrupted the files and triggers a GSRoot assert in Archicad 30.
+static IO::Location SaveBuiltInScript (const IO::Location& baseFolderLoc, const IO::RelativeLocation& relLoc, const std::vector<char>& content)
 {
     IO::Location fileLoc = baseFolderLoc;
     fileLoc.AppendToLocal (relLoc);
@@ -53,13 +56,35 @@ static IO::Location SaveBuiltInScript (const IO::Location& baseFolderLoc, const 
         return {};
     }
 
-    auto cStr = content.ToCStr ();
-    file.WriteBin (cStr.Get (), (GS::USize)strlen (cStr.Get()));
+    if (!content.empty ()) {
+        file.WriteBin (content.data (), (GS::USize) content.size ());
+    }
 
     return fileLoc;
 }
 
-static GS::UniString DownloadFileContent (const GS::UniString& fileDownloadUrl, const std::map<GS::UniString, GS::UniString>& headers = {})
+static std::vector<char> ReadAllBytes (GS::IBinaryChannel& channel)
+{
+    constexpr GS::USize BufferSize = 16 * 1024;
+    std::vector<char> bytes;
+    char buffer[BufferSize];
+
+    try {
+        while (true) {
+            const GS::USize bytesRead = channel.Read (buffer, BufferSize);
+            if (bytesRead == 0) {
+                break;
+            }
+            bytes.insert (bytes.end (), buffer, buffer + bytesRead);
+        }
+    } catch (const GS::Exception&) {
+        // End of input: the channel signalled it with an exception instead of returning 0.
+    }
+
+    return bytes;
+}
+
+static std::vector<char> DownloadFileContent (const GS::UniString& fileDownloadUrl, const std::map<GS::UniString, GS::UniString>& headers = {})
 {
     IO::URI::URI connectionUrl (fileDownloadUrl);
     HTTP::Client::ClientConnection clientConnection (connectionUrl);
@@ -75,9 +100,7 @@ static GS::UniString DownloadFileContent (const GS::UniString& fileDownloadUrl, 
     clientConnection.Send (getRequest);
 
     HTTP::Client::Response response;
-    GS::IChannelX channel (clientConnection.BeginReceive (response), GS::GetNetworkByteOrderIProtocolX ());
-
-    GS::UniString body = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (channel, GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+    std::vector<char> body = ReadAllBytes (clientConnection.BeginReceive (response));
 
     clientConnection.FinishReceive ();
     clientConnection.Close (false);
@@ -1067,8 +1090,8 @@ bool TapirPalette::UpdateAddOn ()
 
     constexpr const char* fileName = "update_addon_and_restart_archicad.py";
     const GS::UniString url = "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/archicad-addon/Tools/" + GS::UniString (fileName);
-    const GS::UniString content = DownloadFileContent (url);
-    if (content.GetLength () < 10) {
+    const std::vector<char> content = DownloadFileContent (url);
+    if (content.size () < 10) {
         response = DGAlert (DG_ERROR, "Tapir Update", "Failed to download the update script.", "Please check your internet connection and try again.", "OK", "Cancel");
 
         if (response != DG_OK) {
