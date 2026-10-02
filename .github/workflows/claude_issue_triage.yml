@@ -33,7 +33,7 @@ name: Claude Issue Triage
 # another contributor's branch, or a tag. Add rulesets that
 # block direct pushes to `main`, block force pushes and deletions on all
 # branches, and restrict tag creation. The `main` rule is load-bearing:
-# monthly_release.yml tags and ships HEAD of main on a schedule, so a push
+# weekly_release.yml tags and ships HEAD of main on a schedule, so a push
 # injected onto an unprotected main would reach the signed release assets
 # with no pull request or review in between. Confirm the rulesets are active
 # before merging.

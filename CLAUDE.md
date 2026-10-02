@@ -29,7 +29,7 @@ The Add-On code is based on Tibor Lorantfy's original
 The current version is defined in
 [archicad-addon/Sources/AddOnVersion.hpp](archicad-addon/Sources/AddOnVersion.hpp)
 and [tools/package_info.json](tools/package_info.json) — keep these in sync.
-It is bumped automatically after each release by the monthly release
+It is bumped automatically after each release by the weekly release
 workflow, so it is not repeated here.
 
 ## Repository layout
@@ -90,7 +90,7 @@ sandbox/                 Experiments / scratch
    if it should be tested, expected output under `Test/ExpectedOutputs/`.
 5. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
-   needed; same output as the `GenerateDocumentation` developer command). The monthly
+   needed; same output as the `GenerateDocumentation` developer command). The weekly
    release regenerates them automatically; run it yourself to update them earlier.
 6. Bump the version consistently (see Versioning below) when releasing.
 
@@ -163,7 +163,17 @@ Version lives in multiple places that must stay in sync:
 
 Use the helper to bump: [tools/update_version.py](tools/update_version.py)
 (or `tools/update_version.bat`). Commands also carry the version they were introduced
-in, as the second argument to `RegisterCommand<>` in `AddOnMain.cpp`.
+in, as the second argument to `RegisterCommand<>` in `AddOnMain.cpp`: use the version
+`main` currently carries (in `tools/package_info.json`).
+
+`main` always carries the next patch version (1.6.1 after 1.6.0). The weekly release
+ships it as a patch release, except that the first release of a calendar month is a
+minor release (1.6.1 ships as 1.7.0), and a release after a merged PR labeled
+`major-release` is a major one (1.6.1 ships as 2.0.0). For those two the release
+workflow rewrites the version files and the commands registered with the skipped
+version, so new commands keep using the version `main` carries. Label a PR
+`major-release` only for a significant change, not for a new command or
+Grasshopper component.
 
 ## CI
 
@@ -173,8 +183,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
   (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); the release asset count
-  is mirrored in `EXPECTED_ASSETS` in `monthly_release.yml`.
-- `monthly_release.yml` — tags and releases `main` monthly; first regenerates
+  is mirrored in `EXPECTED_ASSETS` in `weekly_release.yml`.
+- `weekly_release.yml` — tags and releases `main` every Monday when it changed
+  (see Versioning for which version it ships); first regenerates
   `docs/archicad-addon` with `tools/generate_addon_docs.py` and pushes it to `main`
   when it changed (never hand-edit those docs).
 - `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and

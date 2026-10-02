@@ -4,16 +4,16 @@ on:
   push:
     tags:
       - '*'
-  # The Monthly Release workflow pushes its tag with the workflow's own
+  # The Weekly Release workflow pushes its tag with the workflow's own
   # GITHUB_TOKEN, which does not trigger on-push workflows - so it starts
   # this pipeline explicitly, dispatched on the tag ref.
   workflow_dispatch:
 
 jobs:
   # When adding or removing an Archicad version in the matrices below, or an
-  # installer job, also update EXPECTED_ASSETS in monthly_release.yml - it is
+  # installer job, also update EXPECTED_ASSETS in weekly_release.yml - it is
   # the number of release assets (Win + Mac per version, plus the Win + Mac
-  # installer executables) the monthly release waits for before publishing.
+  # installer executables) the weekly release waits for before publishing.
   build_win:
     strategy:
       matrix:
