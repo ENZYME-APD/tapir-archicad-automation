@@ -18,7 +18,10 @@ with PyInstaller from [tapir_installer.py](tapir_installer.py).
 ## Running from source
 
 The installer is a single Python 3 script using only the standard library
-(tkinter for the GUI):
+(tkinter for the GUI). The optional `truststore` / `certifi` packages are used
+for HTTPS certificate verification when installed (the released executables
+bundle them; without them a PyInstaller build on macOS fails with
+`CERTIFICATE_VERIFY_FAILED`):
 
 ```bash
 python3 tapir_installer.py
@@ -39,7 +42,7 @@ switches to console mode):
 ## Building the executables locally
 
 ```bash
-pip install pyinstaller
+pip install pyinstaller truststore certifi
 
 # Windows
 pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon Resources/TapirInstaller.ico tapir_installer.py
