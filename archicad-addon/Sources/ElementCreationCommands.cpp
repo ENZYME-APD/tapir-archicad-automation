@@ -1663,6 +1663,29 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     return true;
 }
 
+// The library part's own A and B; a and b are left as they are when it has none to divide by.
+static GSErrCode GetLibraryPartSize (Int32 libInd, double& a, double& b)
+{
+    double libraryPartA = 0.0;
+    double libraryPartB = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    const GSErrCode err = ACAPI_LibraryPart_GetParams (libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
+    if (addPars != nullptr) {
+        ACAPI_DisposeAddParHdl (&addPars);
+    }
+    if (err != NoError) {
+        return err;
+    }
+    if (libraryPartA > 1e-6) {
+        a = libraryPartA;
+    }
+    if (libraryPartB > 1e-6) {
+        b = libraryPartB;
+    }
+    return NoError;
+}
+
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
 // dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
 // per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
@@ -1696,10 +1719,29 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     if (parameters.Get ("dimensions", dimensions)) {
         const API_Coord3D dims = Get3DCoordinateFromObjectState (dimensions);
 
-        element.object.xRatio = dims.x;
-        element.object.yRatio = dims.y;
-        GS::ObjectState os (ParameterValueFieldName, dims.z);
-        ChangeParams (memo.params, {{"ZZYZX", os}});
+        // xRatio/yRatio hold the size itself only with useXYFixSize on; otherwise they hold the size
+        // divided by the library part's own A/B (as documented), so convert for the flag the element
+        // ends up with.
+        bool useFixSize = element.object.useXYFixSize;
+        parameters.Get ("useFixSize", useFixSize);
+        double libraryPartA = 1.0;
+        double libraryPartB = 1.0;
+        if (!useFixSize) {
+            const GSErrCode err = GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the library part's own A and B, which 'dimensions' are converted with.");
+            }
+        }
+        element.object.xRatio = dims.x / libraryPartA;
+        element.object.yRatio = dims.y / libraryPartB;
+        // A and B in the parameter memo have to agree with xRatio/yRatio: Archicad reconciles the two
+        // on a change, and after CreateObjects the memo would keep the Object tool default's A and B,
+        // which a later ModifyObjects (even one changing only the angle) then applied.
+        ChangeParams (memo.params, {
+            {"A", GS::ObjectState (ParameterValueFieldName, dims.x)},
+            {"B", GS::ObjectState (ParameterValueFieldName, dims.y)},
+            {"ZZYZX", GS::ObjectState (ParameterValueFieldName, dims.z)}
+        });
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, xRatio);
             ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, yRatio);
@@ -2089,7 +2131,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
                         },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -2251,7 +2293,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -2603,7 +2645,7 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -2724,12 +2766,27 @@ API_JustID ParseJustificationString (const GS::UniString& justification)
     return APIJust_Left;
 }
 
+// The content writers below treat '\n' as the only line separator when counting nLine and
+// filling eolPos, so a Windows-style "\r\n" (or a bare '\r') arriving through the JSON
+// interface would leave stray CR characters inside memo.textContent while the line
+// bookkeeping only accounts for the LFs - an inconsistent memo that Archicad renders wrong
+// (reported as only the first character of the text appearing). Every write path normalizes
+// the incoming content to '\n' separators first.
+static GS::UniString NormalizeLineBreaks (const GS::UniString& text)
+{
+    GS::UniString normalized = text;
+    normalized.ReplaceAll ("\r\n", "\n");
+    normalized.ReplaceAll ("\r", "\n");
+    return normalized;
+}
+
 // Used by SetDetailsOfElementsCommand's generic Text/Label write case (upstream official fix);
 // TextLabelDetails::ApplyTextContent below is Tapir's own, richer equivalent used by
 // CreateTexts/CreateLabels/ModifyTexts/ModifyLabels - both build memo.textContent/paragraphs but
 // only ApplyTextContent supports multi-run content.
-void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
+void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& rawText)
 {
+    const GS::UniString text = NormalizeLineBreaks (rawText);
 #ifdef ServerMainVers_2800
     delete memo.textContent;
     memo.textContent = new GS::UniString { text };
@@ -3051,6 +3108,9 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             if (!runOS.Get ("text", runText)) {
                 return CreateErrorResponse (APIERR_BADPARS, "Each entry in 'runs' requires a 'text' field.");
             }
+            // Normalized per run, before the run lengths are taken, so the run ranges set
+            // below stay consistent with the concatenated content.
+            runText = NormalizeLineBreaks (runText);
             short pen = textData.pen;
             runOS.Get ("penIndex", pen);
             short font = textData.font;
@@ -3082,6 +3142,8 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         }
     } else if (!parameters.Get ("text", text)) {
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter");
+    } else {
+        text = NormalizeLineBreaks (text);
     }
 
     // 'memo' may already carry content: the Create path gets its memo from ACAPI_Element_GetDefaults,
@@ -3626,7 +3688,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
