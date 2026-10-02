@@ -8,8 +8,9 @@ result per input element, decided by whether the element is really gone.
 The script places a hotspot on its own layer, locks the layer, and checks that
 DeleteElements reports a per-element failure while the element survives; then
 it unlocks the layer and checks that the same call succeeds and the element is
-gone. A guid that is not in the project counts as gone, so it reports success -
-and it must not stop the rest of the batch from being deleted.
+gone. A guid that is not in the project gets a failed result (APIERR_BADID),
+and it must not stop the rest of the batch from being deleted, whichever
+position it has in the list (issue #749).
 
 Not part of the auto-discovered Examples/ (see test_examples.py +
 ExpectedOutputs/): it needs to mutate layer attributes and exits non-zero on a
@@ -84,30 +85,40 @@ details = run('GetDetailsOfElements', {
 })['detailsOfElements'][0]
 check('the element is gone after the successful delete', 'error' in details, str(details))
 
-# 5) A guid that is not in the project reports success: the command answers
-# whether the element is gone, and that one is.
+# 5) A guid that is not in the project reports a failed result: nothing was
+# deleted, and a mistyped guid should announce itself.
+MISSING_GUID = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
 result = run('DeleteElements', {
-    'elements': [{'elementId': {'guid': 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'}}]
+    'elements': [{'elementId': {'guid': MISSING_GUID}}]
 })
-check('a guid that is not in the project reports success',
-      result['executionResults'][0]['success'] is True, str(result))
+check('a guid that is not in the project reports a failed execution result',
+      result['executionResults'][0]['success'] is False, str(result))
 
 # 6) A guid that is not in the project must not stop the others from being
-# deleted: the whole array goes to one ACAPI_Element_Delete call.
-created = run('CreateHotspots', {
-    'hotspotsData': [{'position': {'x': 1.0, 'y': 1.0}, 'layerIndex': layerIndex}]
-})
-survivorId = created['elements'][0]['elementId']
-result = run('DeleteElements', {'elements': [
-    {'elementId': {'guid': 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'}},
-    {'elementId': survivorId},
-]})
-check('a missing guid does not block the rest of the batch',
-      all(r['success'] is True for r in result['executionResults']), str(result))
-details = run('GetDetailsOfElements', {
-    'elements': [{'elementId': survivorId}]
-})['detailsOfElements'][0]
-check('the real element of that batch is gone', 'error' in details, str(details))
+# deleted, in either order. Before #749 was fixed the missing guid placed
+# AFTER a real element made the whole ACAPI_Element_Delete call fail and roll
+# back, so the real element survived; placed before it, it did not.
+def check_batch(label, make_elements):
+    created = run('CreateHotspots', {
+        'hotspotsData': [{'position': {'x': 1.0, 'y': 1.0}, 'layerIndex': layerIndex}]
+    })
+    survivorId = created['elements'][0]['elementId']
+    elementsList, realIndex, missingIndex = make_elements(survivorId)
+    result = run('DeleteElements', {'elements': elementsList})
+    results = result['executionResults']
+    check(label + ': the real element reports success',
+          results[realIndex]['success'] is True, str(result))
+    check(label + ': the missing guid reports a failed execution result',
+          results[missingIndex]['success'] is False, str(result))
+    details = run('GetDetailsOfElements', {
+        'elements': [{'elementId': survivorId}]
+    })['detailsOfElements'][0]
+    check(label + ': the real element of that batch is gone', 'error' in details, str(details))
+
+check_batch('missing guid before a real element', lambda survivorId: (
+    [{'elementId': {'guid': MISSING_GUID}}, {'elementId': survivorId}], 1, 0))
+check_batch('missing guid after a real element', lambda survivorId: (
+    [{'elementId': survivorId}, {'elementId': {'guid': MISSING_GUID}}], 0, 1))
 
 print('{} passed, {} failed'.format(passes, fails))
 sys.exit(0 if fails == 0 else 1)
