@@ -101,8 +101,7 @@ and Visual Studio (Windows) / Xcode (macOS). The Archicad API DevKits are downlo
 automatically by the build scripts.
 
 Windows, all supported versions (downloads DevKits, then builds AC25–AC30; AC30 uses
-the release candidate DevKit and is built by the PR build check on Windows and macOS,
-but not yet by the release pipeline):
+the release candidate DevKit until the final one is published):
 
 ```bat
 cd archicad-addon\Tools
@@ -194,7 +193,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
   write access: it answers, closes verified already-fixed issues, or opens a **draft**
   PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`. No label is needed;
-  applying `claude-fix` re-runs `fix` on an existing issue. Its header documents the
+  applying `claude-fix` re-runs `fix` on an existing issue, and a `workflow_dispatch`
+  with an `issue_number` runs it on that issue. Its header documents the
   security bounds and the repository rulesets they rely on.
 - `claude_pr_review.yml` — the PR review bot. Reviews on open/push and re-reviews on
   any human PR comment, without re-posting open findings, and resolves the threads it
@@ -202,7 +202,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path (never the bots' own PRs).
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
-  requests in the project's Discord channels (see
+  requests in the project's Discord channels, then dispatches
+  `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
+  no workflow on their own; see
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
 
 ## Installation (end users)

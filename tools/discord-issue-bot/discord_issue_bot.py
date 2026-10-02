@@ -947,6 +947,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             state["github_failures"] += 1
             continue
         state["created"] += 1
+        state["created_numbers"].append(issue["number"])
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))
 
         discord.add_mark(channel_id, message["id"], PROCESSED_MARK)
@@ -995,6 +996,22 @@ def report_borderline(github, state):
             "they appear only in the run summary".format(len(entries), issue["number"]))
 
 
+def write_created_issues_output(numbers):
+    """Hand the numbers of the issues this run created to the workflow as
+    the step output created_issues, so it can start the Claude issue triage
+    for them: issues created with the workflow's GITHUB_TOKEN start no
+    workflow on their own. A no-op outside GitHub Actions; a write failure
+    is logged, never fatal."""
+    output_path = os.environ.get("GITHUB_OUTPUT")
+    if not output_path or not numbers:
+        return
+    try:
+        with open(output_path, "a", encoding="utf-8") as stream:
+            stream.write("created_issues={}\n".format(" ".join(str(n) for n in numbers)))
+    except OSError as error:
+        log("  could not write the step output: {}".format(error))
+
+
 def main():
     config, missing = Config.from_env()
     if config is None:
@@ -1015,8 +1032,9 @@ def main():
     discord = DiscordClient(config.discord_token)
     github = GitHubClient(config.github_token, config.repository)
     classifier = ClaudeCodeClassifier(config.model)
-    state = {"created": 0, "unreadable_channels": 0, "github_failures": 0,
-             "human_messages": 0, "messages_with_signal": 0, "borderline": []}
+    state = {"created": 0, "created_numbers": [], "unreadable_channels": 0,
+             "github_failures": 0, "human_messages": 0, "messages_with_signal": 0,
+             "borderline": []}
 
     if not config.dry_run and config.max_issues_per_day > 0:
         recent = github.count_recent_discord_issues()
@@ -1039,6 +1057,10 @@ def main():
 
     if state["borderline"] and not config.dry_run:
         report_borderline(github, state)
+
+    # Before the failure checks below, so issues created by a run that then
+    # ends red still get their triage.
+    write_created_issues_output(state["created_numbers"])
 
     if config.channel_ids and state["unreadable_channels"] == len(config.channel_ids):
         # A revoked token or missing permission must not leave the scheduled

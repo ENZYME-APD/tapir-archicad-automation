@@ -64,10 +64,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # 5 Archicad versions x 2 platforms + the Win and Mac installer
+  # 6 Archicad versions (25-30) x 2 platforms + the Win and Mac installer
   # executables - update together with the build matrix and the installer
   # jobs in archicad_addon.yml.
-  EXPECTED_ASSETS: 12
+  EXPECTED_ASSETS: 14
 
   # Where a published release is announced. The DISCORD_BOT_TOKEN secret
   # that the Discord Issue Bot already uses must be able to post in this

@@ -7,6 +7,13 @@ name: Claude Issue Triage
 # for (an issue body is text from anyone on the internet) for responsiveness.
 # The label still works as a manual way to re-run `fix` on an issue.
 #
+# Issues filed by the Discord issue bot reach `fix` through workflow_dispatch
+# (see the trigger below), so any Discord message the bot classifies as a
+# report starts a run as well, capped by the bot's daily issue limit. Those
+# dispatches run as github-actions[bot], which `fix` admits through
+# `allowed_bots`; nothing else can act as that account here, since events
+# caused by GITHUB_TOKEN start no run.
+#
 # What still bounds a run: GITHUB_TOKEN cannot touch .github/workflows (no
 # `workflows` permission), everything it opens is a draft authored by a bot -
 # which claude_auto_merge.yml never merges - and the limits below.
@@ -50,8 +57,9 @@ name: Claude Issue Triage
 # that is then pushed or posted publicly. Nothing in this file prevents that.
 # If it ever leaks, revoke it and run `claude setup-token` again. Cost is
 # unbounded too: any account can start 60-minute runs on the maintainer's
-# subscription - by opening an issue or commenting on one - one per issue at a
-# time but in parallel across issues.
+# subscription - by opening an issue or commenting on one, or through a
+# Discord message the bot files - one per issue at a time but in parallel
+# across issues.
 #
 # Authenticates with a Claude Code OAuth token from a Pro or Max subscription:
 # run `claude setup-token` locally and store the result as the repository
@@ -67,6 +75,17 @@ on:
     types: [opened, labeled]
   issue_comment:
     types: [created]
+  # Starts `fix` on an existing issue. discord_issue_bot.yml dispatches it for
+  # every issue it files: those are created with its GITHUB_TOKEN, and events
+  # caused by that token start no workflow run, so `opened` never arrives for
+  # them. Dispatching needs write access to the repository, so it opens no
+  # path for outsiders.
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Number of the open issue to answer and, where possible, fix
+        type: string
+        required: true
 
 # Anyone who can open an issue or comment on one can start a run, and a run
 # spends the maintainer's subscription, so runs on one issue go one at a time.
@@ -85,16 +104,21 @@ jobs:
   # ------------------------------------------------------------------- fix --
   # Runs on every newly opened issue, from anyone, with write access: answers
   # it and, where it can, opens the fix as a draft pull request. Applying the
-  # `claude-fix` label re-runs it on an existing issue.
+  # `claude-fix` label re-runs it on an existing issue; a workflow_dispatch
+  # (the Discord issue bot's) runs it on the given issue.
+  #
+  # The issue number comes from the event, or from the dispatch input when
+  # there is no issue event; the first step checks that input.
   fix:
     if: >
-      github.event_name == 'issues' &&
-      (github.event.action == 'opened' ||
-       (github.event.action == 'labeled' && github.event.label.name == 'claude-fix'))
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' &&
+       (github.event.action == 'opened' ||
+        (github.event.action == 'labeled' && github.event.label.name == 'claude-fix')))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     concurrency:
-      group: claude-issue-${{ github.event.issue.number }}
+      group: claude-issue-${{ github.event.issue.number || inputs.issue_number }}
       cancel-in-progress: false
     permissions:
       contents: write        # to push a fix branch
@@ -102,6 +126,25 @@ jobs:
       pull-requests: write   # to open the fix as a PR
 
     steps:
+      - name: Check the dispatched issue
+        # The number goes into the prompt and the tool allowlist below, so it
+        # must be a plain number naming an open issue (not a pull request).
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          set -eu
+          case "$ISSUE_NUMBER" in
+            ''|*[!0-9]*) echo "::error::'$ISSUE_NUMBER' is not an issue number."; exit 1 ;;
+          esac
+          OPEN_ISSUE=$(gh api "repos/${{ github.repository }}/issues/$ISSUE_NUMBER" \
+            --jq '.state == "open" and .pull_request == null')
+          if [ "$OPEN_ISSUE" != "true" ]; then
+            echo "::error::#$ISSUE_NUMBER is not an open issue."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
@@ -116,12 +159,18 @@ jobs:
           # Anyone's issue starts this job - the maintainer's decision, see
           # the header.
           allowed_non_write_users: "*"
+          # A dispatch sent with GITHUB_TOKEN (the Discord issue bot's) runs
+          # as github-actions[bot], which the action rejects as a non-human
+          # actor unless it is listed here. Events caused by that token
+          # start no run, so this admits only those dispatches.
+          allowed_bots: "github-actions"
 
           prompt: |
             REPO: ${{ github.repository }}
-            ISSUE NUMBER: ${{ github.event.issue.number }}
+            ISSUE NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
 
-            This issue was just opened, or a maintainer labelled it
+            This issue was just opened (by a person, or filed by the Discord
+            issue bot from a Discord message), or a maintainer labelled it
             `claude-fix`. Read CLAUDE.md first for the conventions, then read
             the issue and any comments on it.
 
@@ -199,7 +248,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model best
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number || inputs.issue_number }}:*),Bash(gh issue comment ${{ github.event.issue.number || inputs.issue_number }}:*),Bash(gh issue close ${{ github.event.issue.number || inputs.issue_number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
 
   # ----------------------------------------------------------------- reply --
