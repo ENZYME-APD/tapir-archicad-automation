@@ -23,6 +23,10 @@ on:
         description: Override how far back this run scans (e.g. after a schedule pause); empty uses the default
         type: string
         default: ''
+      triage_issues:
+        description: Also start the Claude issue triage for these issue numbers (space-separated), e.g. to catch up on issues filed before it was dispatched automatically
+        type: string
+        default: ''
 
 concurrency:
   group: discord-issue-bot
@@ -102,9 +106,11 @@ jobs:
     # for each one explicitly - workflow_dispatch is exempt from that rule.
     # A separate job, so the one that feeds Discord content to the
     # classifier never holds the actions permission. Also after a red scan:
-    # the issues it did create still deserve their triage.
+    # the issues it did create still deserve their triage. A manual run can
+    # add issue numbers through the triage_issues input; that dispatch is
+    # sent the same way, so its triage runs as github-actions[bot] too.
     needs: scan
-    if: ${{ !cancelled() && needs.scan.outputs.created_issues != '' }}
+    if: ${{ !cancelled() && (needs.scan.outputs.created_issues != '' || inputs.triage_issues != '') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -114,7 +120,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          CREATED_ISSUES: ${{ needs.scan.outputs.created_issues }}
+          CREATED_ISSUES: ${{ needs.scan.outputs.created_issues }} ${{ inputs.triage_issues }}
         run: |
           set -u
           for NUMBER in $CREATED_ISSUES; do

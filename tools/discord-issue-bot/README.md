@@ -58,7 +58,9 @@ issues, a second job (`triage`, the only one holding the `actions: write`
 permission) dispatches the Claude issue bot (`claude_issue_triage.yml`) for
 each of them: it answers the issue and, where it can, opens a fix as a
 draft pull request, as for any issue a person opens. If a dispatch fails,
-a comment on the issue or the `claude-fix` label still starts it.
+a comment on the issue or the `claude-fix` label still starts it. To start
+it for issues filed earlier, run the workflow by hand with *dry run*
+checked and their numbers in *triage issues*.
 
 ## One-time setup
 
