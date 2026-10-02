@@ -305,7 +305,7 @@ jobs:
 
           claude_args: |
             --max-turns 120
-            --model claude-fable-5
+            --model best
             --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
 
       # Resolves what the review listed as settled - in shell, and only threads
