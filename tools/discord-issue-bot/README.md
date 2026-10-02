@@ -53,12 +53,12 @@ re-enable it and run the workflow once manually with the *lookback
 minutes* input raised to cover the gap.
 
 Because the issues are created with the workflow's own `GITHUB_TOKEN`,
-they do not trigger other workflows: the Claude issue bot
-(`claude_issue_triage.yml`) does not run when they are opened (the
-reporter is on Discord and would not see its answer anyway). Anyone can
-still start it on such an issue by commenting on it, or a maintainer can
-apply the `claude-fix` label, to have it answered or a fix attempted as a
-draft pull request.
+opening them starts no other workflow. So after each run that created
+issues, a second job (`triage`, the only one holding the `actions: write`
+permission) dispatches the Claude issue bot (`claude_issue_triage.yml`) for
+each of them: it answers the issue and, where it can, opens a fix as a
+draft pull request, as for any issue a person opens. If a dispatch fails,
+a comment on the issue or the `claude-fix` label still starts it.
 
 ## One-time setup
 
@@ -93,8 +93,8 @@ A missing label is dropped from the issue rather than failing the run,
 so this step is recommended, not required — but the label also drives
 the daily issue cap (see Tuning), which only counts labelled issues.
 
-The workflow uses the built-in `GITHUB_TOKEN` to create issues; no extra
-GitHub credential is needed. While none of the values above are configured,
+The workflow uses the built-in `GITHUB_TOKEN` to create issues and to
+start the issue triage for them; no extra GitHub credential is needed. While none of the values above are configured,
 the scheduled run exits without doing anything, so enabling the workflow
 before finishing the setup is harmless (a *partially* configured bot fails
 loudly instead, so a renamed secret cannot go unnoticed).

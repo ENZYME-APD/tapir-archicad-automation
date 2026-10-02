@@ -42,6 +42,8 @@ jobs:
     permissions:
       contents: read
       issues: write
+    outputs:
+      created_issues: ${{ steps.bot.outputs.created_issues }}
 
     steps:
       - name: Checkout repository
@@ -84,6 +86,7 @@ jobs:
           fi
 
       - name: Scan Discord channels
+        id: bot
         run: python tools/discord-issue-bot/discord_issue_bot.py
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
@@ -92,3 +95,39 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
           LOOKBACK_MINUTES: ${{ inputs.lookback_minutes }}
+
+  triage:
+    # Issues created with the workflow's GITHUB_TOKEN start no workflow run,
+    # so claude_issue_triage.yml never sees them opened. Start its fix job
+    # for each one explicitly - workflow_dispatch is exempt from that rule.
+    # A separate job, so the one that feeds Discord content to the
+    # classifier never holds the actions permission. Also after a red scan:
+    # the issues it did create still deserve their triage.
+    needs: scan
+    if: ${{ !cancelled() && needs.scan.outputs.created_issues != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: write
+    steps:
+      - name: Start the Claude issue triage
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CREATED_ISSUES: ${{ needs.scan.outputs.created_issues }}
+        run: |
+          set -u
+          for NUMBER in $CREATED_ISSUES; do
+            # The bot writes plain numbers; anything else is skipped rather
+            # than passed on.
+            case "$NUMBER" in
+              ''|*[!0-9]*) echo "::warning::Skipping unexpected issue number '$NUMBER'."; continue ;;
+            esac
+            # A failed dispatch only loses the automatic triage: a comment on
+            # the issue or the claude-fix label still starts it.
+            if gh workflow run claude_issue_triage.yml --ref main -f issue_number="$NUMBER"; then
+              echo "Started the issue triage for #$NUMBER."
+            else
+              echo "::warning::Could not start the issue triage for #$NUMBER - apply the claude-fix label to run it."
+            fi
+          done

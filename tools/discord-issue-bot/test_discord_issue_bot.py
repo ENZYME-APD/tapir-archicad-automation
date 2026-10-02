@@ -14,6 +14,7 @@ import datetime
 import importlib.util
 import os
 import sys
+import tempfile
 import time
 import unittest
 
@@ -225,6 +226,35 @@ class CreateIssueTests(NoSleepTestCase):
         issue = client.create_issue("t", "b", ["bug", "discord"])
         self.assertEqual(issue["number"], 1)
         self.assertEqual(session.label_sets, [["bug", "discord"], ["bug"]])
+
+
+class CreatedIssuesOutputTests(NoSleepTestCase):
+    def setUp(self):
+        super().setUp()
+        handle, self.path = tempfile.mkstemp()
+        os.close(handle)
+        self.previous = os.environ.get("GITHUB_OUTPUT")
+        os.environ["GITHUB_OUTPUT"] = self.path
+
+    def tearDown(self):
+        if self.previous is None:
+            os.environ.pop("GITHUB_OUTPUT", None)
+        else:
+            os.environ["GITHUB_OUTPUT"] = self.previous
+        os.remove(self.path)
+        super().tearDown()
+
+    def read(self):
+        with open(self.path, encoding="utf-8") as stream:
+            return stream.read()
+
+    def test_numbers_written_space_separated(self):
+        bot.write_created_issues_output([722, 723])
+        self.assertEqual(self.read(), "created_issues=722 723\n")
+
+    def test_nothing_written_without_issues(self):
+        bot.write_created_issues_output([])
+        self.assertEqual(self.read(), "")
 
 
 class BorderlineIssueTests(NoSleepTestCase):
