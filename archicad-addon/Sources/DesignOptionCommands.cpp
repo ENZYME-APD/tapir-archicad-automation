@@ -1134,7 +1134,7 @@ GS::Optional<GS::UniString> MoveDesignOptionsToAnotherSetCommand::GetInputParame
                     },
                     "additionalProperties": false,
                     "required": [
-                        "elementId",
+                        "designOptionId",
                         "setName"
                     ]
                 }

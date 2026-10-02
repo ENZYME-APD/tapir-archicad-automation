@@ -828,6 +828,8 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
         } else {
             popUpData->baseDisplayText = name.ToString () + " (" + repo->displayName + ")";
         }
+    } else if (!popUpData->sourceName.IsEmpty ()) {
+        popUpData->baseDisplayText = name.ToString () + " (" + popUpData->sourceName + ")";
     } else {
         popUpData->baseDisplayText = name.ToString ();
     }
@@ -898,6 +900,83 @@ void TapirPalette::AddScriptsFromRepositories ()
     }
 }
 
+// Collects every file below folderLoc as (folder-relative path with '/' separators, file location),
+// mirroring what GetFilesFromGitHubInRelativeLocation returns for a repository.
+static void CollectFilesInFolder (const IO::Location& folderLoc, const GS::UniString& relativePrefix, std::map<GS::UniString, IO::Location>& files)
+{
+    IO::Folder folder (folderLoc);
+    if (folder.GetStatus () != NoError) {
+        return;
+    }
+
+    folder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+        const GS::UniString relativePath = relativePrefix.IsEmpty () ? name.ToString () : relativePrefix + "/" + name.ToString ();
+        const IO::Location entryLoc (folderLoc, name);
+        if (isFolder) {
+            CollectFilesInFolder (entryLoc, relativePath, files);
+        } else {
+            files[relativePath] = entryLoc;
+        }
+    });
+}
+
+void TapirPalette::AddScriptsFromLocalFolders ()
+{
+    const auto& localFolders = Config::Instance ().LocalFolders ();
+    for (auto& localFolder : localFolders) {
+        if (localFolder.path.IsEmpty ()) {
+            continue;
+        }
+
+        const IO::Location folderLoc (localFolder.path);
+        if (!IsValidLocation (folderLoc)) {
+            ACAPI_WriteReport ("Tapir: Local script folder not found, skipping it: " + localFolder.path, false);
+            continue;
+        }
+
+        const std::unique_ptr<std::regex> excludeRegex = localFolder.excludePattern.IsEmpty () ? nullptr : std::make_unique<std::regex> (localFolder.excludePattern.ToCStr ().Get ());
+        const std::unique_ptr<std::regex> includeRegex = localFolder.includePattern.IsEmpty () ? nullptr : std::make_unique<std::regex> (localFolder.includePattern.ToCStr ().Get ());
+        GS::UniString sourceName = localFolder.displayName;
+        if (sourceName.IsEmpty ()) {
+            IO::Name folderName;
+            sourceName = folderLoc.GetLastLocalName (&folderName) == NoError ? folderName.ToString () : localFolder.path;
+        }
+
+        ACAPI_WriteReport ("Tapir is loading scripts from local folder: " + localFolder.path, false);
+        std::map<GS::UniString, IO::Location> files;
+        CollectFilesInFolder (folderLoc, GS::EmptyUniString, files);
+        for (const auto& kv : files) {
+            if (excludeRegex) {
+                if (std::regex_match (kv.first.ToCStr ().Get (), *excludeRegex)) {
+                    ACAPI_WriteReport ("Skipping use of " + kv.first + " due to exclude pattern", false);
+                    continue;
+                }
+            } else if (includeRegex) {
+                if (!std::regex_match (kv.first.ToCStr ().Get (), *includeRegex)) {
+                    ACAPI_WriteReport ("Skipping use of " + kv.first + " due to include pattern", false);
+                    continue;
+                }
+            } else {
+                // Same default as for repositories: only the .py files directly in the folder.
+                IO::Name fileName;
+                if (kv.first.Contains ("/") ||
+                    kv.second.GetLastLocalName (&fileName) != NoError ||
+#ifdef ServerMainVers_3000
+                    fileName.GetExtension ().GetLowerCased () != "py") {
+#else
+                    fileName.GetExtension ().ToLowerCase () != "py") {
+#endif
+                    continue;
+                }
+            }
+            ACAPI_WriteReport ("Added to the popup: " + kv.first + " (" + sourceName + ")", false);
+            GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
+            popUpItemData->sourceName = sourceName;
+            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
+        }
+    }
+}
+
 void TapirPalette::AddScriptsFromCustomScriptsFolder ()
 {
     IO::Location docsFolderLoc;
@@ -933,6 +1012,7 @@ void TapirPalette::LoadScriptsToPopUp ()
 
     AddScriptsFromCustomScriptsFolder ();
     auto itemToSelect = AddScriptsFromPreferences ();
+    AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
 
     scriptSelectionPopUp.AppendSeparator ();

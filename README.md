@@ -22,6 +22,20 @@ The diagram below explains the components and their dependencies.
 
 ### Archicad Add-On
 
+#### Easy installation (recommended)
+
+Download and run the Tapir Installer. It detects the installed Archicad versions, downloads the matching Add-On version and installs it, so Archicad loads it automatically on the next start.
+
+| Windows | macOS |
+| --- | --- |
+| [Download Installer](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) | [Download Installer](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip) |
+
+Notes:
+- **Windows:** the installer asks for administrator rights (it copies files into the Archicad folder under Program Files). Since the executable is not code signed, Windows SmartScreen may warn about an unknown publisher: click "More info", then "Run anyway".
+- **macOS:** unzip the downloaded file and open the app (it is signed and notarized).
+
+#### Manual installation
+
 Download the latest version here:
 
 | Archicad version | Windows | macOS |
