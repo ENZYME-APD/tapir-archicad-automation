@@ -32,11 +32,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             InText(nameof(GeoReferencingParameters.VerticalDatum));
             InText(nameof(GeoReferencingParameters.MapProjection));
             InText(nameof(GeoReferencingParameters.MapZone));
+            InText(nameof(GeoReferencingParameters.XAxisAbscissa));
+            InText(nameof(GeoReferencingParameters.XAxisOrdinate));
+            InText(nameof(GeoReferencingParameters.Scale));
 
             SetOptionality(
                 new[]
                 {
-                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
                 });
         }
 
@@ -88,6 +91,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             ParseInputString(da, 10, ref projectLocation.Survey.GeoReferencingParams.VerticalDatum);
             ParseInputString(da, 11, ref projectLocation.Survey.GeoReferencingParams.MapProjection);
             ParseInputString(da, 12, ref projectLocation.Survey.GeoReferencingParams.MapZone);
+            ParseInputNumber(da, 13, ref projectLocation.Survey.GeoReferencingParams.XAxisAbscissa);
+            ParseInputNumber(da, 14, ref projectLocation.Survey.GeoReferencingParams.XAxisOrdinate);
+            ParseInputNumber(da, 15, ref projectLocation.Survey.GeoReferencingParams.Scale);
 
             SetCadValues(
                 CommandName,
