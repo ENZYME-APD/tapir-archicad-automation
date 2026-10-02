@@ -370,13 +370,37 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         if (windowInfo.typeID != APIWind_FloorPlanID) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is only valid when windowType is 'FloorPlan'.");
         }
-        windowInfo.index = storyIndex;
-        // GetDatabaseInfo fills in the GUID and all fields from typeID+index,
+
+        // The floor plan is one database for every story, so putting the story index into
+        // API_WindowInfo::index and switching the database/window does not move the active
+        // story: every call reports NoError and GetStories keeps returning the old actStory
+        // (#748). The active story is changed with the story settings command instead
+        // (APIStory_GoTo), the same way the Navigator does it. The window/database switch
+        // stays, so the floor plan comes to the front before the story changes.
+        API_StoryInfo storyInfo = {};
+        GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to retrieve stories info.");
+        }
+        if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+            return CreateFailedExecutionResult (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+        }
+
+        // GetDatabaseInfo fills in the GUID and all fields from typeID,
         // which are needed to change the current database (used by ACAPI element creation).
         if (ACAPI_Window_GetDatabaseInfo (&windowInfo) == NoError) {
             ACAPI_Database_ChangeCurrentDatabase (&windowInfo);
         }
-        const GSErrCode err = ACAPI_Window_ChangeWindow (&windowInfo);
+        err = ACAPI_Window_ChangeWindow (&windowInfo);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to change the window to the floor plan.");
+        }
+
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_GoTo;
+        storyCmd.index  = static_cast<short> (storyIndex);
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
         return err == NoError
             ? CreateSuccessfulExecutionResult ()
             : CreateFailedExecutionResult (err, "Failed to change active story.");
