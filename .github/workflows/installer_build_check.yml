@@ -1,14 +1,9 @@
 name: Tapir Installer Build Check
 
-on:
-  push:
-    paths:
-      - 'archicad-addon/Installer/**'
-      - '.github/workflows/installer_build_check.yml'
-  pull_request:
-    paths:
-      - 'archicad-addon/Installer/**'
-      - '.github/workflows/installer_build_check.yml'
+# On every push and pull request, like the other build checks, so the
+# README badge shows the state of main after each merge - not of the last
+# commit that happened to touch the installer.
+on: [push, pull_request]
 
 jobs:
   build_installer:
