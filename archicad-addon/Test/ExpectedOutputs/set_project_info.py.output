@@ -32,7 +32,10 @@ Response:
             "geodeticDatum": "",
             "verticalDatum": "",
             "mapProjection": "",
-            "mapZone": ""
+            "mapZone": "",
+            "xAxisAbscissa": 1,
+            "xAxisOrdinate": 0,
+            "scale": 1
         }
     }
 }
