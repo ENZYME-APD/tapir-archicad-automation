@@ -45,6 +45,7 @@ private:
         IO::Location fileLocation;
         const GS::UniString repoRelLoc;
         const Config::Repository* repo = nullptr;
+        GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
         GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
 
         explicit PopUpItemData (
@@ -74,6 +75,7 @@ private:
     void ExecuteScript (const PopUpItemData& popUpItemData);
     bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
     void AddScriptsFromRepositories ();
+    void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
