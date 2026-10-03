@@ -120,15 +120,19 @@ def FindAddOnsFolder (installPath):
     folderPaths = []
     for entryName in entryNames:
         entryPath = os.path.join (installPath, entryName)
-        if os.path.isdir (entryPath) and not os.path.islink (entryPath) and not entryName.endswith ('.app'):
+        if os.path.isdir (entryPath) and not entryName.endswith ('.app'):
             folderPaths.append (entryPath)
     knownNames = [NormalizeFolderName (folderName) for folderName in LOCALIZED_ADDONS_FOLDER_NAMES]
     for folderPath in folderPaths:
         if NormalizeFolderName (os.path.basename (folderPath)) in knownNames:
             return folderPath
+    # Links are not followed by the marker search, so it cannot wander out
+    # of the installation folder.
     bestFolderPath = None
     bestDepth = None
     for folderPath in folderPaths:
+        if os.path.islink (folderPath):
+            continue
         depth = GetMarkerFileDepth (folderPath)
         if depth is not None and (bestDepth is None or depth < bestDepth):
             bestFolderPath = folderPath
