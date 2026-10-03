@@ -10,11 +10,13 @@ and places it into the Add-Ons folder of each Archicad installation
 automatically on the next start.
 
 The name of the Add-Ons folder is localized in the language versions of
-Archicad, so it is not hardcoded: the installer picks the folder of the
-Archicad installation that contains the `XReadCfg.txt` file (directly or up to
-two levels below it), as recommended by the Graphisoft multi-language add-on
-guide. Only if no such folder exists does it fall back to a folder named
-`Add-Ons`.
+Archicad (e.g. `Extensions` in FRA, `Dodatki` in POL). The installer first
+looks for a folder with one of the localized names published by Graphisoft
+(`LOCALIZED_ADDONS_FOLDER_NAMES` in the script). If there is none, it picks the
+folder that contains the `XReadCfg.txt` file (directly or up to two levels
+below it), as recommended by the Graphisoft multi-language add-on guide.
+On macOS the Add-Ons folder is next to the `Archicad NN.app` bundle in the
+Archicad folder, so the installer does not look inside the bundle.
 
 End users should download the prebuilt executables from the release page:
 `TapirInstaller_Win.exe` (Windows) or `TapirInstaller_Mac.zip` (macOS, signed

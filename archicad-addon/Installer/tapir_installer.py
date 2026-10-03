@@ -20,6 +20,7 @@ import ssl
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import urllib.request
 
 INSTALLER_TITLE = 'Tapir Add-On Installer'
@@ -27,7 +28,25 @@ LATEST_RELEASE_API_URL = 'https://api.github.com/repos/ENZYME-APD/tapir-archicad
 LATEST_RELEASE_DOWNLOAD_URL = 'https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/'
 MANUAL_INSTALL_URL = 'https://github.com/ENZYME-APD/tapir-archicad-automation#installation'
 TAPIR_SUBFOLDER_NAME = 'Tapir'
-ADDONS_FOLDER_NAME = 'Add-Ons'
+# The Add-Ons folder name of each Archicad language version, as listed by
+# Graphisoft ("Addon folder name in different languages" in the Archicad C++
+# API community forum). Most versions use Add-Ons; the localized ones are below.
+# Older versions spelled ArchiCAD, newer ones Archicad: names are compared
+# case-insensitively.
+LOCALIZED_ADDONS_FOLDER_NAMES = [
+    'Add-Ons',                      # AUS, AUT, CHE, CHI, DEN, GER, GRE, INT, ITA, JPN, NED, NOR, NZE, SWE, TAI, USA
+    'Extensões',                    # BRA, POR
+    'Doplnky ArchiCADu',            # CZE
+    'ArchiCAD-laajennukset',        # FIN
+    'Extensions',                   # FRA
+    'Kiegészítök',                  # HUN
+    'Kiegészítők',                  # HUN, alternative spelling
+    '애드온',                        # KOR
+    'Dodatki',                      # POL
+    'Расширения ArchiCAD',          # RUS
+    'Extensiones ArchiCAD',         # SPA
+    'Add-On\'lar',                  # TUR
+]
 ADDONS_FOLDER_MARKER_FILE_NAME = 'XReadCfg.txt'
 ADDONS_FOLDER_MARKER_MAX_DEPTH = 2
 USER_AGENT = 'TapirInstaller'
@@ -83,31 +102,38 @@ def GetMarkerFileDepth (folderPath, depth = 0):
     return min (foundDepths) if len (foundDepths) > 0 else None
 
 
+def NormalizeFolderName (folderName):
+    # macOS returns file names in decomposed Unicode form, so accented names
+    # must be normalized before comparing them.
+    return unicodedata.normalize ('NFC', folderName).casefold ()
+
+
 def FindAddOnsFolder (installPath):
     # The name of the Add-Ons folder is localized in the language versions of
-    # Archicad, so it is identified by the XReadCfg.txt file inside it, as the
-    # Graphisoft multi-language add-on guide recommends. The literal Add-Ons
-    # name is only a fallback for installations without that file.
+    # Archicad. A folder with one of the known localized names is used first.
+    # Otherwise the folder is identified by the XReadCfg.txt file inside it,
+    # as the Graphisoft multi-language add-on guide recommends.
     try:
         entryNames = sorted (os.listdir (installPath))
     except OSError:
         return None
-    bestFolderPath = None
-    bestDepth = None
+    folderPaths = []
     for entryName in entryNames:
         entryPath = os.path.join (installPath, entryName)
-        if not os.path.isdir (entryPath) or os.path.islink (entryPath) or entryName.endswith ('.app'):
-            continue
-        depth = GetMarkerFileDepth (entryPath)
+        if os.path.isdir (entryPath) and not os.path.islink (entryPath) and not entryName.endswith ('.app'):
+            folderPaths.append (entryPath)
+    knownNames = [NormalizeFolderName (folderName) for folderName in LOCALIZED_ADDONS_FOLDER_NAMES]
+    for folderPath in folderPaths:
+        if NormalizeFolderName (os.path.basename (folderPath)) in knownNames:
+            return folderPath
+    bestFolderPath = None
+    bestDepth = None
+    for folderPath in folderPaths:
+        depth = GetMarkerFileDepth (folderPath)
         if depth is not None and (bestDepth is None or depth < bestDepth):
-            bestFolderPath = entryPath
+            bestFolderPath = folderPath
             bestDepth = depth
-    if bestFolderPath is not None:
-        return bestFolderPath
-    fallbackFolderPath = os.path.join (installPath, ADDONS_FOLDER_NAME)
-    if os.path.isdir (fallbackFolderPath):
-        return fallbackFolderPath
-    return None
+    return bestFolderPath
 
 
 def AddInstallationCandidate (installations, name, folderPath):
