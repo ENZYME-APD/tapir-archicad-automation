@@ -2390,7 +2390,12 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
 }
 
-bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo)
+// Builds the simple axis-aligned box used by CreateMorphs' "size" shortcut. Every face is left
+// without a per-face surface override, so the box shows the element's own surface
+// (element.morph.material, "surfaceId" on the command) on all six sides - the same state as a
+// box modelled in the Morph tool. The building material is a whole-volume property on
+// API_Element, so it is deliberately not passed in here (see BuildMorphBodyFromGeometry below).
+bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_ElementMemo& memo)
 {
     void* bodyData = nullptr;
     if (ACAPI_Body_Create (nullptr, nullptr, &bodyData) != NoError || bodyData == nullptr) {
@@ -2433,15 +2438,19 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     ACAPI_Body_AddEdge (bodyData, vertices[2], vertices[6], edges[10]);
     ACAPI_Body_AddEdge (bodyData, vertices[3], vertices[7], edges[11]);
 
-#ifdef ServerMainVers_2700
-    API_OverriddenAttribute material;
-    material = buildingMaterial;
-#else
-    (void) buildingMaterial;
+    // The per-polygon override is a SURFACE (API_MaterialID) index, not a building material one.
+    // Issue #728: passing the building material index here made Archicad show whichever surface
+    // happened to have that index on every face, and flagged the faces as custom-overridden in the
+    // Morph Settings dialog. Unset (hasValue false) means "no override, inherit the element's surface".
     API_OverriddenAttribute material = {};
-#endif
     UInt32 polygon = 0;
-    ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[1], edges[2], edges[3]}, 0, material, polygon);
+    // Every face is wound counter-clockwise seen from outside the box, so all normals point
+    // outwards and each shared edge is walked in opposite directions by its two faces (the
+    // ACAPI_Body_AddEdge requirement quoted at GetOrAddEdge below). The bottom face is therefore
+    // the reverse of the top one - winding it the same way as the top left it facing inwards and
+    // walking edges[0..3] in the same direction as the side faces, which dropped the bottom face
+    // and read the box back as an open 5-face Surface body (issue #728).
+    ACAPI_Body_AddPolygon (bodyData, {-edges[3], -edges[2], -edges[1], -edges[0]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[4], edges[5], edges[6], edges[7]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[9], -edges[4], -edges[8]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[1], edges[10], -edges[5], -edges[9]}, 0, material, polygon);
@@ -4595,7 +4604,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                     elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
                     continue;
                 }
-                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo)) {
+                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, memo)) {
                     elements.Push (CreateErrorResponse (APIERR_GENERAL, "Failed to build morph body."));
                     continue;
                 }
