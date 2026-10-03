@@ -28,6 +28,8 @@ LATEST_RELEASE_DOWNLOAD_URL = 'https://github.com/ENZYME-APD/tapir-archicad-auto
 MANUAL_INSTALL_URL = 'https://github.com/ENZYME-APD/tapir-archicad-automation#installation'
 TAPIR_SUBFOLDER_NAME = 'Tapir'
 ADDONS_FOLDER_NAME = 'Add-Ons'
+ADDONS_FOLDER_MARKER_FILE_NAME = 'XReadCfg.txt'
+ADDONS_FOLDER_MARKER_MAX_DEPTH = 2
 USER_AGENT = 'TapirInstaller'
 DOWNLOAD_TIMEOUT_SECONDS = 60
 
@@ -45,10 +47,10 @@ class InstallerError (Exception):
 
 
 class ArchicadInstallation:
-    def __init__ (self, version, installPath):
+    def __init__ (self, version, installPath, addOnsFolderPath):
         self.version = version
         self.installPath = installPath
-        self.addOnsFolderPath = os.path.join (installPath, ADDONS_FOLDER_NAME)
+        self.addOnsFolderPath = addOnsFolderPath
 
     def __repr__ (self):
         return 'Archicad {0} ({1})'.format (self.version, self.installPath)
@@ -61,19 +63,67 @@ def GetArchicadVersionFromName (name):
     return int (match.group (1))
 
 
-def IsValidArchicadInstallationFolder (folderPath):
-    return os.path.isdir (folderPath) and os.path.isdir (os.path.join (folderPath, ADDONS_FOLDER_NAME))
+def GetMarkerFileDepth (folderPath, depth = 0):
+    # Returns how deep below folderPath the marker file is, or None.
+    try:
+        entryNames = os.listdir (folderPath)
+    except OSError:
+        return None
+    if any (entryName.lower () == ADDONS_FOLDER_MARKER_FILE_NAME.lower () for entryName in entryNames):
+        return depth
+    if depth >= ADDONS_FOLDER_MARKER_MAX_DEPTH:
+        return None
+    foundDepths = []
+    for entryName in entryNames:
+        entryPath = os.path.join (folderPath, entryName)
+        if os.path.isdir (entryPath) and not os.path.islink (entryPath):
+            foundDepth = GetMarkerFileDepth (entryPath, depth + 1)
+            if foundDepth is not None:
+                foundDepths.append (foundDepth)
+    return min (foundDepths) if len (foundDepths) > 0 else None
+
+
+def FindAddOnsFolder (installPath):
+    # The name of the Add-Ons folder is localized in the language versions of
+    # Archicad, so it is identified by the XReadCfg.txt file inside it, as the
+    # Graphisoft multi-language add-on guide recommends. The literal Add-Ons
+    # name is only a fallback for installations without that file.
+    try:
+        entryNames = sorted (os.listdir (installPath))
+    except OSError:
+        return None
+    bestFolderPath = None
+    bestDepth = None
+    for entryName in entryNames:
+        entryPath = os.path.join (installPath, entryName)
+        if not os.path.isdir (entryPath) or os.path.islink (entryPath) or entryName.endswith ('.app'):
+            continue
+        depth = GetMarkerFileDepth (entryPath)
+        if depth is not None and (bestDepth is None or depth < bestDepth):
+            bestFolderPath = entryPath
+            bestDepth = depth
+    if bestFolderPath is not None:
+        return bestFolderPath
+    fallbackFolderPath = os.path.join (installPath, ADDONS_FOLDER_NAME)
+    if os.path.isdir (fallbackFolderPath):
+        return fallbackFolderPath
+    return None
 
 
 def AddInstallationCandidate (installations, name, folderPath):
     version = GetArchicadVersionFromName (name)
-    if version is None or not IsValidArchicadInstallationFolder (folderPath):
+    # An application bundle is never an installation folder, even if it
+    # happens to contain the Add-Ons folder marker file.
+    if version is None or not os.path.isdir (folderPath) or os.path.normpath (folderPath).endswith ('.app'):
         return
     normalizedPath = os.path.normcase (os.path.normpath (folderPath))
     for installation in installations:
         if os.path.normcase (os.path.normpath (installation.installPath)) == normalizedPath:
             return
-    installations.append (ArchicadInstallation (version, folderPath))
+    addOnsFolderPath = FindAddOnsFolder (folderPath)
+    if addOnsFolderPath is None:
+        return
+    installations.append (ArchicadInstallation (version, folderPath, addOnsFolderPath))
 
 
 def CollectCandidatesFromUninstallRegistry (installations, winreg):
@@ -422,9 +472,7 @@ def GetTargetInstallations (args):
     if args.addOnsFolderPath is not None:
         if requestedVersions is None or len (requestedVersions) != 1:
             raise InstallerError ('--addOnsFolder requires --versions with exactly one Archicad version.')
-        installation = ArchicadInstallation (requestedVersions[0], os.path.dirname (os.path.normpath (args.addOnsFolderPath)))
-        installation.addOnsFolderPath = args.addOnsFolderPath
-        return [installation]
+        return [ArchicadInstallation (requestedVersions[0], os.path.dirname (os.path.normpath (args.addOnsFolderPath)), args.addOnsFolderPath)]
     installations = DetectArchicadInstallations (args.mockRootPath)
     if requestedVersions is not None:
         installations = [installation for installation in installations if installation.version in requestedVersions]
