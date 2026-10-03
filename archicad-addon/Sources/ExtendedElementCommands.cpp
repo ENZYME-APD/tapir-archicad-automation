@@ -3755,17 +3755,17 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         },
                         "stepNum": {
                             "type": "integer",
-                            "description": "Number of risers (steps).",
+                            "description": "Number of risers (steps). Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not have this many risers.",
                             "minimum": 1
                         },
                         "riserHeight": {
                             "type": "number",
-                            "description": "Height of each riser.",
+                            "description": "Height of each riser. Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not use this riser height.",
                             "exclusiveMinimum": 0.0
                         },
                         "treadDepth": {
                             "type": "number",
-                            "description": "Depth (going) of each tread.",
+                            "description": "Depth (going) of each tread. Pinned as a fixed going in the stair rules, so the run length follows from the number of treads; the standard's combined riser/going rules (2R+G, R+G, R/G) are not applied to this stair.",
                             "exclusiveMinimum": 0.0
                         },
                         "finishVisible": {
@@ -3827,6 +3827,22 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
     if (treadDepth.HasValue ()) {
         element.stair.treadDepth = treadDepth.Get ();
+
+        // The plain treadDepth field is not an input: ACAPI_Element_Create lays the steps out from
+        // the stair rules, so an explicit going has to be pinned there as a min == max bound with
+        // both *Applied flags set. The standard's combined rules (2R+G, R+G, R/G) are released for
+        // this stair, otherwise they override the pinned going whenever the two conflict (#425).
+        API_StairRulesData& rules = element.stair.rules;
+        rules.treadDepthMinValue = treadDepth.Get ();
+        rules.treadDepthMaxValue = treadDepth.Get ();
+        rules.treadDepthMinApplied = true;
+        rules.treadDepthMaxApplied = true;
+        rules.ruleMinApplied = false;
+        rules.ruleMaxApplied = false;
+        rules.riserPlusGoingMinApplied = false;
+        rules.riserPlusGoingMaxApplied = false;
+        rules.riserGoingRatioMinApplied = false;
+        rules.riserGoingRatioMaxApplied = false;
     }
 
     // Build the baseline polyline in the memo
