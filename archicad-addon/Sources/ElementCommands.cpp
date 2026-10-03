@@ -2145,6 +2145,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             SetTextContentAndParagraphs (clipMemo, elem.text, text);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+#ifndef ServerMainVers_2800
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, charCode); // the content is UTF-16 (see ApplyTextContent)
+#endif
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
@@ -2170,6 +2173,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             }
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+#ifndef ServerMainVers_2800
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, charCode); // the content is UTF-16 (see ApplyTextContent)
+#endif
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
@@ -2184,6 +2190,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             SetTextContentAndParagraphs (clipMemo, elem.label.u.text, text);
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nLine);
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.useEolPos);
+#ifndef ServerMainVers_2800
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.charCode); // the content is UTF-16 (see ApplyTextContent)
+#endif
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.width);
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
