@@ -640,56 +640,274 @@ TAPIR_LOGO_PNG_BASE64 = (
 )
 
 
+def IsTapirInstalled (addOnsFolderPath):
+    return os.path.isdir (os.path.join (addOnsFolderPath, TAPIR_SUBFOLDER_NAME)) or len (GetStrayTapirAddOnPaths (addOnsFolderPath)) > 0
+
+
+def EnableWindowsHighDpi ():
+    # Without this Windows renders the window at 96 DPI and stretches it,
+    # which makes every text blurry on high resolution displays.
+    if not IsUsingWindows ():
+        return
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness (1)
+    except Exception:
+        pass
+
+
 def RunGuiInstaller (args):
     import tkinter
     import tkinter.font
-    import tkinter.messagebox
     import threading
     import webbrowser
 
+    EnableWindowsHighDpi ()
+
+    # Colors follow the Tapir branding: charcoal on white, green accent.
+    COLORS = {
+        'window' : '#F4F5F7',
+        'surface' : '#FFFFFF',
+        'border' : '#E2E4E8',
+        'borderSelected' : '#2E7D32',
+        'text' : '#202225',
+        'mutedText' : '#6B7078',
+        'accent' : '#2E7D32',
+        'accentHover' : '#256B29',
+        'accentText' : '#FFFFFF',
+        'secondary' : '#FFFFFF',
+        'secondaryHover' : '#F0F1F3',
+        'disabled' : '#C9CCD1',
+        'disabledText' : '#FFFFFF',
+        'progressTrack' : '#E8EAED',
+        'success' : '#2E7D32',
+        'successTint' : '#E7F3E8',
+        'error' : '#C62828',
+        'errorTint' : '#FDECEC',
+        'busy' : '#0277BD',
+        'busyTint' : '#E3F1FA',
+        'neutral' : '#5F6368',
+        'neutralTint' : '#EEF0F2',
+    }
+    STATUS_COLORS = {
+        'neutral' : ('neutral', 'neutralTint'),
+        'busy' : ('busy', 'busyTint'),
+        'success' : ('success', 'successTint'),
+        'error' : ('error', 'errorTint'),
+    }
+
+    def GetFontFamily (root):
+        availableFamilies = set (tkinter.font.families (root))
+        for family in ['Segoe UI', 'SF Pro Text', 'Helvetica Neue', 'Inter', 'Cantarell', 'DejaVu Sans']:
+            if family in availableFamilies:
+                return family
+        return tkinter.font.nametofont ('TkDefaultFont').actual ('family')
+
+    class FlatButton (tkinter.Label):
+        # tkinter.Button ignores background colors on macOS, so a label is
+        # used to get the same flat look on both platforms.
+        def __init__ (self, parent, text, command, font, style):
+            tkinter.Label.__init__ (self, parent, text = text, font = font, padx = 18, pady = 7, cursor = 'hand2')
+            self.command = command
+            self.style = style
+            self.isEnabled = True
+            self.isHovered = False
+            self.bind ('<Enter>', lambda event : self.SetHovered (True))
+            self.bind ('<Leave>', lambda event : self.SetHovered (False))
+            self.bind ('<ButtonRelease-1>', lambda event : self.OnClicked ())
+            self.UpdateLook ()
+
+        def SetEnabled (self, isEnabled):
+            self.isEnabled = isEnabled
+            self.configure (cursor = 'hand2' if isEnabled else 'arrow')
+            self.UpdateLook ()
+
+        def SetHovered (self, isHovered):
+            self.isHovered = isHovered
+            self.UpdateLook ()
+
+        def OnClicked (self):
+            if self.isEnabled:
+                self.command ()
+
+        def UpdateLook (self):
+            if self.style == 'primary':
+                if not self.isEnabled:
+                    self.configure (bg = COLORS['disabled'], fg = COLORS['disabledText'], highlightthickness = 0)
+                else:
+                    self.configure (bg = COLORS['accentHover' if self.isHovered else 'accent'], fg = COLORS['accentText'], highlightthickness = 0)
+            else:
+                background = COLORS['secondaryHover'] if self.isHovered and self.isEnabled else COLORS['secondary']
+                self.configure (bg = background, fg = COLORS['text'] if self.isEnabled else COLORS['disabled'],
+                    highlightthickness = 1, highlightbackground = COLORS['border'], highlightcolor = COLORS['border'])
+
+    class CheckBox (tkinter.Canvas):
+        SIZE = 18
+
+        def __init__ (self, parent, background):
+            tkinter.Canvas.__init__ (self, parent, width = self.SIZE, height = self.SIZE, bg = background, highlightthickness = 0, cursor = 'hand2')
+
+        def Draw (self, isChecked, isEnabled):
+            self.delete ('all')
+            size = self.SIZE
+            if isChecked:
+                color = COLORS['accent'] if isEnabled else COLORS['disabled']
+                self.create_rectangle (1, 1, size - 1, size - 1, fill = color, outline = color)
+                self.create_line (4.5, 9.5, 7.5, 12.5, 13.5, 5.5, fill = COLORS['accentText'], width = 2, capstyle = 'round', joinstyle = 'round')
+            else:
+                self.create_rectangle (1, 1, size - 1, size - 1, fill = COLORS['surface'], outline = COLORS['disabled'], width = 1.5)
+
+    class ProgressBar (tkinter.Canvas):
+        def __init__ (self, parent):
+            tkinter.Canvas.__init__ (self, parent, width = 1, height = 4, bg = COLORS['progressTrack'], highlightthickness = 0)
+            self.fraction = 0.0
+            self.bind ('<Configure>', lambda event : self.Draw ())
+
+        def SetFraction (self, fraction):
+            self.fraction = max (0.0, min (1.0, fraction))
+            self.Draw ()
+
+        def Draw (self):
+            self.delete ('all')
+            width = self.winfo_width ()
+            if self.fraction > 0.0:
+                self.create_rectangle (0, 0, int (width * self.fraction), 4, fill = COLORS['busy'], width = 0)
+
     class InstallationRow:
-        def __init__ (self, installation):
+        def __init__ (self, app, parent, installation):
+            self.app = app
             self.installation = installation
-            self.isSelected = None
-            self.checkButton = None
-            self.statusLabel = None
+            self.isSelected = True
+            self.card = tkinter.Frame (parent, bg = COLORS['surface'], highlightthickness = 1, cursor = 'hand2')
+            self.card.pack (fill = 'x', pady = (0, 8))
+            contentFrame = tkinter.Frame (self.card, bg = COLORS['surface'])
+            contentFrame.pack (fill = 'x', padx = 14, pady = 11)
+            self.checkBox = CheckBox (contentFrame, COLORS['surface'])
+            self.checkBox.pack (side = 'left', padx = (0, 12))
+            textFrame = tkinter.Frame (contentFrame, bg = COLORS['surface'])
+            textFrame.pack (side = 'left', fill = 'x', expand = True)
+            self.titleLabel = tkinter.Label (textFrame, text = 'Archicad {0}'.format (installation.version),
+                font = app.fonts['cardTitle'], bg = COLORS['surface'], fg = COLORS['text'], anchor = 'w')
+            self.titleLabel.pack (fill = 'x')
+            self.pathLabel = tkinter.Label (textFrame, text = installation.addOnsFolderPath,
+                font = app.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
+            self.pathLabel.pack (fill = 'x')
+            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = 16, padx = 6, pady = 3)
+            self.statusLabel.pack (side = 'right', padx = (12, 0))
+            # The bar is always packed, so the card does not change height when
+            # it appears; it is only invisible while there is no progress.
+            self.progressBar = ProgressBar (self.card)
+            self.progressBar.pack (fill = 'x', side = 'bottom')
+            for widget in [self.card, contentFrame, self.checkBox, textFrame, self.titleLabel, self.pathLabel]:
+                widget.bind ('<Button-1>', lambda event : self.Toggle ())
+            if IsTapirInstalled (installation.addOnsFolderPath):
+                self.SetStatus ('Installed', 'success')
+            else:
+                self.SetStatus ('Not installed', 'neutral')
+            self.UpdateLook ()
+
+        def Toggle (self):
+            if self.app.isWorking:
+                return
+            self.isSelected = not self.isSelected
+            self.UpdateLook ()
+            self.app.UpdateButtonStates ()
+
+        def SetSelected (self, isSelected):
+            self.isSelected = isSelected
+            self.UpdateLook ()
+
+        def UpdateLook (self):
+            borderColor = COLORS['borderSelected'] if self.isSelected else COLORS['border']
+            self.card.configure (highlightbackground = borderColor, highlightcolor = borderColor)
+            self.checkBox.Draw (self.isSelected, not self.app.isWorking)
+
+        def SetStatus (self, statusText, kind, progressFraction = None):
+            foreground, background = STATUS_COLORS[kind]
+            self.statusLabel.configure (text = statusText, fg = COLORS[foreground], bg = COLORS[background])
+            if progressFraction is None:
+                self.progressBar.configure (bg = COLORS['surface'])
+                self.progressBar.SetFraction (0.0)
+            else:
+                self.progressBar.configure (bg = COLORS['progressTrack'])
+                self.progressBar.SetFraction (progressFraction)
 
     class InstallerApp (tkinter.Tk):
         def __init__ (self):
             tkinter.Tk.__init__ (self)
             self.title (INSTALLER_TITLE)
-            self.resizable (False, False)
+            self.configure (bg = COLORS['window'])
+            self.minsize (560, 0)
+            self.resizable (True, False)
             self.rows = []
             self.releaseInfo = None
             self.isWorking = False
 
-            padding = { 'padx' : 10, 'pady' : 5 }
-            titleFont = tkinter.font.nametofont ('TkDefaultFont').copy ()
-            titleFont.configure (size = 14, weight = 'bold')
-            headerFrame = tkinter.Frame (self)
-            headerFrame.pack (**padding)
+            family = GetFontFamily (self)
+            self.fonts = {
+                'title' : tkinter.font.Font (self, family = family, size = 15, weight = 'bold'),
+                'body' : tkinter.font.Font (self, family = family, size = 10),
+                'bodyBold' : tkinter.font.Font (self, family = family, size = 10, weight = 'bold'),
+                'cardTitle' : tkinter.font.Font (self, family = family, size = 11, weight = 'bold'),
+                'small' : tkinter.font.Font (self, family = family, size = 9),
+                'badge' : tkinter.font.Font (self, family = family, size = 9, weight = 'bold'),
+                'section' : tkinter.font.Font (self, family = family, size = 8, weight = 'bold'),
+                'link' : tkinter.font.Font (self, family = family, size = 9, underline = True),
+            }
+
+            # Header
+            headerFrame = tkinter.Frame (self, bg = COLORS['surface'])
+            headerFrame.pack (fill = 'x')
+            headerContentFrame = tkinter.Frame (headerFrame, bg = COLORS['surface'])
+            headerContentFrame.pack (fill = 'x', padx = 24, pady = 18)
             try:
                 # Keep a reference, otherwise Tk drops the image.
-                self.logoImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64)
-                tkinter.Label (headerFrame, image = self.logoImage).pack (side = 'left', padx = (0, 10))
+                self.logoImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64).subsample (2, 2)
+                tkinter.Label (headerContentFrame, image = self.logoImage, bg = COLORS['surface']).pack (side = 'left', padx = (0, 14))
             except tkinter.TclError:
                 # PNG support requires Tk 8.6; the logo is only decoration.
                 pass
-            tkinter.Label (headerFrame, text = INSTALLER_TITLE, font = titleFont).pack (side = 'left')
-            self.releaseLabel = tkinter.Label (self, text = 'Getting the latest Tapir release...')
-            self.releaseLabel.pack (**padding)
-            self.rowsFrame = tkinter.Frame (self)
-            self.rowsFrame.pack (fill = 'x', **padding)
-            self.detectionLabel = tkinter.Label (self.rowsFrame, text = 'Detecting Archicad installations...')
-            self.detectionLabel.grid (row = 0, column = 0, columnspan = 2)
-            buttonsFrame = tkinter.Frame (self)
-            buttonsFrame.pack (**padding)
-            self.installButton = tkinter.Button (buttonsFrame, text = 'Install', width = 12, state = 'disabled', command = self.OnInstallClicked)
-            self.installButton.grid (row = 0, column = 0, padx = 5)
-            self.uninstallButton = tkinter.Button (buttonsFrame, text = 'Uninstall', width = 12, state = 'disabled', command = self.OnUninstallClicked)
-            self.uninstallButton.grid (row = 0, column = 1, padx = 5)
-            self.closeButton = tkinter.Button (buttonsFrame, text = 'Close', width = 12, command = self.destroy)
-            self.closeButton.grid (row = 0, column = 2, padx = 5)
+            titleFrame = tkinter.Frame (headerContentFrame, bg = COLORS['surface'])
+            titleFrame.pack (side = 'left', fill = 'x', expand = True)
+            tkinter.Label (titleFrame, text = INSTALLER_TITLE, font = self.fonts['title'], bg = COLORS['surface'], fg = COLORS['text'], anchor = 'w').pack (fill = 'x')
+            self.releaseLabel = tkinter.Label (titleFrame, text = 'Checking the latest Tapir release...', font = self.fonts['body'],
+                bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
+            self.releaseLabel.pack (fill = 'x')
+            tkinter.Frame (self, bg = COLORS['border'], height = 1).pack (fill = 'x')
+
+            # Body
+            bodyFrame = tkinter.Frame (self, bg = COLORS['window'])
+            bodyFrame.pack (fill = 'both', expand = True, padx = 24, pady = (18, 10))
+            sectionFrame = tkinter.Frame (bodyFrame, bg = COLORS['window'])
+            sectionFrame.pack (fill = 'x', pady = (0, 8))
+            tkinter.Label (sectionFrame, text = 'ARCHICAD INSTALLATIONS', font = self.fonts['section'], bg = COLORS['window'], fg = COLORS['mutedText']).pack (side = 'left')
+            self.selectAllLabel = tkinter.Label (sectionFrame, text = '', font = self.fonts['link'], bg = COLORS['window'], fg = COLORS['accent'], cursor = 'hand2')
+            self.selectAllLabel.pack (side = 'right')
+            self.selectAllLabel.bind ('<Button-1>', lambda event : self.OnSelectAllClicked ())
+            self.rowsFrame = tkinter.Frame (bodyFrame, bg = COLORS['window'])
+            self.rowsFrame.pack (fill = 'x')
+            self.messageLabel = tkinter.Label (self.rowsFrame, text = 'Detecting Archicad installations...', font = self.fonts['body'],
+                bg = COLORS['window'], fg = COLORS['mutedText'], anchor = 'w', justify = 'left')
+            self.messageLabel.pack (fill = 'x', pady = 10)
+            self.resultLabel = tkinter.Label (bodyFrame, text = '', font = self.fonts['body'], anchor = 'w', justify = 'left', padx = 12, pady = 9, bg = COLORS['window'])
+
+            # Footer
+            tkinter.Frame (self, bg = COLORS['border'], height = 1).pack (fill = 'x')
+            footerFrame = tkinter.Frame (self, bg = COLORS['surface'])
+            footerFrame.pack (fill = 'x')
+            footerContentFrame = tkinter.Frame (footerFrame, bg = COLORS['surface'])
+            footerContentFrame.pack (fill = 'x', padx = 24, pady = 14)
+            self.selectionLabel = tkinter.Label (footerContentFrame, text = '', font = self.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'])
+            self.selectionLabel.pack (side = 'left')
+            self.installButton = FlatButton (footerContentFrame, 'Install', self.OnInstallClicked, self.fonts['bodyBold'], 'primary')
+            self.installButton.pack (side = 'right')
+            self.uninstallButton = FlatButton (footerContentFrame, 'Uninstall', self.OnUninstallClicked, self.fonts['body'], 'secondary')
+            self.uninstallButton.pack (side = 'right', padx = (0, 8))
+            self.closeButton = FlatButton (footerContentFrame, 'Close', self.destroy, self.fonts['body'], 'secondary')
+            self.closeButton.pack (side = 'right', padx = (0, 8))
+            self.bind ('<Return>', lambda event : self.installButton.OnClicked ())
+            self.bind ('<Escape>', lambda event : self.closeButton.OnClicked ())
+            self.UpdateButtonStates ()
 
             threading.Thread (target = self.InitializeInBackground, daemon = True).start ()
 
@@ -713,27 +931,20 @@ def RunGuiInstaller (args):
                 self.RunOnUiThread (lambda : self.ShowReleaseError (releaseErrorText))
 
         def ShowInstallations (self, installations):
-            self.detectionLabel.grid_forget ()
             if len (installations) == 0:
-                tkinter.Label (self.rowsFrame, text = 'No Archicad installation was found on this computer.').grid (row = 0, column = 0, columnspan = 2)
-                manualLabel = tkinter.Label (self.rowsFrame, text = 'Click here for manual installation instructions.', fg = 'blue', cursor = 'hand2')
-                manualLabel.grid (row = 1, column = 0, columnspan = 2)
+                self.messageLabel.configure (text = 'No Archicad installation was found on this computer.')
+                manualLabel = tkinter.Label (self.rowsFrame, text = 'Show the manual installation instructions', font = self.fonts['link'],
+                    bg = COLORS['window'], fg = COLORS['accent'], cursor = 'hand2', anchor = 'w')
+                manualLabel.pack (fill = 'x')
                 manualLabel.bind ('<Button-1>', lambda event : webbrowser.open (MANUAL_INSTALL_URL))
                 return
-            for rowIndex, installation in enumerate (installations):
-                row = InstallationRow (installation)
-                row.isSelected = tkinter.BooleanVar (value = True)
-                row.checkButton = tkinter.Checkbutton (self.rowsFrame,
-                    text = 'Archicad {0}  ({1})'.format (installation.version, installation.installPath),
-                    variable = row.isSelected, anchor = 'w')
-                row.checkButton.grid (row = rowIndex, column = 0, sticky = 'w')
-                row.statusLabel = tkinter.Label (self.rowsFrame, text = '', width = 32, anchor = 'w')
-                row.statusLabel.grid (row = rowIndex, column = 1, sticky = 'w')
-                self.rows.append (row)
+            self.messageLabel.pack_forget ()
+            for installation in installations:
+                self.rows.append (InstallationRow (self, self.rowsFrame, installation))
             self.UpdateButtonStates ()
 
         def ShowDetectionError (self, errorText):
-            self.detectionLabel.configure (text = errorText, fg = 'red')
+            self.messageLabel.configure (text = errorText, fg = COLORS['error'])
             self.UpdateButtonStates ()
 
         def ShowReleaseInfo (self, releaseInfo):
@@ -742,21 +953,39 @@ def RunGuiInstaller (args):
             self.UpdateButtonStates ()
 
         def ShowReleaseError (self, errorText):
-            self.releaseLabel.configure (text = errorText, fg = 'red')
+            self.releaseLabel.configure (text = errorText, fg = COLORS['error'], wraplength = 440, justify = 'left')
             self.UpdateButtonStates ()
 
-        def UpdateButtonStates (self):
-            hasRows = len (self.rows) > 0
-            canInstall = hasRows and self.releaseInfo is not None and not self.isWorking
-            self.installButton.configure (state = 'normal' if canInstall else 'disabled')
-            self.uninstallButton.configure (state = 'normal' if hasRows and not self.isWorking else 'disabled')
-            self.closeButton.configure (state = 'disabled' if self.isWorking else 'normal')
+        def ShowResult (self, resultText, kind):
+            foreground, background = STATUS_COLORS[kind]
+            self.resultLabel.configure (text = resultText, fg = COLORS[foreground], bg = COLORS[background], wraplength = 480)
+            self.resultLabel.pack (fill = 'x', pady = (4, 0))
 
-        def SetRowStatus (self, row, statusText, color = 'black'):
-            self.RunOnUiThread (lambda : row.statusLabel.configure (text = statusText, fg = color))
+        def UpdateButtonStates (self):
+            selectedCount = len (self.GetSelectedRows ())
+            canInstall = selectedCount > 0 and self.releaseInfo is not None and not self.isWorking
+            self.installButton.SetEnabled (canInstall)
+            self.uninstallButton.SetEnabled (selectedCount > 0 and not self.isWorking)
+            self.closeButton.SetEnabled (not self.isWorking)
+            if len (self.rows) > 0:
+                self.selectionLabel.configure (text = '{0} of {1} selected'.format (selectedCount, len (self.rows)))
+                self.selectAllLabel.configure (text = 'Select none' if selectedCount == len (self.rows) else 'Select all')
+            for row in self.rows:
+                row.UpdateLook ()
+
+        def OnSelectAllClicked (self):
+            if self.isWorking or len (self.rows) == 0:
+                return
+            selectAll = len (self.GetSelectedRows ()) != len (self.rows)
+            for row in self.rows:
+                row.SetSelected (selectAll)
+            self.UpdateButtonStates ()
+
+        def SetRowStatus (self, row, statusText, kind = 'neutral', progressFraction = None):
+            self.RunOnUiThread (lambda : row.SetStatus (statusText, kind, progressFraction))
 
         def GetSelectedRows (self):
-            return [row for row in self.rows if row.isSelected.get ()]
+            return [row for row in self.rows if row.isSelected]
 
         def OnInstallClicked (self):
             self.StartWork (self.InstallInBackground)
@@ -767,56 +996,63 @@ def RunGuiInstaller (args):
         def StartWork (self, workFunction):
             selectedRows = self.GetSelectedRows ()
             if len (selectedRows) == 0:
-                tkinter.messagebox.showinfo (INSTALLER_TITLE, 'Select at least one Archicad version.')
                 return
             self.isWorking = True
+            self.resultLabel.pack_forget ()
             self.UpdateButtonStates ()
             threading.Thread (target = workFunction, args = (selectedRows,), daemon = True).start ()
 
         def InstallInBackground (self, selectedRows):
             succeededCount = 0
+            errorTexts = []
             for row in selectedRows:
                 try:
-                    self.SetRowStatus (row, 'Downloading...')
-                    progressCallback = lambda downloadedSize, totalSize : self.SetRowStatus (row,
-                        'Downloading... {0}%'.format (int (downloadedSize * 100 / totalSize)) if totalSize > 0 else 'Downloading...')
+                    self.SetRowStatus (row, 'Downloading...', 'busy', 0.0)
+                    def progressCallback (downloadedSize, totalSize, row = row):
+                        if totalSize > 0:
+                            self.SetRowStatus (row, 'Downloading {0}%'.format (int (downloadedSize * 100 / totalSize)), 'busy', downloadedSize / totalSize)
                     asset = FindAssetForVersion (self.releaseInfo, row.installation.version)
                     if asset is None:
                         raise InstallerError ('No add-on for this version')
                     downloadFolderPath = tempfile.mkdtemp (prefix = 'TapirInstaller_')
                     try:
                         downloadedFilePath = DownloadAsset (asset, downloadFolderPath, progressCallback)
-                        self.SetRowStatus (row, 'Installing...')
+                        self.SetRowStatus (row, 'Installing...', 'busy', 1.0)
                         InstallAddOn (row.installation.addOnsFolderPath, downloadedFilePath)
                     finally:
                         shutil.rmtree (downloadFolderPath, ignore_errors = True)
-                    self.SetRowStatus (row, 'Installed', 'green')
+                    self.SetRowStatus (row, 'Installed', 'success')
                     succeededCount += 1
-                except InstallerError as e:
-                    self.SetRowStatus (row, 'Failed: {0}'.format (e), 'red')
                 except Exception as e:
-                    self.SetRowStatus (row, 'Failed: {0}'.format (e), 'red')
-            self.RunOnUiThread (lambda : self.FinishWork (
-                'Installed the Tapir Add-On for {0} of {1} selected Archicad version(s).\n\nRestart Archicad to load the Add-On.'.format (
-                    succeededCount, len (selectedRows))))
+                    self.SetRowStatus (row, 'Failed', 'error')
+                    errorTexts.append ('Archicad {0}: {1}'.format (row.installation.version, e))
+            if len (errorTexts) == 0:
+                resultText = 'Tapir was installed for {0} Archicad version(s). Restart Archicad to load the Add-On.'.format (succeededCount)
+            else:
+                resultText = 'Tapir was installed for {0} of {1} Archicad version(s).\n{2}'.format (succeededCount, len (selectedRows), '\n'.join (errorTexts))
+            self.RunOnUiThread (lambda : self.FinishWork (resultText, 'success' if len (errorTexts) == 0 else 'error'))
 
         def UninstallInBackground (self, selectedRows):
+            errorTexts = []
             for row in selectedRows:
                 try:
                     if UninstallAddOn (row.installation.addOnsFolderPath):
-                        self.SetRowStatus (row, 'Uninstalled', 'green')
+                        self.SetRowStatus (row, 'Uninstalled', 'neutral')
                     else:
-                        self.SetRowStatus (row, 'Was not installed')
-                except InstallerError as e:
-                    self.SetRowStatus (row, 'Failed: {0}'.format (e), 'red')
+                        self.SetRowStatus (row, 'Not installed', 'neutral')
                 except Exception as e:
-                    self.SetRowStatus (row, 'Failed: {0}'.format (e), 'red')
-            self.RunOnUiThread (lambda : self.FinishWork ('Finished uninstalling the Tapir Add-On.'))
+                    self.SetRowStatus (row, 'Failed', 'error')
+                    errorTexts.append ('Archicad {0}: {1}'.format (row.installation.version, e))
+            if len (errorTexts) == 0:
+                resultText = 'Finished uninstalling the Tapir Add-On.'
+            else:
+                resultText = 'Failed to uninstall the Tapir Add-On.\n{0}'.format ('\n'.join (errorTexts))
+            self.RunOnUiThread (lambda : self.FinishWork (resultText, 'success' if len (errorTexts) == 0 else 'error'))
 
-        def FinishWork (self, summaryText):
+        def FinishWork (self, resultText, kind):
             self.isWorking = False
             self.UpdateButtonStates ()
-            tkinter.messagebox.showinfo (INSTALLER_TITLE, summaryText)
+            self.ShowResult (resultText, kind)
 
     app = InstallerApp ()
     app.mainloop ()
