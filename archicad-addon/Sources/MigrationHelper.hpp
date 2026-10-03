@@ -411,6 +411,12 @@ inline GSErrCode ACAPI_Navigator_DeleteNavigatorView (const API_Guid* viewGuid, 
                             const_cast<bool*> (silentMode));
 }
 
+inline GSErrCode ACAPI_Navigator_DeleteNavigatorVPItem (const API_Guid* viewPointId)
+{
+    return ACAPI_Navigator (APINavigator_DeleteNavigatorVPItemID,
+                            const_cast<API_Guid*> (viewPointId));
+}
+
 inline GSErrCode ACAPI_Database_DeleteDatabase (API_DatabaseInfo* databaseInfo)
 {
     return ACAPI_Database (APIDb_DeleteDatabaseID, databaseInfo);
