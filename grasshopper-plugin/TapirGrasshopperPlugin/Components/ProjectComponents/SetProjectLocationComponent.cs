@@ -35,11 +35,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             InText(nameof(GeoReferencingParameters.XAxisAbscissa));
             InText(nameof(GeoReferencingParameters.XAxisOrdinate));
             InText(nameof(GeoReferencingParameters.Scale));
+            InText(nameof(SurveyPointPositionInProject.PositionInProjectX));
+            InText(nameof(SurveyPointPositionInProject.PositionInProjectY));
+            InText(nameof(SurveyPointPositionInProject.PositionInProjectZ));
 
             SetOptionality(
                 new[]
                 {
-                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
                 });
         }
 
@@ -94,6 +97,24 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             ParseInputNumber(da, 13, ref projectLocation.Survey.GeoReferencingParams.XAxisAbscissa);
             ParseInputNumber(da, 14, ref projectLocation.Survey.GeoReferencingParams.XAxisOrdinate);
             ParseInputNumber(da, 15, ref projectLocation.Survey.GeoReferencingParams.Scale);
+
+            // The position in the project is a single point: it is sent only when
+            // all three coordinates are given, as the command requires x, y and z.
+            double? positionInProjectX = null;
+            double? positionInProjectY = null;
+            double? positionInProjectZ = null;
+            ParseInputNumber(da, 16, ref positionInProjectX);
+            ParseInputNumber(da, 17, ref positionInProjectY);
+            ParseInputNumber(da, 18, ref positionInProjectZ);
+            if (positionInProjectX.HasValue && positionInProjectY.HasValue && positionInProjectZ.HasValue)
+            {
+                projectLocation.Survey.PositionInProject = new SurveyPointPositionInProject()
+                {
+                    PositionInProjectX = positionInProjectX.Value,
+                    PositionInProjectY = positionInProjectY.Value,
+                    PositionInProjectZ = positionInProjectZ.Value
+                };
+            }
 
             SetCadValues(
                 CommandName,
