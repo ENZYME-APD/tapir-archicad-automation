@@ -3436,7 +3436,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
                         "zCoordinate": { "type": "number", "description": "Absolute Z when floorIndex is absent; bottomOffset relative to the floor when floorIndex is provided." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the wall tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply."
+                        },
                         "offset": { "type": "number" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
@@ -4670,7 +4674,11 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "level": { "type": "number" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Without structureType the new roof keeps the structure of the roof tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply."
+                        },
                         "polygonCoordinates": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
@@ -5330,7 +5338,11 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Send structureType 'Basic' in the same call to switch such a wall first."
+                        },
                         "bottomOffset": { "type": "number" },
                         "offset": { "type": "number" },
                         "structureType": {
@@ -5605,7 +5617,11 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "zCoordinate": { "type": "number" },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite slab first."
+                        },
                         "structureType": {
                             "type": "string",
                             "enum": ["Basic", "Composite"]
@@ -5774,7 +5790,11 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "level": { "type": "number" },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first."
+                        },
                         "eavesOverhang": { "type": "number" },
                         "levels": {
                             "type": "array",
