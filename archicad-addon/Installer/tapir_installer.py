@@ -700,6 +700,15 @@ def RunGuiInstaller (args):
         'error' : ('error', 'errorTint'),
     }
 
+    # Fonts are sized in points, so Tk scales them to the display DPI, but
+    # pixel sizes are not scaled: Px converts the pixel sizes designed for
+    # 96 DPI, so the layout grows with the text on high DPI Windows displays.
+    # macOS scales the whole window itself, so the factor stays 1 there.
+    uiScale = [1.0]
+
+    def Px (value):
+        return int (round (value * uiScale[0]))
+
     def GetFontFamily (root):
         availableFamilies = set (tkinter.font.families (root))
         for family in ['Segoe UI', 'SF Pro Text', 'Helvetica Neue', 'Inter', 'Cantarell', 'DejaVu Sans']:
@@ -711,7 +720,7 @@ def RunGuiInstaller (args):
         # tkinter.Button ignores background colors on macOS, so a label is
         # used to get the same flat look on both platforms.
         def __init__ (self, parent, text, command, font, style):
-            tkinter.Label.__init__ (self, parent, text = text, font = font, padx = 18, pady = 7, cursor = 'hand2')
+            tkinter.Label.__init__ (self, parent, text = text, font = font, padx = Px (18), pady = Px (7), cursor = 'hand2')
             self.command = command
             self.style = style
             self.isEnabled = True
@@ -743,27 +752,28 @@ def RunGuiInstaller (args):
             else:
                 background = COLORS['secondaryHover'] if self.isHovered and self.isEnabled else COLORS['secondary']
                 self.configure (bg = background, fg = COLORS['text'] if self.isEnabled else COLORS['disabled'],
-                    highlightthickness = 1, highlightbackground = COLORS['border'], highlightcolor = COLORS['border'])
+                    highlightthickness = Px (1), highlightbackground = COLORS['border'], highlightcolor = COLORS['border'])
 
     class CheckBox (tkinter.Canvas):
-        SIZE = 18
-
         def __init__ (self, parent, background):
-            tkinter.Canvas.__init__ (self, parent, width = self.SIZE, height = self.SIZE, bg = background, highlightthickness = 0, cursor = 'hand2')
+            tkinter.Canvas.__init__ (self, parent, width = Px (18), height = Px (18), bg = background, highlightthickness = 0, cursor = 'hand2')
 
         def Draw (self, isChecked, isEnabled):
+            # Coordinates are designed for an 18 pixel box at 96 DPI.
             self.delete ('all')
-            size = self.SIZE
+            scale = uiScale[0]
+            box = (scale, scale, 17 * scale, 17 * scale)
             if isChecked:
                 color = COLORS['accent'] if isEnabled else COLORS['disabled']
-                self.create_rectangle (1, 1, size - 1, size - 1, fill = color, outline = color)
-                self.create_line (4.5, 9.5, 7.5, 12.5, 13.5, 5.5, fill = COLORS['accentText'], width = 2, capstyle = 'round', joinstyle = 'round')
+                self.create_rectangle (*box, fill = color, outline = color)
+                checkMark = [coordinate * scale for coordinate in (4.5, 9.5, 7.5, 12.5, 13.5, 5.5)]
+                self.create_line (*checkMark, fill = COLORS['accentText'], width = 2 * scale, capstyle = 'round', joinstyle = 'round')
             else:
-                self.create_rectangle (1, 1, size - 1, size - 1, fill = COLORS['surface'], outline = COLORS['disabled'], width = 1.5)
+                self.create_rectangle (*box, fill = COLORS['surface'], outline = COLORS['disabled'], width = 1.5 * scale)
 
     class ProgressBar (tkinter.Canvas):
         def __init__ (self, parent):
-            tkinter.Canvas.__init__ (self, parent, width = 1, height = 4, bg = COLORS['progressTrack'], highlightthickness = 0)
+            tkinter.Canvas.__init__ (self, parent, width = 1, height = Px (4), bg = COLORS['progressTrack'], highlightthickness = 0)
             self.fraction = 0.0
             self.bind ('<Configure>', lambda event : self.Draw ())
 
@@ -775,19 +785,19 @@ def RunGuiInstaller (args):
             self.delete ('all')
             width = self.winfo_width ()
             if self.fraction > 0.0:
-                self.create_rectangle (0, 0, int (width * self.fraction), 4, fill = COLORS['busy'], width = 0)
+                self.create_rectangle (0, 0, int (width * self.fraction), Px (4), fill = COLORS['busy'], width = 0)
 
     class InstallationRow:
         def __init__ (self, app, parent, installation):
             self.app = app
             self.installation = installation
             self.isSelected = True
-            self.card = tkinter.Frame (parent, bg = COLORS['surface'], highlightthickness = 1, cursor = 'hand2')
-            self.card.pack (fill = 'x', pady = (0, 8))
+            self.card = tkinter.Frame (parent, bg = COLORS['surface'], highlightthickness = Px (1), cursor = 'hand2')
+            self.card.pack (fill = 'x', pady = (0, Px (8)))
             contentFrame = tkinter.Frame (self.card, bg = COLORS['surface'])
-            contentFrame.pack (fill = 'x', padx = 14, pady = 11)
+            contentFrame.pack (fill = 'x', padx = Px (14), pady = Px (11))
             self.checkBox = CheckBox (contentFrame, COLORS['surface'])
-            self.checkBox.pack (side = 'left', padx = (0, 12))
+            self.checkBox.pack (side = 'left', padx = (0, Px (12)))
             textFrame = tkinter.Frame (contentFrame, bg = COLORS['surface'])
             textFrame.pack (side = 'left', fill = 'x', expand = True)
             self.titleLabel = tkinter.Label (textFrame, text = 'Archicad {0}'.format (installation.version),
@@ -796,8 +806,8 @@ def RunGuiInstaller (args):
             self.pathLabel = tkinter.Label (textFrame, text = installation.addOnsFolderPath,
                 font = app.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
             self.pathLabel.pack (fill = 'x')
-            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = 16, padx = 6, pady = 3)
-            self.statusLabel.pack (side = 'right', padx = (12, 0))
+            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = 16, padx = Px (6), pady = Px (3))
+            self.statusLabel.pack (side = 'right', padx = (Px (12), 0))
             # The bar is always packed, so the card does not change height when
             # it appears; it is only invisible while there is no progress.
             self.progressBar = ProgressBar (self.card)
@@ -839,9 +849,11 @@ def RunGuiInstaller (args):
     class InstallerApp (tkinter.Tk):
         def __init__ (self):
             tkinter.Tk.__init__ (self)
+            if IsUsingWindows ():
+                uiScale[0] = max (1.0, self.winfo_fpixels ('1i') / 96.0)
             self.title (INSTALLER_TITLE)
             self.configure (bg = COLORS['window'])
-            self.minsize (560, 0)
+            self.minsize (Px (560), 0)
             self.resizable (True, False)
             self.rows = []
             self.releaseInfo = None
@@ -863,11 +875,15 @@ def RunGuiInstaller (args):
             headerFrame = tkinter.Frame (self, bg = COLORS['surface'])
             headerFrame.pack (fill = 'x')
             headerContentFrame = tkinter.Frame (headerFrame, bg = COLORS['surface'])
-            headerContentFrame.pack (fill = 'x', padx = 24, pady = 18)
+            headerContentFrame.pack (fill = 'x', padx = Px (24), pady = Px (18))
             try:
                 # Keep a reference, otherwise Tk drops the image.
-                self.logoImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64).subsample (2, 2)
-                tkinter.Label (headerContentFrame, image = self.logoImage, bg = COLORS['surface']).pack (side = 'left', padx = (0, 14))
+                # The embedded logo is 80 pixels: halved for 40 pixels at 96 DPI,
+                # used as it is from 150% display scaling.
+                self.logoImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64)
+                if uiScale[0] < 1.5:
+                    self.logoImage = self.logoImage.subsample (2, 2)
+                tkinter.Label (headerContentFrame, image = self.logoImage, bg = COLORS['surface']).pack (side = 'left', padx = (0, Px (14)))
             except tkinter.TclError:
                 # PNG support requires Tk 8.6; the logo is only decoration.
                 pass
@@ -877,13 +893,13 @@ def RunGuiInstaller (args):
             self.releaseLabel = tkinter.Label (titleFrame, text = 'Checking the latest Tapir release...', font = self.fonts['body'],
                 bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
             self.releaseLabel.pack (fill = 'x')
-            tkinter.Frame (self, bg = COLORS['border'], height = 1).pack (fill = 'x')
+            tkinter.Frame (self, bg = COLORS['border'], height = Px (1)).pack (fill = 'x')
 
             # Body
             bodyFrame = tkinter.Frame (self, bg = COLORS['window'])
-            bodyFrame.pack (fill = 'both', expand = True, padx = 24, pady = (18, 10))
+            bodyFrame.pack (fill = 'both', expand = True, padx = Px (24), pady = (Px (18), Px (10)))
             sectionFrame = tkinter.Frame (bodyFrame, bg = COLORS['window'])
-            sectionFrame.pack (fill = 'x', pady = (0, 8))
+            sectionFrame.pack (fill = 'x', pady = (0, Px (8)))
             tkinter.Label (sectionFrame, text = 'ARCHICAD INSTALLATIONS', font = self.fonts['section'], bg = COLORS['window'], fg = COLORS['mutedText']).pack (side = 'left')
             self.selectAllLabel = tkinter.Label (sectionFrame, text = '', font = self.fonts['link'], bg = COLORS['window'], fg = COLORS['accent'], cursor = 'hand2')
             self.selectAllLabel.pack (side = 'right')
@@ -892,23 +908,23 @@ def RunGuiInstaller (args):
             self.rowsFrame.pack (fill = 'x')
             self.messageLabel = tkinter.Label (self.rowsFrame, text = 'Detecting Archicad installations...', font = self.fonts['body'],
                 bg = COLORS['window'], fg = COLORS['mutedText'], anchor = 'w', justify = 'left')
-            self.messageLabel.pack (fill = 'x', pady = 10)
-            self.resultLabel = tkinter.Label (bodyFrame, text = '', font = self.fonts['body'], anchor = 'w', justify = 'left', padx = 12, pady = 9, bg = COLORS['window'])
+            self.messageLabel.pack (fill = 'x', pady = Px (10))
+            self.resultLabel = tkinter.Label (bodyFrame, text = '', font = self.fonts['body'], anchor = 'w', justify = 'left', padx = Px (12), pady = Px (9), bg = COLORS['window'])
 
             # Footer
-            tkinter.Frame (self, bg = COLORS['border'], height = 1).pack (fill = 'x')
+            tkinter.Frame (self, bg = COLORS['border'], height = Px (1)).pack (fill = 'x')
             footerFrame = tkinter.Frame (self, bg = COLORS['surface'])
             footerFrame.pack (fill = 'x')
             footerContentFrame = tkinter.Frame (footerFrame, bg = COLORS['surface'])
-            footerContentFrame.pack (fill = 'x', padx = 24, pady = 14)
+            footerContentFrame.pack (fill = 'x', padx = Px (24), pady = Px (14))
             self.selectionLabel = tkinter.Label (footerContentFrame, text = '', font = self.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'])
             self.selectionLabel.pack (side = 'left')
             self.installButton = FlatButton (footerContentFrame, 'Install', self.OnInstallClicked, self.fonts['bodyBold'], 'primary')
             self.installButton.pack (side = 'right')
             self.uninstallButton = FlatButton (footerContentFrame, 'Uninstall', self.OnUninstallClicked, self.fonts['body'], 'secondary')
-            self.uninstallButton.pack (side = 'right', padx = (0, 8))
+            self.uninstallButton.pack (side = 'right', padx = (0, Px (8)))
             self.closeButton = FlatButton (footerContentFrame, 'Close', self.destroy, self.fonts['body'], 'secondary')
-            self.closeButton.pack (side = 'right', padx = (0, 8))
+            self.closeButton.pack (side = 'right', padx = (0, Px (8)))
             self.bind ('<Return>', lambda event : self.installButton.OnClicked ())
             self.bind ('<Escape>', lambda event : self.closeButton.OnClicked ())
             self.UpdateButtonStates ()
@@ -957,13 +973,13 @@ def RunGuiInstaller (args):
             self.UpdateButtonStates ()
 
         def ShowReleaseError (self, errorText):
-            self.releaseLabel.configure (text = errorText, fg = COLORS['error'], wraplength = 440, justify = 'left')
+            self.releaseLabel.configure (text = errorText, fg = COLORS['error'], wraplength = Px (440), justify = 'left')
             self.UpdateButtonStates ()
 
         def ShowResult (self, resultText, kind):
             foreground, background = STATUS_COLORS[kind]
-            self.resultLabel.configure (text = resultText, fg = COLORS[foreground], bg = COLORS[background], wraplength = 480)
-            self.resultLabel.pack (fill = 'x', pady = (4, 0))
+            self.resultLabel.configure (text = resultText, fg = COLORS[foreground], bg = COLORS[background], wraplength = Px (480))
+            self.resultLabel.pack (fill = 'x', pady = (Px (4), 0))
 
         def UpdateButtonStates (self):
             selectedCount = len (self.GetSelectedRows ())
