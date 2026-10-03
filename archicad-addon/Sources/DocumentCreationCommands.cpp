@@ -825,6 +825,61 @@ static GSErrCode ActivateLayoutDatabase (const API_Guid& layoutDatabaseGuid)
     return ACAPI_Window_ChangeWindow (&windowInfo);
 }
 
+// The active window, captured so that a command which has to switch windows can switch back
+// afterwards. For the Floor Plan the typeID alone does not say which story is shown, so the
+// active story is kept as well (ChangeWindowCommand selects a story through the index field).
+struct ActiveWindowState {
+    bool            valid = false;
+    API_WindowInfo  window = {};
+    short           actStory = 0;
+};
+
+static ActiveWindowState GetActiveWindowState ()
+{
+    ActiveWindowState state;
+    state.valid = ACAPI_Window_GetCurrentWindow (&state.window) == NoError;
+    if (state.valid && state.window.typeID == APIWind_FloorPlanID) {
+        API_StoryInfo storyInfo = {};
+        if (ACAPI_ProjectSetting_GetStorySettings (&storyInfo) == NoError) {
+            state.actStory = storyInfo.actStory;
+            BMKillHandle ((GSHandle*) &storyInfo.data);
+        }
+    }
+    return state;
+}
+
+static void RestoreActiveWindow (const ActiveWindowState& state)
+{
+    if (!state.valid) {
+        return;
+    }
+    API_WindowInfo windowInfo = state.window;
+    if (windowInfo.typeID == APIWind_FloorPlanID) {
+        windowInfo.index = state.actStory;
+    }
+    ACAPI_Window_ChangeWindow (&windowInfo);
+}
+
+#if defined (ServerMainVers_2700)
+// True when the window of the given navigator item (view or viewpoint) is the active one,
+// i.e. the same database and, for the Floor Plan, the same story.
+static bool IsNavigatorItemInActiveWindow (const API_Guid& navigatorItemGuid)
+{
+    API_NavigatorItem navigatorItem = {};
+    if (ACAPI_Navigator_GetNavigatorItem (&navigatorItemGuid, &navigatorItem) != NoError) {
+        return false;
+    }
+    const ActiveWindowState activeWindow = GetActiveWindowState ();
+    if (!activeWindow.valid || navigatorItem.db.typeID != activeWindow.window.typeID) {
+        return false;
+    }
+    if (activeWindow.window.typeID == APIWind_FloorPlanID) {
+        return navigatorItem.floorNum == activeWindow.actStory;
+    }
+    return navigatorItem.db.databaseUnId.elemSetId == activeWindow.window.databaseUnId.elemSetId;
+}
+#endif
+
 GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -957,6 +1012,8 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
 
     API_DatabaseInfo startingDatabase = {};
     const GSErrCode startingDatabaseErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    const ActiveWindowState startingWindow = GetActiveWindowState ();
+    bool windowSwitched = false;
 
     GS::Array<GS::ObjectState> results;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("ChangeDrawingLinkCommand", [&]() -> GSErrCode {
@@ -995,7 +1052,29 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
                 oldClip.Get ("clipPolygon", oldClipCoords);
             }
 
+#if defined (ServerMainVers_2700)
+            // Make the new source view current before creating the Drawing from it. A Drawing
+            // created while its source view has never been made current inherits a stale 2D
+            // transform instead of the one saved via SetViewSettings - ACAPI_View_GoToView
+            // resyncs it, the same way ChangeWindowCommand does. No switch is made when the
+            // source's window is already the active one, and the window that was active when
+            // the command started is restored at the end. Best effort: GoToView only works on
+            // views, and some placeable sources (schedules, lists, viewpoints from the project
+            // map) may reject it - that must not fail the whole relink.
+            {
+                const API_Guid newSourceGuid = GetGuidFromObjectState (*navigatorItemIdState);
+                if (newSourceGuid != APINULLGuid && !IsNavigatorItemInActiveWindow (newSourceGuid)) {
+                    const GS::UniString newSourceGuidStr = APIGuidToString (newSourceGuid);
+                    if (ACAPI_View_GoToView (newSourceGuidStr.ToCStr ().Get ()) == NoError) {
+                        windowSwitched = true;
+                    }
+                }
+            }
+#endif
+
             if (startingDatabaseErr == NoError) {
+                // ActivateLayoutDatabase also changes the active window to the layout.
+                windowSwitched = true;
                 err = ActivateLayoutDatabase (GetGuidFromObjectState (*layoutDatabaseIdState));
                 if (err != NoError) {
                     results.Push (CreateErrorResponse (err, "Failed to activate the layout database."));
@@ -1041,6 +1120,9 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
         return NoError;
     });
 
+    if (windowSwitched) {
+        RestoreActiveWindow (startingWindow);
+    }
     if (startingDatabaseErr == NoError) {
         ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
     }
