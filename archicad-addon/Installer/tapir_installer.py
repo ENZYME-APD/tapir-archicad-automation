@@ -1007,14 +1007,16 @@ def RunGuiInstaller (args):
             threading.Thread (target = workFunction, args = (selectedRows,), daemon = True).start ()
 
         def InstallInBackground (self, selectedRows):
-            succeededCount = 0
-            errorTexts = []
-            for row in selectedRows:
-                self.SetRowStatus (row, 'Waiting', 'neutral')
-            for row in selectedRows:
+            # The downloads run in parallel, but the installs take turns: on
+            # macOS each one may ask for the administrator password, and
+            # parallel password dialogs would be confusing.
+            installLock = threading.Lock ()
+            errorTexts = [None] * len (selectedRows)
+
+            def InstallRow (rowIndex, row):
                 try:
                     self.SetRowStatus (row, 'Downloading...', 'busy', 0.0)
-                    def progressCallback (downloadedSize, totalSize, row = row):
+                    def progressCallback (downloadedSize, totalSize):
                         if totalSize > 0:
                             self.SetRowStatus (row, 'Downloading {0}%'.format (int (downloadedSize * 100 / totalSize)), 'busy', downloadedSize / totalSize)
                     asset = FindAssetForVersion (self.releaseInfo, row.installation.version)
@@ -1023,20 +1025,29 @@ def RunGuiInstaller (args):
                     downloadFolderPath = tempfile.mkdtemp (prefix = 'TapirInstaller_')
                     try:
                         downloadedFilePath = DownloadAsset (asset, downloadFolderPath, progressCallback)
-                        self.SetRowStatus (row, 'Installing...', 'busy', 1.0)
-                        InstallAddOn (row.installation.addOnsFolderPath, downloadedFilePath)
+                        self.SetRowStatus (row, 'Waiting to install', 'busy', 1.0)
+                        with installLock:
+                            self.SetRowStatus (row, 'Installing...', 'busy', 1.0)
+                            InstallAddOn (row.installation.addOnsFolderPath, downloadedFilePath)
                     finally:
                         shutil.rmtree (downloadFolderPath, ignore_errors = True)
                     self.SetRowStatus (row, 'Installed', 'success')
-                    succeededCount += 1
                 except Exception as e:
                     self.SetRowStatus (row, 'Failed', 'error')
-                    errorTexts.append ('Archicad {0}: {1}'.format (row.installation.version, e))
-            if len (errorTexts) == 0:
+                    errorTexts[rowIndex] = 'Archicad {0}: {1}'.format (row.installation.version, e)
+
+            threads = [threading.Thread (target = InstallRow, args = (rowIndex, row), daemon = True) for rowIndex, row in enumerate (selectedRows)]
+            for thread in threads:
+                thread.start ()
+            for thread in threads:
+                thread.join ()
+            failures = [errorText for errorText in errorTexts if errorText is not None]
+            succeededCount = len (selectedRows) - len (failures)
+            if len (failures) == 0:
                 resultText = 'Tapir was installed for {0} Archicad version(s). Restart Archicad to load the Add-On.'.format (succeededCount)
             else:
-                resultText = 'Tapir was installed for {0} of {1} Archicad version(s).\n{2}'.format (succeededCount, len (selectedRows), '\n'.join (errorTexts))
-            self.RunOnUiThread (lambda : self.FinishWork (resultText, 'success' if len (errorTexts) == 0 else 'error'))
+                resultText = 'Tapir was installed for {0} of {1} Archicad version(s).\n{2}'.format (succeededCount, len (selectedRows), '\n'.join (failures))
+            self.RunOnUiThread (lambda : self.FinishWork (resultText, 'success' if len (failures) == 0 else 'error'))
 
         def UninstallInBackground (self, selectedRows):
             errorTexts = []
