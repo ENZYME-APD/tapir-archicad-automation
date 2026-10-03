@@ -1010,6 +1010,8 @@ def RunGuiInstaller (args):
             succeededCount = 0
             errorTexts = []
             for row in selectedRows:
+                self.SetRowStatus (row, 'Waiting', 'neutral')
+            for row in selectedRows:
                 try:
                     self.SetRowStatus (row, 'Downloading...', 'busy', 0.0)
                     def progressCallback (downloadedSize, totalSize, row = row):
