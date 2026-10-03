@@ -1050,7 +1050,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RenameNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
-            "Renames a navigator item or changes its ID."
+            "Renames a navigator item or changes its ID. For a Project Map section, elevation, interior elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed; the rename fails instead of reporting a success Archicad silently dropped."
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
