@@ -5,9 +5,18 @@ It detects the installed Archicad versions (on Windows primarily via the
 registry, on macOS by scanning `/Applications`), downloads the matching
 `TapirAddOn_AC<version>` asset from the
 [latest GitHub release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest),
-and places it into the `Add-Ons` folder of each Archicad installation
-(`<Archicad folder>/Add-Ons/Tapir/`), so Archicad loads it automatically on the
-next start.
+and places it into the Add-Ons folder of each Archicad installation
+(`<Archicad folder>/<Add-Ons folder>/Tapir/`), so Archicad loads it
+automatically on the next start.
+
+The name of the Add-Ons folder is localized in the language versions of
+Archicad (e.g. `Extensions` in FRA, `Dodatki` in POL). The installer first
+looks for a folder with one of the localized names published by Graphisoft
+(`LOCALIZED_ADDONS_FOLDER_NAMES` in the script). If there is none, it picks the
+folder that contains the `XReadCfg.txt` file (directly or up to two levels
+below it), as recommended by the Graphisoft multi-language add-on guide.
+On macOS the Add-Ons folder is next to the `Archicad NN.app` bundle in the
+Archicad folder, so the installer does not look inside the bundle.
 
 End users should download the prebuilt executables from the release page:
 `TapirInstaller_Win.exe` (Windows) or `TapirInstaller_Mac.zip` (macOS, signed
@@ -35,7 +44,7 @@ switches to console mode):
 | `--console` | Run in console mode without the GUI. Installs for all detected Archicad versions. |
 | `--versions 28,29` | Only install for the given Archicad versions. |
 | `--addOnsFolder <path>` | Install into an explicit `Add-Ons` folder instead of the detected ones (requires `--versions` with exactly one version). |
-| `--uninstall` | Remove the installed Tapir Add-On (deletes the `Add-Ons/Tapir` subfolder). |
+| `--uninstall` | Remove the installed Tapir Add-On (deletes the `Tapir` subfolder of the Add-Ons folder). |
 | `--dryRun` | Detect and download only; never modifies the Add-Ons folders. |
 | `--mockRoot <path>` | Detect installations under this folder instead of the real system locations (for testing). |
 
