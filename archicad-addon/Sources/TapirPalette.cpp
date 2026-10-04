@@ -11,13 +11,30 @@
 #include "StringConversion.hpp"
 #include "FileSystem.hpp"
 #include "Folder.hpp"
+#include "OnExit.hpp"
 #include "MessageLoopExecutor.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cstdlib>
+#include <ctime>
+#include <functional>
 #include <map>
 #include <regex>
 #include <vector>
+
+#if defined (WINDOWS)
+#pragma warning (push)
+#pragma warning (disable : 4995 4091)   // as in the DevKit's Win32ShellInterface.hpp
+#include <shellapi.h>
+#pragma warning (pop)
+#pragma comment (lib, "shell32.lib")
+#endif
+
+#if defined (macintosh)
+#include <sys/sysctl.h>
+#include <unistd.h>
+#endif
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
@@ -106,6 +123,202 @@ static std::vector<char> DownloadFileContent (const GS::UniString& fileDownloadU
     clientConnection.Close (false);
 
     return body;
+}
+
+// Splits "https://host/path?query" into "https://host" and "/path?query".
+static bool SplitUrl (const GS::UniString& url, GS::UniString& origin, GS::UniString& pathAndQuery)
+{
+    const UIndex schemeEnd = url.FindFirst (GS::UniString ("://"));
+    if (schemeEnd == MaxUIndex) {
+        return false;
+    }
+
+    const UIndex pathStart = url.FindFirst (GS::UniChar ('/'), schemeEnd + 3);
+    if (pathStart == MaxUIndex) {
+        origin = url;
+        pathAndQuery = "/";
+        return true;
+    }
+
+    origin = GS::UniString (url.GetSubstring (0, pathStart));
+    pathAndQuery = GS::UniString (url.GetSubstring (pathStart, url.GetLength () - pathStart));
+    return true;
+}
+
+// Resolves the Location header of a redirect that origin + pathAndQuery answered with.
+static GS::UniString ResolveRedirectLocation (const GS::UniString& location, const GS::UniString& origin, const GS::UniString& pathAndQuery)
+{
+    if (location.BeginsWith (GS::UniString ("https://")) || location.BeginsWith (GS::UniString ("http://"))) {
+        return location;
+    }
+    if (location.BeginsWith (GS::UniString ("//"))) {
+        return GS::UniString (origin.GetSubstring (0, origin.FindFirst (GS::UniChar (':')) + 1)) + location;
+    }
+    if (location.BeginsWith (GS::UniChar ('/'))) {
+        return origin + location;
+    }
+
+    // Relative to the folder of the requested path
+    UIndex pathEnd = pathAndQuery.FindFirst (GS::UniChar ('?'));
+    if (pathEnd == MaxUIndex) {
+        pathEnd = pathAndQuery.GetLength ();
+    }
+    const GS::UniString path (pathAndQuery.GetSubstring (0, pathEnd));
+    return origin + GS::UniString (path.GetSubstring (0, path.FindLast (GS::UniChar ('/')) + 1)) + location;
+}
+
+static GS::UniString GetExceptionText (const GS::Exception& exception)
+{
+    return exception.GetMessage ().IsEmpty () ? GS::UniString (exception.GetName ()) : exception.GetMessage ();
+}
+
+// The body may end with an exception instead of a 0 byte read (see ReadAllBytes). Such an exception counts
+// as the end of the body only when the response has a Content-Length: the length check in DownloadBinaryFile
+// then tells a complete body from one that stopped early. Without a Content-Length nothing can tell them apart,
+// so the exception is passed on and a dropped connection is reported instead of accepted as a complete file.
+// The text of a swallowed exception is kept in readError, so an incomplete download can tell why it stopped.
+static USize ReadBodyChunk (GS::IBinaryChannel& channel, char* buffer, USize bufferSize, bool hasContentLength, GS::UniString& readError)
+{
+    try {
+        return channel.Read (buffer, bufferSize);
+    } catch (const GS::Exception& e) {
+        if (!hasContentLength) {
+            throw;
+        }
+        readError = GetExceptionText (e);
+        return 0;
+    }
+}
+
+enum class DownloadResult {
+    Succeeded,
+    Failed,
+    Cancelled
+};
+
+// Receives the downloaded size and the total size (0 when unknown); returns false to cancel the download.
+using DownloadProgressCallback = std::function<bool (GS::UInt64 downloadedSize, GS::UInt64 totalSize)>;
+
+// Downloads a binary file (e.g. a release asset). Redirects are followed here instead of by the client,
+// so the signed query string of the redirect target is sent exactly as received on every Archicad version.
+static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, const IO::Location& fileLoc, const DownloadProgressCallback& progress, GS::UniString& error)
+{
+    constexpr int maxRedirectCount = 10;
+    GS::UniString url = fileDownloadUrl;
+    try {
+        for (int redirectCount = 0; redirectCount <= maxRedirectCount; ++redirectCount) {
+            GS::UniString origin;
+            GS::UniString pathAndQuery;
+            if (!SplitUrl (url, origin, pathAndQuery)) {
+                error = "Invalid download URL: " + url;
+                return DownloadResult::Failed;
+            }
+            // Lets the user cancel before every connection, the redirect hops included
+            if (!progress (0, 0)) {
+                return DownloadResult::Cancelled;
+            }
+
+            const IO::URI::URI connectionUrl (origin);
+            HTTP::Client::ClientConnection clientConnection (connectionUrl);
+            clientConnection.SetFollowRedirect (false);
+            clientConnection.SetTimeout (60000); // 60 seconds
+            clientConnection.Connect ();
+
+            HTTP::Client::Request getRequest (HTTP::MessageHeader::Method::Get, pathAndQuery);
+            getRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::UserAgent, "Tapir-Archicad-AddOn/" ADDON_VERSION);
+            clientConnection.Send (getRequest);
+
+            HTTP::Client::Response response;
+            HTTP::Encoding::BodyIBinaryChannel& body = clientConnection.BeginReceive (response);
+            // Closing the connection, also in its destructor, first reads the rest of the body: after Cancel the rest of
+            // the installer, after a dropped connection until the timeout. So it is aborted unless it was closed normally.
+            GS::OnExit abortConnection ([&clientConnection] () {
+                try {
+                    clientConnection.Abort ();
+                } catch (...) {
+                }
+            });
+            const int statusCode = static_cast<int> (response.GetStatusCode ());
+            if (statusCode == 301 || statusCode == 302 || statusCode == 303 || statusCode == 307 || statusCode == 308) {
+                const GS::UniString location = response.GetResponseHeaderFieldCollection ().GetHeaderValue (HTTP::MessageHeader::HeaderFieldName::Location);
+                clientConnection.FinishReceive ();
+                clientConnection.Close (false);
+                abortConnection.Deactivate ();
+                if (location.IsEmpty ()) {
+                    error = "Redirect without a location from " + origin;
+                    return DownloadResult::Failed;
+                }
+                url = ResolveRedirectLocation (location, origin, pathAndQuery);
+                continue;
+            }
+            if (statusCode != 200) {
+                error = GS::UniString::Printf ("HTTP status %d from %T", statusCode, origin.ToPrintf ());
+                return DownloadResult::Failed;
+            }
+
+            GS::UInt64 contentLength = 0;
+            const bool hasContentLength = response.GetResponseHeaderFieldCollection ().GetContentLength (contentLength);
+            const GS::UInt64 totalSize = hasContentLength ? contentLength : 0;
+
+            GS::UInt64 writtenSize = 0;
+            GS::UniString readError;
+            {
+                IO::File file (fileLoc, IO::File::OnNotFound::Create);
+                if (file.GetStatus () != NoError || file.Open (IO::File::WriteEmptyMode) != NoError) {
+                    GS::UniString filePath;
+                    fileLoc.ToPath (&filePath);
+                    error = "Cannot write " + filePath;
+                    return DownloadResult::Failed;
+                }
+
+                std::vector<char> buffer (64 * 1024);
+                USize readSize = ReadBodyChunk (body, buffer.data (), static_cast<USize> (buffer.size ()), hasContentLength, readError);
+                while (readSize > 0) {
+                    if (file.WriteBin (buffer.data (), readSize) != NoError) {
+                        error = "Failed to write the downloaded file.";
+                        return DownloadResult::Failed;
+                    }
+                    writtenSize += readSize;
+                    if (!progress (writtenSize, totalSize)) {
+                        return DownloadResult::Cancelled;
+                    }
+                    readSize = ReadBodyChunk (body, buffer.data (), static_cast<USize> (buffer.size ()), hasContentLength, readError);
+                }
+                if (file.Close () != NoError) {
+                    error = "Failed to write the downloaded file.";
+                    return DownloadResult::Failed;
+                }
+            }
+
+            if (hasContentLength && contentLength != writtenSize) {
+                error = "The download is incomplete.";
+                if (!readError.IsEmpty ()) {
+                    error += " " + readError;
+                }
+                return DownloadResult::Failed;
+            }
+            if (writtenSize == 0) {
+                error = "The downloaded file is empty.";
+                return DownloadResult::Failed;
+            }
+
+            // The file is complete, so an error while closing the connection (e.g. after the body ended with an exception) does not matter.
+            try {
+                clientConnection.FinishReceive ();
+                clientConnection.Close (false);
+                abortConnection.Deactivate ();
+            } catch (const GS::Exception&) {
+            }
+            return DownloadResult::Succeeded;
+        }
+        error = "Too many redirects.";
+    } catch (const GS::Exception& e) {
+        error = GetExceptionText (e);
+    } catch (...) {
+        error = "Unexpected error while downloading.";
+    }
+
+    return DownloadResult::Failed;
 }
 
 static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocation (
@@ -1064,8 +1277,382 @@ void TapirPalette::SetRunButtonIcon ()
     runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
 }
 
+#if defined (WINDOWS)
+
+// Quotes an argument so that CommandLineToArgvW (and the C runtime) of the started program gives it back unchanged.
+static GS::UniString QuoteWindowsArgument (const GS::UniString& argument)
+{
+    GS::UniString quoted ("\"");
+    USize backslashCount = 0;
+    for (UIndex i = 0; i < argument.GetLength (); ++i) {
+        const GS::UniChar ch = argument.GetChar (i);
+        if (ch == '\\') {
+            ++backslashCount;
+            continue;
+        }
+        // Backslashes are only special in front of a quote
+        if (ch == '"') {
+            backslashCount = backslashCount * 2 + 1;
+        }
+        for (; backslashCount > 0; --backslashCount) {
+            quoted += GS::UniChar ('\\');
+        }
+        quoted += ch;
+    }
+    // Trailing backslashes must not escape the closing quote
+    for (backslashCount *= 2; backslashCount > 0; --backslashCount) {
+        quoted += GS::UniChar ('\\');
+    }
+    quoted += GS::UniChar ('"');
+    return quoted;
+}
+
+// Whether the installer can replace the Add-On with the user's rights: it creates the new file next to the
+// Add-On and renames it onto the Add-On, which a read-only file does not allow.
+static bool CanReplaceAddOnWithoutElevation (const IO::Location& addOnFile)
+{
+    IO::Location probeFile = addOnFile;
+    probeFile.DeleteLastLocalName ();
+    probeFile.AppendToLocal (IO::Name (".TapirWriteCheck_" + GS::ValueToUniString (static_cast<GS::UInt32> (GetCurrentProcessId ()))));
+
+    GS::UniString addOnPath;
+    addOnFile.ToPath (&addOnPath);
+    GS::UniString probePath;
+    probeFile.ToPath (&probePath);
+    const auto addOnPathUStr = addOnPath.ToUStr ();
+    const auto probePathUStr = probePath.ToUStr ();
+
+    // Deleted when closed, so it also checks that the user may delete files there
+    const HANDLE probeHandle = CreateFileW (reinterpret_cast<LPCWSTR> (probePathUStr.Get ()), GENERIC_WRITE | DELETE, 0, nullptr,
+        CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
+    if (probeHandle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    CloseHandle (probeHandle);
+
+    const DWORD attributes = GetFileAttributesW (reinterpret_cast<LPCWSTR> (addOnPathUStr.Get ()));
+    return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_READONLY) == 0;
+}
+
+// The installer asks for administrator rights in its manifest (--uac-admin). The RunAsInvoker compatibility layer
+// starts it with the user's rights instead, without the prompt. Windows takes the layer from the environment, which
+// the installer's own child process (PyInstaller's one-file mode) inherits too. So it is set in Archicad's environment
+// only while the installer is started, and Archicad's own value is put back.
+static bool StartWithoutElevation (const GS::UniString& programPath, const GS::UniString& parameters, DWORD& lastError)
+{
+    const wchar_t* compatLayerName = L"__COMPAT_LAYER";
+    const DWORD oldValueSize = GetEnvironmentVariableW (compatLayerName, nullptr, 0);
+    std::vector<wchar_t> oldValue (oldValueSize + 1);
+    const bool hasOldValue = oldValueSize > 0 && GetEnvironmentVariableW (compatLayerName, oldValue.data (), oldValueSize) < oldValueSize;
+
+    const GS::UniString commandLine = QuoteWindowsArgument (programPath) + " " + parameters;
+    const auto programPathUStr = programPath.ToUStr ();
+    const auto commandLineUStr = commandLine.ToUStr ();
+    // CreateProcessW may write into the command line, so it gets a copy
+    const wchar_t* commandLineChars = reinterpret_cast<const wchar_t*> (commandLineUStr.Get ());
+    std::vector<wchar_t> commandLineBuffer (commandLineChars, commandLineChars + commandLine.GetLength () + 1);
+
+    STARTUPINFOW startupInfo = {};
+    startupInfo.cb = static_cast<DWORD> (sizeof (startupInfo));
+    PROCESS_INFORMATION processInfo = {};
+    SetEnvironmentVariableW (compatLayerName, L"RunAsInvoker");
+    const BOOL started = CreateProcessW (reinterpret_cast<LPCWSTR> (programPathUStr.Get ()), commandLineBuffer.data (),
+        nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo);
+    lastError = started ? ERROR_SUCCESS : GetLastError ();
+    SetEnvironmentVariableW (compatLayerName, hasOldValue ? oldValue.data () : nullptr);
+    if (!started) {
+        return false;
+    }
+
+    CloseHandle (processInfo.hThread);
+    CloseHandle (processInfo.hProcess);
+    return true;
+}
+
+// The installer requires administrator rights, so the shell starts it with the administrator (UAC) prompt. A standard
+// user can only decline that prompt, but an Add-On in a folder the user can write to needs no administrator rights:
+// then the installer is started with the user's rights instead, as the legacy update script updates such an Add-On.
+// Returns false with an empty error when the prompt was declined and the Add-On cannot be replaced without it.
+static bool StartInstaller (const IO::Location& installerFile, const IO::Location& addOnFile, const GS::Array<GS::UniString>& arguments, GS::UniString& error)
+{
+    GS::UniString installerPath;
+    installerFile.ToPath (&installerPath);
+
+    GS::UniString parameters;
+    for (const GS::UniString& argument : arguments) {
+        if (!parameters.IsEmpty ()) {
+            parameters += GS::UniChar (' ');
+        }
+        parameters += QuoteWindowsArgument (argument);
+    }
+
+    // The UStr objects own the UTF-16 strings, they must live until ShellExecuteExW returns
+    const auto installerPathUStr = installerPath.ToUStr ();
+    const auto parametersUStr = parameters.ToUStr ();
+
+    SHELLEXECUTEINFOW executeInfo = {};
+    executeInfo.cbSize = static_cast<DWORD> (sizeof (executeInfo));
+    executeInfo.fMask = SEE_MASK_NOASYNC;
+    executeInfo.hwnd = GetForegroundWindow ();
+    executeInfo.lpVerb = L"runas";
+    executeInfo.lpFile = reinterpret_cast<LPCWSTR> (installerPathUStr.Get ());
+    executeInfo.lpParameters = reinterpret_cast<LPCWSTR> (parametersUStr.Get ());
+    executeInfo.nShow = SW_SHOWNORMAL;
+    if (ShellExecuteExW (&executeInfo)) {
+        return true;
+    }
+
+    DWORD lastError = GetLastError ();
+    // ERROR_CANCELLED: the prompt was declined, ERROR_ACCESS_DENIED: a policy denies the user administrator rights
+    if (lastError == ERROR_CANCELLED || lastError == ERROR_ACCESS_DENIED) {
+        if (CanReplaceAddOnWithoutElevation (addOnFile)) {
+            if (StartWithoutElevation (installerPath, parameters, lastError)) {
+                return true;
+            }
+        } else if (lastError == ERROR_CANCELLED) {
+            return false;
+        }
+    }
+
+    error = "Windows error code " + GS::ValueToUniString (static_cast<GS::UInt32> (lastError));
+    return false;
+}
+
+#endif
+
+#if defined (macintosh)
+
+// GS::Process does not search the PATH, so command must be an absolute path.
+static bool RunAndWait (const GS::UniString& command, const GS::Array<GS::UniString>& arguments)
+{
+    try {
+        GS::Process childProcess = GS::Process::Create (command, arguments, GS::Process::CreateNoWindow);
+        if (!childProcess.IsValid ()) {
+            return false;
+        }
+        childProcess.WaitFor ();
+        return childProcess.GetExitCode () == 0;
+    } catch (...) {
+        return false;
+    }
+}
+
+// Whether this Mac has an Apple silicon processor, also when Archicad runs translated by Rosetta.
+static bool IsAppleSiliconMac ()
+{
+#if defined (__arm64__) || defined (__aarch64__)
+    return true;
+#else
+    int isTranslated = 0;
+    size_t size = sizeof (isTranslated);
+    return sysctlbyname ("sysctl.proc_translated", &isTranslated, &size, nullptr, 0) == 0 && isTranslated == 1;
+#endif
+}
+
+static GS::UInt32 ReadBigEndianUInt32 (const unsigned char* bytes)
+{
+    return (static_cast<GS::UInt32> (bytes[0]) << 24) | (static_cast<GS::UInt32> (bytes[1]) << 16) |
+        (static_cast<GS::UInt32> (bytes[2]) << 8) | static_cast<GS::UInt32> (bytes[3]);
+}
+
+// Whether the Mach-O executable surely has no code for Intel processors. Anything that cannot be read is left
+// to open. The values are those of <mach-o/fat.h>, <mach-o/loader.h> and <mach/machine.h>.
+static bool LacksIntelCode (const IO::Location& executableFile)
+{
+    constexpr GS::UInt32 fatMagic = 0xcafebabe;             // FAT_MAGIC
+    constexpr GS::UInt32 fatMagic64 = 0xcafebabf;           // FAT_MAGIC_64
+    constexpr GS::UInt32 swappedMachMagic64 = 0xcffaedfe;   // MH_CIGAM_64: MH_MAGIC_64 of a little-endian executable
+    constexpr GS::UInt32 cpuTypeX86_64 = 0x01000007;        // CPU_TYPE_X86_64
+
+    unsigned char header[4096] = {};
+    USize readSize = 0;
+    IO::File file (executableFile);
+    if (file.GetStatus () != NoError || file.Open (IO::File::ReadMode) != NoError) {
+        return false;
+    }
+    file.ReadBin (reinterpret_cast<char*> (header), sizeof (header), &readSize);
+    file.Close ();
+    if (readSize < 8 || readSize > sizeof (header)) {
+        return false;
+    }
+
+    const GS::UInt32 magic = ReadBigEndianUInt32 (header);
+    if (magic == fatMagic || magic == fatMagic64) {
+        // A universal executable: a big-endian list of fat_arch (or fat_arch_64) entries, each starting with its CPU type
+        const GS::UInt64 archCount = ReadBigEndianUInt32 (header + 4);
+        const GS::UInt64 archSize = magic == fatMagic ? 20 : 32;
+        if (archCount == 0 || 8 + archCount * archSize > readSize) {
+            return false;
+        }
+        for (GS::UInt64 i = 0; i < archCount; ++i) {
+            if (ReadBigEndianUInt32 (header + 8 + i * archSize) == cpuTypeX86_64) {
+                return false;
+            }
+        }
+        return true;
+    }
+    if (magic == swappedMachMagic64) {
+        // An executable for a single CPU type, its header is little-endian
+        const unsigned char cpuTypeBytes[4] = { header[7], header[6], header[5], header[4] };
+        return ReadBigEndianUInt32 (cpuTypeBytes) != cpuTypeX86_64;
+    }
+    return false;
+}
+
+// The installer app is started through LaunchServices, so it is not a child of Archicad and keeps running when Archicad quits.
+// The Add-On is replaced by the installer, which asks for the administrator password itself when it needs to.
+static bool StartInstaller (const IO::Location& installerFile, const IO::Location& /*addOnFile*/, const GS::Array<GS::UniString>& arguments, GS::UniString& error)
+{
+    IO::Location installerFolder = installerFile;
+    installerFolder.DeleteLastLocalName ();
+    IO::Location installerApp = installerFolder;
+    installerApp.AppendToLocal (IO::Name ("TapirInstaller.app"));
+
+    GS::UniString installerPath;
+    installerFile.ToPath (&installerPath);
+    GS::UniString installerFolderPath;
+    installerFolder.ToPath (&installerFolderPath);
+    GS::UniString installerAppPath;
+    installerApp.ToPath (&installerAppPath);
+
+    // ditto keeps the symbolic links and the signature of the app bundle intact
+    bool installerAppExists = false;
+    if (!RunAndWait ("/usr/bin/ditto", { "-x", "-k", installerPath, installerFolderPath }) ||
+        IO::fileSystem.Contains (installerApp, &installerAppExists) != NoError || !installerAppExists) {
+        error = "Failed to extract " + installerPath;
+        return false;
+    }
+
+    // The installer of a release may be built for Apple silicon only, while the Add-On also runs on Intel Macs.
+    // open would then fail, or only show the system's alert, without telling that the update can be installed manually.
+    IO::Location installerExecutable = installerApp;
+    installerExecutable.AppendToLocal (IO::Name ("Contents"));
+    installerExecutable.AppendToLocal (IO::Name ("MacOS"));
+    installerExecutable.AppendToLocal (IO::Name ("TapirInstaller"));
+    if (!IsAppleSiliconMac () && LacksIntelCode (installerExecutable)) {
+        error = "This Tapir Installer does not run on Macs with an Intel processor.";
+        return false;
+    }
+
+    // -n: start a new instance even if an installer is already running, otherwise the arguments would be ignored
+    GS::Array<GS::UniString> openArguments = { "-n", installerAppPath, "--args" };
+    openArguments.Append (arguments);
+    if (!RunAndWait ("/usr/bin/open", openArguments)) {
+        error = "Failed to open " + installerAppPath;
+        return false;
+    }
+
+    return true;
+}
+
+#endif
+
+// Every update downloads the installer into a new folder, named "<creation time>_<process id>": the installer
+// of an earlier update may still be open (its window stays open after a failure), and its files must not be
+// overwritten (Windows locks the running exe) or deleted (on macOS it would go on running from deleted files).
+// Not in the Tapir temporary folder: that one is deleted whenever the scripts are reloaded.
+static bool CreateInstallerFolder (const GS::UniString& processIdStr, IO::Location& installerFolder, GS::UniString& error)
+{
+    IO::Location installersFolder;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &installersFolder);
+    installersFolder.AppendToLocal (IO::Name ("TapirInstaller"));
+
+    const GS::Int64 now = static_cast<GS::Int64> (std::time (nullptr));
+
+    // Folders younger than a day are kept, their installer may still be open. Deleting may fail, e.g. for the
+    // folder of a running installer on Windows; that folder is tried again next time.
+    GS::Array<IO::Location> oldFolders;
+    IO::Folder folder (installersFolder);
+    if (folder.GetStatus () == NoError) {
+        folder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+            const auto nameCStr = name.ToString ().ToCStr ();
+            char* nameEnd = nullptr;
+            const GS::Int64 creationTime = std::strtoll (nameCStr.Get (), &nameEnd, 10);
+            if (isFolder && nameEnd != nameCStr.Get () && *nameEnd == '_' && now - creationTime > 24 * 60 * 60) {
+                oldFolders.Push (IO::Location (installersFolder, name));
+            }
+        });
+    }
+    for (const IO::Location& oldFolder : oldFolders) {
+        IO::fileSystem.Delete (oldFolder);
+    }
+
+    const GS::UniString folderName = GS::ValueToUniString (now) + "_" + processIdStr;
+    installerFolder = installersFolder;
+    installerFolder.AppendToLocal (IO::Name (folderName));
+    if (IO::fileSystem.CreateFolderTree (installerFolder) != NoError) {
+        GS::UniString installerFolderPath;
+        installerFolder.ToPath (&installerFolderPath);
+        error = "Cannot create " + installerFolderPath;
+        return false;
+    }
+
+    return true;
+}
+
+// Archicad's process window with a progress bar and a Cancel button, open while this object exists, so it is
+// closed on every return path. Checking for Cancel also lets Archicad handle its events during the download,
+// otherwise Windows marks Archicad "Not Responding" on a slow connection.
+class DownloadProcessWindow {
+public:
+    DownloadProcessWindow (const GS::UniString& title, const GS::UniString& subtitle)
+        : isOpen (false)
+        , percent (0)
+    {
+        Int32 phaseCount = 1;
+        // A menu command could start a second update or a script during the download
+        API_ProcessControlTypeID controlType = API_MenuCommandDisabled;
+        isOpen = ACAPI_ProcessWindow_InitProcessWindow (&title, &phaseCount, &controlType) == NoError;
+        if (isOpen) {
+            Int32 maxValue = 100;
+            // Archicad passes maxValue on to the progress bar only with showPercent (seen in the Archicad 29 API),
+            // otherwise the bar's maximum is 0
+            bool showPercent = true;
+            ACAPI_ProcessWindow_SetNextProcessPhase (&subtitle, &maxValue, &showPercent);
+        }
+    }
+
+    ~DownloadProcessWindow ()
+    {
+        if (isOpen) {
+            ACAPI_ProcessWindow_CloseProcessWindow ();
+        }
+    }
+
+    DownloadProcessWindow (const DownloadProcessWindow&) = delete;
+    DownloadProcessWindow& operator= (const DownloadProcessWindow&) = delete;
+
+    // Returns false when the user cancelled.
+    bool SetProgress (GS::UInt64 downloadedSize, GS::UInt64 totalSize)
+    {
+        if (!isOpen) {
+            return true;
+        }
+        if (totalSize > 0) {
+            Int32 newPercent = downloadedSize >= totalSize ? 100 : static_cast<Int32> (downloadedSize * 100 / totalSize);
+            if (newPercent != percent) {
+                percent = newPercent;
+                ACAPI_ProcessWindow_SetProcessValue (&newPercent);
+            }
+        }
+        return ACAPI_ProcessWindow_IsProcessCanceled () != APIERR_CANCEL;
+    }
+
+private:
+    bool  isOpen;
+    Int32 percent;
+};
+
 bool TapirPalette::UpdateAddOn ()
 {
+    // Archicad handles its events during the download, so e.g. the palette's Run button could start a second update
+    static bool isUpdating = false;
+    if (isUpdating) {
+        return false;
+    }
+    isUpdating = true;
+    const GS::OnExit resetIsUpdating ([] () { isUpdating = false; });
+
     if (VersionChecker::IsUsingLatestVersion ()) {
         return false;
     }
@@ -1082,44 +1669,71 @@ bool TapirPalette::UpdateAddOn ()
         return false;
     }
 
-    const GS::UniString uvCommand = uvManager.GetUvExecutablePath ();
-    if (uvCommand.IsEmpty ()) {
-        DGAlert (DG_ERROR, "Update Failed", "The update process requires 'uv' to be installed.", "Please install 'uv' and try again.", "OK");
+    const GS::UniString& installerDownloadUrl = VersionChecker::LatestInstallerDownloadUrl ();
+    if (installerDownloadUrl.IsEmpty ()) {
+        DGAlert (DG_ERROR, "Tapir Update", "The Tapir Installer is missing from the latest release.",
+            "Download the update from https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest", "OK");
         return false;
     }
 
-    constexpr const char* fileName = "update_addon_and_restart_archicad.py";
-    const GS::UniString url = "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/archicad-addon/Tools/" + GS::UniString (fileName);
-    const std::vector<char> content = DownloadFileContent (url);
-    if (content.size () < 10) {
-        response = DGAlert (DG_ERROR, "Tapir Update", "Failed to download the update script.", "Please check your internet connection and try again.", "OK", "Cancel");
+#if defined (WINDOWS)
+    const GS::UInt32 processId = static_cast<GS::UInt32> (GetCurrentProcessId ());
+#else
+    const GS::Int32 processId = static_cast<GS::Int32> (getpid ());
+#endif
+    const GS::UniString processIdStr = GS::ValueToUniString (processId);
 
-        if (response != DG_OK) {
-            return false;
-        }
-
-        return UpdateAddOn ();
+    GS::UniString error;
+    IO::Location installerFolder;
+    if (!CreateInstallerFolder (processIdStr, installerFolder, error)) {
+        DGAlert (DG_ERROR, "Tapir Update", "Failed to download the Tapir Installer.", error, "OK");
+        return false;
     }
-    const IO::Location fileLoc = SaveBuiltInScript (GetTapirTemporaryFolder (), IO::RelativeLocation (fileName), content);
+
+    IO::Location installerFile = installerFolder;
+#if defined (WINDOWS)
+    installerFile.AppendToLocal (IO::Name ("TapirInstaller_Win.exe"));
+#else
+    installerFile.AppendToLocal (IO::Name ("TapirInstaller_Mac.zip"));
+#endif
+
+    DownloadResult downloadResult = DownloadResult::Failed;
+    {
+        DownloadProcessWindow processWindow ("Tapir Update", "Downloading the Tapir Installer...");
+        downloadResult = DownloadBinaryFile (installerDownloadUrl, installerFile, [&processWindow] (GS::UInt64 downloadedSize, GS::UInt64 totalSize) {
+            return processWindow.SetProgress (downloadedSize, totalSize);
+        }, error);
+    }
+    if (downloadResult == DownloadResult::Cancelled) {
+        return false;
+    }
+    if (downloadResult != DownloadResult::Succeeded) {
+        DGAlert (DG_ERROR, "Tapir Update", "Failed to download the Tapir Installer.", error, "OK");
+        return false;
+    }
 
     IO::Location addOnLocation;
     ACAPI_GetOwnLocation (&addOnLocation);
     GS::UniString addOnLocationStr;
     addOnLocation.ToPath (&addOnLocationStr);
 
-    GS::UniString filePath;
-    fileLoc.ToPath (&filePath);
-
-    GS::Array<GS::UniString> argv = { "run" };
-    argv.Append (uvManager.GetPythonSelectionArgs ());
-    argv.Append ({ "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ()), "--downloadUrl", VersionChecker::LatestVersionDownloadUrl (), "--addOnLocation", addOnLocationStr});
-
-    constexpr bool redirectStandardOutput = false;
-    constexpr bool redirectStandardInput = false;
-    constexpr bool redirectStandardError = false;
-    process = GS::Process::Create (uvCommand, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
-
-    SetRunButtonIcon ();
+    // The installer quits this Archicad, replaces exactly this Add-On and starts Archicad again.
+    const GS::Array<GS::UniString> installerArguments = {
+        "--addOnFile", addOnLocationStr,
+        "--versions", GS::ValueToUniString (VersionChecker::ArchicadMainVersion ()),
+        "--archicadPort", GS::ValueToUniString (GetConnectionPort ()),
+        "--archicadPid", processIdStr };
+    if (!StartInstaller (installerFile, addOnLocation, installerArguments, error)) {
+        const GS::UniString manualUpdateText = "You can also download the new version from https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest and replace the Add-On manually.";
+        if (error.IsEmpty ()) {
+            // No error (Windows only): the user declined the administrator prompt, which the Add-On's folder needs.
+            DGAlert (DG_INFORMATION, "Tapir Update", "The update was cancelled.",
+                "The Tapir Add-On is in a folder that only an administrator can change. " + manualUpdateText, "OK");
+        } else {
+            DGAlert (DG_ERROR, "Tapir Update", "Failed to start the Tapir Installer.", error + "\n\n" + manualUpdateText, "OK");
+        }
+        return false;
+    }
 
     return true;
 }
