@@ -39,6 +39,10 @@
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
 
+// True while UpdateAddOn runs. Archicad handles its events during the installer download, so the palette's
+// Run button and the shortcut slots must not start a script that the installer would then interrupt.
+static bool isUpdatingAddOn = false;
+
 static UShort GetConnectionPort ()
 {
     UShort portNumber;
@@ -493,6 +497,9 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         if (IsProcessRunning ()) {
             process.Kill ();
         } else {
+            if (isUpdatingAddOn) {
+                return;
+            }
             if (Config::Instance().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
                 return;
             }
@@ -567,6 +574,9 @@ void TapirPalette::RunShortcutSlot (short slotIndex)
     }
     if (IsProcessRunning ()) {
         WriteReport (DG_ERROR, "A script is already running - wait for it to finish before using a shortcut slot.");
+        return;
+    }
+    if (isUpdatingAddOn) {
         return;
     }
     if (Config::Instance ().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
@@ -1645,13 +1655,12 @@ private:
 
 bool TapirPalette::UpdateAddOn ()
 {
-    // Archicad handles its events during the download, so e.g. the palette's Run button could start a second update
-    static bool isUpdating = false;
-    if (isUpdating) {
-        return false;
+    // A second call during the download (e.g. from the menu) returns true, so the callers do not run a script
+    if (isUpdatingAddOn) {
+        return true;
     }
-    isUpdating = true;
-    const GS::OnExit resetIsUpdating ([] () { isUpdating = false; });
+    isUpdatingAddOn = true;
+    const GS::OnExit resetIsUpdatingAddOn ([] () { isUpdatingAddOn = false; });
 
     if (VersionChecker::IsUsingLatestVersion ()) {
         return false;
