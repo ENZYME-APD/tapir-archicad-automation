@@ -161,17 +161,70 @@ jobs:
 
   build_installer_mac:
     runs-on: [ macos-latest ]
+    # The installer must run on Intel Macs too, like the add-ons, but
+    # macos-latest is an Apple silicon runner. PyInstaller builds a universal2
+    # app only from a universal2 Python, so this installs the official
+    # python.org universal2 package, pinned by version and SHA-256 (3.12.10 is
+    # the last 3.12 release with a macOS installer). Keep these values the
+    # same as in installer_build_check.yml.
+    env:
+      PYTHON_PKG_URL: https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg
+      PYTHON_PKG_SHA256: 8373e58da4ea146b3eb1c1f9834f19a319440b6b679b06050b1f9ee3237aa8e4
+      UNIVERSAL2_PYTHON: /Library/Frameworks/Python.framework/Versions/3.12/bin/python3
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
     - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      run: |
+        curl -fsSL --retry 5 --retry-all-errors -o "$RUNNER_TEMP/python.pkg" "$PYTHON_PKG_URL"
+        actual=$(shasum -a 256 "$RUNNER_TEMP/python.pkg" | cut -d ' ' -f 1)
+        if [ "$actual" != "$PYTHON_PKG_SHA256" ]; then
+          echo "::error::SHA-256 of $PYTHON_PKG_URL is '$actual', expected $PYTHON_PKG_SHA256"
+          exit 1
+        fi
+        sudo installer -pkg "$RUNNER_TEMP/python.pkg" -target /
+        "$UNIVERSAL2_PYTHON" -c "import sys, sysconfig; p = sysconfig.get_platform(); print(sys.version, p); sys.exit(not p.endswith('-universal2'))"
     - name: Install PyInstaller
-      run: pip install pyinstaller truststore certifi
+      run: |
+        "$UNIVERSAL2_PYTHON" -m pip install pyinstaller truststore certifi
     - name: Build Installer
-      run: pyinstaller --noconfirm --windowed --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: |
+        "$UNIVERSAL2_PYTHON" -m PyInstaller --noconfirm --windowed --target-arch universal2 --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
+    # Every Mach-O file in the app (the executable, the Python, Tcl/Tk and
+    # OpenSSL libraries, the extension modules) must have both slices.
+    - name: Verify Universal2
+      run: |
+        exe=dist/TapirInstaller.app/Contents/MacOS/TapirInstaller
+        archs=$(lipo -archs "$exe")
+        echo "$exe: $archs"
+        if [[ " $archs " != *" x86_64 "* || " $archs " != *" arm64 "* ]]; then
+          echo "::error::$exe is not universal2 (has: $archs)"
+          exit 1
+        fi
+        failed=0
+        names=()
+        while IFS= read -r -d '' f; do
+          case "$(file -b "$f")" in
+            *Mach-O*) ;;
+            *) continue ;;
+          esac
+          names+=("${f##*/}")
+          archs=$(lipo -archs "$f" 2>&1) || true
+          echo "$archs  ${f#dist/TapirInstaller.app/}"
+          if [[ " $archs " != *" x86_64 "* || " $archs " != *" arm64 "* ]]; then
+            echo "::error::${f#dist/} is not universal2 (has: $archs)"
+            failed=1
+          fi
+        done < <(find dist/TapirInstaller.app -type f -print0)
+        echo "Checked ${#names[@]} Mach-O files."
+        # Make sure the libraries were found at all, so a pass means something.
+        for prefix in Python libtcl libtk; do
+          if ! printf '%s\n' "${names[@]}" | grep -q "^$prefix"; then
+            echo "::error::No Mach-O file named $prefix* in dist/TapirInstaller.app"
+            failed=1
+          fi
+        done
+        exit "$failed"
     - name: Code sign and notarize
       run: |
         echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12

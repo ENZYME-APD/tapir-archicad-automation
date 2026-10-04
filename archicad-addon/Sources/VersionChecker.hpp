@@ -8,9 +8,11 @@ public:
     static void CreateInstance (GS::UInt16 acMainVersion);
 
     static bool IsUsingLatestVersion ();
+    static bool IsNewerVersionWithoutAddOn ();
     static const GS::UniString& LatestVersion ();
     static const GS::UniString& LatestVersionName ();
-    static const GS::UniString& LatestVersionDownloadUrl ();
+    static const GS::UniString& LatestInstallerDownloadUrl ();
+    static GS::UInt16           ArchicadMainVersion ();
 
 private:
     VersionChecker (GS::UInt16 acMainVersionIn);
@@ -22,4 +24,5 @@ private:
     GS::UniString latestVersion;
     GS::UniString latestVersionName;
     GS::UniString latestVersionDownloadUrl;
+    GS::UniString latestInstallerDownloadUrl;
 };

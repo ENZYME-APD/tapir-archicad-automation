@@ -75,7 +75,22 @@ bool VersionChecker::IsUsingLatestVersion ()
         return true;
     }
 
+    // Without an Add-On for this Archicad version in the latest release there is nothing to update to.
+    if (Intance->latestVersionDownloadUrl.IsEmpty ()) {
+        return true;
+    }
+
     return IsVersionNotNewerThan (Intance->latestVersion.ToCStr ().Get (), ADDON_VERSION);
+}
+
+// True when the latest release is newer but has no Add-On for this Archicad version.
+bool VersionChecker::IsNewerVersionWithoutAddOn ()
+{
+    if (!Intance || !Intance->latestVersionDownloadUrl.IsEmpty ()) {
+        return false;
+    }
+
+    return !IsVersionNotNewerThan (Intance->latestVersion.ToCStr ().Get (), ADDON_VERSION);
 }
 
 const GS::UniString& VersionChecker::LatestVersion ()
@@ -96,13 +111,22 @@ const GS::UniString& VersionChecker::LatestVersionName ()
     return Intance->latestVersionName;
 }
 
-const GS::UniString& VersionChecker::LatestVersionDownloadUrl ()
+const GS::UniString& VersionChecker::LatestInstallerDownloadUrl ()
 {
     if (!Intance) {
         return GS::EmptyUniString;
     }
 
-    return Intance->latestVersionDownloadUrl;
+    return Intance->latestInstallerDownloadUrl;
+}
+
+GS::UInt16 VersionChecker::ArchicadMainVersion ()
+{
+    if (!Intance) {
+        return 0;
+    }
+
+    return Intance->acMainVersion;
 }
 
 VersionChecker::VersionChecker (GS::UInt16 acMainVersionIn)
@@ -116,8 +140,10 @@ const GS::UniString& VersionChecker::GetVersionFromGithub ()
     GS::UniString namePostfix = "AC" + GS::ValueToUniString (acMainVersion);
 #if defined (WINDOWS)
     namePostfix += "_Win";
+    const GS::UniString installerName ("TapirInstaller_Win.exe");
 #else
     namePostfix += "_Mac";
+    const GS::UniString installerName ("TapirInstaller_Mac.zip");
 #endif
 
     try {
@@ -148,10 +174,15 @@ const GS::UniString& VersionChecker::GetVersionFromGithub ()
                 JSON::StringValueRef nameValue = GS::DynamicCast<JSON::StringValue> (assetObject->Get ("name"));
 
                 GS::UniString name = nameValue->Get ();
-                if (name.Contains (namePostfix)) {
+                if (latestVersionDownloadUrl.IsEmpty () && name.Contains (namePostfix)) {
                     JSON::StringValueRef downloadUrlValue = GS::DynamicCast<JSON::StringValue> (assetObject->Get ("browser_download_url"));
                     latestVersionDownloadUrl = downloadUrlValue->Get ();
                     latestVersionName = name;
+                } else if (latestInstallerDownloadUrl.IsEmpty () && name == installerName) {
+                    JSON::StringValueRef downloadUrlValue = GS::DynamicCast<JSON::StringValue> (assetObject->Get ("browser_download_url"));
+                    latestInstallerDownloadUrl = downloadUrlValue->Get ();
+                }
+                if (!latestVersionDownloadUrl.IsEmpty () && !latestInstallerDownloadUrl.IsEmpty ()) {
                     break;
                 }
             }

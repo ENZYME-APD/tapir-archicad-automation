@@ -316,6 +316,33 @@ inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLi
     return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
 }
 
+// APIIo_InitProcessWindowID takes the phase count as short*, AC27+ take an Int32*.
+inline GSErrCode ACAPI_ProcessWindow_InitProcessWindow (const GS::UniString* title = nullptr, Int32* nPhase = nullptr, API_ProcessControlTypeID* processControlType = nullptr)
+{
+    short phaseCount = nPhase != nullptr ? static_cast<short> (*nPhase) : 0;
+    return ACAPI_Interface (APIIo_InitProcessWindowID, const_cast<GS::UniString*> (title), nPhase != nullptr ? &phaseCount : nullptr, processControlType);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_CloseProcessWindow ()
+{
+    return ACAPI_Interface (APIIo_CloseProcessWindowID);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_SetNextProcessPhase (const GS::UniString* subtitle, Int32* maxval, bool* showPercent = nullptr)
+{
+    return ACAPI_Interface (APIIo_SetNextProcessPhaseID, const_cast<GS::UniString*> (subtitle), maxval, showPercent);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_SetProcessValue (Int32* newval)
+{
+    return ACAPI_Interface (APIIo_SetProcessValueID, newval);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_IsProcessCanceled ()
+{
+    return ACAPI_Interface (APIIo_IsProcessCanceledID);
+}
+
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
 {
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);

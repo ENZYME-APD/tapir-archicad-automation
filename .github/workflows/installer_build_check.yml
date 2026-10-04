@@ -12,6 +12,12 @@ jobs:
       matrix:
         os: [ windows-2022, macos-latest ]
     runs-on: ${{ matrix.os }}
+    # The Mac installer is built universal2 from the official python.org
+    # package, like in archicad_addon.yml (see there; keep these the same).
+    env:
+      PYTHON_PKG_URL: https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg
+      PYTHON_PKG_SHA256: 8373e58da4ea146b3eb1c1f9834f19a319440b6b679b06050b1f9ee3237aa8e4
+      UNIVERSAL2_PYTHON: /Library/Frameworks/Python.framework/Versions/3.12/bin/python3
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
@@ -21,16 +27,87 @@ jobs:
         python-version: '3.12'
     - name: Syntax Check
       run: python -m py_compile archicad-addon/Installer/tapir_installer.py
+    # Released Add-Ons download this script from main to update themselves.
+    - name: Legacy Update Script Syntax Check
+      run: python -m py_compile archicad-addon/Tools/update_addon_and_restart_archicad.py
+    - name: Update Mode Tests
+      run: python archicad-addon/Installer/test_update_mode.py
     - name: Console Smoke Run
       run: python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnsFolder "${{ runner.temp }}" --versions 29
+    # Downloads the real asset, but never contacts Archicad in a dry run.
+    - name: Update Mode Smoke Run Windows
+      if: runner.os == 'Windows'
+      run: |
+        Set-Content -Path "${{ runner.temp }}\TapirAddOn_AC29_Win.apx" -Value "dummy"
+        python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnFile "${{ runner.temp }}\TapirAddOn_AC29_Win.apx" --versions 29 --archicadPort 19723
+    - name: Update Mode Smoke Run Mac
+      if: runner.os == 'macOS'
+      run: |
+        mkdir -p "${{ runner.temp }}/TapirAddOn_AC29_Mac.bundle/Contents"
+        python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnFile "${{ runner.temp }}/TapirAddOn_AC29_Mac.bundle" --versions 29 --archicadPort 19723
     - name: Install PyInstaller
+      if: runner.os == 'Windows'
       run: pip install pyinstaller truststore certifi
+    # The Mac steps below build with the universal2 Python from the env
+    # above, so that the app also runs on Intel Macs.
+    - name: Setup Universal2 Python Mac
+      if: runner.os == 'macOS'
+      run: |
+        curl -fsSL --retry 5 --retry-all-errors -o "$RUNNER_TEMP/python.pkg" "$PYTHON_PKG_URL"
+        actual=$(shasum -a 256 "$RUNNER_TEMP/python.pkg" | cut -d ' ' -f 1)
+        if [ "$actual" != "$PYTHON_PKG_SHA256" ]; then
+          echo "::error::SHA-256 of $PYTHON_PKG_URL is '$actual', expected $PYTHON_PKG_SHA256"
+          exit 1
+        fi
+        sudo installer -pkg "$RUNNER_TEMP/python.pkg" -target /
+        "$UNIVERSAL2_PYTHON" -c "import sys, sysconfig; p = sysconfig.get_platform(); print(sys.version, p); sys.exit(not p.endswith('-universal2'))"
+    - name: Install PyInstaller Mac
+      if: runner.os == 'macOS'
+      run: |
+        "$UNIVERSAL2_PYTHON" -m pip install pyinstaller truststore certifi
     - name: Build Executable Windows
       if: runner.os == 'Windows'
       run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Build Executable Mac
       if: runner.os == 'macOS'
-      run: pyinstaller --noconfirm --windowed --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: |
+        "$UNIVERSAL2_PYTHON" -m PyInstaller --noconfirm --windowed --target-arch universal2 --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
+    # Every Mach-O file in the app (the executable, the Python, Tcl/Tk and
+    # OpenSSL libraries, the extension modules) must have both slices.
+    - name: Verify Universal2 Mac
+      if: runner.os == 'macOS'
+      run: |
+        exe=dist/TapirInstaller.app/Contents/MacOS/TapirInstaller
+        archs=$(lipo -archs "$exe")
+        echo "$exe: $archs"
+        if [[ " $archs " != *" x86_64 "* || " $archs " != *" arm64 "* ]]; then
+          echo "::error::$exe is not universal2 (has: $archs)"
+          exit 1
+        fi
+        failed=0
+        names=()
+        while IFS= read -r -d '' f; do
+          case "$(file -b "$f")" in
+            *Mach-O*) ;;
+            *) continue ;;
+          esac
+          names+=("${f##*/}")
+          archs=$(lipo -archs "$f" 2>&1) || true
+          echo "$archs  ${f#dist/TapirInstaller.app/}"
+          if [[ " $archs " != *" x86_64 "* || " $archs " != *" arm64 "* ]]; then
+            echo "::error::${f#dist/} is not universal2 (has: $archs)"
+            failed=1
+          fi
+        done < <(find dist/TapirInstaller.app -type f -print0)
+        echo "Checked ${#names[@]} Mach-O files."
+        # Make sure the libraries were found at all, so a pass means something.
+        for prefix in Python libtcl libtk; do
+          if ! printf '%s\n' "${names[@]}" | grep -q "^$prefix"; then
+            echo "::error::No Mach-O file named $prefix* in dist/TapirInstaller.app"
+            failed=1
+          fi
+        done
+        exit "$failed"
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
