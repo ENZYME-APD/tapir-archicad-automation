@@ -889,7 +889,7 @@ GSErrCode Initialize (void)
             "Retrieves the IFC properties of the given elements."
         );
         err |= RegisterCommand<SetIFCPropertiesOfElementsCommand> (
-            ifcCommands, "1.6.1",
+            ifcCommands, "1.7.0",
             "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now."
         );
         AddCommandGroup (ifcCommands);
