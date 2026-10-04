@@ -83,6 +83,16 @@ bool VersionChecker::IsUsingLatestVersion ()
     return IsVersionNotNewerThan (Intance->latestVersion.ToCStr ().Get (), ADDON_VERSION);
 }
 
+// True when the latest release is newer but has no Add-On for this Archicad version.
+bool VersionChecker::IsNewerVersionWithoutAddOn ()
+{
+    if (!Intance || !Intance->latestVersionDownloadUrl.IsEmpty ()) {
+        return false;
+    }
+
+    return !IsVersionNotNewerThan (Intance->latestVersion.ToCStr ().Get (), ADDON_VERSION);
+}
+
 const GS::UniString& VersionChecker::LatestVersion ()
 {
     if (!Intance) {

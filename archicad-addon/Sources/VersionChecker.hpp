@@ -8,6 +8,7 @@ public:
     static void CreateInstance (GS::UInt16 acMainVersion);
 
     static bool IsUsingLatestVersion ();
+    static bool IsNewerVersionWithoutAddOn ();
     static const GS::UniString& LatestVersion ();
     static const GS::UniString& LatestVersionName ();
     static const GS::UniString& LatestInstallerDownloadUrl ();

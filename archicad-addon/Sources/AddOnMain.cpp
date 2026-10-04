@@ -94,6 +94,12 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     {
                         if (!VersionChecker::IsUsingLatestVersion ()) {
                             TapirPalette::Instance ().UpdateAddOn ();
+                        } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
+                            DGAlert (DG_INFORMATION, "Tapir Update",
+                                GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
+                                    VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
+                                GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+                                "OK");
                         } else {
                             DGAlert (DG_INFORMATION,
                                 RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
