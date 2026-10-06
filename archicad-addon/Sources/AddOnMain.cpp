@@ -1056,7 +1056,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RenameNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
-            "Renames a navigator item or changes its ID."
+            "Renames a navigator item or changes its ID. The ID of a layout is its layout number; the ID of a view becomes a custom ID, as the Custom radio button of the View Settings dialog sets. Fails when Archicad kept the old ID instead of reporting success."
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
