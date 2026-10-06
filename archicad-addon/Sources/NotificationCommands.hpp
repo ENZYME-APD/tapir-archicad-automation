@@ -62,6 +62,7 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
+    static void DetachElementObserversIfNotNeeded ();
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
     static void SendQueuedEventsToNotificationClient ();
     static void SendMessageToNotificationClient (Client& client, const GS::ObjectState& os);

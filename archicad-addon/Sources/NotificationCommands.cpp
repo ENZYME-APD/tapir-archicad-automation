@@ -195,6 +195,29 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 }
 
 void
+AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnModification) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnModification) {
+            return;
+        }
+    }
+
+    // Without this the observer stays attached to every element for the rest of the
+    // session after the last client was removed (see issue #762).
+    GS::Array<API_Guid> elementIds;
+    ACAPI_Element_GetElemList (API_ZombieElemID, &elementIds);
+    for (const auto& elemId : elementIds) {
+        ACAPI_Element_DetachObserver (elemId);
+    }
+    hasClientToNotifyOnModification = false;
+}
+
+void
 AddElementNotificationClientCommand::SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os)
 {
     if (queuedEvents) {
@@ -253,9 +276,12 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
     } else if (elemType->notifID == APINotifyElement_EndEvents) {
         SendQueuedEventsToNotificationClient ();
     } else {
-        API_Element	parentElement = {};
-        ACAPI_Notification_GetParentElement (&parentElement, nullptr, 0, nullptr);
-
+        // Only the header of the notified element is used here. Building the parent
+        // element with ACAPI_Notification_GetParentElement runs inside the command's
+        // post-processing, and for a library part it also runs its 2D script; a script
+        // that requests a property (REQUEST "Properties_Of_Parent" or
+        // "Property_Value_Of_Parent") hits an ODB assertion at that point and takes
+        // Archicad down (see issue #762).
         const API_ElemTypeID typeID = GetElemTypeId (elemType->elemHead);
         GS::ObjectState message (
             "elementId", CreateGuidObjectState (elemType->elemHead.guid),
@@ -266,9 +292,6 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
             case APINotifyElement_Copy:
             case APINotifyElement_Undo_Deleted:
             case APINotifyElement_Redo_Created:
-                if (parentElement.header.guid != APINULLGuid) {
-                    message.Add ("copiedElementId", CreateGuidObjectState (parentElement.header.guid));
-                }
                 SendEventToNotificationClient (ElementEventType::New, message);
                 if (hasClientToNotifyOnModification) {
                     ACAPI_Element_AttachObserver (elemType->elemHead.guid);
@@ -281,9 +304,6 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
             case APINotifyElement_Redo_Modified:
             case APINotifyElement_PropertyValueChange:
             case APINotifyElement_ClassificationChange:
-                if (parentElement.header.guid != APINULLGuid) {
-                    message.Add ("oldElementId", CreateGuidObjectState (parentElement.header.guid));
-                }
                 SendEventToNotificationClient (ElementEventType::Changed, message);
                 break;
 
@@ -409,6 +429,8 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     if (AddElementNotificationClientCommand::clients.erase (connectionUrlStr) == 0) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "No such notification client registered.");
     }
+
+    AddElementNotificationClientCommand::DetachElementObserversIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
