@@ -3571,10 +3571,12 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "profileId": { "$ref": "#/AttributeId" },
                         "contourPen": {
                             "type": "integer",
+                            "minimum": 1,
                             "description": "Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen."
                         },
                         "contourPen3D": {
                             "type": "integer",
+                            "minimum": 1,
                             "description": "Pen of the wall's contour in 3D views (API_WallType::contPen3D)."
                         },
                         "contourLineTypeId": {
@@ -3587,6 +3589,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         },
                         "aboveViewLinePen": {
                             "type": "integer",
+                            "minimum": 1,
                             "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
                         },
                         "aboveViewLineTypeId": {
@@ -3601,11 +3604,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "viewDepthLimitation": {
                             "type": "string",
                             "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation, relevant for multi-story walls."
+                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "connectionPriority": {
                             "type": "integer",
-                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Confirmed live that this never takes effect - readback always comes back 0 regardless of what is sent."
+                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Archicad ignores writes to this field; read-only in practice."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -3613,14 +3616,17 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         },
                         "junctionSequence": {
                             "type": "integer",
-                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Confirmed live that this never takes effect - Archicad keeps its own auto-assigned value regardless of what is sent."
+                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
                         },
                         "linkToSettings": {
                             "type": "object",
                             "description": "Mode of linking the wall to its home story.",
                             "properties": {
                                 "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": { "type": "boolean" }
+                                "newCreationMode": {
+                                    "type": "boolean",
+                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
+                                }
                             },
                             "additionalProperties": false
                         },
@@ -3634,7 +3640,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         },
                         "polyCanChange": {
                             "type": "boolean",
-                            "description": "The polygonal wall's corners can be changed in case of L and T connections."
+                            "description": "The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType)."
                         },
                         "materialsChained": {
                             "type": "boolean",
@@ -3730,26 +3736,11 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     }
 
     // Reuses ModifyWalls' field handler for the pen/line-type/display/junction/misc fields
-    // this schema also declares above (contourPen, displayOption, connectionPriority, etc.) -
-    // the mask it fills is irrelevant for Create (ACAPI_Element_Create applies every field of
-    // 'element' unconditionally) and is just discarded here. Harmless overlap: it re-reads
-    // begCoordinate/endCoordinate/height/offset/thickness/referenceLineLocation too, with the
-    // same values already applied above.
-    //
-    // Confirmed live against a running Archicad (AC27, Teamwork/BIMcloud project) that several
-    // of these fields do not reliably take effect through ACAPI_Element_Create:
-    // connectionPriority and junctionSequence never apply, through Create OR a follow-up
-    // ModifyWalls either - Archicad appears to manage wall junction priority/ordering entirely
-    // on its own, with no externally writable path despite the fields being readable. Callers
-    // should not rely on setting them.
-    // viewDepthLimitation, linkToSettings and polyCanChange were also seen to be silently
-    // ignored at Create, while a separate, later ModifyWalls call applying the same values
-    // sometimes did take effect and sometimes did not across repeated test runs against the
-    // same Teamwork project - inconsistent enough (readback occasionally differed between
-    // otherwise-identical runs) that no automatic Create-then-Modify workaround was kept here;
-    // it did not fix the behavior reliably enough to trust. If you need these three set
-    // precisely, issue your own ModifyWalls call after creation and verify with
-    // GetDetailsOfElements - do not assume either call is sufficient on its own.
+    // this schema also declares above - the mask it fills is irrelevant for Create and just
+    // discarded here. See the fields' own schema descriptions for which are version-gated or
+    // only apply in certain configurations (e.g. viewDepthLimitation needs a multi-story wall,
+    // polyCanChange a Polygonal one); connectionPriority/junctionSequence are confirmed
+    // read-only in practice regardless of configuration.
     API_Element unusedMask = {};
     ApplyWallDetails (element, unusedMask, parameters);
 
@@ -5611,11 +5602,11 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "viewDepthLimitation": {
                             "type": "string",
                             "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation, relevant for multi-story walls."
+                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "connectionPriority": {
                             "type": "integer",
-                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Confirmed live that this never takes effect - readback always comes back 0 regardless of what is sent."
+                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Archicad ignores writes to this field; read-only in practice."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -5623,14 +5614,17 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         },
                         "junctionSequence": {
                             "type": "integer",
-                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Confirmed live that this never takes effect - Archicad keeps its own auto-assigned value regardless of what is sent."
+                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
                         },
                         "linkToSettings": {
                             "type": "object",
                             "description": "Mode of linking the wall to its home story.",
                             "properties": {
                                 "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": { "type": "boolean" }
+                                "newCreationMode": {
+                                    "type": "boolean",
+                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
+                                }
                             },
                             "additionalProperties": false
                         },
@@ -5644,7 +5638,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         },
                         "polyCanChange": {
                             "type": "boolean",
-                            "description": "The polygonal wall's corners can be changed in case of L and T connections."
+                            "description": "The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType)."
                         },
                         "materialsChained": {
                             "type": "boolean",
