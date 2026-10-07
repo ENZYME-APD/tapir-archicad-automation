@@ -81,6 +81,12 @@ private:
     // script injected - see InjectAutoHeightScript in ScriptUIPalette.cpp).
     bool autoHeightEnabled = false;
 
+    // Guards the NotifyPageLoaded JS bridge function: DG::Browser::DisableNavigation (true) blocks
+    // LoadHTML itself when it is already set at load time (the palette stays blank, see issue
+    // #768), so ShowWithHTML loads the page with navigation enabled and only disables it from the
+    // injected page-loaded script when the currently shown page asked for options.navigationDisabled.
+    bool navigationDisableRequested = false;
+
     // Set only when APIPalMsg_HidePalette_Begin itself hid a visible palette. Guards
     // APIPalMsg_HidePalette_End so it only restores visibility it took away - not a palette the
     // user (or the script, via ClosePalette) had already explicitly closed beforehand.
