@@ -1333,6 +1333,52 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     return {};
 }
 
+// Global scope (not the anonymous namespace below) - these implement the CommandBase.hpp
+// declarations shared with ElementCommands.cpp (Wall's Get side); a definition inside the
+// anonymous namespace has internal linkage and is a distinct entity from the header's
+// external-linkage declaration, which made every call site ambiguous between the two.
+GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption)
+{
+    switch (displayOption) {
+        case API_StandardWithAbstract: return "StandardWithAbstract";
+        case API_CutOnly:              return "CutOnly";
+        case API_OutLinesOnly:         return "OutLinesOnly";
+        case API_AbstractAll:          return "AbstractAll";
+        case API_CutAll:               return "CutAll";
+        case API_Standard:
+        default:                       return "Standard";
+    }
+}
+
+bool ElemDisplayOptionFromString (const GS::UniString& s, API_ElemDisplayOptionsID& out)
+{
+    if (s == "Standard")                { out = API_Standard; return true; }
+    if (s == "StandardWithAbstract")     { out = API_StandardWithAbstract; return true; }
+    if (s == "CutOnly")                  { out = API_CutOnly; return true; }
+    if (s == "OutLinesOnly")             { out = API_OutLinesOnly; return true; }
+    if (s == "AbstractAll")              { out = API_AbstractAll; return true; }
+    if (s == "CutAll")                   { out = API_CutAll; return true; }
+    return false;
+}
+
+GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation)
+{
+    switch (viewDepthLimitation) {
+        case API_ToAbsoluteLimit: return "ToAbsoluteLimit";
+        case API_EntireElement:   return "EntireElement";
+        case API_ToFloorPlanRange:
+        default:                  return "ToFloorPlanRange";
+    }
+}
+
+bool ViewDepthLimitationFromString (const GS::UniString& s, API_ElemViewDepthLimitationsID& out)
+{
+    if (s == "ToFloorPlanRange") { out = API_ToFloorPlanRange; return true; }
+    if (s == "ToAbsoluteLimit")  { out = API_ToAbsoluteLimit; return true; }
+    if (s == "EntireElement")    { out = API_EntireElement; return true; }
+    return false;
+}
+
 namespace {
 
 void AddAdditionalPolyToMemo (
@@ -1828,6 +1874,121 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         changed = true;
     }
 #endif
+    short contourPen = 0;
+    if (details.Get ("contourPen", contourPen)) {
+        element.wall.contPen = contourPen;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, contPen);
+        changed = true;
+    }
+    short contourPen3D = 0;
+    if (details.Get ("contourPen3D", contourPen3D)) {
+        element.wall.contPen3D = contourPen3D;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, contPen3D);
+        changed = true;
+    }
+    const GS::ObjectState* contourLineTypeId = details.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        element.wall.contLtype = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, contLtype);
+        changed = true;
+    }
+    const GS::ObjectState* belowViewLineTypeId = details.Get ("belowViewLineTypeId");
+    if (belowViewLineTypeId != nullptr) {
+        element.wall.belowViewLineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*belowViewLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, belowViewLineType);
+        changed = true;
+    }
+    short aboveViewLinePen = 0;
+    if (details.Get ("aboveViewLinePen", aboveViewLinePen)) {
+        element.wall.aboveViewLinePen = aboveViewLinePen;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, aboveViewLinePen);
+        changed = true;
+    }
+    const GS::ObjectState* aboveViewLineTypeId = details.Get ("aboveViewLineTypeId");
+    if (aboveViewLineTypeId != nullptr) {
+        element.wall.aboveViewLineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*aboveViewLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, aboveViewLineType);
+        changed = true;
+    }
+    GS::UniString displayOptionStr;
+    if (details.Get ("displayOption", displayOptionStr)) {
+        API_ElemDisplayOptionsID displayOption;
+        if (ElemDisplayOptionFromString (displayOptionStr, displayOption)) {
+            element.wall.displayOption = displayOption;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, displayOption);
+            changed = true;
+        }
+    }
+    GS::UniString viewDepthLimitationStr;
+    if (details.Get ("viewDepthLimitation", viewDepthLimitationStr)) {
+        API_ElemViewDepthLimitationsID viewDepthLimitation;
+        if (ViewDepthLimitationFromString (viewDepthLimitationStr, viewDepthLimitation)) {
+            element.wall.viewDepthLimitation = viewDepthLimitation;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, viewDepthLimitation);
+            changed = true;
+        }
+    }
+    Int32 connectionPriority = 0;
+    if (details.Get ("connectionPriority", connectionPriority)) {
+        element.wall.wallConnPriority = connectionPriority;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, wallConnPriority);
+        changed = true;
+    }
+    bool useCompositePriority = false;
+    if (details.Get ("useCompositePriority", useCompositePriority)) {
+        element.wall.useCompositePriority = useCompositePriority;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, useCompositePriority);
+        changed = true;
+    }
+    Int32 junctionSequence = 0;
+    if (details.Get ("junctionSequence", junctionSequence)) {
+        element.wall.sequence = junctionSequence;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, sequence);
+        changed = true;
+    }
+    const GS::ObjectState* linkToSettingsOs = details.Get ("linkToSettings");
+    if (linkToSettingsOs != nullptr) {
+        Int32 homeDiff = 0;
+        if (linkToSettingsOs->Get ("homeStoryDifference", homeDiff)) {
+            element.wall.linkToSettings.homeStoryDifference = static_cast<short> (homeDiff);
+        }
+        bool newCreationMode = false;
+        if (linkToSettingsOs->Get ("newCreationMode", newCreationMode)) {
+            element.wall.linkToSettings.newCreationMode = newCreationMode;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, linkToSettings);
+        changed = true;
+    }
+    bool inheritEndSurface = false;
+    if (details.Get ("inheritEndSurface", inheritEndSurface)) {
+        element.wall.inheritEndSurface = inheritEndSurface;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, inheritEndSurface);
+        changed = true;
+    }
+    bool alignTexture = false;
+    if (details.Get ("alignTexture", alignTexture)) {
+        element.wall.alignTexture = alignTexture;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, alignTexture);
+        changed = true;
+    }
+    bool polyCanChange = false;
+    if (details.Get ("polyCanChange", polyCanChange)) {
+        element.wall.polyCanChange = polyCanChange;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, polyCanChange);
+        changed = true;
+    }
+    bool materialsChained = false;
+    if (details.Get ("materialsChained", materialsChained)) {
+        element.wall.materialsChained = materialsChained;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, materialsChained);
+        changed = true;
+    }
+    double logHeight = 0.0;
+    if (details.Get ("logHeight", logHeight)) {
+        element.wall.logHeight = logHeight;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, logHeight);
+        changed = true;
+    }
     return changed;
 }
 
@@ -2468,48 +2629,6 @@ static GS::UniString MorphEdgeTypeToString (API_MorphEdgeTypeID edgeType)
         case APIMorphEdgeType_SoftHiddenEdge:
         default:                                return "SoftHidden";
     }
-}
-
-static GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption)
-{
-    switch (displayOption) {
-        case API_StandardWithAbstract: return "StandardWithAbstract";
-        case API_CutOnly:              return "CutOnly";
-        case API_OutLinesOnly:         return "OutLinesOnly";
-        case API_AbstractAll:          return "AbstractAll";
-        case API_CutAll:               return "CutAll";
-        case API_Standard:
-        default:                       return "Standard";
-    }
-}
-
-static bool ElemDisplayOptionFromString (const GS::UniString& s, API_ElemDisplayOptionsID& out)
-{
-    if (s == "Standard")                { out = API_Standard; return true; }
-    if (s == "StandardWithAbstract")     { out = API_StandardWithAbstract; return true; }
-    if (s == "CutOnly")                  { out = API_CutOnly; return true; }
-    if (s == "OutLinesOnly")             { out = API_OutLinesOnly; return true; }
-    if (s == "AbstractAll")              { out = API_AbstractAll; return true; }
-    if (s == "CutAll")                   { out = API_CutAll; return true; }
-    return false;
-}
-
-static GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation)
-{
-    switch (viewDepthLimitation) {
-        case API_ToAbsoluteLimit: return "ToAbsoluteLimit";
-        case API_EntireElement:   return "EntireElement";
-        case API_ToFloorPlanRange:
-        default:                  return "ToFloorPlanRange";
-    }
-}
-
-static bool ViewDepthLimitationFromString (const GS::UniString& s, API_ElemViewDepthLimitationsID& out)
-{
-    if (s == "ToFloorPlanRange") { out = API_ToFloorPlanRange; return true; }
-    if (s == "ToAbsoluteLimit")  { out = API_ToAbsoluteLimit; return true; }
-    if (s == "EntireElement")    { out = API_EntireElement; return true; }
-    return false;
 }
 
 static GS::UniString TextureProjectionTypeToString (API_TextureProjectionTypeID projectionType)
@@ -3449,7 +3568,82 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
-                        "profileId": { "$ref": "#/AttributeId" }
+                        "profileId": { "$ref": "#/AttributeId" },
+                        "contourPen": {
+                            "type": "integer",
+                            "description": "Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen."
+                        },
+                        "contourPen3D": {
+                            "type": "integer",
+                            "description": "Pen of the wall's contour in 3D views (API_WallType::contPen3D)."
+                        },
+                        "contourLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the wall's own contour (API_WallType::contLtype) - pairs with contourPen, which only sets the pen, not the line type."
+                        },
+                        "belowViewLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup (API_WallType::belowViewLineType)."
+                        },
+                        "aboveViewLinePen": {
+                            "type": "integer",
+                            "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
+                        },
+                        "aboveViewLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+                        },
+                        "displayOption": {
+                            "type": "string",
+                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
+                            "description": "Floor plan display option."
+                        },
+                        "viewDepthLimitation": {
+                            "type": "string",
+                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
+                            "description": "Floor plan view depth limitation, relevant for multi-story walls."
+                        },
+                        "connectionPriority": {
+                            "type": "integer",
+                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Confirmed live that this never takes effect - readback always comes back 0 regardless of what is sent."
+                        },
+                        "useCompositePriority": {
+                            "type": "boolean",
+                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
+                        },
+                        "junctionSequence": {
+                            "type": "integer",
+                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Confirmed live that this never takes effect - Archicad keeps its own auto-assigned value regardless of what is sent."
+                        },
+                        "linkToSettings": {
+                            "type": "object",
+                            "description": "Mode of linking the wall to its home story.",
+                            "properties": {
+                                "homeStoryDifference": { "type": "integer" },
+                                "newCreationMode": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "inheritEndSurface": {
+                            "type": "boolean",
+                            "description": "The end surface of the wall is inherited from the adjoining wall."
+                        },
+                        "alignTexture": {
+                            "type": "boolean",
+                            "description": "Align texture mapping to the wall's edges."
+                        },
+                        "polyCanChange": {
+                            "type": "boolean",
+                            "description": "The polygonal wall's corners can be changed in case of L and T connections."
+                        },
+                        "materialsChained": {
+                            "type": "boolean",
+                            "description": "Whether the surface materials are chained."
+                        },
+                        "logHeight": {
+                            "type": "number",
+                            "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["begCoordinate", "endCoordinate", "height", "thickness"]
@@ -3534,6 +3728,30 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
+
+    // Reuses ModifyWalls' field handler for the pen/line-type/display/junction/misc fields
+    // this schema also declares above (contourPen, displayOption, connectionPriority, etc.) -
+    // the mask it fills is irrelevant for Create (ACAPI_Element_Create applies every field of
+    // 'element' unconditionally) and is just discarded here. Harmless overlap: it re-reads
+    // begCoordinate/endCoordinate/height/offset/thickness/referenceLineLocation too, with the
+    // same values already applied above.
+    //
+    // Confirmed live against a running Archicad (AC27, Teamwork/BIMcloud project) that several
+    // of these fields do not reliably take effect through ACAPI_Element_Create:
+    // connectionPriority and junctionSequence never apply, through Create OR a follow-up
+    // ModifyWalls either - Archicad appears to manage wall junction priority/ordering entirely
+    // on its own, with no externally writable path despite the fields being readable. Callers
+    // should not rely on setting them.
+    // viewDepthLimitation, linkToSettings and polyCanChange were also seen to be silently
+    // ignored at Create, while a separate, later ModifyWalls call applying the same values
+    // sometimes did take effect and sometimes did not across repeated test runs against the
+    // same Teamwork project - inconsistent enough (readback occasionally differed between
+    // otherwise-identical runs) that no automatic Create-then-Modify workaround was kept here;
+    // it did not fix the behavior reliably enough to trust. If you need these three set
+    // precisely, issue your own ModifyWalls call after creation and verify with
+    // GetDetailsOfElements - do not assume either call is sufficient on its own.
+    API_Element unusedMask = {};
+    ApplyWallDetails (element, unusedMask, parameters);
 
     return {};
 }
@@ -5360,7 +5578,82 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial" },
                         "cutFillPen": { "$ref": "#/OverriddenPen" },
-                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" }
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "contourPen": {
+                            "type": "integer",
+                            "description": "Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen. Not inheritable/overridable like cutFillPen, it is the wall's own pen index directly, the same field regardless of structureType."
+                        },
+                        "contourPen3D": {
+                            "type": "integer",
+                            "description": "Pen of the wall's contour in 3D views (API_WallType::contPen3D)."
+                        },
+                        "contourLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the wall's own contour (API_WallType::contLtype) - pairs with contourPen, which only sets the pen, not the line type."
+                        },
+                        "belowViewLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup (API_WallType::belowViewLineType)."
+                        },
+                        "aboveViewLinePen": {
+                            "type": "integer",
+                            "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
+                        },
+                        "aboveViewLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+                        },
+                        "displayOption": {
+                            "type": "string",
+                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
+                            "description": "Floor plan display option."
+                        },
+                        "viewDepthLimitation": {
+                            "type": "string",
+                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
+                            "description": "Floor plan view depth limitation, relevant for multi-story walls."
+                        },
+                        "connectionPriority": {
+                            "type": "integer",
+                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Confirmed live that this never takes effect - readback always comes back 0 regardless of what is sent."
+                        },
+                        "useCompositePriority": {
+                            "type": "boolean",
+                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
+                        },
+                        "junctionSequence": {
+                            "type": "integer",
+                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Confirmed live that this never takes effect - Archicad keeps its own auto-assigned value regardless of what is sent."
+                        },
+                        "linkToSettings": {
+                            "type": "object",
+                            "description": "Mode of linking the wall to its home story.",
+                            "properties": {
+                                "homeStoryDifference": { "type": "integer" },
+                                "newCreationMode": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "inheritEndSurface": {
+                            "type": "boolean",
+                            "description": "The end surface of the wall is inherited from the adjoining wall."
+                        },
+                        "alignTexture": {
+                            "type": "boolean",
+                            "description": "Align texture mapping to the wall's edges."
+                        },
+                        "polyCanChange": {
+                            "type": "boolean",
+                            "description": "The polygonal wall's corners can be changed in case of L and T connections."
+                        },
+                        "materialsChained": {
+                            "type": "boolean",
+                            "description": "Whether the surface materials are chained."
+                        },
+                        "logHeight": {
+                            "type": "number",
+                            "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]

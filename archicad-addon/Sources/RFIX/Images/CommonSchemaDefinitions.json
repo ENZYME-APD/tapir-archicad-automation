@@ -4731,6 +4731,99 @@
             },
             "cutFillBackgroundPen": {
                 "$ref": "#/OverriddenPen"
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen inherited from the building material/composite/profile. Unlike cutFillPen this is not inheritable/overridable, it is the wall's own pen index directly, the same field used regardless of structureType (Basic, Composite or Profile)."
+            },
+            "contourPen3D": {
+                "type": "integer",
+                "description": "Pen of the wall's contour in 3D views (API_WallType::contPen3D)."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the wall's own contour (API_WallType::contLtype) - pairs with contourPen, which only sets the pen, not the line type."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup (API_WallType::belowViewLineType). Corresponds to the \"Uncut Lines\" value in the Wall Settings dialog."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the Wall Settings dialog."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+            },
+            "displayOption": {
+                "type": "string",
+                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
+                "description": "Floor plan display option."
+            },
+            "viewDepthLimitation": {
+                "type": "string",
+                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
+                "description": "Floor plan view depth limitation, relevant for multi-story walls. Confirmed live not to take effect through CreateWalls at all; a separate ModifyWalls call applying it afterward is more reliable but was not consistent across every test run either - verify with GetDetailsOfElements after writing it."
+            },
+            "connectionPriority": {
+                "type": "integer",
+                "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority - higher wins the cut/cover at the junction). Confirmed live (AC27, Teamwork/BIMcloud project) that this never actually takes effect, neither through CreateWalls nor ModifyWalls - readback always comes back 0 regardless of what is sent. Archicad appears to manage wall junction priority entirely on its own, with no externally writable path despite the field being readable."
+            },
+            "useCompositePriority": {
+                "type": "boolean",
+                "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
+            },
+            "junctionSequence": {
+                "type": "integer",
+                "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Confirmed live that this never takes effect either, through Create or Modify - Archicad keeps its own auto-assigned value regardless of what is sent."
+            },
+            "linkToSettings": {
+                "type": "object",
+                "description": "Mode of linking the wall to its home story. Confirmed live (AC27, Teamwork/BIMcloud project) that its write reliability is inconsistent: a ModifyWalls call applying it sometimes took effect and sometimes silently didn't, across repeated otherwise-identical test runs. Always verify with GetDetailsOfElements after writing it; do not assume a single call is sufficient.",
+                "properties": {
+                    "homeStoryDifference": {
+                        "type": "integer",
+                        "description": "Difference of the home story from the current story."
+                    },
+                    "newCreationMode": {
+                        "type": "boolean",
+                        "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "inheritEndSurface": {
+                "type": "boolean",
+                "description": "The end surface of the wall is inherited from the adjoining wall."
+            },
+            "alignTexture": {
+                "type": "boolean",
+                "description": "Align texture mapping to the wall's edges."
+            },
+            "offsetFromOutside": {
+                "type": "number",
+                "description": "Distance between the reference line and the outside face of the wall. Output only - not settable via ModifyWalls."
+            },
+            "polyCanChange": {
+                "type": "boolean",
+                "description": "The polygonal wall's corners can be changed in case of L and T connections. Confirmed live not to take effect through CreateWalls at all; a separate ModifyWalls call applying it afterward is more reliable but was not consistent across every test run either - verify with GetDetailsOfElements after writing it."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
+            },
+            "logHeight": {
+                "type": "number",
+                "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
+            },
+            "hasWindow": {
+                "type": "boolean",
+                "description": "Whether the wall has at least one Window. Output only."
+            },
+            "hasDoor": {
+                "type": "boolean",
+                "description": "Whether the wall has at least one Door. Output only."
             }
         },
         "additionalProperties": false,
