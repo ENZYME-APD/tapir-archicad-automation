@@ -4771,7 +4771,7 @@
             },
             "connectionPriority": {
                 "type": "integer",
-                "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority - higher wins the cut/cover at the junction). Archicad ignores writes to this field; read-only in practice. Confirmed live, including with two walls actually forming a T junction with useCompositePriority false on both - readback still always comes back 0 regardless of what is sent, through Create, Modify, or either on a real junction."
+                "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority - higher wins the cut/cover at the junction). Archicad ignores writes to this field; read-only in practice."
             },
             "useCompositePriority": {
                 "type": "boolean",
@@ -4779,7 +4779,7 @@
             },
             "junctionSequence": {
                 "type": "integer",
-                "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice, same as connectionPriority - Archicad keeps its own auto-assigned value regardless of what is sent."
+                "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
             },
             "linkToSettings": {
                 "type": "object",

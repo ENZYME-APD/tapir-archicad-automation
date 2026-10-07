@@ -1928,22 +1928,13 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
             changed = true;
         }
     }
-    Int32 connectionPriority = 0;
-    if (details.Get ("connectionPriority", connectionPriority)) {
-        element.wall.wallConnPriority = connectionPriority;
-        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, wallConnPriority);
-        changed = true;
-    }
+    // connectionPriority and junctionSequence are deliberately not accepted here - confirmed
+    // live, including with two walls forming an actual T junction, that Archicad ignores
+    // writes to both. They are exposed read-only via GetDetailsOfElements instead.
     bool useCompositePriority = false;
     if (details.Get ("useCompositePriority", useCompositePriority)) {
         element.wall.useCompositePriority = useCompositePriority;
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, useCompositePriority);
-        changed = true;
-    }
-    Int32 junctionSequence = 0;
-    if (details.Get ("junctionSequence", junctionSequence)) {
-        element.wall.sequence = junctionSequence;
-        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, sequence);
         changed = true;
     }
     const GS::ObjectState* linkToSettingsOs = details.Get ("linkToSettings");
@@ -3606,17 +3597,9 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
                             "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
-                        "connectionPriority": {
-                            "type": "integer",
-                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Archicad ignores writes to this field; read-only in practice."
-                        },
                         "useCompositePriority": {
                             "type": "boolean",
-                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
-                        },
-                        "junctionSequence": {
-                            "type": "integer",
-                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
+                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority. connectionPriority and junctionSequence are not accepted here - confirmed live that Archicad ignores writes to both, so they are exposed read-only via GetDetailsOfElements instead."
                         },
                         "linkToSettings": {
                             "type": "object",
@@ -5572,10 +5555,12 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
                         "contourPen": {
                             "type": "integer",
+                            "minimum": 1,
                             "description": "Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen. Not inheritable/overridable like cutFillPen, it is the wall's own pen index directly, the same field regardless of structureType."
                         },
                         "contourPen3D": {
                             "type": "integer",
+                            "minimum": 1,
                             "description": "Pen of the wall's contour in 3D views (API_WallType::contPen3D)."
                         },
                         "contourLineTypeId": {
@@ -5588,6 +5573,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         },
                         "aboveViewLinePen": {
                             "type": "integer",
+                            "minimum": 1,
                             "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
                         },
                         "aboveViewLineTypeId": {
@@ -5604,17 +5590,9 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
                             "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
-                        "connectionPriority": {
-                            "type": "integer",
-                            "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority). Archicad ignores writes to this field; read-only in practice."
-                        },
                         "useCompositePriority": {
                             "type": "boolean",
-                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
-                        },
-                        "junctionSequence": {
-                            "type": "integer",
-                            "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
+                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority. connectionPriority and junctionSequence are not accepted here - confirmed live that Archicad ignores writes to both, so they are exposed read-only via GetDetailsOfElements instead."
                         },
                         "linkToSettings": {
                             "type": "object",
