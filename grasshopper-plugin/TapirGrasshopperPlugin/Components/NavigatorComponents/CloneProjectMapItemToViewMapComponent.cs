@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public CloneProjectMapItemToViewMapComponent()
             : base(
                 "CloneProjectMapItemToViewMap",
-                "Clone Project Map viewpoints into the View Map, optionally into a specified folder.",
+                "Clone Project Map viewpoints into a specified View Map folder.",
                 GroupNames.Navigator)
         {
         }
@@ -28,9 +28,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             InGeneric(
                 "ParentNavigatorItemGuid",
-                "Identifier of the View Map folder to place the clones in. Optional; defaults to the View Map root.");
-
-            SetOptionality(1);
+                "Identifier of the View Map folder to place the clones in. Required - cloning directly onto the View Map root leaves the clone undeletable and unmovable afterwards, so the Add-On refuses it; create a View Map folder first if you don't already have one to target.");
         }
 
         protected override void AddOutputs()
@@ -53,18 +51,19 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            NavigatorGuid parentId = null;
-            if (da.TryGet(
+            if (!da.TryGet(
                     1,
-                    out GH_ObjectWrapper parentWrapper) &&
-                parentWrapper?.Value != null)
+                    out GH_ObjectWrapper parentWrapper) ||
+                parentWrapper?.Value == null)
             {
-                parentId = GuidObject<NavigatorGuid>.CreateFromWrapper(parentWrapper);
-                if (parentId == null)
-                {
-                    this.AddError("Invalid ParentNavigatorItemGuid.");
-                    return;
-                }
+                this.AddError("ParentNavigatorItemGuid is required.");
+                return;
+            }
+            var parentId = GuidObject<NavigatorGuid>.CreateFromWrapper(parentWrapper);
+            if (parentId == null)
+            {
+                this.AddError("Invalid ParentNavigatorItemGuid.");
+                return;
             }
 
             var input = new CloneProjectMapItemToViewMapParameters

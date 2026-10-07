@@ -949,7 +949,7 @@ GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetInputParamet
                         },
                         "parentNavigatorItemId": {
                             "$ref": "#/NavigatorItemId",
-                            "description": "Navigator item ID of the View Map folder or subset to place the clone in. Required - Archicad's CloneProjectMapItemToViewMap API leaves a clone created directly at the View Map root in a broken state (it cannot be deleted or moved afterwards, by API or by hand), so Tapir refuses to fall back to the root on your behalf. Create a View Map folder (CreateViewMapFolder) or subset first if you don't already have one to target."
+                            "description": "Navigator item ID of the View Map folder to place the clone in. Required - Archicad's CloneProjectMapItemToViewMap API leaves a clone created directly at the View Map root in a broken state (it cannot be deleted or moved afterwards, by API or by hand), so Tapir refuses to fall back to the root on your behalf. Create a View Map folder (CreateViewMapFolder) first if you don't already have one to target."
                         }
                     },
                     "additionalProperties": false,
@@ -979,6 +979,19 @@ GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetRawResponseS
     })";
 }
 
+// Shared by CloneProjectMapItemToViewMapCommand and CreateViewsInViewMapCommand: a caller
+// can also reach the undeletable-orphan state (#658) by passing the View Map root's own
+// guid as parentNavigatorItemId explicitly - e.g. one read back from GetNavigatorItemTree,
+// whose root item IS the View Map root. Requiring the field non-empty only closes the
+// omission path; this closes the explicit one too.
+static bool IsViewMapRootGuid (const API_Guid& guid)
+{
+    API_NavigatorSet viewMapSet = {};
+    viewMapSet.mapId = API_PublicViewMap;
+    Int32 idx = 0;
+    return ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError && guid == viewMapSet.rootGuid;
+}
+
 GS::ObjectState CloneProjectMapItemToViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> viewsData;
@@ -1002,13 +1015,17 @@ GS::ObjectState CloneProjectMapItemToViewMapCommand::Execute (const GS::ObjectSt
 
         const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
         if (parentOS == nullptr) {
-            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is missing. Cloning to the View Map root is refused because Archicad's API leaves such a clone impossible to delete or move afterwards - target a real folder or subset instead."));
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is missing. Cloning to the View Map root is refused because Archicad's API leaves such a clone impossible to delete or move afterwards - target a real View Map folder instead."));
             continue;
         }
 
         API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
         if (parentGuid == APINULLGuid) {
             navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is corrupt or missing."));
+            continue;
+        }
+        if (IsViewMapRootGuid (parentGuid)) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is the View Map root itself. Cloning directly onto it is refused because Archicad's API leaves such a clone impossible to delete or move afterwards - target a real folder instead."));
             continue;
         }
 
@@ -1051,7 +1068,7 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchem
                         },
                         "parentNavigatorItemId": {
                             "$ref": "#/NavigatorItemId",
-                            "description": "View Map folder or subset to place the new view in. Required - the underlying Archicad API used to create the item leaves it undeletable and unmovable afterwards when it is attached directly to the View Map root, so Tapir refuses to fall back to the root on your behalf. Create a View Map folder (CreateViewMapFolder) or subset first if you don't already have one to target."
+                            "description": "View Map folder to place the new view in. Required - the underlying Archicad API used to create the item leaves it undeletable and unmovable afterwards when it is attached directly to the View Map root, so Tapir refuses to fall back to the root on your behalf. Create a View Map folder (CreateViewMapFolder) first if you don't already have one to target."
                         },
                         "name": {
                             "type": "string",
@@ -1108,13 +1125,17 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
 
         const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
         if (parentOS == nullptr) {
-            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is missing. Creating the view directly at the View Map root is refused because it becomes impossible to delete or move afterwards - target a real folder or subset instead."));
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is missing. Creating the view directly at the View Map root is refused because it becomes impossible to delete or move afterwards - target a real View Map folder instead."));
             continue;
         }
 
         API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
         if (parentGuid == APINULLGuid) {
             navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is corrupt or missing."));
+            continue;
+        }
+        if (IsViewMapRootGuid (parentGuid)) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is the View Map root itself. Creating a view directly at it is refused because it becomes impossible to delete or move afterwards - target a real folder instead."));
             continue;
         }
 
