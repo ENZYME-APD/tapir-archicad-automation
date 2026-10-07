@@ -4767,7 +4767,7 @@
             "viewDepthLimitation": {
                 "type": "string",
                 "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story) - confirmed live that Archicad resets it on a single-story wall regardless of what is sent, through both Create and Modify."
+                "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
             },
             "connectionPriority": {
                 "type": "integer",
@@ -4810,7 +4810,7 @@
             },
             "polyCanChange": {
                 "type": "boolean",
-                "description": "The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType); CreateWalls cannot produce Polygonal geometry (see its geometryType note), so this could only be tested live via ModifyWalls on an existing Polygonal wall, which was not done - treat as unverified for that case."
+                "description": "The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType)."
             },
             "materialsChained": {
                 "type": "boolean",

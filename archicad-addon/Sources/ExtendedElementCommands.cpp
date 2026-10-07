@@ -3599,7 +3599,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         },
                         "useCompositePriority": {
                             "type": "boolean",
-                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority. connectionPriority and junctionSequence are not accepted here - confirmed live that Archicad ignores writes to both, so they are exposed read-only via GetDetailsOfElements instead."
+                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
                             "type": "object",
@@ -5592,7 +5592,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         },
                         "useCompositePriority": {
                             "type": "boolean",
-                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority. connectionPriority and junctionSequence are not accepted here - confirmed live that Archicad ignores writes to both, so they are exposed read-only via GetDetailsOfElements instead."
+                            "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
                             "type": "object",
