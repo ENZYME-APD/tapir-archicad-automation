@@ -2470,6 +2470,33 @@ static GS::UniString MorphEdgeTypeToString (API_MorphEdgeTypeID edgeType)
     }
 }
 
+static API_MorphEdgeTypeID MorphEdgeTypeFromString (const GS::UniString& edgeDefault)
+{
+    if (edgeDefault == "HardHidden") {
+        return APIMorphEdgeType_HardHiddenEdge;
+    }
+    if (edgeDefault == "SoftHidden") {
+        return APIMorphEdgeType_SoftHiddenEdge;
+    }
+    return APIMorphEdgeType_HardVisibleEdge;
+}
+
+// element.morph.edgeType is discarded by ACAPI_Element_Create/Change (see the note above
+// ApplyWindowOrDoorDetails). Archicad 29 added ACAPI_Element_ChangeMorphEdgeType, which changes
+// the edge type of every edge of an existing morph, so on AC29+ the requested edgeDefault is
+// applied with it once the element exists. It must run inside the same undoable session as the
+// Create/Change. On older versions there is nothing to call and the field stays a no-op.
+static GSErrCode ApplyMorphEdgeType (const API_Guid& morphGuid, API_MorphEdgeTypeID edgeType)
+{
+#ifdef ServerMainVers_2900
+    return ACAPI_Element_ChangeMorphEdgeType (morphGuid, edgeType);
+#else
+    UNUSED_PARAMETER (morphGuid);
+    UNUSED_PARAMETER (edgeType);
+    return NoError;
+#endif
+}
+
 static GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption)
 {
     switch (displayOption) {
@@ -3088,9 +3115,11 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
 // still-unresolved Archicad SDK bug (reproduced independently by multiple developers across
 // AC23-27) - element.morph.edgeType (and even bodyType, always coming back Solid) is silently
 // discarded/reset by ACAPI_Element_Create/Change regardless of what's supplied, with no known
-// workaround. Not fixable from an add-on. The element-wide edgeType/bodyType fields are still
+// workaround through Create/Change. The element-wide edgeType/bodyType fields are still
 // set on the element (CreateMorphsCommand/ModifyMorphsCommand below) since doing so is harmless
-// and forward-compatible if GRAPHISOFT ever fixes this - but per-edge overrides were removed
+// and forward-compatible if GRAPHISOFT ever fixes this. Archicad 29 added a separate way to set
+// the element-wide edge type, ACAPI_Element_ChangeMorphEdgeType, used by ApplyMorphEdgeType above
+// after the Create/Change - so edgeDefault does take effect on AC29+ - but per-edge overrides were removed
 // entirely rather than ship a reconstruction step with real risk (raw MeshBody manipulation) for
 // zero actual effect. Reading back whatever Archicad itself currently reports (AddMorphBodyFromMemo
 // in ElementCommands.cpp) remains fully correct and unaffected - only writing is impossible.
@@ -4588,6 +4617,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
+            GS::Optional<API_MorphEdgeTypeID> requestedEdgeType;
 
             if (sizeOS != nullptr) {
                 const API_Coord3D size = Get3DCoordinateFromObjectState (*sizeOS);
@@ -4613,13 +4643,8 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
                 GS::UniString edgeDefault;
                 if (bodyOS->Get ("edgeDefault", edgeDefault)) {
-                    if (edgeDefault == "HardHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_HardHiddenEdge;
-                    } else if (edgeDefault == "SoftHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_SoftHiddenEdge;
-                    } else {
-                        element.morph.edgeType = APIMorphEdgeType_HardVisibleEdge;
-                    }
+                    element.morph.edgeType = MorphEdgeTypeFromString (edgeDefault);
+                    requestedEdgeType = element.morph.edgeType;
                 }
             }
 
@@ -4627,6 +4652,16 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create morph."));
                 continue;
+            }
+
+            // ACAPI_Element_Create discards element.morph.edgeType (see ApplyMorphEdgeType);
+            // on AC29+ this applies the requested edgeDefault to the created element.
+            if (requestedEdgeType.HasValue ()) {
+                err = ApplyMorphEdgeType (element.header.guid, requestedEdgeType.Get ());
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set its edge type."));
+                    continue;
+                }
             }
 
             // element.morph.material (the default-surface override, "surfaceId" on this command)
@@ -6501,6 +6536,7 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
             API_ElementMemo bodyMemo = {};
             const GS::OnExit bodyMemoGuard ([&bodyMemo] () { ACAPI_DisposeElemMemoHdls (&bodyMemo); });
             bool replacingBody = false;
+            GS::Optional<API_MorphEdgeTypeID> requestedEdgeType;
 
             const GS::ObjectState* bodyOS = item.Get ("body");
             if (bodyOS != nullptr) {
@@ -6518,13 +6554,8 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, bodyType);
                 GS::UniString edgeDefault;
                 if (bodyOS->Get ("edgeDefault", edgeDefault)) {
-                    if (edgeDefault == "HardHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_HardHiddenEdge;
-                    } else if (edgeDefault == "SoftHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_SoftHiddenEdge;
-                    } else {
-                        element.morph.edgeType = APIMorphEdgeType_HardVisibleEdge;
-                    }
+                    element.morph.edgeType = MorphEdgeTypeFromString (edgeDefault);
+                    requestedEdgeType = element.morph.edgeType;
                     ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, edgeType);
                 }
                 replacingBody = true;
@@ -6551,7 +6582,22 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
             err = replacingBody
                 ? ACAPI_Element_Change (&element, &mask, &bodyMemo, APIMemoMask_All, true)
                 : ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify morph."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify morph."));
+                continue;
+            }
+
+            // ACAPI_Element_Change discards element.morph.edgeType (see ApplyMorphEdgeType);
+            // on AC29+ this applies the requested edgeDefault to the modified element.
+            if (requestedEdgeType.HasValue ()) {
+                err = ApplyMorphEdgeType (element.header.guid, requestedEdgeType.Get ());
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Morph modified, but failed to set its edge type."));
+                    continue;
+                }
+            }
+
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }

@@ -6073,7 +6073,7 @@
             },
             "edgeDefault": {
                 "type": "string",
-                "description": "Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get; on Create/Modify this is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).",
+                "description": "Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get. On Create/Modify it takes effect from Archicad 29 on, where it is applied to every edge of the element with ACAPI_Element_ChangeMorphEdgeType right after the element is created or changed (e.g. 'HardHidden' hides all edges of a triangulated body). On Archicad 28 and earlier it is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).",
                 "enum": ["HardVisible", "HardHidden", "SoftHidden"]
             },
             "vertices": {
@@ -6156,7 +6156,7 @@
             },
             "edgeOverrides": {
                 "type": "array",
-                "description": "READ-ONLY in practice: reported accurately by GetDetailsOfElements (reflecting whatever Archicad itself currently has), but CreateMorphs/ModifyMorphs silently ignore this field on input - per-edge display status cannot be set by an add-on due to a confirmed, still-unresolved Archicad SDK bug (element.morph.edgeType/bodyType are silently discarded by ACAPI_Element_Create/Change; see the GRAPHISOFT community forum thread 'Help with setting morph's hidden edges in the API'). Sparse when present - only edges whose display status differs from edgeDefault get an entry. Identifies an edge by the (unordered) pair of vertex indices it connects.",
+                "description": "READ-ONLY in practice: reported accurately by GetDetailsOfElements (reflecting whatever Archicad itself currently has), but CreateMorphs/ModifyMorphs silently ignore this field on input - per-edge display status cannot be set by an add-on due to a confirmed, still-unresolved Archicad SDK bug (element.morph.edgeType/bodyType are silently discarded by ACAPI_Element_Create/Change; see the GRAPHISOFT community forum thread 'Help with setting morph's hidden edges in the API'). To hide or smooth ALL edges of a Morph use edgeDefault, which does take effect from Archicad 29 on. Sparse when present - only edges whose display status differs from edgeDefault get an entry. Identifies an edge by the (unordered) pair of vertex indices it connects.",
                 "items": {
                     "type": "object",
                     "properties": {
