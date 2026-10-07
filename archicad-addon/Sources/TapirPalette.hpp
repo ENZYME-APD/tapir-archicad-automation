@@ -64,6 +64,7 @@ private:
     DG::IconButton manageShortcutsButton;
 
     GS::Process process;
+    GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
@@ -73,6 +74,7 @@ private:
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const PopUpItemData& popUpItemData);
+    void KillRunningProcess ();   // ends the running process together with the processes it started
     bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
