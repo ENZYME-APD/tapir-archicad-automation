@@ -187,6 +187,11 @@ bool ScriptUIPalette::ConsumeResult (GS::UniString* outResult)
     return true;
 }
 
+bool ScriptUIPalette::IsOpen ()
+{
+    return IsVisible () || hiddenByForcedHideBegin;
+}
+
 void ScriptUIPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool* accepted)
 {
     hiddenByForcedHideBegin = false;
