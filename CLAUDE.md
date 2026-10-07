@@ -127,8 +127,7 @@ Requires **CMake ≥ 3.17**, **Python** (for DevKit download + resource compilat
 and Visual Studio (Windows) / Xcode (macOS). The Archicad API DevKits are downloaded
 automatically by the build scripts.
 
-Windows, all supported versions (downloads DevKits, then builds AC25–AC30; AC30 uses
-the release candidate DevKit until the final one is published):
+Windows, all supported versions (downloads DevKits, then builds AC25–AC30):
 
 ```bat
 cd archicad-addon\Tools
