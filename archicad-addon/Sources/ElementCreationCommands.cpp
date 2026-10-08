@@ -367,8 +367,21 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "thickness": {
                         "type": "number",
-                        "description": "Optional slab thickness.",
+                        "description": "Optional slab thickness. A Composite slab takes its thickness from the composite instead.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "structureType": {
+                        "type": "string",
+                        "description": "Optional structure of the slab: 'Basic' (one building material, see buildingMaterialId) or 'Composite' (see compositeId). When omitted it follows whichever of buildingMaterialId / compositeId is given, otherwise the slab keeps the structure of the tool defaults (or of the favorite).",
+                        "enum": ["Basic", "Composite"]
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material of a Basic slab. Cannot be combined with compositeId."
+                    },
+                    "compositeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional composite of a Composite slab (a composite attribute that can be used with slabs, see GetComposites' useWith). Cannot be combined with buildingMaterialId."
                     },
                     "referencePlaneLocation": {
                         "type": "string",
@@ -487,6 +500,14 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
+
+    // structureType / buildingMaterialId / compositeId, the same way ModifySlabs takes them
+    // (issue #783: the command only ever created the slab with the structure of the tool
+    // defaults, so a composite slab needed a second ModifySlabs call).
+    auto structureError = ApplySlabStructureSelection (element, parameters);
+    if (structureError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, structureError.Get ());
+    }
 
     GS::UniString referencePlaneLocation;
     if (parameters.Get ("referencePlaneLocation", referencePlaneLocation)) {

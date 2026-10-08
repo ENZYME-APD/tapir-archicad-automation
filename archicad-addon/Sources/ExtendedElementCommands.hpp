@@ -16,6 +16,13 @@ void BuildMeshSublinesMemoFromGeometry (
     API_ElementMemo& memo,
     const GS::Array<GS::ObjectState>& sublines);
 
+// Applies the optional structureType / buildingMaterialId / compositeId fields of a
+// CreateSlabs item to a slab element that starts from the tool defaults - the same
+// selection ModifySlabs makes, just without a change mask. Leaves the element untouched
+// when none of the fields is given. Returns the error text of an invalid or inconsistent
+// selection (unknown attribute, both ids given, structureType contradicting the id).
+GS::Optional<GS::UniString> ApplySlabStructureSelection (API_Element& element, const GS::ObjectState& parameters);
+
 class CreateWallsCommand : public CreateElementsCommandBase
 {
 public:

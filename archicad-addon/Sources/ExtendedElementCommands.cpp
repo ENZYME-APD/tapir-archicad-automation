@@ -3412,6 +3412,12 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
     typeSpecificDetails.Add ("body", body);
 }
 
+GS::Optional<GS::UniString> ApplySlabStructureSelection (API_Element& element, const GS::ObjectState& parameters)
+{
+    bool changed = false;
+    return ApplySlabStructure (element, nullptr, parameters, changed);
+}
+
 CreateWallsCommand::CreateWallsCommand () :
     CreateElementsCommandBase ("CreateWalls", API_WallID, "wallsData")
 {
