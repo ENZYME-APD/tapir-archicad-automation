@@ -74,6 +74,23 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     return true;
 }
 
+// API_Attr_Head::name is the legacy 8-bit name: non-ASCII characters come back garbled from it and the
+// built-in Archicad Layer only has a control character there. Archicad hands out the real Unicode name
+// through header.uniStringNamePtr, but only when it points at storage before the Get call, so an
+// attribute that arrived through ACAPI_Attribute_GetAttributesByType has to be read once more.
+static GS::UniString GetAttributeName (const API_Attr_Head& header)
+{
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = header.typeID;
+    attr.header.index = header.index;
+    attr.header.guid = header.guid;
+    attr.header.uniStringNamePtr = &name;
+    const bool found = (ACAPI_Attribute_Get (&attr) == NoError);
+    DisposeAttribute (attr);
+    return found ? name : GS::UniString (header.name);
+}
+
 static API_AttrTypeID ConvertAttributeTypeStringToID (const GS::UniString& typeStr)
 {
     if (typeStr == "Layer")
@@ -157,7 +174,7 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
         GS::ObjectState attributeDetails;
         attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
-        attributeDetails.Add ("name", GS::UniString (attr.header.name));
+        attributeDetails.Add ("name", GetAttributeName (attr.header));
         // API_Attr_Head::modiTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC) in a UInt64,
         // the same stamp the Attribute Manager writes as ModiTime into its XML export.
         attributeDetails.Add ("modificationTime", static_cast<Int64> (attr.header.modiTime));
@@ -444,9 +461,11 @@ GS::ObjectState GetLinesCommand::Execute (const GS::ObjectState& parameters, GS:
         GS::Guid attributeGuid;
         attributeId.Get ("guid", attributeGuid);
 
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_LinetypeID;
         attr.header.guid = GSGuid2APIGuid (attributeGuid);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             lines (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -456,7 +475,7 @@ GS::ObjectState GetLinesCommand::Execute (const GS::ObjectState& parameters, GS:
         GS::ObjectState line;
         line.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         line.Add ("index", GetAttributeIndex (attr.header.index));
-        line.Add ("name", GS::UniString (attr.header.name));
+        line.Add ("name", name);
 
         if (wantsField.Wants ("scaleWithPlan")) {
             line.Add ("scaleWithPlan", (attr.header.flags & APILine_ScaleWithPlan) != 0);
@@ -608,9 +627,11 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
     const auto& fills = response.AddList<GS::ObjectState> ("fills");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_FilltypeID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             fills (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -620,7 +641,7 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         GS::ObjectState fill;
         fill.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         fill.Add ("index", GetAttributeIndex (attr.header.index));
-        fill.Add ("name", GS::UniString (attr.header.name));
+        fill.Add ("name", name);
 
         if (wantsField.Wants ("subType")) {
             fill.Add ("subType", FillSubTypeToString (attr.filltype.subType));
@@ -798,9 +819,11 @@ GS::ObjectState GetZoneCategoriesCommand::Execute (const GS::ObjectState& parame
     const auto& zoneCategories = response.AddList<GS::ObjectState> ("zoneCategories");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_ZoneCatID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             zoneCategories (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -810,7 +833,7 @@ GS::ObjectState GetZoneCategoriesCommand::Execute (const GS::ObjectState& parame
         GS::ObjectState zoneCategory;
         zoneCategory.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         zoneCategory.Add ("index", GetAttributeIndex (attr.header.index));
-        zoneCategory.Add ("name", GS::UniString (attr.header.name));
+        zoneCategory.Add ("name", name);
 
         if (wantsField.Wants ("categoryCode")) {
             zoneCategory.Add ("categoryCode", GS::UniString (attr.zoneCat.catCode));
@@ -900,9 +923,11 @@ GS::ObjectState GetMEPSystemsCommand::Execute (const GS::ObjectState& parameters
     const auto& mepSystems = response.AddList<GS::ObjectState> ("mepSystems");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_MEPSystemID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             mepSystems (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -912,7 +937,7 @@ GS::ObjectState GetMEPSystemsCommand::Execute (const GS::ObjectState& parameters
         GS::ObjectState mepSystem;
         mepSystem.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         mepSystem.Add ("index", GetAttributeIndex (attr.header.index));
-        mepSystem.Add ("name", GS::UniString (attr.header.name));
+        mepSystem.Add ("name", name);
 
         if (wantsField.Wants ("domain")) {
             const auto& domainList = mepSystem.AddList<GS::UniString> ("domain");
@@ -1044,9 +1069,11 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
     const auto& penTables = response.AddList<GS::ObjectState> ("penTables");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_PenTableID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             penTables (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -1056,7 +1083,7 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
         GS::ObjectState penTable;
         penTable.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         penTable.Add ("index", GetAttributeIndex (attr.header.index));
-        penTable.Add ("name", GS::UniString (attr.header.name));
+        penTable.Add ("name", name);
 
         if (wantsField.Wants ("isActiveForModel")) {
             penTable.Add ("isActiveForModel", attr.penTable.inEffectForModel);
@@ -1096,9 +1123,11 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
     const auto& penTables = response.AddList<GS::ObjectState> ("penTables");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_PenTableID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             penTables (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -1108,7 +1137,7 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
         GS::ObjectState penTable;
         penTable.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         penTable.Add ("index", GetAttributeIndex (attr.header.index));
-        penTable.Add ("name", GS::UniString (attr.header.name));
+        penTable.Add ("name", name);
 
         if (wantsField.Wants ("isActiveForModel")) {
             penTable.Add ("isActiveForModel", attr.penTable.inEffectForModel);
@@ -1775,9 +1804,11 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
     const auto& profiles = response.AddList<GS::ObjectState> ("profiles");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_ProfileID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             profiles (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -1787,7 +1818,7 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
         GS::ObjectState profile;
         profile.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         profile.Add ("index", GetAttributeIndex (attr.header.index));
-        profile.Add ("name", GS::UniString (attr.header.name));
+        profile.Add ("name", name);
 
         if (wantsField.Wants ("wallType")) {
             profile.Add ("wallType", attr.profile.wallType);
@@ -2050,9 +2081,11 @@ GS::ObjectState GetCompositesCommand::Execute (const GS::ObjectState& parameters
     const auto& composites = response.AddList<GS::ObjectState> ("composites");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_CompWallID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             composites (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -2062,7 +2095,7 @@ GS::ObjectState GetCompositesCommand::Execute (const GS::ObjectState& parameters
         GS::ObjectState composite;
         composite.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         composite.Add ("index", GetAttributeIndex (attr.header.index));
-        composite.Add ("name", GS::UniString (attr.header.name));
+        composite.Add ("name", name);
 
         if (wantsField.Wants ("useWith")) {
             const auto& useWithList = composite.AddList<GS::UniString> ("useWith");
@@ -2212,9 +2245,11 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
     const auto& surfaces = response.AddList<GS::ObjectState> ("surfaces");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_MaterialID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             surfaces (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -2224,7 +2259,7 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
         GS::ObjectState surface;
         surface.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         surface.Add ("index", GetAttributeIndex (attr.header.index));
-        surface.Add ("name", GS::UniString (attr.header.name));
+        surface.Add ("name", name);
 
         if (wantsField.Wants ("materialType")) {
             surface.Add ("materialType", SurfaceTypeToString (attr.material.mtype));
@@ -2359,9 +2394,11 @@ GS::ObjectState GetLayersCommand::Execute (const GS::ObjectState& parameters, GS
     const auto& layers = response.AddList<GS::ObjectState> ("layers");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_LayerID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             layers (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -2371,7 +2408,7 @@ GS::ObjectState GetLayersCommand::Execute (const GS::ObjectState& parameters, GS
         GS::ObjectState layer;
         layer.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         layer.Add ("index", GetAttributeIndex (attr.header.index));
-        layer.Add ("name", GS::UniString (attr.header.name));
+        layer.Add ("name", name);
 
         if (wantsField.Wants ("isHidden")) {
             layer.Add ("isHidden", (attr.header.flags & APILay_Hidden) != 0);
@@ -2471,9 +2508,10 @@ GS::ObjectState GetBuildingMaterialsCommand::Execute (const GS::ObjectState& par
         attr.header.typeID = API_BuildingMaterialID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
 
-        // id/manufacturer/description are GS::UniString* out-parameters: Archicad only fills them in if the
-        // caller points them at real storage before the Get call, mirroring header.uniStringNamePtr.
-        GS::UniString id, manufacturer, description;
+        // name/id/manufacturer/description are GS::UniString* out-parameters: Archicad only fills them in if
+        // the caller points them at real storage before the Get call.
+        GS::UniString name, id, manufacturer, description;
+        attr.header.uniStringNamePtr = &name;
         attr.buildingMaterial.id = &id;
         attr.buildingMaterial.manufacturer = &manufacturer;
         attr.buildingMaterial.description = &description;
@@ -2487,7 +2525,7 @@ GS::ObjectState GetBuildingMaterialsCommand::Execute (const GS::ObjectState& par
         GS::ObjectState buildingMaterial;
         buildingMaterial.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         buildingMaterial.Add ("index", GetAttributeIndex (attr.header.index));
-        buildingMaterial.Add ("name", GS::UniString (attr.header.name));
+        buildingMaterial.Add ("name", name);
 
         if (wantsField.Wants ("id")) {
             buildingMaterial.Add ("id", id);
