@@ -367,8 +367,21 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "thickness": {
                         "type": "number",
-                        "description": "Optional slab thickness.",
+                        "description": "Optional slab thickness. Only effective for a Basic slab: a Composite slab takes its thickness from the composite.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "structureType": {
+                        "type": "string",
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
+                        "enum": ["Basic", "Composite"]
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Building material of a Basic slab. Cannot be combined with compositeId."
+                    },
+                    "compositeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Composite attribute of a Composite slab. Cannot be combined with buildingMaterialId."
                     },
                     "referencePlaneLocation": {
                         "type": "string",
@@ -487,6 +500,12 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
+
+    bool structureChanged = false;
+    auto structureError = ApplySlabStructure (element, nullptr, parameters, structureChanged);
+    if (structureError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, structureError.Get ());
+    }
 
     GS::UniString referencePlaneLocation;
     if (parameters.Get ("referencePlaneLocation", referencePlaneLocation)) {

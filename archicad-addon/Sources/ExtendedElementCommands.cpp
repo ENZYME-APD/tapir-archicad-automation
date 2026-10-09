@@ -1659,6 +1659,12 @@ GS::Optional<GS::UniString> ApplyRoofStructure (
     return {};
 }
 
+} // namespace
+
+// Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it
+// for CreateSlabsCommand in ElementCreationCommands.cpp, so it needs external linkage.
+// Inside the namespace it would be a second, internal function: the call in
+// ModifySlabsCommand becomes ambiguous (C2668) and the declared one is never defined.
 GS::Optional<GS::UniString> ApplySlabStructure (
     API_Element& element,
     API_Element* mask,
@@ -1702,6 +1708,8 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     changed = true;
     return {};
 }
+
+namespace {
 
 bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {

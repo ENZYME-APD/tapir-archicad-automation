@@ -23,7 +23,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Outlines", "polygonCoordinates", FieldKind.OutlineCurve, "The closed outline curve of each slab, one curve per slab. Line and arc segments are kept as they are; anything else is approximated with a polyline. Only X and Y are used.", required: true),
             new Field("Holes", "holes", FieldKind.HoleCurvesTree, "The closed curves of the voids in each slab, one branch per slab. A slab with no voids gets an empty branch."),
             new Field("Levels", "level", FieldKind.Number, "The Z coordinate of the reference plane of the slab.", required: true),
-            new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab."),
+            new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab. Only effective for a Basic slab: a Composite slab takes its thickness from the composite."),
+            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite.", valueList: () => new StructureTypeValueList ()),
+            new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
+            new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure."),
             new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom.", valueList: () => new ReferencePlaneLocationValueList ()),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the slab."),
             new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
