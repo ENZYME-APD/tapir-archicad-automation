@@ -100,8 +100,15 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 if (hasFavoriteName) {
                     const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, elemTypeID);
                     if (favoriteErr != NoError) {
+                        // Say which of the two usual causes it was: ApplyFavoriteToElementDefaults
+                        // answers APIERR_REFUSEDPAR for a favorite of another element type, and
+                        // passes on the ACAPI_Favorite_Get error when no favorite has this name
+                        // (a typo, trailing space or different case in the name is the usual reason).
+                        const GS::UniString reason = favoriteErr == APIERR_REFUSEDPAR
+                            ? GS::UniString ("it is not a " + elemTypeName + " favorite")
+                            : GS::UniString ("no favorite with this exact name was found");
                         elements (CreateErrorResponse (favoriteErr,
-                            "Failed to apply favoriteName '" + favoriteName + "' to the " + elemTypeName + " defaults."));
+                            "Failed to apply favoriteName '" + favoriteName + "' to the " + elemTypeName + " defaults: " + reason + "."));
                         continue;
                     }
                     favoriteApplied = true;
