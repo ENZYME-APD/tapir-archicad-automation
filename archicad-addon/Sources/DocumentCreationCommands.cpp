@@ -157,6 +157,108 @@ GS::Optional<API_Guid> FindNewLayoutSubsetGuid (const GS::Array<API_Guid>& befor
     return {};
 }
 
+GS::Optional<API_Guid> GetLayoutBookRootGuid ()
+{
+    API_NavigatorSet navSet = {};
+    navSet.mapId = API_LayoutMap;
+    Int32 idx = 0;
+    if (ACAPI_Navigator_GetNavigatorSet (&navSet, &idx) != NoError) {
+        return {};
+    }
+    return navSet.rootGuid;
+}
+
+GS::Optional<API_Guid> FindLayoutNavigatorItemGuid (const API_Guid& layoutDatabaseId)
+{
+    API_NavigatorItem filterItem = {};
+    filterItem.mapId           = API_LayoutMap;
+    filterItem.itemType        = API_LayoutNavItem;
+    filterItem.db.databaseUnId = DatabaseIdResolver::Instance ().GetDatabaseWithId (layoutDatabaseId).databaseUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return {};
+    }
+    for (const auto& result : results) {
+        if (result.itemType == API_LayoutNavItem) {
+            return result.guid;
+        }
+    }
+    return {};
+}
+
+// The last child of the given Layout Book item, not counting the item to be
+// placed; empty when there is no other child
+GS::Optional<API_Guid> FindLastLayoutBookChild (const API_Guid& parentGuid, const API_Guid& itemToPlace)
+{
+    API_NavigatorItem parentItem = {};
+    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+        return {};
+    }
+    parentItem.mapId = API_LayoutMap;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&parentItem, &children) != NoError) {
+        return {};
+    }
+    for (UIndex i = children.GetSize (); i > 0; --i) {
+        if (children[i - 1].guid != itemToPlace) {
+            return children[i - 1].guid;
+        }
+    }
+    return {};
+}
+
+// Moves the freshly created layout where the caller asked for it: after
+// previousNavigatorItemId, or to the first or last place under its parent
+// (the Layout Book root when no parentNavigatorItemId was given). Archicad
+// itself inserts new layouts at the first place, which renumbers every sheet
+// after them, so most scripts want "last".
+GSErrCode PlaceNewLayout (const API_Guid& layoutDatabaseId, const API_Guid& parentNavGuid,
+                          const GS::ObjectState* previousOS, const GS::UniString& position, GS::UniString& errorMessage)
+{
+    const auto layoutNavGuid = FindLayoutNavigatorItemGuid (layoutDatabaseId);
+    if (!layoutNavGuid.HasValue ()) {
+        errorMessage = "Layout created but could not resolve its navigator item to position it.";
+        return APIERR_GENERAL;
+    }
+
+    API_Guid parentGuid = parentNavGuid;
+    if (parentGuid == APINULLGuid) {
+        const auto rootGuid = GetLayoutBookRootGuid ();
+        if (!rootGuid.HasValue ()) {
+            errorMessage = "Layout created but could not resolve the Layout Book root to position it.";
+            return APIERR_GENERAL;
+        }
+        parentGuid = rootGuid.Get ();
+    }
+
+    GS::Optional<API_Guid> previousGuid;
+    if (previousOS != nullptr) {
+        previousGuid = GetGuidFromObjectState (*previousOS);
+    } else if (position == "last") {
+        previousGuid = FindLastLayoutBookChild (parentGuid, layoutNavGuid.Get ());
+    }
+
+    const GS::Guid sourceGuid = APIGuid2GSGuid (layoutNavGuid.Get ());
+    const GS::Guid parentGSGuid = APIGuid2GSGuid (parentGuid);
+    GS::Guid  prevGuidStorage;
+    GS::Guid* prevGuidPtr = nullptr;
+    if (previousGuid.HasValue ()) {
+        prevGuidStorage = APIGuid2GSGuid (previousGuid.Get ());
+        prevGuidPtr = &prevGuidStorage;
+    }
+
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("CreateLayoutCommand", [&]() -> GSErrCode {
+        err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGuid, &parentGSGuid, prevGuidPtr);
+        return err;
+    });
+    if (err != NoError) {
+        errorMessage = "Layout created at Archicad's default position but could not be moved to the requested position.";
+    }
+    return err;
+}
+
 }
 
 CreateDetailsCommand::CreateDetailsCommand () :
@@ -311,6 +413,15 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
                         "masterNavigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "layoutName":            { "type": "string", "minLength": 1 },
                         "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
+                        "previousNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The sibling after which the new layout is placed, as in MoveNavigatorItem. It must be a child of parentNavigatorItemId (or of the Layout Book root when that is omitted). Cannot be combined with position."
+                        },
+                        "position": {
+                            "type": "string",
+                            "enum": ["first", "last"],
+                            "description": "Where to place the new layout under its parent. Archicad inserts new layouts at the first place, which renumbers the sheets after them; \"last\" appends it after the existing children instead. Cannot be combined with previousNavigatorItemId."
+                        },
                         "layoutParameters": {
                             "type": "object",
                             "properties": {
@@ -426,6 +537,15 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
             parentNavGuid = GetGuidFromObjectState (*parentOS);
         }
 
+        const GS::ObjectState* previousOS = item.Get ("previousNavigatorItemId");
+        GS::UniString position;
+        item.Get ("position", position);
+        if (previousOS != nullptr && !position.IsEmpty ()) {
+            databases.Push (CreateErrorResponse (APIERR_BADPARS, "previousNavigatorItemId and position cannot be given together."));
+            continue;
+        }
+        const bool placeLayout = previousOS != nullptr || !position.IsEmpty ();
+
         const GS::Array<API_Guid> before = GetLayoutDatabaseGuids ();
 #ifdef ServerMainVers_2700
         const GSErrCode err = ACAPI_Navigator_CreateLayout (&layoutInfo, &masterLayoutDbInfo.databaseUnId,
@@ -439,17 +559,25 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
             continue;
         }
 
-        const auto newLayoutGuid = FindNewLayoutDatabaseGuid (before);
-        if (newLayoutGuid.HasValue ()) {
-            databases.Push (CreateDatabaseIdObjectState (newLayoutGuid.Get ()));
-        } else {
-            const auto layoutGuid = FindLayoutDatabaseGuidByName (GS::UniString (layoutInfo.layoutName));
-            if (layoutGuid.HasValue ()) {
-                databases.Push (CreateDatabaseIdObjectState (layoutGuid.Get ()));
-            } else {
-                databases.Push (CreateErrorResponse (APIERR_GENERAL, "Layout created but could not resolve its database id."));
+        auto newLayoutGuid = FindNewLayoutDatabaseGuid (before);
+        if (!newLayoutGuid.HasValue ()) {
+            newLayoutGuid = FindLayoutDatabaseGuidByName (GS::UniString (layoutInfo.layoutName));
+        }
+        if (!newLayoutGuid.HasValue ()) {
+            databases.Push (CreateErrorResponse (APIERR_GENERAL, "Layout created but could not resolve its database id."));
+            continue;
+        }
+
+        if (placeLayout) {
+            GS::UniString placeErrorMessage;
+            const GSErrCode placeErr = PlaceNewLayout (newLayoutGuid.Get (), parentNavGuid, previousOS, position, placeErrorMessage);
+            if (placeErr != NoError) {
+                databases.Push (CreateErrorResponse (placeErr, placeErrorMessage));
+                continue;
             }
         }
+
+        databases.Push (CreateDatabaseIdObjectState (newLayoutGuid.Get ()));
     }
 
     return CreateDatabasesResponse (databases);
