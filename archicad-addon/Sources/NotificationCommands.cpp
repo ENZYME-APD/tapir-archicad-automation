@@ -168,6 +168,10 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
         result.first->second.notifyOnReservationChanges = notifyOnReservationChanges;
+        // A client registered again without modification notifications may have
+        // been the last one that wanted them; detach the observers in that case,
+        // as RemoveElementNotificationClient does.
+        DetachElementObserversIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
