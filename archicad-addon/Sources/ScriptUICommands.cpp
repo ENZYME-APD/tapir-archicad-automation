@@ -141,11 +141,16 @@ GS::Optional<GS::UniString> GetScriptUIResultCommand::GetRawResponseSchema () co
             "result": {
                 "type": "string",
                 "description": "The submitted content (as passed to window.ACAPI.SubmitResult). Only present when hasResult is true."
+            },
+            "isOpen": {
+                "type": "boolean",
+                "description": "True while the Script UI palette is open. False before the first ShowScriptUI call and once the user closed the palette with its close box, the page called window.ACAPI.ClosePalette or Archicad closed it; stays true while Archicad only temporarily hides all palettes (e.g. during a modal dialog). Lets a waiting script stop polling when the user closes the palette."
             }
         },
         "additionalProperties": false,
         "required": [
-            "hasResult"
+            "hasResult",
+            "isOpen"
         ]
     })";
 }
@@ -154,11 +159,13 @@ GS::ObjectState GetScriptUIResultCommand::Execute (const GS::ObjectState& /*para
 {
     GS::UniString result;
     const bool hasResult = ScriptUIPalette::HasInstance () && ScriptUIPalette::Instance ().ConsumeResult (&result);
+    const bool isOpen = ScriptUIPalette::HasInstance () && ScriptUIPalette::Instance ().IsOpen ();
 
     GS::ObjectState response;
     response.Add ("hasResult", hasResult);
     if (hasResult) {
         response.Add ("result", result);
     }
+    response.Add ("isOpen", isOpen);
     return response;
 }

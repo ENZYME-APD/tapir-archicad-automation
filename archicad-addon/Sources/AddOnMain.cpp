@@ -1327,7 +1327,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
-            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any."
+            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
         );
         AddCommandGroup (scriptUICommands);
     }
