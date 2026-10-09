@@ -213,7 +213,15 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   is mirrored in `EXPECTED_ASSETS` in `weekly_release.yml`. The Mac installer is
   universal2 (Intel and Apple silicon): both workflows build it with the
   python.org Python pinned in their `env` (keep the two the same) and check it
-  with `lipo`.
+  with `lipo`. The Windows installer is code signed by SignPath (certificate by
+  SignPath Foundation): on a release tag `build_installer_win` waits for a manual
+  approval in SignPath, then `release_installer_win` attaches the signed file to
+  the draft (split so SignPath never holds a write token); the weekly release
+  waits for both. SignPath requires the exe's ProductName `Tapir` and
+  ProductVersion = the release version, which `Installer/write_version_file.py`
+  writes; the installer build tools are pinned in
+  `Installer/requirements-build.txt`, used by both workflows. The README's
+  "Code signing policy" section is required by the SignPath Foundation.
 - `weekly_release.yml` — tags and releases `main` every Monday when it changed
   (see Versioning for which version it ships); first regenerates
   `docs/archicad-addon` with `tools/generate_addon_docs.py` and pushes it to `main`

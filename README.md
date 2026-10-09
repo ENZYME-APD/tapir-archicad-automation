@@ -59,6 +59,24 @@ Once you downloaded the Add-On files you have to install it in Archicad. Follow 
 
 You can install the plugin from the Rhino Package Manager. The package is called "tapir".
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+This covers the Windows installer, `TapirInstaller_Win.exe`. It is built from this repository's sources by GitHub Actions on GitHub-hosted runners, and every release is signed only after a manual approval. The Windows Add-On files (`.apx`) are not code signed. The macOS installer and macOS Add-Ons are signed and notarized with the project's own Apple Developer ID.
+
+Team roles:
+- Committers and reviewers: the maintainers with write access to this repository. Pull requests from people without write access, and the draft pull requests the project's automation opens from issues, are reviewed by a committer before they are merged; they are never merged automatically. Changes to the installer and to the build and release definitions are never merged automatically either, whoever proposes them.
+- Approvers: [Tibor Lorántfy](https://github.com/tlorantfy)
+
+### Privacy
+
+The Tapir Installer contacts only GitHub:
+- When its window opens, it asks `api.github.com` (or, if that fails, `github.com`) for the latest Tapir release.
+- It downloads the Tapir Add-On from GitHub's release download servers when you click Install, or automatically when the Tapir Add-On's own update started it after you confirmed the update in Archicad.
+
+These are plain HTTPS requests. Like any web request they show your IP address and the installer's name to GitHub, where the [GitHub General Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) applies. The installer sends no personal data, has no telemetry and uploads nothing. During an update it also talks to the Archicad running on your own computer (127.0.0.1) to quit and restart it, which the Add-On announces before the update; this does not leave your computer. The installer writes only into the Add-Ons folders of the Archicad installations you select, or during an update next to the Tapir Add-On being updated, plus temporary files in your temp folder (an update lock file, `TapirUpdate_<port>.lock`, stays there). It can remove the Add-On again (Uninstall button, or `--uninstall`). Apart from this, this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
 ## Documentation
 
 - [Archicad JSON commands](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon)
