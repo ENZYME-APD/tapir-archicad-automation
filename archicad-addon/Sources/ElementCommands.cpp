@@ -1038,6 +1038,37 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
                 typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
 #endif
+                typeSpecificDetails.Add ("contourPen", (Int32) elem.wall.contPen);
+                typeSpecificDetails.Add ("contourPen3D", (Int32) elem.wall.contPen3D);
+                if (elem.wall.contLtype != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.wall.contLtype)));
+                }
+                if (elem.wall.belowViewLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.wall.belowViewLineType)));
+                }
+                typeSpecificDetails.Add ("aboveViewLinePen", (Int32) elem.wall.aboveViewLinePen);
+                if (elem.wall.aboveViewLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.wall.aboveViewLineType)));
+                }
+                typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.wall.displayOption));
+                typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.wall.viewDepthLimitation));
+                typeSpecificDetails.Add ("connectionPriority", (Int32) elem.wall.wallConnPriority);
+                typeSpecificDetails.Add ("useCompositePriority", elem.wall.useCompositePriority);
+                typeSpecificDetails.Add ("junctionSequence", elem.wall.sequence);
+                {
+                    GS::ObjectState linkOS;
+                    linkOS.Add ("homeStoryDifference", (Int32) elem.wall.linkToSettings.homeStoryDifference);
+                    linkOS.Add ("newCreationMode", elem.wall.linkToSettings.newCreationMode);
+                    typeSpecificDetails.Add ("linkToSettings", linkOS);
+                }
+                typeSpecificDetails.Add ("inheritEndSurface", elem.wall.inheritEndSurface);
+                typeSpecificDetails.Add ("alignTexture", elem.wall.alignTexture);
+                typeSpecificDetails.Add ("offsetFromOutside", elem.wall.offsetFromOutside);
+                typeSpecificDetails.Add ("polyCanChange", elem.wall.polyCanChange);
+                typeSpecificDetails.Add ("materialsChained", elem.wall.materialsChained);
+                typeSpecificDetails.Add ("logHeight", elem.wall.logHeight);
+                typeSpecificDetails.Add ("hasWindow", elem.wall.hasWindow);
+                typeSpecificDetails.Add ("hasDoor", elem.wall.hasDoor);
                 break;
 
             case API_BeamID: {

@@ -1,0 +1,18 @@
+# Build tools of the Tapir Installer executables, with PyInstaller's whole
+# dependency set pinned too: the Windows executable is code signed and runs
+# elevated, so a new PyInstaller bootloader, hook or dependency should reach a
+# signed release only through a reviewed change to this file.
+# Used by archicad_addon.yml, installer_build_check.yml and README.md.
+# To update: install the new versions in a clean virtual environment on
+# Windows, copy the result of "pip freeze" here and keep the macOS-only
+# macholib line (resolve it on a Mac).
+pyinstaller==6.22.3
+truststore==0.10.4
+certifi==2026.7.22
+altgraph==0.17.5
+packaging==26.3
+pyinstaller-hooks-contrib==2026.8
+setuptools==84.0.0
+pefile==2024.8.26; sys_platform == "win32"
+pywin32-ctypes==0.2.3; sys_platform == "win32"
+macholib==1.16.4; sys_platform == "darwin"
