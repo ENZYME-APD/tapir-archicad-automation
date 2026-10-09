@@ -8,6 +8,14 @@ on:
   # GITHUB_TOKEN, which does not trigger on-push workflows - so it starts
   # this pipeline explicitly, dispatched on the tag ref.
   workflow_dispatch:
+    inputs:
+      # The Weekly Release dispatches without inputs, so it gets the default.
+      # See "Decide Signing" in build_installer_win for what each value does.
+      signing_policy:
+        description: "SignPath policy for the Windows installer. release-signing applies on a release tag (MAJOR.MINOR.PATCH) only. test-signing signs for testing, on a branch or a non-release tag, and is never attached to a release."
+        type: choice
+        options: [release-signing, test-signing]
+        default: release-signing
 
 jobs:
   # When adding or removing an Archicad version in the matrices below, or an
@@ -122,8 +130,31 @@ jobs:
         updateOnlyUnreleased: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
+  # The Windows installer is code signed by SignPath (certificate by SignPath
+  # Foundation). Release-signing needs a manual approval in SignPath, so on a
+  # release tag this job waits for it (up to 3 h) before release_installer_win
+  # attaches the installer to the draft release - the Weekly Release waits
+  # for both.
   build_installer_win:
     runs-on: [ windows-2022 ]
+    # 3 h approval window + the action's polling, which backs off to 20 min
+    # between status checks + the build. GitHub-hosted jobs stop at 6 h.
+    timeout-minutes: 300
+    # Read-only on purpose: the SignPath action hands the job token to
+    # SignPath, which holds it for the whole approval wait. Attaching the
+    # installer to the release needs contents:write, so that happens in
+    # release_installer_win, which SignPath never sees.
+    permissions:
+      contents: read
+      actions: read     # SignPath downloads the unsigned artifact with the job token
+    outputs:
+      signing-policy: ${{ steps.signing.outputs.policy }}
+    env:
+      # None of these are secret. The API token is the SIGNPATH_API_TOKEN
+      # secret, of a SignPath CI user that is a submitter on both policies.
+      SIGNPATH_ORGANIZATION_ID: ad5f2cb8-af60-4b37-aa3c-5f1cbccba7fe
+      SIGNPATH_PROJECT_SLUG: tapir-archicad-automation
+      SIGNPATH_ARTIFACT_CONFIGURATION_SLUG: installer
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
@@ -132,21 +163,167 @@ jobs:
       with:
         python-version: '3.12'
     - name: Install PyInstaller
-      run: pip install pyinstaller truststore certifi
+      run: pip install -r archicad-addon/Installer/requirements-build.txt
+    # SignPath's artifact configuration requires ProductName "Tapir" and
+    # ProductVersion = the version in tools/package_info.json.
+    - name: Write Version Resource
+      id: version
+      run: |
+        $version = python archicad-addon/Installer/write_version_file.py build/TapirInstaller_version.txt
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+        "version=$version" >> $env:GITHUB_OUTPUT
+    # --noupx: UPX, when on PATH, would rewrite the bundled DLLs.
     - name: Build Installer
-      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Rename Installer
       run: Move-Item dist/TapirInstaller.exe dist/TapirInstaller_Win.exe
+    - name: Check Version Resource
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        $info = (Get-Item dist/TapirInstaller_Win.exe).VersionInfo
+        Write-Output "ProductName '$($info.ProductName)', ProductVersion '$($info.ProductVersion)'"
+        if ($info.ProductName -ne 'Tapir' -or $info.ProductVersion -ne $env:VERSION) {
+          Write-Output "::error::The installer must have ProductName 'Tapir' and ProductVersion '$env:VERSION'."
+          exit 1
+        }
+    # Signing happens only in this repository (forks have no SignPath token)
+    # and never for a pull request:
+    #   release tag (MAJOR.MINOR.PATCH), push or dispatch -> release-signing,
+    #                                   needs approval, attached to the release
+    #   dispatch with test-signing on a branch or on a non-release tag
+    #                                   -> test-signing, never attached
+    #   anything else (e.g. a dispatch on main) -> build only, nothing attached
+    # A release tag must equal the version in tools/package_info.json, so the
+    # signed file is never labelled with another version than its tag.
+    - name: Decide Signing
+      id: signing
+      env:
+        REQUESTED_POLICY: ${{ inputs.signing_policy }}
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        $policy = ''
+        $isReleaseTag = $env:GITHUB_REF.StartsWith('refs/tags/') -and $env:GITHUB_REF_NAME -match '^\d+\.\d+\.\d+$'
+        if ($env:GITHUB_REPOSITORY -eq 'ENZYME-APD/tapir-archicad-automation' -and $env:GITHUB_EVENT_NAME -ne 'pull_request') {
+          if ($isReleaseTag) {
+            if ($env:REQUESTED_POLICY -eq 'test-signing') {
+              Write-Output "::error::test-signing is not allowed on a release tag; dispatch it on a branch or a non-release tag."
+              exit 1
+            }
+            if ($env:GITHUB_REF_NAME -ne $env:VERSION) {
+              Write-Output "::error::Tag '$env:GITHUB_REF_NAME' differs from version '$env:VERSION' in tools/package_info.json."
+              exit 1
+            }
+            $policy = 'release-signing'
+          } elseif ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and $env:REQUESTED_POLICY -eq 'test-signing') {
+            $policy = 'test-signing'
+          }
+        }
+        Write-Output "Signing policy: '$policy'"
+        "policy=$policy" >> $env:GITHUB_OUTPUT
     - name: Upload Artifact
+      id: upload-unsigned-installer
       uses: actions/upload-artifact@v4
       with:
         name: Tapir Installer Win
         path: dist/TapirInstaller_Win.exe
+        if-no-files-found: error
+    # upload-artifact zips the file, so the artifact configuration's root is
+    # <zip-file>. The signed zip is unpacked into dist/signed.
+    - name: Sign Installer
+      if: steps.signing.outputs.policy != ''
+      uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
+      with:
+        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+        organization-id: ${{ env.SIGNPATH_ORGANIZATION_ID }}
+        project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
+        signing-policy-slug: ${{ steps.signing.outputs.policy }}
+        artifact-configuration-slug: ${{ env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+        github-artifact-id: ${{ steps.upload-unsigned-installer.outputs.artifact-id }}
+        # Each value must be a JSON string.
+        parameters: |
+          version: ${{ toJSON(steps.version.outputs.version) }}
+        wait-for-completion: true
+        # Approve within 3 h of the request (from SignPath's e-mail). Later
+        # than that this run fails, the Weekly Release publishes nothing, and
+        # the pending request should be denied in SignPath.
+        wait-for-completion-timeout-in-seconds: 10800
+        service-unavailable-timeout-in-seconds: 600
+        download-signed-artifact-timeout-in-seconds: 300
+        output-artifact-directory: dist/signed
+    - name: Verify Signature
+      if: steps.signing.outputs.policy != ''
+      env:
+        POLICY: ${{ steps.signing.outputs.policy }}
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        $file = 'dist/signed/TapirInstaller_Win.exe'
+        if (-not (Test-Path -LiteralPath $file)) {
+          Write-Output "::error::SignPath returned no $file."
+          exit 1
+        }
+        $sig = Get-AuthenticodeSignature -LiteralPath $file
+        $sig | Format-List Status, StatusMessage, SignerCertificate, TimeStamperCertificate
+        if ($null -eq $sig.SignerCertificate) {
+          Write-Output "::error::$file is not signed."
+          exit 1
+        }
+        if ($env:POLICY -eq 'release-signing') {
+          if ($sig.Status -ne 'Valid') {
+            Write-Output "::error::Signature status is '$($sig.Status)': $($sig.StatusMessage)"
+            exit 1
+          }
+          if ($sig.SignerCertificate.Subject -notmatch '(^|, )CN=SignPath Foundation(,|$)') {
+            Write-Output "::error::Unexpected signer '$($sig.SignerCertificate.Subject)'."
+            exit 1
+          }
+          if ($null -eq $sig.TimeStamperCertificate) {
+            Write-Output "::error::The signature is not timestamped."
+            exit 1
+          }
+        } elseif ($null -eq $sig.TimeStamperCertificate) {
+          Write-Output "::warning::The test signature is not timestamped."
+        }
+        $info = (Get-Item -LiteralPath $file).VersionInfo
+        if ($info.ProductName -ne 'Tapir' -or $info.ProductVersion -ne $env:VERSION) {
+          Write-Output "::error::The signed file lost its version resource."
+          exit 1
+        }
+    - name: Upload Signed Artifact
+      if: steps.signing.outputs.policy != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Installer Win Signed (${{ steps.signing.outputs.policy }})
+        path: dist/signed/TapirInstaller_Win.exe
+        if-no-files-found: error
+
+  # Attaches the Windows installer to the draft release. In this repository
+  # only the release-signed installer is ever attached, under the unchanged
+  # asset name TapirInstaller_Win.exe (the Add-On, the legacy update script
+  # and README.md download it by that name). If signing fails, this job does
+  # not run, the draft lacks the installer and the Weekly Release refuses to
+  # publish - an unsigned installer is never released here. Forks have no
+  # SignPath access and keep releasing the unsigned build.
+  release_installer_win:
+    needs: build_installer_win
+    if: >-
+      startsWith(github.ref, 'refs/tags/') && (
+        needs.build_installer_win.outputs.signing-policy == 'release-signing' ||
+        github.repository != 'ENZYME-APD/tapir-archicad-automation')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Create Release
+    steps:
+    - name: Download Installer
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ needs.build_installer_win.outputs.signing-policy == 'release-signing' && 'Tapir Installer Win Signed (release-signing)' || 'Tapir Installer Win' }}
+        path: dist
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
       uses: ncipollo/release-action@v1
       with:
         artifacts: dist/TapirInstaller_Win.exe
+        artifactErrorsFailBuild: true
         draft: true
         allowUpdates: true
         # Same guard as the add-on jobs: only drafts may be updated.
@@ -180,7 +357,7 @@ jobs:
         "$UNIVERSAL2_PYTHON" -c "import sys, sysconfig; p = sysconfig.get_platform(); print(sys.version, p); sys.exit(not p.endswith('-universal2'))"
     - name: Install PyInstaller
       run: |
-        "$UNIVERSAL2_PYTHON" -m pip install pyinstaller truststore certifi
+        "$UNIVERSAL2_PYTHON" -m pip install -r archicad-addon/Installer/requirements-build.txt
     - name: Build Installer
       run: |
         "$UNIVERSAL2_PYTHON" -m PyInstaller --noconfirm --windowed --target-arch universal2 --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py

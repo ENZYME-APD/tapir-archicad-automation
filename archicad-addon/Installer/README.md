@@ -159,10 +159,11 @@ mock Archicad (`python test_update_mode.py`).
 ## Building the executables locally
 
 ```bash
-pip install pyinstaller truststore certifi
+pip install -r requirements-build.txt
 
-# Windows
-pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon Resources/TapirInstaller.ico tapir_installer.py
+# Windows (the version resource is required for code signing)
+python write_version_file.py build/TapirInstaller_version.txt
+pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt tapir_installer.py
 
 # macOS (onedir .app; onefile binaries cannot be stapled after notarization).
 # universal2 needs a universal2 Python, such as the python.org installer;
@@ -175,6 +176,16 @@ with [Tools/code_sign_and_notarize.sh](../Tools/code_sign_and_notarize.sh),
 using [installer.entitlements](installer.entitlements) (the add-on's
 `addon.entitlements` must not be used here: its `get-task-allow` entitlement is
 rejected by the notary service on application executables).
+
+On Windows the release pipeline has `TapirInstaller_Win.exe` signed by
+[SignPath](https://about.signpath.io) with a certificate by
+[SignPath Foundation](https://signpath.org) (see the
+[code signing policy](../../README.md#code-signing-policy)). Every release
+signing needs a manual approval in SignPath. SignPath only signs the file when
+its version resource says ProductName `Tapir` and the release version, which
+[write_version_file.py](write_version_file.py) writes; nothing may change the
+file after it is signed. The build tools are pinned in
+[requirements-build.txt](requirements-build.txt).
 
 ## Resources
 
