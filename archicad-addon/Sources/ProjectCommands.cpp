@@ -2471,7 +2471,8 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
 // A hotlink module is two things in Archicad: a NODE (the reference to the
 // source file, with its cache) and any number of INSTANCES (elements of type
 // API_HotlinkID, each placed by a transformation). GetHotlinks lists the
-// nodes; these three commands create nodes, place instances and move them.
+// nodes; these commands create nodes, place instances, move them, re-read
+// the nodes' source files and repoint nodes at other files.
 // Instances are ordinary elements otherwise: DeleteElements removes one,
 // GetDetailsOfElements reads its placement, and the elements inside a
 // placed instance report it as their hotlinkId.
@@ -3039,6 +3040,213 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
         }
         return NoError;
     });
+
+    return response;
+}
+
+// The node keeps a cache of its source file's content, and Archicad re-reads
+// the file only when asked - the Hotlink Manager's Update button, which is
+// UpdateHotlinks. ChangeHotlinkNodes is the Relink button: it repoints a
+// node at another file. Neither is wrapped in ACAPI_CallUndoableCommand: the
+// DevKit lists the hotlink node functions among the non-undoable data
+// structure modifiers.
+
+UpdateHotlinksCommand::UpdateHotlinksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UpdateHotlinksCommand::GetName () const
+{
+    return "UpdateHotlinks";
+}
+
+GS::Optional<GS::UniString> UpdateHotlinksCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes to update, from GetHotlinks or CreateHotlinkNodes. Each node's cached content is re-read from its source file, as the Hotlink Manager's Update button does.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdateHotlinksCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UpdateHotlinksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& nodeData : hotlinkNodes) {
+        const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+        if (hotlinkNodeId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "hotlinkNodeId is missing"));
+            continue;
+        }
+
+        // Reading the node first tells a wrong id apart from a failed update
+        // and gives the source path for the message.
+        API_HotlinkNode node = {};
+        node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+        bool enableUnplaced = true;     // the node may have been created and not placed yet
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+            continue;
+        }
+        const GS::UniString sourcePath = node.sourceLocation != nullptr ? node.sourceLocation->ToDisplayText () : GS::UniString ();
+
+        const GSErrCode err = ACAPI_Hotlink_UpdateHotlinkCache (&node.guid);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to update the hotlink from " + sourcePath));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
+
+ChangeHotlinkNodesCommand::ChangeHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeHotlinkNodesCommand::GetName () const
+{
+    return "ChangeHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes to repoint at another source file, as the Hotlink Manager's Relink button does. The placed instances stay where they are. Follow it with UpdateHotlinks on the same nodes to re-read the content from the new file.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        },
+                        "sourceLocation": {
+                            "type": "string",
+                            "description": "Absolute path of the new module source file (.mod or .pln)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId",
+                        "sourceLocation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& nodeData : hotlinkNodes) {
+        const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+        GS::UniString sourcePath;
+        if (hotlinkNodeId == nullptr || !nodeData.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "hotlinkNodeId or sourceLocation is missing"));
+            continue;
+        }
+        IO::Location sourceLocation (sourcePath);
+        IO::Name lastLocalName;
+        if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "sourceLocation is not a valid path"));
+            continue;
+        }
+
+        // The modify call takes the whole node, so it is read first; only the
+        // source location is changed, the rest goes back as it came.
+        API_HotlinkNode node = {};
+        node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+        bool enableUnplaced = true;     // the node may have been created and not placed yet
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+            continue;
+        }
+        // The read allocates sourceLocation on the heap and the node's
+        // destructor frees it (see CreateHotlinkNodes), so the old location
+        // is freed here and the new one handed over the same way.
+        delete node.sourceLocation;
+        node.sourceLocation = new IO::Location (sourceLocation);
+
+        const GSErrCode err = ACAPI_Hotlink_ModifyHotlinkNode (&node);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to change the hotlink node's source to " + sourcePath));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
 
     return response;
 }
