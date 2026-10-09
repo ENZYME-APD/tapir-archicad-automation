@@ -4397,10 +4397,26 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
+    // A guid that is not in the project must not reach ACAPI_Element_Delete:
+    // listed after an existing element it makes the whole call fail, the
+    // undoable command rolls back and that existing element stays in the
+    // project (#749). Such guids are left out of the call and reported as
+    // APIERR_BADID below.
+    GS::Array<bool> existedBeforeDelete;
+    GS::Array<API_Guid> guidsToDelete;
+    for (const API_Guid& elemGuid : elemGuids) {
+        API_Elem_Head elemHead = {};
+        const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
+        existedBeforeDelete.Push (exists);
+        if (exists) {
+            guidsToDelete.Push (elemGuid);
+        }
+    }
+
     GSErrCode deleteErr = NoError;
-    if (!elemGuids.IsEmpty ()) {
+    if (!guidsToDelete.IsEmpty ()) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-            deleteErr = ACAPI_Element_Delete (elemGuids);
+            deleteErr = ACAPI_Element_Delete (guidsToDelete);
 
             return deleteErr;
         });
@@ -4412,10 +4428,15 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // ACAPI_Element_Delete reports NoError even when it skips elements it is
     // not allowed to delete (locked layer, locked element, teamwork access),
     // so success is decided per element by whether the element is really gone
-    // afterwards. An element that is gone is the asked-for outcome however it
-    // got there: deleted by this call, deleted with its owner, or never in the
-    // project to begin with.
-    for (const API_Guid& elemGuid : elemGuids) {
+    // afterwards. An element that existed and is gone is the asked-for outcome
+    // however it got there: deleted by this call or deleted with its owner.
+    for (UIndex i = 0; i < elemGuids.GetSize (); ++i) {
+        if (!existedBeforeDelete[i]) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not deleted, because it does not exist."));
+            continue;
+        }
+
+        const API_Guid& elemGuid = elemGuids[i];
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
