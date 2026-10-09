@@ -4,7 +4,7 @@ python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/r
 python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip ..\Build\DevKits\AC27
 python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip ..\Build\DevKits\AC28
 python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip ..\Build\DevKits\AC29
-python download_and_unzip.py https://dl.graphisoft.com/release-candidate/30/API.Development.Kit.WIN.30.2000.zip ..\Build\DevKits\AC30
+python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.WIN.30.3000.zip ..\Build\DevKits\AC30
 
 cmake -B ../Build/AC25 -G "Visual Studio 18 2026" -A "x64" -T "v142" -DAC_VERSION=25 -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC25\Support" .. || goto :error
 cmake --build ../Build/AC25 --config Debug || goto :error

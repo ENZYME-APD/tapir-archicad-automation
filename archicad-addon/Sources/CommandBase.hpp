@@ -146,6 +146,12 @@ API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_Name
 // root cause not fully understood, kept as two separate translation units instead.
 void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
+// Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
+GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
+bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);
+GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
+bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
+
 struct Story {
     Story (short _index, double _level)
         : index (_index)
