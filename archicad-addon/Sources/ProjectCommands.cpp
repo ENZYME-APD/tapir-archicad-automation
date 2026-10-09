@@ -62,8 +62,14 @@ GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*paramet
     response.Add ("isUntitled", projectInfo.untitled);
     response.Add ("isTeamwork", projectInfo.teamwork);
     if (!projectInfo.untitled) {
-        if (projectInfo.location) {
-            response.Add ("projectLocation", projectInfo.location->ToDisplayText ());
+        // Same pattern as GetSpecialFoldersCommand's ProjectPreviews case: a Teamwork
+        // project's own location lives in location_team, not location, which stays null
+        // for it. Previously this always read 'location', so projectLocation came back
+        // empty for every open Teamwork project despite the schema's own description
+        // ("...or a BIMcloud project reference").
+        const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+        if (projectLocation != nullptr) {
+            response.Add ("projectLocation", projectLocation->ToDisplayText ());
         }
         if (projectInfo.projectPath) {
             response.Add ("projectPath", *projectInfo.projectPath);
