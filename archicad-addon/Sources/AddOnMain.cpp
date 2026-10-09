@@ -946,6 +946,26 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.1.4",
             "Releases elements in Teamwork mode."
         );
+        err |= RegisterCommand<ReserveLockableObjectSetCommand> (
+            teamworkCommands, "1.7.1",
+            "Reserves a non-element lockable object set (attributes, favorites, project info, project preferences, etc.) in Teamwork mode. The object set is given by its Archicad API name, e.g. 'Composites', 'LayerSettingsDialog' or 'ProjectInfo'."
+        );
+        err |= RegisterCommand<ReleaseLockableObjectSetCommand> (
+            teamworkCommands, "1.7.1",
+            "Releases a non-element lockable object set reserved with ReserveLockableObjectSet in Teamwork mode."
+        );
+        err |= RegisterCommand<GetLockableObjectSetStatusCommand> (
+            teamworkCommands, "1.7.1",
+            "Returns the Teamwork reservation status of a non-element lockable object set and the users who hold it."
+        );
+        err |= RegisterCommand<ReserveHotlinkCacheManagementCommand> (
+            teamworkCommands, "1.7.1",
+            "Reserves the Hotlink and XRef management in Teamwork mode, which is needed before changing hotlink nodes."
+        );
+        err |= RegisterCommand<ReleaseHotlinkCacheManagementCommand> (
+            teamworkCommands, "1.7.1",
+            "Releases the Hotlink and XRef management in Teamwork mode."
+        );
         AddCommandGroup (teamworkCommands);
     }
 
