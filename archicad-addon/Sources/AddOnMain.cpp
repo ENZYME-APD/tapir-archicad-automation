@@ -92,7 +92,12 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
                     {
-                        if (!VersionChecker::IsUsingLatestVersion ()) {
+                        if (!VersionChecker::IsCheckCompleted ()) {
+                            DGAlert (DG_INFORMATION, "Tapir Update",
+                                "Tapir is still checking GitHub for the latest release.",
+                                "Please try again in a moment.",
+                                "OK");
+                        } else if (!VersionChecker::IsUsingLatestVersion ()) {
                             TapirPalette::Instance ().UpdateAddOn ();
                         } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
                             DGAlert (DG_INFORMATION, "Tapir Update",
@@ -136,6 +141,8 @@ API_AddonType CheckEnvironment (API_EnvirParams* envir)
     RSGetIndString (&envir->addOnInfo.name, ID_ADDON_INFO, ID_ADDON_INFO_NAME, ACAPI_GetOwnResModule ());
     RSGetIndString (&envir->addOnInfo.description, ID_ADDON_INFO, ID_ADDON_INFO_DESC, ACAPI_GetOwnResModule ());
     envir->addOnInfo.description += GS::UniString (" ") + ADDON_VERSION;
+    // Only records the Archicad version: the GitHub lookup is started from Initialize, because CheckEnvironment
+    // also runs when Archicad merely lists the Add-Ons and unloads the Add-On right after.
     VersionChecker::CreateInstance (envir->serverInfo.mainVersion);
     return APIAddon_Preload;
 }
@@ -1320,6 +1327,14 @@ GSErrCode Initialize (void)
         );
         AddCommandGroup (developerCommands);
     }
+
+    // The latest release is looked up on a background thread, so Archicad does not wait for GitHub while it
+    // starts or opens a project (#798). The palette shows the "run with update" icon once the result is in.
+    VersionChecker::StartCheck ([] () {
+        if (TapirPalette::HasInstance ()) {
+            TapirPalette::Instance ().SetRunButtonIcon ();
+        }
+    });
 
     // Loading the palette singleton applies the custom shortcut menu labels and the enabled state
     // of the shortcut menu items at startup, rather than only when the user first opens the
