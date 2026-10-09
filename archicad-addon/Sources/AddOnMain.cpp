@@ -271,6 +271,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.9",
             "Moves, rotates or mirrors placed hotlink instances by changing their transformation. MoveElements and RotateElements do not work on hotlink instances."
         );
+        err |= RegisterCommand<UpdateHotlinksCommand> (
+            projectCommands, "1.7.1",
+            "Re-reads the source files of hotlink module nodes and refreshes their cached content in the project, as the Hotlink Manager's Update button does."
+        );
+        err |= RegisterCommand<ChangeHotlinkNodesCommand> (
+            projectCommands, "1.7.1",
+            "Repoints hotlink module nodes at other source files, as the Hotlink Manager's Relink button does. Follow it with UpdateHotlinks to re-read the content."
+        );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
             "Opens the given project."

@@ -246,6 +246,20 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, G
 #endif
 }
 
+inline GSErrCode ACAPI_Hotlink_ModifyHotlinkNode (API_HotlinkNode* hotlinkNode)
+{
+    return ACAPI_Database (APIDb_ModifyHotlinkNodeID, hotlinkNode);
+}
+
+// APIDb_UpdateHotlinkCacheID takes the node guid as par1 and an optional
+// API_HotlinkCacheGenerator as par2 (APIdefs_Database.h). The add-on never
+// generates content, so par2 is left out here and the cache is re-read from
+// the source file; AC27's ACAPI_Hotlink_UpdateHotlinkCache defaults it the same way.
+inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGuid)
+{
+    return ACAPI_Database (APIDb_UpdateHotlinkCacheID, (void*) hotlinkNodeGuid);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, setNum);
