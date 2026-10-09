@@ -7108,6 +7108,10 @@
             "name": {
                 "type": "string",
                 "description": "The name of the story."
+            },
+            "ifcId": {
+                "type": "string",
+                "description": "The IFC GlobalId of the story, i.e. of the IfcBuildingStorey it is exported as (the same identifier the IFC Project Manager shows). Available from Archicad 28; older versions omit it."
             }
         },
         "additionalProperties": false,
