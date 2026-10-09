@@ -1327,6 +1327,90 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetRawResponseSchema () 
     })";
 }
 
+template <USize N>
+static void CopyToFixedLengthString (GS::uchar_t (&target)[N], const GS::UniString& source)
+{
+    GS::ucsncpy (target, source.ToUStr (), N);
+    target[N - 1] = 0;
+}
+
+// Sections, elevations, interior elevations, details and worksheets are elements
+// first: their Project Map viewpoint only mirrors the name and ID stored on the
+// element. ACAPI_Navigator_ChangeNavigatorItem is a View Map call - it accepts such
+// an item and returns NoError without changing anything (#466, #755) - so the
+// element behind the viewpoint is what has to be changed. The element is found
+// through the viewpoint's database, which links back to it.
+static GSErrCode RenameViewpointElement (const API_Guid& elementGuid, const GS::UniString* newName, const GS::UniString* newId)
+{
+    API_Element element = {};
+    element.header.guid = elementGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    switch (GetElemTypeId (element.header)) {
+        case API_CutPlaneID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.cutPlane.segment.cutPlName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_CutPlaneType, segment.cutPlName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.cutPlane.segment.cutPlIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_CutPlaneType, segment.cutPlIdStr);
+            }
+            break;
+        case API_ElevationID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.elevation.segment.cutPlName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_ElevationType, segment.cutPlName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.elevation.segment.cutPlIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_ElevationType, segment.cutPlIdStr);
+            }
+            break;
+        case API_InteriorElevationID:
+            // This is the name shared by the whole interior elevation. The segments'
+            // own names live in the memo (intElevSegments) and are not reached here.
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.interiorElevation.segment.cutPlName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, segment.cutPlName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.interiorElevation.segment.cutPlIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, segment.cutPlIdStr);
+            }
+            break;
+        case API_DetailID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.detail.detailName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.detail.detailIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailIdStr);
+            }
+            break;
+        case API_WorksheetID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.worksheet.detailName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_WorksheetType, detailName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.worksheet.detailIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_WorksheetType, detailIdStr);
+            }
+            break;
+        default:
+            return APIERR_NOTSUPPORTED;
+    }
+
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     const GS::ObjectState* navIdOS = parameters.Get ("navigatorItemId");
@@ -1343,29 +1427,69 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     }
 
     GS::UniString newName;
-    if (parameters.Get ("newName", newName) && !newName.IsEmpty ()) {
-        GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
-        navItem.uName[GS::ArraySize (navItem.uName) - 1] = 0;
+    const bool hasNewName = parameters.Get ("newName", newName) && !newName.IsEmpty ();
+    GS::UniString newId;
+    const bool hasNewId = parameters.Get ("newId", newId);
+
+    // Views and layouts carry their own name; Project Map viewpoints show the name
+    // of the element (or story) they stand for. A view always records the item it
+    // was made from in sourceGuid, a Project Map item never does, which tells the
+    // two apart even if the item's mapId was not filled in.
+    const bool isProjectMapItem = navItem.mapId == API_ProjectMap ||
+                                  (navItem.mapId == API_UndefinedMap && navItem.sourceGuid == APINULLGuid);
+    API_DatabaseInfo dbInfo = navItem.db;
+    const bool hasLinkedElement = isProjectMapItem &&
+                                  ACAPI_Window_GetDatabaseInfo (&dbInfo) == NoError &&
+                                  dbInfo.linkedElement != APINULLGuid;
+
+    if (hasNewName) {
+        CopyToFixedLengthString (navItem.uName, newName);
         navItem.customName = true;
     }
 
-    err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
-    if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+    if (hasLinkedElement) {
+        ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
+            err = RenameViewpointElement (dbInfo.linkedElement,
+                                          hasNewName ? &newName : nullptr,
+                                          hasNewId ? &newId : nullptr);
+            return err;
+        });
+        if (err == APIERR_NOTSUPPORTED) {
+            return CreateFailedExecutionResult (err, "Renaming this kind of Project Map item is not supported.");
+        }
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to rename the element behind the navigator item.");
+        }
+    } else {
+        err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+        }
+
+        // For layouts: set custom layout number (ID) via ChangeLayoutSets
+        if (hasNewId) {
+            API_LayoutInfo layoutInfo = {};
+            BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
+            if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
+                CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
+                            GS::ArraySize (layoutInfo.customLayoutNumber));
+                layoutInfo.customLayoutNumbering = true;
+                ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+                delete layoutInfo.customData;
+                layoutInfo.customData = nullptr;
+            }
+        }
     }
 
-    // For layouts: set custom layout number (ID) via ChangeLayoutSets
-    GS::UniString newId;
-    if (parameters.Get ("newId", newId)) {
-        API_LayoutInfo layoutInfo = {};
-        BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
-        if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
-            CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
-                        GS::ArraySize (layoutInfo.customLayoutNumber));
-            layoutInfo.customLayoutNumbering = true;
-            ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
-            delete layoutInfo.customData;
-            layoutInfo.customData = nullptr;
+    // Archicad reports NoError for a rename it silently dropped (a story, or an item
+    // kind not handled above), so success is only reported once the item is seen
+    // carrying the new name. navItem.uName holds the name truncated the way the
+    // item stores it, so a long name is not reported as a failed rename.
+    if (hasNewName) {
+        API_NavigatorItem renamedItem = {};
+        if (ACAPI_Navigator_GetNavigatorItem (&guid, &renamedItem) == NoError &&
+            GS::UniString (renamedItem.uName) != GS::UniString (navItem.uName)) {
+            return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Archicad accepted the new name but the navigator item kept its old one; renaming this kind of navigator item is not supported.");
         }
     }
 
