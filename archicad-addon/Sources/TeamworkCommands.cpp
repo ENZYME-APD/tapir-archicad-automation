@@ -228,7 +228,7 @@ GS::ObjectState ReleaseElementsCommand::Execute (const GS::ObjectState& paramete
 // project info, project preferences, ...), addressed by the names the DevKit documents for
 // ACAPI_Teamwork_FindLockableObjectSet.
 
-static GS::UniString GetLockableObjectSetInputParametersSchema ()
+static GS::UniString BuildLockableObjectSetInputParametersSchema ()
 {
     return R"({
         "type": "object",
@@ -293,7 +293,7 @@ GS::String ReserveLockableObjectSetCommand::GetName () const
 
 GS::Optional<GS::UniString> ReserveLockableObjectSetCommand::GetInputParametersSchema () const
 {
-    return GetLockableObjectSetInputParametersSchema ();
+    return BuildLockableObjectSetInputParametersSchema ();
 }
 
 GS::Optional<GS::UniString> ReserveLockableObjectSetCommand::GetRawResponseSchema () const
@@ -366,7 +366,7 @@ GS::String ReleaseLockableObjectSetCommand::GetName () const
 
 GS::Optional<GS::UniString> ReleaseLockableObjectSetCommand::GetInputParametersSchema () const
 {
-    return GetLockableObjectSetInputParametersSchema ();
+    return BuildLockableObjectSetInputParametersSchema ();
 }
 
 GS::Optional<GS::UniString> ReleaseLockableObjectSetCommand::GetRawResponseSchema () const
@@ -406,7 +406,7 @@ GS::String GetLockableObjectSetStatusCommand::GetName () const
 
 GS::Optional<GS::UniString> GetLockableObjectSetStatusCommand::GetInputParametersSchema () const
 {
-    return GetLockableObjectSetInputParametersSchema ();
+    return BuildLockableObjectSetInputParametersSchema ();
 }
 
 GS::Optional<GS::UniString> GetLockableObjectSetStatusCommand::GetRawResponseSchema () const
@@ -416,7 +416,7 @@ GS::Optional<GS::UniString> GetLockableObjectSetStatusCommand::GetRawResponseSch
         "properties": {
             "status": {
                 "type": "string",
-                "description": "Free: nobody has reserved it. Editable: the current user has reserved it. Locked: another user has reserved it (see conflicts). NotAvailable: it cannot be reserved now (for example the project is not a Teamwork project). NotExist: the object set does not exist.",
+                "description": "Free: nobody has reserved it. Editable: the current user has reserved it. Locked: another user has reserved it (see conflicts). NotAvailable: the Teamwork server is offline or not available. NotExist: there is no Teamwork connection, for example the project is not a Teamwork project. An unknown object set name is reported as an error, not as a status.",
                 "enum": ["Free", "Editable", "Locked", "NotAvailable", "NotExist"]
             },
             "conflicts": {
