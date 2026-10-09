@@ -248,7 +248,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
-            "Retrieves information about the story sructure of the currently loaded project."
+            "Retrieves information about the story structure of the currently loaded project: index, floor id, name, level, height and, from Archicad 28, the IFC GlobalId of each story."
         );
         err |= RegisterCommand<SetStoriesCommand> (
             projectCommands, "1.1.5",

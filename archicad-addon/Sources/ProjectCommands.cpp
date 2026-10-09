@@ -1,6 +1,11 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#ifdef ServerMainVers_2800
+#include "ACAPI/IFCObjectAccessor.hpp"
+#include "ACAPI/IFCObjectID.hpp"
+#endif
+
 #include <cmath>
 
 GetProjectInfoCommand::GetProjectInfoCommand () :
@@ -768,6 +773,9 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     // there so that the height of the top story can be calculated). The record count
     // comes from the handle itself, so a level is never read past the array.
     const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+#ifdef ServerMainVers_2800
+    auto ifcAccessor = IFCAPI::GetObjectAccessor ();
+#endif
     for (short i = 0; i < storyCount; i++) {
         const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
@@ -781,6 +789,19 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
             storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
         }
         storyData.Add ("name", uName);
+
+#ifdef ServerMainVers_2800
+        // The IFC GlobalId of the IfcBuildingStorey the story is exported as. The IFC
+        // object accessor only exists from Archicad 28; older versions leave the field out.
+        auto storyObjectID = ifcAccessor.CreateStoryObjectID (story.index);
+        if (storyObjectID.IsOk ()) {
+            auto unWrappedStoryObjectID = storyObjectID.Unwrap ();
+            auto ifcId = ifcAccessor.GetGlobalId (unWrappedStoryObjectID);
+            if (ifcId.IsOk ()) {
+                storyData.Add ("ifcId", ifcId.Unwrap ());
+            }
+        }
+#endif
 
         listAdder (storyData);
     }
