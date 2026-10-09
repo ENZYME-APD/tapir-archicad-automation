@@ -1312,8 +1312,14 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
-            "newName":         { "type": "string" },
-            "newId":           { "type": "string" }
+            "newName": {
+                "type": "string",
+                "description": "The new name of the navigator item. A view's name becomes a custom name, no longer following its Project Map source."
+            },
+            "newId": {
+                "type": "string",
+                "description": "The new ID of the navigator item, shown next to its name on the navigator. For a layout it is the custom layout number; for a view it becomes a custom ID, no longer following its Project Map source. Fails when the item kept its old ID."
+            }
         },
         "additionalProperties": false,
         "required": ["navigatorItemId"]
@@ -1349,23 +1355,52 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         navItem.customName = true;
     }
 
+    // A layout's ID is its layout number, which lives in the layout settings
+    // and is changed below through ChangeLayoutSets. Every other item - a View
+    // Map view above all - carries its ID on the navigator item itself, in the
+    // fields GetNavigatorItemTree reports as uiId and customUiId, so it is
+    // written the same way as the name. customUiId is the View Settings ID
+    // "Custom" radio button: without it Archicad keeps showing the ID of the
+    // Project Map source (#764).
+    GS::UniString newId;
+    const bool hasNewId = parameters.Get ("newId", newId);
+    const bool isLayout = navItem.itemType == API_LayoutNavItem;
+    if (hasNewId && !isLayout) {
+        CHTruncate (newId.ToCStr ().Get (), navItem.uiId, GS::ArraySize (navItem.uiId));
+        navItem.customUiId = true;
+    }
+
     err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
     }
 
-    // For layouts: set custom layout number (ID) via ChangeLayoutSets
-    GS::UniString newId;
-    if (parameters.Get ("newId", newId)) {
+    if (hasNewId && isLayout) {
         API_LayoutInfo layoutInfo = {};
         BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
-        if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
-            CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
-                        GS::ArraySize (layoutInfo.customLayoutNumber));
-            layoutInfo.customLayoutNumbering = true;
-            ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
-            delete layoutInfo.customData;
-            layoutInfo.customData = nullptr;
+        err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read the layout settings.");
+        }
+        CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
+                    GS::ArraySize (layoutInfo.customLayoutNumber));
+        layoutInfo.customLayoutNumbering = true;
+        err = ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+        delete layoutInfo.customData;
+        layoutInfo.customData = nullptr;
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to change the layout's ID.");
+        }
+    } else if (hasNewId) {
+        // ChangeNavigatorItem returns NoError for an item whose ID it does not
+        // store (a Project Map item or a folder, for instance), so success is
+        // only reported once the item is seen carrying the new ID. navItem.uiId
+        // holds the ID truncated the way the item stores it, so a long ID is
+        // not reported as a failure.
+        API_NavigatorItem changedItem = {};
+        if (ACAPI_Navigator_GetNavigatorItem (&guid, &changedItem) == NoError &&
+            (!changedItem.customUiId || GS::UniString (changedItem.uiId) != GS::UniString (navItem.uiId))) {
+            return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Archicad accepted the new ID but the navigator item kept its old one; changing the ID of this kind of navigator item is not supported.");
         }
     }
 
