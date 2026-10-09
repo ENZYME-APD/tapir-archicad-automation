@@ -26,6 +26,7 @@ public:
     void Hide ();
 
     bool UpdateAddOn ();
+    void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
 
     static constexpr short ScriptShortcutSlotCount = 6;
     void RunShortcutSlot (short slotIndex);   // 0-based, 0..ScriptShortcutSlotCount-1
@@ -86,7 +87,6 @@ private:
     void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
-    void SetRunButtonIcon ();
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot
     void ApplyShortcutMenuItemText (short slotIndex);   // pushes scriptShortcutLabels[slotIndex] to the real Archicad menu item
     void ApplyAllShortcutMenuItemTexts ();
