@@ -2522,23 +2522,7 @@
                 "$ref": "#/NavigatorItemIdArrayItem"
             },
             {
-                "type": "object",
-                "properties": {
-                    "windowType": {
-                        "$ref": "#/WindowType"
-                    },
-                    "databaseId": {
-                        "$ref": "#/DatabaseId"
-                    },
-                    "storyIndex": {
-                        "type": "integer",
-                        "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "windowType"
-                ]
+                "$ref": "#/DatabaseIdAndWindowType"
             }
         ]
     },
@@ -4251,6 +4235,121 @@
             "rows"
         ],
         "additionalProperties": false
+    },
+    "DatabaseIdAndWindowType": {
+        "type": "object",
+        "properties": {
+            "windowType": {
+                "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId"
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "windowType"
+        ]
+    },
+    "WallRelations": {
+        "type": "object",
+        "description": "Relations of a wall.",
+        "properties": {
+            "wallConnections": {
+                "$ref": "#/EndpointConnections"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "wallConnections"
+        ]
+    },
+    "BeamRelations": {
+        "type": "object",
+        "description": "Relations of a beam.",
+        "properties": {
+            "beamConnections": {
+                "$ref": "#/EndpointConnections"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "beamConnections"
+        ]
+    },
+    "BeamSegmentRelations": {
+        "type": "object",
+        "description": "Relations of a beam segment.",
+        "properties": {
+            "beamSegmentConnections": {
+                "$ref": "#/EndpointConnections"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "beamSegmentConnections"
+        ]
+    },
+    "ZoneRelationsOfElement": {
+        "type": "object",
+        "description": "Relations of a zone.",
+        "properties": {
+            "zoneRelations": {
+                "$ref": "#/ZoneRelations"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneRelations"
+        ]
+    },
+    "OpeningRelationsOfElement": {
+        "type": "object",
+        "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
+        "properties": {
+            "openingRelations": {
+                "type": "object",
+                "properties": {
+                    "fromRoom": {
+                        "$ref": "#/ElementId"
+                    },
+                    "toRoom": {
+                        "$ref": "#/ElementId"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "openingRelations"
+        ]
+    },
+    "RoofOrShellRelationsOfElement": {
+        "type": "object",
+        "description": "Relations of a roof or shell: the connected zones.",
+        "properties": {
+            "roofOrShellRelations": {
+                "type": "object",
+                "properties": {
+                    "connectedRooms": {
+                        "$ref": "#/Elements"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "connectedRooms"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofOrShellRelations"
+        ]
     },
     "NavigatorItemIds": {
         "type": "array",
@@ -8669,100 +8768,22 @@
         "description": "The type-specific relations of an element or an error. The variant depends on the type of the input element.",
         "oneOf": [
             {
-                "type": "object",
-                "description": "Relations of a wall.",
-                "properties": {
-                    "wallConnections": {
-                        "$ref": "#/EndpointConnections"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "wallConnections"
-                ]
+                "$ref": "#/WallRelations"
             },
             {
-                "type": "object",
-                "description": "Relations of a beam.",
-                "properties": {
-                    "beamConnections": {
-                        "$ref": "#/EndpointConnections"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "beamConnections"
-                ]
+                "$ref": "#/BeamRelations"
             },
             {
-                "type": "object",
-                "description": "Relations of a beam segment.",
-                "properties": {
-                    "beamSegmentConnections": {
-                        "$ref": "#/EndpointConnections"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "beamSegmentConnections"
-                ]
+                "$ref": "#/BeamSegmentRelations"
             },
             {
-                "type": "object",
-                "description": "Relations of a zone.",
-                "properties": {
-                    "zoneRelations": {
-                        "$ref": "#/ZoneRelations"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "zoneRelations"
-                ]
+                "$ref": "#/ZoneRelationsOfElement"
             },
             {
-                "type": "object",
-                "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
-                "properties": {
-                    "openingRelations": {
-                        "type": "object",
-                        "properties": {
-                            "fromRoom": {
-                                "$ref": "#/ElementId"
-                            },
-                            "toRoom": {
-                                "$ref": "#/ElementId"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "openingRelations"
-                ]
+                "$ref": "#/OpeningRelationsOfElement"
             },
             {
-                "type": "object",
-                "description": "Relations of a roof or shell: the connected zones.",
-                "properties": {
-                    "roofOrShellRelations": {
-                        "type": "object",
-                        "properties": {
-                            "connectedRooms": {
-                                "$ref": "#/Elements"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "connectedRooms"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "roofOrShellRelations"
-                ]
+                "$ref": "#/RoofOrShellRelationsOfElement"
             },
             {
                 "$ref": "#/ErrorItem"
