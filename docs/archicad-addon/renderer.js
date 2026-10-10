@@ -21,8 +21,6 @@ function ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKey
             ResolveReferences(schemaDefinitions, node, key, resolvedKeys);
         } else if (typeof childNode === 'string' && key == '$ref') {
             let refKey = childNode.substr(2);
-            // Each use needs its own copy so caller context cannot leak into
-            // the shared definition or another command's rendered schema.
             let refValue = JSON.parse(JSON.stringify(schemaDefinitions[refKey]));
             if (resolvedKeys.has(refKey)) {
                 parentNode[parentKey] = {

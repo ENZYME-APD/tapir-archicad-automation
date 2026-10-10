@@ -2361,8 +2361,7 @@
                 "enum": [ false ]
             },
             "error": {
-                "$ref": "#/Error",
-                "description": "The details of an execution failure."
+                "$ref": "#/Error"
             }
         },
         "additionalProperties": false,
@@ -6679,7 +6678,7 @@
             },
             "style": {
                 "$ref": "#/TextStyleDetails",
-                "description": "The full style state; the flat fields above are the subset SetDetailsOfElements takes back."
+                "description": "The flat fields above are the subset SetDetailsOfElements takes back."
             },
             "paragraphCount": {
                 "type": "integer",
@@ -7921,7 +7920,7 @@
                 "description": "The relative path to the new file inside embedded library."
             },
             "type": {
-                "description": "The type of the library part. By default 'Pict'.",
+                "description": "By default 'Pict'.",
                 "$ref": "#/LibraryPartType"
             }
         },
@@ -8975,7 +8974,7 @@
     },
     "LabelLeaderLineSettableDetails": {
         "type": "object",
-        "description": "Every user-configurable leader-line/frame setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
+        "description": "Every user-configurable leader-line/frame/arrow setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
             "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
