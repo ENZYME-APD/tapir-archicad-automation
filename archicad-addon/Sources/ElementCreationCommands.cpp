@@ -1443,12 +1443,7 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
             "$ref": "#/StoryVisibility"
         },
         "linkToSettings": {
-            "type": "object",
-            "properties": {
-                "homeStoryDifference": { "type": "integer" },
-                "newCreationMode": { "type": "boolean" }
-            },
-            "additionalProperties": false
+            "$ref": "#/LinkToSettings"
         })";
     if (isLamp) {
         fields += R"(,
@@ -2514,20 +2509,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "array",
                         "description": "The leveling sublines inside the polygon of the mesh.",
                         "items": {
-                            "type": "object",
-                            "properties" : {
-                                "coordinates": { 
-                                    "type": "array",
-                                    "description": "The 3D coordinates of the leveling subline of the mesh.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "coordinates"
-                            ]
+                            "$ref": "#/MeshSubline"
                         },
                         "minItems": 1
                     }
