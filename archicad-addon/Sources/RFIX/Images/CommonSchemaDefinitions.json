@@ -4173,6 +4173,85 @@
             "ownUnID"
         ]
     },
+    "MEPPreferenceRow": {
+        "type": "object",
+        "properties": {
+            "referenceId": {
+                "type": "integer"
+            },
+            "diameter": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "referenceId",
+            "diameter"
+        ],
+        "additionalProperties": false
+    },
+    "MEPElement": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "type": {
+                "type": "string",
+                "description": "The type of the MEP element."
+            },
+            "domain": {
+                "type": "string",
+                "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "type",
+            "domain"
+        ]
+    },
+    "MEPDistributionSystem": {
+        "type": "object",
+        "properties": {
+            "domain": {
+                "type": "string"
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId"
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "domain",
+            "elements"
+        ]
+    },
+    "MEPPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPreferenceRow"
+                }
+            }
+        },
+        "required": [
+            "guid",
+            "rows"
+        ],
+        "additionalProperties": false
+    },
     "NavigatorItemIds": {
         "type": "array",
         "description": "A list of navigator item identifiers.",
