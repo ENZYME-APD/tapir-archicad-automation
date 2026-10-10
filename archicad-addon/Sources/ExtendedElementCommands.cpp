@@ -4611,7 +4611,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         },
                         "body": {
                             "$ref": "#/MorphBody",
-                            "description": "Builds arbitrary geometry (any number of faces, holes, per-face materials, edge display overrides) instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
+                            "description": "Builds arbitrary geometry instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "xAxis": { "$ref": "#/Coordinate3D" },

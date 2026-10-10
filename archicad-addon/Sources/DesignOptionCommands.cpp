@@ -414,8 +414,7 @@ GS::Optional<GS::UniString> GetDesignOptionForElementsCommand::GetRawResponseSch
                     "type": "object",
                     "properties": {
                         "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The identifier of the element."
+                            "$ref": "#/ElementId"
                         },
                         "type": {
                             "type": "string",
