@@ -593,17 +593,7 @@ GS::Optional<GS::UniString> UpdateClassificationSystemsCommand::GetInputParamete
                 "type": "array",
                 "description": "The classification systems to update. Only the fields given change.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "classificationSystemId": { "$ref": "#/ClassificationSystemId" },
-                        "name": { "type": "string" },
-                        "description": { "type": "string" },
-                        "source": { "type": "string" },
-                        "version": { "type": "string" },
-                        "date": { "$ref": "#/Date" }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "classificationSystemId" ]
+                    "$ref": "#/ClassificationSystemUpdate"
                 }
             }
         },
@@ -691,15 +681,7 @@ GS::Optional<GS::UniString> UpdateClassificationItemsCommand::GetInputParameters
                 "type": "array",
                 "description": "The classification items to update. Only the fields given change; items keep their guid and their parent.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "classificationItemId": { "$ref": "#/ClassificationItemId" },
-                        "id": { "type": "string", "description": "The new code of the item, e.g. 21.10." },
-                        "name": { "type": "string" },
-                        "description": { "type": "string" }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "classificationItemId" ]
+                    "$ref": "#/ClassificationItemUpdate"
                 }
             }
         },

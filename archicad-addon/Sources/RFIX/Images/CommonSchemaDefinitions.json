@@ -1819,7 +1819,7 @@
     },
     "HotlinkOrigin": {
         "type": "object",
-        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional: CreateHotlinkInstances places at 0 when it is omitted, ChangeHotlinkInstances keeps the instance's current z.",
+        "description": "Where a hotlink instance's origin lands, in the project's coordinates.",
         "properties": {
             "x": {
                 "type": "number"
@@ -2954,7 +2954,8 @@
                 "$ref": "#/ElementId"
             },
             "origin": {
-                "$ref": "#/HotlinkOrigin"
+                "$ref": "#/HotlinkOrigin",
+                "description": "If z is omitted, the instance's current z is kept."
             },
             "rotationAngle": {
                 "type": "number",
@@ -3000,7 +3001,8 @@
                 "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
             },
             "origin": {
-                "$ref": "#/HotlinkOrigin"
+                "$ref": "#/HotlinkOrigin",
+                "description": "If z is omitted, the instance is placed at 0."
             },
             "rotationAngle": {
                 "type": "number",
@@ -3051,7 +3053,7 @@
     },
     "Library": {
         "type": "object",
-        "description": "Library",
+        "description": "Details of a project library.",
         "properties": {
             "name": {
                 "type": "string",
@@ -3104,6 +3106,259 @@
     "AutoTextKeyValue": {
         "type": "string",
         "minLength": 1
+    },
+    "PropertyEnumValueRename": {
+        "type": "object",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/GuidId"
+            },
+            "displayValue": {
+                "type": "string"
+            },
+            "nonLocalizedValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enumValueId",
+            "displayValue"
+        ]
+    },
+    "PropertyEnumValueRemoval": {
+        "type": "object",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/GuidId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enumValueId"
+        ]
+    },
+    "PropertyAvailabilityUpdate": {
+        "type": "object",
+        "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
+        "properties": {
+            "set": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "add": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "remove": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "ClassificationItemUpdate": {
+        "type": "object",
+        "properties": {
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId"
+            },
+            "id": {
+                "type": "string",
+                "description": "The new code of the item, e.g. 21.10."
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemId"
+        ]
+    },
+    "ClassificationSystemUpdate": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "source": {
+                "type": "string"
+            },
+            "version": {
+                "type": "string"
+            },
+            "date": {
+                "$ref": "#/Date"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId"
+        ]
+    },
+    "PropertyGroupUpdate": {
+        "type": "object",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId"
+        ]
+    },
+    "PropertyGroupDetails": {
+        "type": "object",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "isCustom": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId",
+            "name",
+            "isCustom"
+        ]
+    },
+    "PropertyDefinitionUpdate": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "name": {
+                "type": "string",
+                "description": "New name of the property."
+            },
+            "description": {
+                "type": "string",
+                "description": "New description of the property."
+            },
+            "groupId": {
+                "$ref": "#/PropertyGroupId",
+                "description": "Move the property into this custom property group."
+            },
+            "defaultValue": {
+                "$ref": "#/PropertyDefaultValue",
+                "description": "New default value: a basic value or expressions. Switching between the two is allowed."
+            },
+            "expressions": {
+                "type": "array",
+                "description": "The new expression strings for the property. Only for expression-based properties.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            },
+            "availability": {
+                "$ref": "#/PropertyAvailabilityUpdate"
+            },
+            "possibleEnumValues": {
+                "$ref": "#/EnumValuesToAdd",
+                "description": "Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
+            },
+            "renameEnumValues": {
+                "type": "array",
+                "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
+                "items": {
+                    "$ref": "#/PropertyEnumValueRename"
+                }
+            },
+            "removeEnumValues": {
+                "type": "array",
+                "description": "Enum options to remove. Elements holding a removed option lose that value.",
+                "items": {
+                    "$ref": "#/PropertyEnumValueRemoval"
+                }
+            },
+            "enumOrder": {
+                "type": "array",
+                "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId"
+        ]
+    },
+    "EnumValue": {
+        "type": "object",
+        "description": "An enumeration value.",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/EnumValueId"
+            },
+            "guid": {
+                "$ref": "#/Guid",
+                "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+            },
+            "displayValue": {
+                "type": "string",
+                "description": "Displayed value of the enumeration."
+            },
+            "nonLocalizedValue": {
+                "type": "string",
+                "description": "Nonlocalized value of the enumeration if there is one."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "displayValue"
+        ]
+    },
+    "EnumValueToAdd": {
+        "type": "object",
+        "description": "Text values for an enumeration option to add.",
+        "properties": {
+            "displayValue": {
+                "type": "string",
+                "description": "Displayed value of the enumeration."
+            },
+            "nonLocalizedValue": {
+                "type": "string",
+                "description": "Nonlocalized value of the enumeration if there is one."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "displayValue"
+        ]
     },
     "PropertyGroupId": {
         "type": "object",
@@ -8054,29 +8309,7 @@
             "type": "object",
             "properties": {
                 "enumValue": {
-                    "type": "object",
-                    "description": "The description of an enumeration value.",
-                    "properties": {
-                        "enumValueId": {
-                            "$ref": "#/EnumValueId"
-                        },
-                "guid": {
-                    "$ref": "#/Guid",
-                    "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
-                },
-                        "displayValue": {
-                            "type": "string",
-                            "description": "Displayed value of the enumeration."
-                        },
-                        "nonLocalizedValue": {
-                            "type": "string",
-                            "description": "Nonlocalized value of the enumeration if there is one."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "displayValue"
-                    ]
+                    "$ref": "#/EnumValue"
                 }
             },
             "additionalProperties": false,
@@ -8084,7 +8317,7 @@
                 "enumValue"
             ]
         }
-            },
+    },
     "PropertyDefinition": {
         "type": "object",
         "properties": {
@@ -8146,22 +8379,7 @@
             "type": "object",
             "properties": {
                 "enumValue": {
-                    "type": "object",
-                    "description": "The description of an enumeration value.",
-                    "properties": {
-                        "displayValue": {
-                            "type": "string",
-                            "description": "Displayed value of the enumeration."
-                        },
-                        "nonLocalizedValue": {
-                            "type": "string",
-                            "description": "Nonlocalized value of the enumeration if there is one."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "displayValue"
-                    ]
+                    "$ref": "#/EnumValueToAdd"
                 }
             },
             "additionalProperties": false,

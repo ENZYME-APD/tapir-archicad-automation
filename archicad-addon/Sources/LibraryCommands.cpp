@@ -271,8 +271,7 @@ GS::Optional<GS::UniString> GetLibrariesCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "A list of project libraries.",
                 "items": {
-                    "$ref": "#/Library",
-                    "description": "Library"
+                    "$ref": "#/Library"
                 }
             }
         },

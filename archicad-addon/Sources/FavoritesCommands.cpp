@@ -922,8 +922,7 @@ GS::Optional<GS::UniString> UpdateFavoritesFromElementsCommand::GetInputParamete
             "favoritesFromElements": {
                 "type": "array",
                 "items": {
-                    "$ref": "#/FavoritesFromElementUpdate",
-                    "description": "The identifier of the element and the name of the existing Favorite to update from it."
+                    "$ref": "#/FavoritesFromElementUpdate"
                 }
             }
         },
