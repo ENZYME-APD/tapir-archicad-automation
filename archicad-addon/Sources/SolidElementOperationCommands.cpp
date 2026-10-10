@@ -64,29 +64,7 @@ GS::Optional<GS::UniString> CreateSolidElementLinksCommand::GetInputParametersSc
                 "type": "array",
                 "description": "List of solid element operation links to create.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "targetId": {
-                            "$ref": "#/ElementId",
-                            "description": "The element to be cut or modified."
-                        },
-                        "operatorId": {
-                            "$ref": "#/ElementId",
-                            "description": "The element performing the operation."
-                        },
-                        "operation": {
-                            "$ref": "#/SolidOperationType"
-                        },
-                        "linkFlags": {
-                            "$ref": "#/SolidLinkFlags"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "targetId",
-                        "operatorId",
-                        "operation"
-                    ]
+                    "$ref": "#/SolidLinkData"
                 }
             }
         },
@@ -177,20 +155,7 @@ GS::Optional<GS::UniString> RemoveSolidElementLinksCommand::GetInputParametersSc
                 "type": "array",
                 "description": "List of solid element operation links to remove.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "targetId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "operatorId": {
-                            "$ref": "#/ElementId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "targetId",
-                        "operatorId"
-                    ]
+                    "$ref": "#/SolidLinkReference"
                 }
             }
         },
@@ -288,39 +253,7 @@ GS::Optional<GS::UniString> GetSolidElementLinksCommand::GetRawResponseSchema ()
                 "type": "array",
                 "description": "For each input element, the solid links where it acts as target and where it acts as operator.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "solidLinksWithTheGivenTarget": {
-                            "type": "array",
-                            "description": "Links where the given element is the target (being cut or modified).",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "operatorId": { "$ref": "#/ElementId" },
-                                    "operation":  { "$ref": "#/SolidOperationType" },
-                                    "linkFlags":  { "$ref": "#/SolidLinkFlags" }
-                                },
-                                "additionalProperties": false,
-                                "required": [ "operatorId", "operation", "linkFlags" ]
-                            }
-                        },
-                        "solidLinksWithTheGivenOperator": {
-                            "type": "array",
-                            "description": "Links where the given element is the operator (performing the cut).",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "targetId":  { "$ref": "#/ElementId" },
-                                    "operation": { "$ref": "#/SolidOperationType" },
-                                    "linkFlags": { "$ref": "#/SolidLinkFlags" }
-                                },
-                                "additionalProperties": false,
-                                "required": [ "targetId", "operation", "linkFlags" ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "solidLinksWithTheGivenTarget", "solidLinksWithTheGivenOperator" ]
+                    "$ref": "#/SolidLinksOfElement"
                 }
             }
         },

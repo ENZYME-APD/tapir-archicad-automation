@@ -1819,7 +1819,7 @@
     },
     "HotlinkOrigin": {
         "type": "object",
-        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional: CreateHotlinkInstances places at 0 when it is omitted, ChangeHotlinkInstances keeps the instance's current z.",
+        "description": "Where a hotlink instance's origin lands, in the project's coordinates.",
         "properties": {
             "x": {
                 "type": "number"
@@ -2655,6 +2655,709 @@
             "Warning",
             "Info",
             "Unknown"
+        ]
+    },
+    "AssociativeWitnessPoint": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "line": {
+                "type": "boolean"
+            },
+            "inIndex": {
+                "type": "integer"
+            },
+            "special": {
+                "type": "integer"
+            },
+            "nodeType": {
+                "type": "integer"
+            },
+            "nodeStatus": {
+                "type": "integer"
+            },
+            "nodeId": {
+                "type": "number",
+                "minimum": 0.0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "IFCExportTranslator": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the translator, as the IFC Translators dialog shows it."
+            },
+            "preview": {
+                "type": "boolean",
+                "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "preview"
+        ]
+    },
+    "CoordinateWitnessPoint": {
+        "type": "object",
+        "properties": {
+            "coordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "coordinate3D": {
+                "$ref": "#/Coordinate3D"
+            },
+            "dimensionPosition": {
+                "$ref": "#/Coordinate2D"
+            },
+            "dimensionValue": {
+                "type": "number"
+            },
+            "witnessForm": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Small",
+                    "Large",
+                    "Fix",
+                    "Unknown"
+                ]
+            },
+            "witnessVal": {
+                "type": "number"
+            },
+            "baseElementId": {
+                "$ref": "#/ElementId"
+            },
+            "line": {
+                "type": "boolean",
+                "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
+            },
+            "inIndex": {
+                "type": "integer",
+                "description": "Subindex of the base element's node (API_Neig inIndex)."
+            },
+            "special": {
+                "type": "integer",
+                "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
+            },
+            "nodeType": {
+                "type": "integer",
+                "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
+            },
+            "nodeStatus": {
+                "type": "integer",
+                "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
+            },
+            "nodeId": {
+                "type": "number",
+                "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
+            }
+        }
+    },
+    "FavoriteRename": {
+        "type": "object",
+        "properties": {
+            "oldName": {
+                "type": "string"
+            },
+            "newName": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "oldName",
+            "newName"
+        ]
+    },
+    "FavoritesFromElementUpdate": {
+        "type": "object",
+        "description": "The identifier of the element and the name of the existing Favorite to update from it.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "favorite": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "favorite"
+        ]
+    },
+    "SolidLinkReference": {
+        "type": "object",
+        "properties": {
+            "targetId": {
+                "$ref": "#/ElementId"
+            },
+            "operatorId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targetId",
+            "operatorId"
+        ]
+    },
+    "SolidLinksOfElement": {
+        "type": "object",
+        "properties": {
+            "solidLinksWithTheGivenTarget": {
+                "type": "array",
+                "description": "Links where the given element is the target (being cut or modified).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "operatorId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "operation": {
+                            "$ref": "#/SolidOperationType"
+                        },
+                        "linkFlags": {
+                            "$ref": "#/SolidLinkFlags"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "operatorId",
+                        "operation",
+                        "linkFlags"
+                    ]
+                }
+            },
+            "solidLinksWithTheGivenOperator": {
+                "type": "array",
+                "description": "Links where the given element is the operator (performing the cut).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "targetId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "operation": {
+                            "$ref": "#/SolidOperationType"
+                        },
+                        "linkFlags": {
+                            "$ref": "#/SolidLinkFlags"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "targetId",
+                        "operation",
+                        "linkFlags"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "solidLinksWithTheGivenTarget",
+            "solidLinksWithTheGivenOperator"
+        ]
+    },
+    "ProjectInfoFieldData": {
+        "type": "object",
+        "properties": {
+            "projectInfoName": {
+                "type": "string",
+                "description": "Display name of the project info field.",
+                "minLength": 1
+            },
+            "projectInfoValue": {
+                "type": "string",
+                "description": "Initial value of the project info field."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoName"
+        ]
+    },
+    "SolidLinkData": {
+        "type": "object",
+        "properties": {
+            "targetId": {
+                "$ref": "#/ElementId",
+                "description": "The element to be cut or modified."
+            },
+            "operatorId": {
+                "$ref": "#/ElementId",
+                "description": "The element performing the operation."
+            },
+            "operation": {
+                "$ref": "#/SolidOperationType"
+            },
+            "linkFlags": {
+                "$ref": "#/SolidLinkFlags"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targetId",
+            "operatorId",
+            "operation"
+        ]
+    },
+    "InteriorElevationData": {
+        "type": "object",
+        "properties": {
+            "nodeCoordinates": {
+                "type": "array",
+                "description": "The corner points of the connected segment chain. Each consecutive pair of points becomes one segment, so a room with four walls needs five points to be closed, or four to be left open.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 2
+            },
+            "depth": {
+                "type": "number",
+                "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
+                "exclusiveMinimum": 0.0
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the interior elevation. Each segment is named after it."
+            },
+            "id": {
+                "type": "string",
+                "description": "ID string of the interior elevation."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "The story to place the interior elevation on. Defaults to the current story."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "nodeCoordinates"
+        ]
+    },
+    "HotlinkInstanceChange": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "If z is omitted, the instance's current z is kept."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Rotation about the origin, counter-clockwise, in radians."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Reflect the module's local X axis before the rotation."
+            },
+            "floorDifference": {
+                "type": "integer"
+            },
+            "skipNested": {
+                "type": "boolean"
+            },
+            "suspendFixAngle": {
+                "type": "boolean"
+            },
+            "ignoreTopFloorLinks": {
+                "type": "boolean"
+            },
+            "relinkWallOpenings": {
+                "type": "boolean"
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean"
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Move the instance to this layer."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "HotlinkInstanceCreation": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId",
+                "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "If z is omitted, the instance is placed at 0."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional story the instance is placed on. Defaults to the current story."
+            },
+            "floorDifference": {
+                "type": "integer",
+                "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
+            },
+            "skipNested": {
+                "type": "boolean",
+                "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
+            },
+            "suspendFixAngle": {
+                "type": "boolean",
+                "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
+            },
+            "ignoreTopFloorLinks": {
+                "type": "boolean",
+                "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
+            },
+            "relinkWallOpenings": {
+                "type": "boolean",
+                "description": "Optional. Defaults to the hotlink tool's current default."
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean",
+                "description": "Optional. Defaults to the hotlink tool's current default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId",
+            "origin"
+        ]
+    },
+    "Library": {
+        "type": "object",
+        "description": "Details of a project library.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Library name."
+            },
+            "path": {
+                "type": "string",
+                "description": "A filesystem path to library location."
+            },
+            "type": {
+                "type": "string",
+                "description": "Library type."
+            },
+            "available": {
+                "type": "boolean",
+                "description": "Is library not missing."
+            },
+            "readOnly": {
+                "type": "boolean",
+                "description": "Is library not writable."
+            },
+            "twServerUrl": {
+                "type": "string",
+                "description": "URL address of the TeamWork server hosting the library."
+            },
+            "urlWebLibrary": {
+                "type": "string",
+                "description": "URL of the downloaded Internet library."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "type",
+            "path"
+        ]
+    },
+    "LibraryLocation": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "path"
+        ]
+    },
+    "AutoTextKeyValue": {
+        "type": "string",
+        "minLength": 1
+    },
+    "PropertyEnumValueRename": {
+        "type": "object",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/GuidId"
+            },
+            "displayValue": {
+                "type": "string"
+            },
+            "nonLocalizedValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enumValueId",
+            "displayValue"
+        ]
+    },
+    "PropertyEnumValueRemoval": {
+        "type": "object",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/GuidId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enumValueId"
+        ]
+    },
+    "PropertyAvailabilityUpdate": {
+        "type": "object",
+        "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
+        "properties": {
+            "set": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "add": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "remove": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "ClassificationItemUpdate": {
+        "type": "object",
+        "properties": {
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId"
+            },
+            "id": {
+                "type": "string",
+                "description": "The new code of the item, e.g. 21.10."
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemId"
+        ]
+    },
+    "ClassificationSystemUpdate": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "source": {
+                "type": "string"
+            },
+            "version": {
+                "type": "string"
+            },
+            "date": {
+                "$ref": "#/Date"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId"
+        ]
+    },
+    "PropertyGroupUpdate": {
+        "type": "object",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId"
+        ]
+    },
+    "PropertyGroupDetails": {
+        "type": "object",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "isCustom": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId",
+            "name",
+            "isCustom"
+        ]
+    },
+    "PropertyDefinitionUpdate": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "name": {
+                "type": "string",
+                "description": "New name of the property."
+            },
+            "description": {
+                "type": "string",
+                "description": "New description of the property."
+            },
+            "groupId": {
+                "$ref": "#/PropertyGroupId",
+                "description": "Move the property into this custom property group."
+            },
+            "defaultValue": {
+                "$ref": "#/PropertyDefaultValue",
+                "description": "New default value: a basic value or expressions. Switching between the two is allowed."
+            },
+            "expressions": {
+                "type": "array",
+                "description": "The new expression strings for the property. Only for expression-based properties.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            },
+            "availability": {
+                "$ref": "#/PropertyAvailabilityUpdate"
+            },
+            "possibleEnumValues": {
+                "$ref": "#/EnumValuesToAdd",
+                "description": "Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
+            },
+            "renameEnumValues": {
+                "type": "array",
+                "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
+                "items": {
+                    "$ref": "#/PropertyEnumValueRename"
+                }
+            },
+            "removeEnumValues": {
+                "type": "array",
+                "description": "Enum options to remove. Elements holding a removed option lose that value.",
+                "items": {
+                    "$ref": "#/PropertyEnumValueRemoval"
+                }
+            },
+            "enumOrder": {
+                "type": "array",
+                "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId"
+        ]
+    },
+    "EnumValue": {
+        "type": "object",
+        "description": "An enumeration value.",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/EnumValueId"
+            },
+            "guid": {
+                "$ref": "#/Guid",
+                "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+            },
+            "displayValue": {
+                "type": "string",
+                "description": "Displayed value of the enumeration."
+            },
+            "nonLocalizedValue": {
+                "type": "string",
+                "description": "Nonlocalized value of the enumeration if there is one."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "displayValue"
+        ]
+    },
+    "EnumValueToAdd": {
+        "type": "object",
+        "description": "Text values for an enumeration option to add.",
+        "properties": {
+            "displayValue": {
+                "type": "string",
+                "description": "Displayed value of the enumeration."
+            },
+            "nonLocalizedValue": {
+                "type": "string",
+                "description": "Nonlocalized value of the enumeration if there is one."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "displayValue"
         ]
     },
     "PropertyGroupId": {
@@ -7606,29 +8309,7 @@
             "type": "object",
             "properties": {
                 "enumValue": {
-                    "type": "object",
-                    "description": "The description of an enumeration value.",
-                    "properties": {
-                        "enumValueId": {
-                            "$ref": "#/EnumValueId"
-                        },
-                "guid": {
-                    "$ref": "#/Guid",
-                    "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
-                },
-                        "displayValue": {
-                            "type": "string",
-                            "description": "Displayed value of the enumeration."
-                        },
-                        "nonLocalizedValue": {
-                            "type": "string",
-                            "description": "Nonlocalized value of the enumeration if there is one."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "displayValue"
-                    ]
+                    "$ref": "#/EnumValue"
                 }
             },
             "additionalProperties": false,
@@ -7636,7 +8317,7 @@
                 "enumValue"
             ]
         }
-            },
+    },
     "PropertyDefinition": {
         "type": "object",
         "properties": {
@@ -7698,22 +8379,7 @@
             "type": "object",
             "properties": {
                 "enumValue": {
-                    "type": "object",
-                    "description": "The description of an enumeration value.",
-                    "properties": {
-                        "displayValue": {
-                            "type": "string",
-                            "description": "Displayed value of the enumeration."
-                        },
-                        "nonLocalizedValue": {
-                            "type": "string",
-                            "description": "Nonlocalized value of the enumeration if there is one."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "displayValue"
-                    ]
+                    "$ref": "#/EnumValueToAdd"
                 }
             },
             "additionalProperties": false,
@@ -8246,55 +8912,7 @@
                 "type": "array",
                 "description": "The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "coordinate": {
-                            "$ref": "#/Coordinate2D"
-                        },
-                        "coordinate3D": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "dimensionPosition": {
-                            "$ref": "#/Coordinate2D"
-                        },
-                        "dimensionValue": {
-                            "type": "number"
-                        },
-                        "witnessForm": {
-                            "type": "string",
-                            "enum": ["None", "Small", "Large", "Fix", "Unknown"]
-                        },
-                        "witnessVal": {
-                            "type": "number"
-                        },
-                        "baseElementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "line": {
-                            "type": "boolean",
-                            "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
-                        },
-                        "inIndex": {
-                            "type": "integer",
-                            "description": "Subindex of the base element's node (API_Neig inIndex)."
-                        },
-                        "special": {
-                            "type": "integer",
-                            "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
-                        },
-                        "nodeType": {
-                            "type": "integer",
-                            "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
-                        },
-                        "nodeStatus": {
-                            "type": "integer",
-                            "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
-                        },
-                        "nodeId": {
-                            "type": "number",
-                            "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
-                        }
-                    }
+                    "$ref": "#/CoordinateWitnessPoint"
                 }
             }
         }
