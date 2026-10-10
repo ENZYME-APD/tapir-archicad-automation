@@ -1130,14 +1130,7 @@ GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetRawResponseSchema () co
                         "customData": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "customSchemeKey":   { "type": "string" },
-                                    "customSchemeName":  { "type": "string" },
-                                    "customSchemeValue": { "type": "string" }
-                                },
-                                "required": ["customSchemeKey", "customSchemeValue"],
-                                "additionalProperties": false
+                                "$ref": "#/LayoutCustomData"
                             }
                         }
                     },
@@ -1274,14 +1267,7 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                         "customData": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "customSchemeKey":   { "type": "string" },
-                                    "customSchemeName":  { "type": "string" },
-                                    "customSchemeValue": { "type": "string" }
-                                },
-                                "required": ["customSchemeValue"],
-                                "additionalProperties": false
+                                "$ref": "#/LayoutCustomDataToSet"
                             }
                         }
                     },
