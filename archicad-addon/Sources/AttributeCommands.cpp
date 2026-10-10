@@ -413,8 +413,7 @@ GS::Optional<GS::UniString> GetLinesCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Line. If omitted, every field is returned. Requesting only the fields you need avoids fetching dashItems/lineItems, which can be large.",
                 "items": {
-                    "type": "string",
-                    "enum": ["scaleWithPlan", "defineScale", "lineType", "period", "height", "dashItems", "lineItems"]
+                    "$ref": "#/LineAttributeField"
                 }
             }
         },
@@ -584,8 +583,7 @@ GS::Optional<GS::UniString> GetFillsCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Fill. If omitted, every field is returned. Requesting only the fields you need avoids fetching lineItems/symbolLines/symbolArcs/symbolHotspots, which can be large.",
                 "items": {
-                    "type": "string",
-                    "enum": ["subType", "scaleWithPlan", "useForWalls", "useForDraft", "useForCover", "horizontalSpacing", "verticalSpacing", "angle", "bitPattern", "gradientStart", "gradientEnd", "percent", "texture", "lineItems", "symbolLines", "symbolArcs", "symbolHotspots"]
+                    "$ref": "#/FillAttributeField"
                 }
             }
         },
@@ -776,8 +774,7 @@ GS::Optional<GS::UniString> GetZoneCategoriesCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Names of the fields to return for each Zone Category. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["categoryCode", "color", "stampName", "stampMainGuid", "stampRevGuid"]
+                    "$ref": "#/ZoneCategoryAttributeField"
                 }
             }
         },
@@ -880,8 +877,7 @@ GS::Optional<GS::UniString> GetMEPSystemsCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Names of the fields to return for each MEP System. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId", "materialId", "insulationMaterialId"]
+                    "$ref": "#/MEPSystemAttributeField"
                 }
             }
         },
@@ -1025,8 +1021,7 @@ GS::Optional<GS::UniString> GetPenTablesCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "Names of the fields to return for each Pen Table. If omitted, every field is returned. Requesting only the fields you need avoids fetching the 255-element pens array.",
                 "items": {
-                    "type": "string",
-                    "enum": ["isActiveForModel", "isActiveForLayout", "pens"]
+                    "$ref": "#/PenTableAttributeField"
                 }
             }
         },
@@ -1191,8 +1186,7 @@ GS::Optional<GS::UniString> GetProfilesCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
                 "items": {
-                    "type": "string",
-                    "enum": ["wallType", "beamType", "coluType", "handrailType", "otherGDLObjectType", "useWith", "width", "height", "minimumWidth", "minimumHeight", "widthStretchable", "heightStretchable", "hasCoreSkin", "profileModifiers", "skins", "skinOutlines"]
+                    "$ref": "#/ProfileAttributeField"
                 }
             }
         },
@@ -2038,8 +2032,7 @@ GS::Optional<GS::UniString> GetCompositesCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Names of the fields to return for each Composite. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["useWith", "skins", "separators"]
+                    "$ref": "#/CompositeAttributeField"
                 }
             }
         },
@@ -2202,8 +2195,7 @@ GS::Optional<GS::UniString> GetSurfacesCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "description": "Names of the fields to return for each Surface. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["materialType", "ambientReflection", "diffuseReflection", "specularReflection", "transparency", "shine", "transparencyAttenuation", "emissionAttenuation", "surfaceColor", "specularColor", "emissionColor", "fillId", "texture"]
+                    "$ref": "#/SurfaceAttributeField"
                 }
             }
         },
@@ -2351,8 +2343,7 @@ GS::Optional<GS::UniString> GetLayersCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Layer. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["isHidden", "isLocked", "isWireframe", "intersectionGroupNr"]
+                    "$ref": "#/LayerAttributeField"
                 }
             }
         },
@@ -2461,8 +2452,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "Names of the fields to return for each Building Material. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["id", "manufacturer", "description", "connPriority", "cutFillIndex", "cutFillPen", "cutFillBackgroundPen", "cutSurfaceIndex", "cutFillOrientation", "thermalConductivity", "density", "heatCapacity", "embodiedEnergy", "embodiedCarbon", "showUncutLines", "collisionDetection"]
+                    "$ref": "#/BuildingMaterialAttributeField"
                 }
             }
         },

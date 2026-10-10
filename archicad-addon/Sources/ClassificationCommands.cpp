@@ -797,8 +797,8 @@ GS::Optional<GS::UniString> ImportClassificationsXmlCommand::GetInputParametersS
         "type": "object",
         "properties": {
             "xml": { "type": "string", "description": "A Classification Manager export (XML) to import." },
-            "systemConflictPolicy": { "type": "string", "enum": [ "merge", "replace", "skip" ], "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one." },
-            "itemConflictPolicy": { "type": "string", "enum": [ "replace", "skip" ], "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one." }
+            "systemConflictPolicy": { "$ref": "#/ClassificationSystemConflictPolicy" },
+            "itemConflictPolicy": { "$ref": "#/ClassificationItemConflictPolicy" }
         },
         "additionalProperties": false,
         "required": [ "xml", "systemConflictPolicy", "itemConflictPolicy" ]

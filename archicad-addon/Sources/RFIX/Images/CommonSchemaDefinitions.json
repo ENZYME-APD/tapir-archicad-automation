@@ -51,8 +51,7 @@
                             "$ref": "#/ElementId"
                         },
                         "trimType": {
-                            "type": "string",
-                            "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ]
+                            "$ref": "#/TrimType"
                         }
                     },
                     "additionalProperties": false,
@@ -935,8 +934,7 @@
                 "type": "string"
             },
             "subType": {
-                "type": "string",
-                "enum": ["Vector", "Solid", "Empty", "Symbol", "LinearGradient", "RadialGradient"]
+                "$ref": "#/FillSubType"
             },
             "scaleWithPlan": {
                 "type": "boolean"
@@ -1149,8 +1147,7 @@
                 "type": "array",
                 "description": "The domain(s) this system belongs to. Archicad 29+ allows only one; earlier versions may report several.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                    "$ref": "#/MEPDomain"
                 }
             },
             "contourPen": {
@@ -1299,8 +1296,7 @@
             "useWith": {
                 "type": "array",
                 "items": {
-                    "type": "string",
-                    "enum": ["Wall", "Beam", "Column", "Handrail", "Other"]
+                    "$ref": "#/ProfileUseWith"
                 }
             },
             "width": {
@@ -1527,8 +1523,7 @@
         "type": "object",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": ["Core", "Finish", "Other"]
+                "$ref": "#/CompositeSkinType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeIdArrayItem"
@@ -1790,9 +1785,7 @@
                 "description": "The display name of the hotlink node."
             },
             "type": {
-                "type": "string",
-                "description": "Module or XRef.",
-                "enum": ["Module", "XRef"]
+                "$ref": "#/HotlinkType"
             },
             "children": {
                 "$ref": "#/Hotlinks",
@@ -1842,8 +1835,7 @@
         "description": "Details of a placed hotlink instance: which node it comes from and where it sits.",
         "properties": {
             "hotlinkType": {
-                "type": "string",
-                "enum": ["Module", "XRef"]
+                "$ref": "#/HotlinkType"
             },
             "hotlinkNodeId": {
                 "$ref": "#/HotlinkNodeId"
@@ -2541,6 +2533,559 @@
                 ]
             }
         ]
+    },
+    "FillAttributeField": {
+        "type": "string",
+        "enum": [
+            "subType",
+            "scaleWithPlan",
+            "useForWalls",
+            "useForDraft",
+            "useForCover",
+            "horizontalSpacing",
+            "verticalSpacing",
+            "angle",
+            "bitPattern",
+            "gradientStart",
+            "gradientEnd",
+            "percent",
+            "texture",
+            "lineItems",
+            "symbolLines",
+            "symbolArcs",
+            "symbolHotspots"
+        ]
+    },
+    "ZoneCategoryAttributeField": {
+        "type": "string",
+        "enum": [
+            "categoryCode",
+            "color",
+            "stampName",
+            "stampMainGuid",
+            "stampRevGuid"
+        ]
+    },
+    "MEPSystemAttributeField": {
+        "type": "string",
+        "enum": [
+            "domain",
+            "contourPen",
+            "fillPen",
+            "fillBackgroundPen",
+            "centerLinePen",
+            "fillId",
+            "centerLineTypeId",
+            "materialId",
+            "insulationMaterialId"
+        ]
+    },
+    "PenTableAttributeField": {
+        "type": "string",
+        "enum": [
+            "isActiveForModel",
+            "isActiveForLayout",
+            "pens"
+        ]
+    },
+    "ProfileAttributeField": {
+        "type": "string",
+        "enum": [
+            "wallType",
+            "beamType",
+            "coluType",
+            "handrailType",
+            "otherGDLObjectType",
+            "useWith",
+            "width",
+            "height",
+            "minimumWidth",
+            "minimumHeight",
+            "widthStretchable",
+            "heightStretchable",
+            "hasCoreSkin",
+            "profileModifiers",
+            "skins",
+            "skinOutlines"
+        ]
+    },
+    "CompositeAttributeField": {
+        "type": "string",
+        "enum": [
+            "useWith",
+            "skins",
+            "separators"
+        ]
+    },
+    "CompositeSkinType": {
+        "type": "string",
+        "enum": [
+            "Core",
+            "Finish",
+            "Other"
+        ]
+    },
+    "SurfaceAttributeField": {
+        "type": "string",
+        "enum": [
+            "materialType",
+            "ambientReflection",
+            "diffuseReflection",
+            "specularReflection",
+            "transparency",
+            "shine",
+            "transparencyAttenuation",
+            "emissionAttenuation",
+            "surfaceColor",
+            "specularColor",
+            "emissionColor",
+            "fillId",
+            "texture"
+        ]
+    },
+    "LayerAttributeField": {
+        "type": "string",
+        "enum": [
+            "isHidden",
+            "isLocked",
+            "isWireframe",
+            "intersectionGroupNr"
+        ]
+    },
+    "BuildingMaterialAttributeField": {
+        "type": "string",
+        "enum": [
+            "id",
+            "manufacturer",
+            "description",
+            "connPriority",
+            "cutFillIndex",
+            "cutFillPen",
+            "cutFillBackgroundPen",
+            "cutSurfaceIndex",
+            "cutFillOrientation",
+            "thermalConductivity",
+            "density",
+            "heatCapacity",
+            "embodiedEnergy",
+            "embodiedCarbon",
+            "showUncutLines",
+            "collisionDetection"
+        ]
+    },
+    "LineAttributeField": {
+        "type": "string",
+        "enum": [
+            "scaleWithPlan",
+            "defineScale",
+            "lineType",
+            "period",
+            "height",
+            "dashItems",
+            "lineItems"
+        ]
+    },
+    "FillSubType": {
+        "type": "string",
+        "enum": [
+            "Vector",
+            "Solid",
+            "Empty",
+            "Symbol",
+            "LinearGradient",
+            "RadialGradient"
+        ]
+    },
+    "ProfileUseWith": {
+        "type": "string",
+        "enum": [
+            "Wall",
+            "Beam",
+            "Column",
+            "Handrail",
+            "Other"
+        ]
+    },
+    "WallStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite",
+            "Profile"
+        ]
+    },
+    "SlabStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
+    "RoofStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
+    "DisplayOption": {
+        "type": "string",
+        "description": "Floor plan display option.",
+        "enum": [
+            "Standard",
+            "StandardWithAbstract",
+            "CutOnly",
+            "OutLinesOnly",
+            "AbstractAll",
+            "CutAll"
+        ]
+    },
+    "ViewDepthLimitation": {
+        "type": "string",
+        "description": "Floor plan view depth limitation.",
+        "enum": [
+            "ToFloorPlanRange",
+            "ToAbsoluteLimit",
+            "EntireElement"
+        ]
+    },
+    "TextureProjectionType": {
+        "type": "string",
+        "description": "Projection type of the 3D texture.",
+        "enum": [
+            "Invalid",
+            "Planar",
+            "Default",
+            "Cylindric",
+            "Spheric",
+            "Box"
+        ]
+    },
+    "MeshRidges": {
+        "type": "string",
+        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
+        "enum": [
+            "AllSharp",
+            "AllSmooth",
+            "UserDefined"
+        ]
+    },
+    "BeamAnchorPoint": {
+        "type": "string",
+        "description": "Anchor point of the beam cross section on a 3x3 grid.",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "ColumnCoreAnchor": {
+        "type": "string",
+        "description": "Anchor point of the column core on a 3x3 grid.",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "SlabReferencePlaneLocation": {
+        "type": "string",
+        "description": "Location of the slab reference plane.",
+        "enum": [
+            "Top",
+            "CoreTop",
+            "CoreBottom",
+            "Bottom"
+        ]
+    },
+    "WallReferenceLineLocation": {
+        "type": "string",
+        "enum": [
+            "Outside",
+            "Center",
+            "Inside",
+            "CoreOutside",
+            "CoreCenter",
+            "CoreInside"
+        ],
+        "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
+    },
+    "WallZoneRelation": {
+        "type": "string",
+        "enum": [
+            "Boundary",
+            "ReduceArea",
+            "None",
+            "SubtractFromZone"
+        ]
+    },
+    "WallGeometryType": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Trapezoid",
+            "Polygonal"
+        ]
+    },
+    "WallModificationGeometryType": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Trapezoid"
+        ],
+        "description": "The wall's plan outline shape, distinct from its cross section shape."
+    },
+    "WallProfileType": {
+        "type": "string",
+        "enum": [
+            "Normal",
+            "Slanted",
+            "Trapez",
+            "Poly"
+        ],
+        "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline)."
+    },
+    "WallModificationProfileType": {
+        "type": "string",
+        "enum": [
+            "Normal",
+            "Slanted",
+            "Trapez"
+        ],
+        "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline)."
+    },
+    "IFCElementsToExport": {
+        "type": "string",
+        "description": "Which elements to export.",
+        "enum": [
+            "EntireProject",
+            "VisibleElementsOnAllStories",
+            "AllElementsOnCurrentStory",
+            "VisibleElementsOnCurrentStory",
+            "SelectedElementsOnly"
+        ]
+    },
+    "ClassificationSystemConflictPolicy": {
+        "type": "string",
+        "enum": [
+            "merge",
+            "replace",
+            "skip"
+        ],
+        "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one."
+    },
+    "ClassificationItemConflictPolicy": {
+        "type": "string",
+        "enum": [
+            "replace",
+            "skip"
+        ],
+        "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one."
+    },
+    "PropertyImportConflictPolicy": {
+        "type": "string",
+        "enum": [
+            "append",
+            "replace",
+            "skip"
+        ],
+        "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one."
+    },
+    "DesignOptionLinkType": {
+        "type": "string",
+        "description": "The type of the associated design option.",
+        "enum": [
+            "NotExistingElement",
+            "MissingDesignOption",
+            "NotLinkedToAnyDesignOption",
+            "LinkedToDesignOption"
+        ]
+    },
+    "MEPDomain": {
+        "type": "string",
+        "description": "The MEP domain.",
+        "enum": [
+            "Ventilation",
+            "Piping",
+            "CableCarrier"
+        ]
+    },
+    "MEPElementType": {
+        "type": "string",
+        "enum": [
+            "RoutingElement",
+            "RigidSegment",
+            "Elbow",
+            "Transition",
+            "Branch",
+            "Terminal",
+            "Accessory",
+            "Equipment",
+            "Fitting",
+            "FlexibleSegment",
+            "TakeOff"
+        ]
+    },
+    "DrawingNameType": {
+        "type": "string",
+        "enum": [
+            "ViewOrSourceFileName",
+            "ViewIdAndName",
+            "CustomName"
+        ],
+        "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+    },
+    "DrawingNumberingType": {
+        "type": "string",
+        "enum": [
+            "ByLayout",
+            "ByViewId",
+            "CustomNumber"
+        ],
+        "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+    },
+    "MEPCrossSectionShape": {
+        "type": "string",
+        "description": "Shape of an MEP routing segment's cross section.",
+        "enum": [
+            "Rectangular",
+            "Circular",
+            "Oval",
+            "UShape"
+        ]
+    },
+    "MEPPreferenceTableDomain": {
+        "type": "string",
+        "description": "The MEP domain of the segment preference tables.",
+        "enum": [
+            "Piping",
+            "Ventilation"
+        ]
+    },
+    "MEPComponentType": {
+        "type": "string",
+        "enum": [
+            "Terminal",
+            "Accessory",
+            "Equipment",
+            "Fitting"
+        ]
+    },
+    "TrimType": {
+        "type": "string",
+        "description": "Which side of the trimming element the elements keep.",
+        "enum": [
+            "KeepInside",
+            "KeepOutside",
+            "KeepAll",
+            "No"
+        ]
+    },
+    "HotlinkType": {
+        "type": "string",
+        "description": "Module or XRef.",
+        "enum": [
+            "Module",
+            "XRef"
+        ]
+    },
+    "NavigatorItemType": {
+        "type": "string",
+        "description": "The type of the navigator item.",
+        "enum": [
+            "UndefinedItem",
+            "ProjectItem",
+            "StoryItem",
+            "SectionItem",
+            "DetailDrawingItem",
+            "PerspectiveItem",
+            "AxonometryItem",
+            "ListItem",
+            "ScheduleItem",
+            "TocItem",
+            "CameraItem",
+            "CameraSetItem",
+            "InfoItem",
+            "HelpItem",
+            "LayoutItem",
+            "MasterLayoutItem",
+            "BookItem",
+            "MasterFolderItem",
+            "SubSetItem",
+            "TextListItem",
+            "ElevationItem",
+            "InteriorElevationItem",
+            "WorksheetDrawingItem",
+            "DocumentFrom3DItem",
+            "FolderItem",
+            "DrawingItem",
+            "UnknownItem"
+        ]
+    },
+    "Justification": {
+        "type": "string",
+        "description": "Text justification.",
+        "enum": [
+            "Left",
+            "Center",
+            "Right",
+            "Full"
+        ]
+    },
+    "LabelClass": {
+        "type": "string",
+        "enum": [
+            "Text",
+            "Symbol"
+        ],
+        "description": "Whether this is a textual or a symbol label."
+    },
+    "TextBoxAnchor": {
+        "type": "string",
+        "enum": [
+            "LeftTop",
+            "MiddleTop",
+            "RightTop",
+            "LeftMiddle",
+            "MiddleMiddle",
+            "RightMiddle",
+            "LeftBottom",
+            "MiddleBottom",
+            "RightBottom"
+        ],
+        "description": "Anchor point of the text box."
+    },
+    "LabelLeaderLineAnchorPoint": {
+        "type": "string",
+        "enum": [
+            "Middle",
+            "Top",
+            "Bottom",
+            "Underlined"
+        ],
+        "description": "How the leader line connects to the label text."
+    },
+    "SymbolLabelTextDirection": {
+        "type": "string",
+        "enum": [
+            "Parallel",
+            "Horizontal",
+            "Vertical",
+            "General"
+        ],
+        "description": "Direction of the symbol label's text."
     },
     "LengthType": {
         "type": "string",
@@ -4225,37 +4770,7 @@
                 "$ref": "#/NavigatorItemId"
             },
             "type": {
-                "type": "string",
-                "description": "The type of the navigator item.",
-                "enum": [
-                    "UndefinedItem",
-                    "ProjectItem",
-                    "StoryItem",
-                    "SectionItem",
-                    "DetailDrawingItem",
-                    "PerspectiveItem",
-                    "AxonometryItem",
-                    "ListItem",
-                    "ScheduleItem",
-                    "TocItem",
-                    "CameraItem",
-                    "CameraSetItem",
-                    "InfoItem",
-                    "HelpItem",
-                    "LayoutItem",
-                    "MasterLayoutItem",
-                    "BookItem",
-                    "MasterFolderItem",
-                    "SubSetItem",
-                    "TextListItem",
-                    "ElevationItem",
-                    "InteriorElevationItem",
-                    "WorksheetDrawingItem",
-                    "DocumentFrom3DItem",
-                    "FolderItem",
-                    "DrawingItem",
-                    "UnknownItem"
-                ]
+                "$ref": "#/NavigatorItemType"
             },
             "name": {
                 "type": "string",
@@ -4589,12 +5104,7 @@
         "type": "object",
         "properties": {
             "geometryType": {
-                "type": "string",
-                "enum": [
-                    "Straight",
-                    "Trapezoid",
-                    "Polygonal"
-                ]
+                "$ref": "#/WallGeometryType"
             },
             "begCoordinate": {
                 "$ref": "#/Coordinate2D"
@@ -4647,12 +5157,7 @@
                 }
             },
             "structureType": {
-                "type": "string",
-                "enum": [
-                    "Basic",
-                    "Composite",
-                    "Profile"
-                ]
+                "$ref": "#/WallStructureType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -4664,26 +5169,11 @@
                 "$ref": "#/AttributeId"
             },
             "referenceLineLocation": {
-                "type": "string",
-                "enum": [
-                    "Outside",
-                    "Center",
-                    "Inside",
-                    "CoreOutside",
-                    "CoreCenter",
-                    "CoreInside"
-                ],
-                "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
+                "$ref": "#/WallReferenceLineLocation"
             },
             "profileType": {
-                "type": "string",
-                "enum": [
-                    "Normal",
-                    "Slanted",
-                    "Trapez",
-                    "Poly"
-                ],
-                "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
+                "$ref": "#/WallProfileType",
+                "description": "Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
             },
             "slantAlpha": {
                 "type": "number",
@@ -4702,13 +5192,7 @@
                 "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' via ModifyWalls in the same call."
             },
             "zoneRel": {
-                "type": "string",
-                "enum": [
-                    "Boundary",
-                    "ReduceArea",
-                    "None",
-                    "SubtractFromZone"
-                ]
+                "$ref": "#/WallZoneRelation"
             },
             "visibility": {
                 "$ref": "#/StoryVisibility"
@@ -4760,14 +5244,11 @@
                 "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
             },
             "displayOption": {
-                "type": "string",
-                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                "description": "Floor plan display option."
+                "$ref": "#/DisplayOption"
             },
             "viewDepthLimitation": {
-                "type": "string",
-                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                "$ref": "#/ViewDepthLimitation",
+                "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
             },
             "connectionPriority": {
                 "type": "integer",
@@ -4890,18 +5371,7 @@
                 "type": "number"
             },
             "anchorPoint": {
-                "type": "string",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/BeamAnchorPoint"
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -4998,8 +5468,7 @@
                 "enum": [ "SinglePlane", "MultiPlane" ]
             },
             "structureType": {
-                "type": "string",
-                "enum": [ "Basic", "Composite" ]
+                "$ref": "#/RoofStructureType"
             },
             "thickness": {
                 "type": "number"
@@ -5126,11 +5595,7 @@
                 "$ref": "#/Holes2D"
             },
             "structureType": {
-                "type": "string",
-                "enum": [
-                    "Basic",
-                    "Composite"
-                ]
+                "$ref": "#/SlabStructureType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -5139,13 +5604,7 @@
                 "$ref": "#/AttributeId"
             },
             "referencePlaneLocation": {
-                "type": "string",
-                "enum": [
-                    "Top",
-                    "CoreTop",
-                    "CoreBottom",
-                    "Bottom"
-                ]
+                "$ref": "#/SlabReferencePlaneLocation"
             },
             "topMaterial": {
                 "$ref": "#/OverriddenMaterial"
@@ -5197,18 +5656,7 @@
                 "type": "number"
             },
             "coreAnchor": {
-                "type": "string",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/ColumnCoreAnchor"
             },
             "isSlanted": {
                 "type": "boolean"
@@ -6059,9 +6507,7 @@
                 "description": "The height of the skirt."
             },
             "ridges": {
-                "type": "string",
-                "description": "How ridges between mesh facets are displayed in 3D.",
-                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                "$ref": "#/MeshRidges"
             },
             "showLines": {
                 "type": "boolean",
@@ -6355,14 +6801,10 @@
                 "additionalProperties": false
             },
             "displayOption": {
-                "type": "string",
-                "description": "Floor plan display option.",
-                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                "$ref": "#/DisplayOption"
             },
             "viewDepthLimitation": {
-                "type": "string",
-                "description": "Floor plan view depth limitation.",
-                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                "$ref": "#/ViewDepthLimitation"
             },
             "cutFillPen": {
                 "type": "integer",
@@ -6460,9 +6902,7 @@
                 "description": "Show the floor plan hatching as if projected onto a plane."
             },
             "textureProjectionType": {
-                "type": "string",
-                "description": "Projection type of the 3D texture.",
-                "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                "$ref": "#/TextureProjectionType"
             },
             "textureProjectionCoords": {
                 "type": "array",
@@ -6536,18 +6976,14 @@
                 "description": "The identifier of the navigator item (view/layout) this Drawing was created from. Read-only: Archicad only lets this be set at creation time (see CreateDrawings) - it cannot be changed afterwards to relink the Drawing to a different source."
             },
             "nameType": {
-                "type": "string",
-                "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
-                "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNameType"
             },
             "customName": {
                 "type": "string",
                 "description": "The drawing's custom title name. Present only when nameType is CustomName."
             },
             "numberingType": {
-                "type": "string",
-                "enum": ["ByLayout", "ByViewId", "CustomNumber"],
-                "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNumberingType"
             },
             "customNumber": {
                 "type": "string",
@@ -6607,8 +7043,7 @@
             "type": "boolean"
           },
           "labelClass": {
-            "type": "string",
-            "enum": ["Text", "Symbol"]
+              "$ref": "#/LabelClass"
           },
           "leaderLine": {
             "$ref": "#/LabelLeaderLineDetails"
@@ -6669,8 +7104,7 @@
                 "description": "The pen attribute index (same as style.penIndex)."
             },
             "justification": {
-                "type": "string",
-                "enum": ["Left", "Center", "Right", "Full"],
+                "$ref": "#/Justification",
                 "description": "Same as style.justification."
             },
             "zCoordinate": {
@@ -7477,18 +7911,14 @@
                 "minItems": 3
             },
             "nameType": {
-                "type": "string",
-                "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
-                "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNameType"
             },
             "customName": {
                 "type": "string",
                 "description": "The drawing's custom title name. Only used when nameType is CustomName."
             },
             "numberingType": {
-                "type": "string",
-                "enum": ["ByLayout", "ByViewId", "CustomNumber"],
-                "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNumberingType"
             },
             "customNumber": {
                 "type": "string",
@@ -7526,9 +7956,8 @@
                 "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
-                "type": "string",
-                "enum": ["Left", "Center", "Right", "Full"],
-                "description": "The text justification. Only applied to Text elements."
+                "$ref": "#/Justification",
+                "description": "Only applied to Text elements."
             }
         },
         "additionalProperties": false,
@@ -8798,18 +9227,21 @@
             "orientation"
         ]
     },
+    "HatchOrientationType": {
+        "type": "string",
+        "enum": [
+            "Global",
+            "Rotated",
+            "Distorted",
+            "Centered"
+        ]
+    },
     "HatchOrientation": {
         "type": "object",
         "description": "Orientation and distortion parameters of a fill.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [
-                    "Global",
-                    "Rotated",
-                    "Distorted",
-                    "Centered"
-                ]
+                "$ref": "#/HatchOrientationType"
             },
             "origin": {
                 "$ref": "#/Coordinate2D",
@@ -8909,7 +9341,7 @@
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
-            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "justification": { "$ref": "#/Justification" },
             "height": { "type": "number", "description": "Character height in mm." },
             "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
             "angle": { "type": "number", "description": "Rotation angle in radians." },
@@ -8924,7 +9356,7 @@
             "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
             "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
             "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
-            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "anchor": { "$ref": "#/TextBoxAnchor" },
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
@@ -8944,7 +9376,7 @@
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
-            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "justification": { "$ref": "#/Justification" },
             "height": { "type": "number", "description": "Character height in mm." },
             "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
             "angle": { "type": "number", "description": "Rotation angle in radians." },
@@ -8959,7 +9391,7 @@
             "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
             "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
             "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
-            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "anchor": { "$ref": "#/TextBoxAnchor" },
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
@@ -8982,7 +9414,7 @@
             "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
             "framed": { "type": "boolean", "description": "Put a frame around the content." },
             "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
-            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "anchorPoint": { "$ref": "#/LabelLeaderLineAnchorPoint", "description": "Only applies to text-class labels." },
             "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
             "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
             "arrowType": { "$ref": "#/LabelArrowType" },
@@ -9002,7 +9434,7 @@
             "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
             "framed": { "type": "boolean", "description": "Put a frame around the content." },
             "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
-            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "anchorPoint": { "$ref": "#/LabelLeaderLineAnchorPoint", "description": "Only applies to text-class labels." },
             "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
             "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
             "arrowType": { "$ref": "#/LabelArrowType" },
@@ -9036,7 +9468,7 @@
         "type": "object",
         "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
         "properties": {
-            "textWay": { "type": "string", "enum": ["Parallel", "Horizontal", "Vertical", "General"], "description": "Direction of the symbol label's text." },
+            "textWay": { "$ref": "#/SymbolLabelTextDirection" },
             "fontIndex": { "type": "integer" },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },

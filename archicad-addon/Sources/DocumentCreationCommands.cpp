@@ -634,9 +634,8 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "description": "Custom title name of the new Drawing. Giving a name implies nameType CustomName unless nameType is set explicitly."
                         },
                         "nameType": {
-                            "type": "string",
-                            "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
-                            "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog). Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
+                            "$ref": "#/DrawingNameType",
+                            "description": "Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
                         },
                         "position": { "$ref": "#/Coordinate2D" },
                         "scale": {

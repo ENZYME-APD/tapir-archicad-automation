@@ -172,16 +172,14 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "Optional filter for the MEP element types.",
                 "items": {
-                    "type": "string",
-                    "enum": ["RoutingElement", "RigidSegment", "Elbow", "Transition", "Branch", "Terminal", "Accessory", "Equipment", "Fitting", "FlexibleSegment", "TakeOff"]
+                    "$ref": "#/MEPElementType"
                 }
             },
             "domains": {
                 "type": "array",
                 "description": "Optional filter for the MEP domains.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                    "$ref": "#/MEPDomain"
                 }
             }
         },
@@ -599,8 +597,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "type": "string",
-                            "enum": ["Ventilation", "Piping", "CableCarrier"]
+                            "$ref": "#/MEPDomain"
                         },
                         "nodeCoordinates": {
                             "type": "array",
@@ -619,9 +616,8 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                             "description": "Optional cross section height applied to all segments."
                         },
                         "crossSectionShape": {
-                            "type": "string",
-                            "description": "Optional cross section shape applied to all segments.",
-                            "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "Optional; applied to all segments."
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
@@ -792,13 +788,11 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                     "type": "object",
                     "properties": {
                         "type": {
-                            "type": "string",
-                            "enum": ["Terminal", "Accessory", "Equipment", "Fitting"]
+                            "$ref": "#/MEPComponentType"
                         },
                         "domain": {
-                            "type": "string",
-                            "description": "The MEP domain of the element. Required for all types except Equipment.",
-                            "enum": ["Ventilation", "Piping", "CableCarrier"]
+                            "$ref": "#/MEPDomain",
+                            "description": "Required for all types except Equipment."
                         },
                         "position": {
                             "$ref": "#/Coordinate3D"
@@ -969,9 +963,8 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "description": "New cross section height applied to all segments."
                         },
                         "crossSectionShape": {
-                            "type": "string",
-                            "description": "New cross section shape applied to all segments.",
-                            "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "The new shape is applied to all segments."
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
@@ -1256,7 +1249,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
 }
 
 GetMEPPreferenceTablesCommand::GetMEPPreferenceTablesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -1271,9 +1264,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "domain": {
-                "type": "string",
-                "description": "The MEP domain of the segment preference tables.",
-                "enum": ["Piping", "Ventilation"]
+                "$ref": "#/MEPPreferenceTableDomain"
             }
         },
         "additionalProperties": false,

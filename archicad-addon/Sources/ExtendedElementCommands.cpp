@@ -3550,12 +3550,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "offset": { "type": "number" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
-                            "type": "string",
-                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"]
+                            "$ref": "#/WallReferenceLineLocation"
                         },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite", "Profile"]
+                            "$ref": "#/WallStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
@@ -3588,14 +3586,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                            "description": "Floor plan display option."
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -3779,9 +3774,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0
                         },
                         "anchorPoint": {
-                            "type": "string",
-                            "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
-                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                            "$ref": "#/BeamAnchorPoint"
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -4632,12 +4625,10 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                             "additionalProperties": false
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                            "$ref": "#/ViewDepthLimitation"
                         },
                         "cutFillPen": { "type": "integer" },
                         "cutFillBackgroundPen": { "type": "integer" },
@@ -4668,8 +4659,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         },
                         "useDistortedCoverFill": { "type": "boolean" },
                         "textureProjectionType": {
-                            "type": "string",
-                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                            "$ref": "#/TextureProjectionType"
                         },
                         "textureProjectionCoords": {
                             "type": "array",
@@ -4904,8 +4894,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                             }
                         },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite"]
+                            "$ref": "#/RoofStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" }
@@ -5517,7 +5506,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "geometryType": { "type": "string", "enum": ["Straight", "Trapezoid"], "description": "The wall's plan outline shape (Polygonal is not settable here, read-only via GetDetailsOfElements). This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
+                        "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Polygonal is not settable here; it is read-only via GetDetailsOfElements. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
@@ -5526,25 +5515,21 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "bottomOffset": { "type": "number" },
                         "offset": { "type": "number" },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite", "Profile"]
+                            "$ref": "#/WallStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
                         "profileId": { "$ref": "#/AttributeId" },
                         "referenceLineLocation": {
-                            "type": "string",
-                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"],
-                            "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin."
+                            "$ref": "#/WallReferenceLineLocation"
                         },
-                        "profileType": { "type": "string", "enum": ["Normal", "Slanted", "Trapez"], "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). slantAlpha/slantBeta only have an effect once this is set to Slanted." },
+                        "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },
                         "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
                         "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
                         "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
                         "zoneRel": {
-                            "type": "string",
-                            "enum": ["Boundary", "ReduceArea", "None", "SubtractFromZone"]
+                            "$ref": "#/WallZoneRelation"
                         },
                         "visibility": { "$ref": "#/StoryVisibility" },
                         "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically." },
@@ -5581,14 +5566,11 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                            "description": "Floor plan display option."
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -5715,7 +5697,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "isSlanted": { "type": "boolean" },
                         "isFlipped": { "type": "boolean" },
                         "profileAngle": { "type": "number" },
-                        "anchorPoint": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
@@ -5872,14 +5854,12 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         "zCoordinate": { "type": "number" },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite"]
+                            "$ref": "#/SlabStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
                         "referencePlaneLocation": {
-                            "type": "string",
-                            "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                            "$ref": "#/SlabReferencePlaneLocation"
                         },
                         "polygonOutline": {
                             "type": "array",
@@ -6056,8 +6036,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             }
                         },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite"]
+                            "$ref": "#/RoofStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
@@ -6342,7 +6321,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
                         "axisRotationAngle": { "type": "number" },
-                        "coreAnchor": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "coreAnchor": { "$ref": "#/ColumnCoreAnchor" },
                         "isSlanted": { "type": "boolean" },
                         "slantAngle": { "type": "number" },
                         "slantDirectionAngle": { "type": "number" },
@@ -6637,12 +6616,10 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                             "additionalProperties": false
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                            "$ref": "#/ViewDepthLimitation"
                         },
                         "cutFillPen": { "type": "integer" },
                         "cutFillBackgroundPen": { "type": "integer" },
@@ -6673,8 +6650,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                         },
                         "useDistortedCoverFill": { "type": "boolean" },
                         "textureProjectionType": {
-                            "type": "string",
-                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                            "$ref": "#/TextureProjectionType"
                         },
                         "textureProjectionCoords": {
                             "type": "array",
@@ -7335,9 +7311,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
                                 "description": "The height of the skirt."
                             },
                             "ridges": {
-                                "type": "string",
-                                "description": "How ridges between mesh facets are displayed in 3D.",
-                                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                                "$ref": "#/MeshRidges"
                             },
                             "showLines": {
                                 "type": "boolean",

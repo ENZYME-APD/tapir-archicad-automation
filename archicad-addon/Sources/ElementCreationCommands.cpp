@@ -238,9 +238,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "exclusiveMinimum": 0.0
                         },
                         "coreAnchor": {
-                            "type": "string",
-                            "description": "Optional anchor point of the column core on a 3x3 grid.",
-                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                            "$ref": "#/ColumnCoreAnchor"
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -371,9 +369,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "exclusiveMinimum": 0.0
                     },
                     "referencePlaneLocation": {
-                        "type": "string",
-                        "description": "Optional location of the slab reference plane. For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid.",
-                        "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                        "$ref": "#/SlabReferencePlaneLocation",
+                        "description": "For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid."
                     },
                     "polygonCoordinates": { 
                         "type": "array",
@@ -2480,9 +2477,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "description": "The height of the skirt."
                     },
                     "ridges": {
-                        "type": "string",
-                        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
-                        "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                        "$ref": "#/MeshRidges"
                     },
                     "showLines": {
                         "type": "boolean",
@@ -2645,9 +2640,8 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "description" : "The parent element if the label is an associative label."
                     },
                     "labelClass": {
-                        "type": "string",
-                        "enum": ["Text", "Symbol"],
-                        "description": "Whether this is a textual or a symbol label. Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                        "$ref": "#/LabelClass",
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
                     },
                     "text": {
                         "type": "string",
@@ -3730,9 +3724,8 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                         "description": "Optional rotation angle in radians. Equivalent to style.angle."
                     },
                     "justification": {
-                        "type": "string",
-                        "description": "Optional text justification. Equivalent to style.justification.",
-                        "enum": ["Left", "Center", "Right", "Full"]
+                        "$ref": "#/Justification",
+                        "description": "Optional; equivalent to style.justification."
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
