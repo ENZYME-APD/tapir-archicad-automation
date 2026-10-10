@@ -869,10 +869,12 @@
         "type": "object",
         "properties": {
             "dash": {
-                "type": "number"
+                "type": "number",
+                "description": "Length of the visible part of the item."
             },
             "gap": {
-                "type": "number"
+                "type": "number",
+                "description": "Length of the invisible part of the item."
             }
         },
         "additionalProperties": false,
@@ -1022,22 +1024,27 @@
         "type": "object",
         "properties": {
             "frequency": {
-                "type": "number"
+                "type": "number",
+                "description": "The distance between two instances of this item."
             },
             "direction": {
-                "type": "number"
+                "type": "number",
+                "description": "The angle of the item, measured CCW from the horizontal axis, in radians."
             },
             "offsetLine": {
-                "type": "number"
+                "type": "number",
+                "description": "The parallel offset of the item, measured from the (rotated) horizontal axis."
             },
             "offset": {
-                "$ref": "#/Coordinate2D"
+                "$ref": "#/Coordinate2D",
+                "description": "The offset of the item, given by its coordinates."
             },
             "lineLengths": {
                 "type": "array",
                 "items": {
                     "type": "number"
-                }
+                },
+                "description": "Dash-gap length pairs describing this line item. Must contain an even number of items."
             }
         },
         "additionalProperties": false,
@@ -1074,7 +1081,8 @@
                 "$ref": "#/Coordinate2D"
             },
             "angle": {
-                "type": "number"
+                "type": "number",
+                "description": "Arc angle in radians, measured CCW."
             }
         },
         "additionalProperties": false,
@@ -2128,6 +2136,328 @@
             }
         ]
     },
+    "MorphPolygonHole": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ]
+    },
+    "BeamHoleType": {
+        "type": "string",
+        "enum": [
+            "Rectangular",
+            "Circular"
+        ]
+    },
+    "MorphPolygon": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "description": "Counterclockwise outer-loop vertex indices for this face.",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            },
+            "filled": {
+                "type": "boolean",
+                "description": "Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to."
+            },
+            "holes": {
+                "type": "array",
+                "description": "Optional hole loops cut out of this face, each a clockwise list of vertex indices.",
+                "items": {
+                    "$ref": "#/MorphPolygonHole"
+                }
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "Optional per-face surface (render material) override. Uses the Morph's default surface when omitted. Ignored during creation in Archicad 25."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ]
+    },
+    "MeshSubline": {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the leveling subline of the mesh.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
+    "BeamHole": {
+        "type": "object",
+        "properties": {
+            "holeId": {
+                "type": "number"
+            },
+            "type": {
+                "$ref": "#/BeamHoleType"
+            },
+            "showContour": {
+                "type": "boolean"
+            },
+            "centerX": {
+                "type": "number"
+            },
+            "centerZ": {
+                "type": "number"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "holeId",
+            "type",
+            "centerX",
+            "centerZ",
+            "width"
+        ]
+    },
+    "LinkToSettings": {
+        "type": "object",
+        "description": "Mode of linking an element to its home story.",
+        "properties": {
+            "homeStoryDifference": {
+                "type": "integer",
+                "description": "Difference of the home story from the current story."
+            },
+            "newCreationMode": {
+                "type": "boolean",
+                "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
+            }
+        },
+        "additionalProperties": false
+    },
+    "CoverFillOrientation": {
+        "type": "object",
+        "description": "Orientation/distortion of the floor plan cover fill.",
+        "properties": {
+            "type": {
+                "$ref": "#/HatchOrientationType"
+            },
+            "origo": {
+                "$ref": "#/Coordinate2D",
+                "description": "Origin of the fill relative to the project origin."
+            },
+            "matrix00": {
+                "type": "number",
+                "description": "X component of the primary distortion (direction) vector - the cosine of the fill angle, if not distorted."
+            },
+            "matrix10": {
+                "type": "number",
+                "description": "Y component of the primary distortion (direction) vector - the sine of the fill angle, if not distorted."
+            },
+            "matrix01": {
+                "type": "number",
+                "description": "X component of the secondary distortion vector - the cosine of the normal vector's angle, if not distorted."
+            },
+            "matrix11": {
+                "type": "number",
+                "description": "Y component of the secondary distortion vector - the sine of the normal vector's angle, if not distorted."
+            },
+            "innerRadius": {
+                "type": "number",
+                "description": "Radius for circular fill distortion (type Centered only)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileEdgeOverride": {
+        "type": "object",
+        "properties": {
+            "edgeIndex": {
+                "type": "integer"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "isVisibleLine": {
+                "type": "boolean"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "edgeIndex"
+        ]
+    },
+    "ProfileSkinContour": {
+        "type": "object",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 2D coordinates of this contour.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "LineSymbolItemData": {
+        "type": "object",
+        "properties": {
+            "itemType": {
+                "type": "string",
+                "description": "Separator, CenterDot, CenterLine, Dot, RightAngle, Parallel, Line, Circle, or Arc."
+            },
+            "centerOffset": {
+                "type": "number",
+                "description": "Vertical distance from the origin. Used for Separator, CenterDot, and CenterLine item types."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the item. Used for CenterLine, RightAngle, and Parallel item types."
+            },
+            "begPos": {
+                "description": "Beginning position. Used for Dot, RightAngle, Parallel, Line, Circle, and Arc item types.",
+                "$ref": "#/Coordinate2D"
+            },
+            "endPos": {
+                "description": "End position. Used for Line item type only.",
+                "$ref": "#/Coordinate2D"
+            },
+            "radius": {
+                "type": "number",
+                "description": "Radius. Used for Circle and Arc item types."
+            },
+            "beginAngle": {
+                "type": "number",
+                "description": "Beginning angle in radians, measured from the vertical axis. Used for Arc item type only."
+            },
+            "endAngle": {
+                "type": "number",
+                "description": "End angle in radians, measured from the vertical axis. Used for Arc item type only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "itemType"
+        ]
+    },
+    "PenData": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "Index of the pen [1..255]."
+            },
+            "color": {
+                "$ref": "#/ColorRGB"
+            },
+            "width": {
+                "type": "number",
+                "description": "Thickness of the pen defined in paper millimeters."
+            },
+            "description": {
+                "type": "string",
+                "description": "Textual description of the pen."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index"
+        ]
+    },
+    "ProfileSkinData": {
+        "type": "object",
+        "description": "One new skin (hatch). Its shape is one or more closed polygon contours: the first is the outer boundary, any further ones are holes cut out of it - the same polygon+holes convention as e.g. CreateSlabs' polygonCoordinates/polygonArcs/holes, just expressed as a list of contours instead of a separate holes array.",
+        "properties": {
+            "contours": {
+                "type": "array",
+                "description": "Closed polygon contours forming this skin's cross-section, in the Profile's local coordinate system. Each contour is closed automatically - do not repeat its first vertex at the end.",
+                "items": {
+                    "$ref": "#/ProfileSkinContour"
+                },
+                "minItems": 1
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "fillId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "contourPen": {
+                "type": "integer"
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "isCore": {
+                "type": "boolean"
+            },
+            "isFinish": {
+                "type": "boolean"
+            },
+            "visibleCutEndLines": {
+                "type": "boolean"
+            },
+            "cutEndLinePen": {
+                "type": "integer"
+            },
+            "cutEndLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "edgeOverrides": {
+                "type": "array",
+                "description": "Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.",
+                "items": {
+                    "$ref": "#/ProfileEdgeOverride"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "contours"
+        ]
+    },
     "PolyArc": {
         "type": "object",
         "description": "Representation of an arc segment of a two dimensional polygon/polyline.",
@@ -2807,16 +3137,7 @@
                 "type": "array",
                 "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": {
-                            "$ref": "#/Guid"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "guid"
-                    ]
+                    "$ref": "#/GuidId"
                 }
             }
         },
@@ -4915,42 +5236,7 @@
             "holes": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "holeId": {
-                            "type": "number"
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "Rectangular",
-                                "Circular"
-                            ]
-                        },
-                        "showContour": {
-                            "type": "boolean"
-                        },
-                        "centerX": {
-                            "type": "number"
-                        },
-                        "centerZ": {
-                            "type": "number"
-                        },
-                        "width": {
-                            "type": "number"
-                        },
-                        "height": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "holeId",
-                        "type",
-                        "centerX",
-                        "centerZ",
-                        "width"
-                    ]
+                    "$ref": "#/BeamHole"
                 }
             },
             "width": {
@@ -5457,39 +5743,10 @@
                 "description": "Lamp only."
             },
             "visibility": {
-                "type": "object",
-                "description": "Per-story visibility settings.",
-                "properties": {
-                    "showOnHome": {
-                        "type": "boolean"
-                    },
-                    "showAllAbove": {
-                        "type": "boolean"
-                    },
-                    "showAllBelow": {
-                        "type": "boolean"
-                    },
-                    "showRelAbove": {
-                        "type": "integer"
-                    },
-                    "showRelBelow": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/StoryVisibility"
             },
             "linkToSettings": {
-                "type": "object",
-                "description": "Mode of linking to the home story.",
-                "properties": {
-                    "homeStoryDifference": {
-                        "type": "integer"
-                    },
-                    "newCreationMode": {
-                        "type": "boolean"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LinkToSettings"
             }
         },
         "additionalProperties": false,
@@ -6101,20 +6358,7 @@
                 "type": "array",
                 "description": "The leveling sublines inside the polygon of the mesh.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "coordinates": {
-                            "type": "array",
-                            "description": "The 3D coordinates of the leveling subline of the mesh.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "coordinates"
-                    ]
+                    "$ref": "#/MeshSubline"
                 },
                 "minItems": 1
             }
@@ -6184,49 +6428,7 @@
                 "type": "array",
                 "description": "One entry per face loop (into `vertices`), counterclockwise as seen from outside the body. Optional - a body made entirely of wireEdges (see below) needs none. Set \"filled\": false on an entry to create only that loop's edges (e.g. the outline of a pyramid's side faces) without an actual filled face.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "vertexIds": {
-                            "type": "array",
-                            "description": "Counterclockwise outer-loop vertex indices for this face.",
-                            "items": {
-                                "type": "integer"
-                            },
-                            "minItems": 3
-                        },
-                        "filled": {
-                            "type": "boolean",
-                            "description": "Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to."
-                        },
-                        "holes": {
-                            "type": "array",
-                            "description": "Optional hole loops cut out of this face, each a clockwise list of vertex indices.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "vertexIds": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        },
-                                        "minItems": 3
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "vertexIds"
-                                ]
-                            }
-                        },
-                        "surfaceId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Optional per-face Surface (render material) override. Falls back to the Morph's own default surface when omitted. Named surfaceId, not buildingMaterialId - confirmed live that Archicad's per-face body override is a Surface index, not a building material (a Morph's building material is always a single whole-volume property, element.morph.buildingMaterial, exposed as the sibling 'buildingMaterialId' field on MorphDetails/CreateMorphs/ModifyMorphs - never per-face). Version-dependent write bug, isolated live: silently lost on Create on Archicad 25 (presumably 26 too - same pre-2700 API_OverriddenAttribute shape, though Archicad 26 itself could not be installed to confirm live), confirmed fixed and working correctly from Archicad 27 onward (27 and 29 both verified). No SDK/build available locally to check Archicad 28."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "vertexIds"
-                    ]
+                    "$ref": "#/MorphPolygon"
                 }
             },
             "wireEdges": {
@@ -6340,19 +6542,7 @@
                 "description": "Which stories display this Morph's floor plan fill. Same write-reliability caveat as showContour."
             },
             "linkToSettings": {
-                "type": "object",
-                "description": "Mode of linking the Morph to its home story.",
-                "properties": {
-                    "homeStoryDifference": {
-                        "type": "integer",
-                        "description": "Difference of the home story from the current story."
-                    },
-                    "newCreationMode": {
-                        "type": "boolean",
-                        "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LinkToSettings"
             },
             "displayOption": {
                 "type": "string",
@@ -6421,39 +6611,7 @@
                 "description": "Derive the floor plan fill from the 3D material instead of coverFillType."
             },
             "coverFillOrientation": {
-                "type": "object",
-                "description": "Orientation/distortion of the floor plan cover fill.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": ["Global", "Rotated", "Distorted", "Centered"]
-                    },
-                    "origo": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "Origin of the fill relative to the project origin."
-                    },
-                    "matrix00": {
-                        "type": "number",
-                        "description": "X component of the primary distortion (direction) vector - the cosine of the fill angle, if not distorted."
-                    },
-                    "matrix10": {
-                        "type": "number",
-                        "description": "Y component of the primary distortion (direction) vector - the sine of the fill angle, if not distorted."
-                    },
-                    "matrix01": {
-                        "type": "number",
-                        "description": "X component of the secondary distortion vector - the cosine of the normal vector's angle, if not distorted."
-                    },
-                    "matrix11": {
-                        "type": "number",
-                        "description": "Y component of the secondary distortion vector - the sine of the normal vector's angle, if not distorted."
-                    },
-                    "innerRadius": {
-                        "type": "number",
-                        "description": "Radius for circular fill distortion (type Centered only)."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/CoverFillOrientation"
             },
             "useDistortedCoverFill": {
                 "type": "boolean",
@@ -8798,18 +8956,21 @@
             "orientation"
         ]
     },
+    "HatchOrientationType": {
+        "type": "string",
+        "enum": [
+            "Global",
+            "Rotated",
+            "Distorted",
+            "Centered"
+        ]
+    },
     "HatchOrientation": {
         "type": "object",
         "description": "Orientation and distortion parameters of a fill.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [
-                    "Global",
-                    "Rotated",
-                    "Distorted",
-                    "Centered"
-                ]
+                "$ref": "#/HatchOrientationType"
             },
             "origin": {
                 "$ref": "#/Coordinate2D",
