@@ -6918,7 +6918,7 @@
         ],
         "additionalProperties": false
     },
-    "Level": {
+    "RoofLevel": {
         "type": "object",
         "properties": {
             "levelHeight": {
@@ -6935,7 +6935,7 @@
             "levelAngle"
         ]
     },
-    "PivotLine": {
+    "RoofPivotLine": {
         "type": "object",
         "description": "A directed pivot line defined by its beginning and end coordinates. The roof plane rises on the left side of the line direction (begCoordinate towards endCoordinate); reverse the direction to tilt towards the other side.",
         "properties": {

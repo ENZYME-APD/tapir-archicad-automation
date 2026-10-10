@@ -4874,7 +4874,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                         },
                         "holes": { "$ref": "#/Holes2D" },
                         "pivotLine": {
-                            "$ref": "#/PivotLine",
+                            "$ref": "#/RoofPivotLine",
                             "description": "If given, creates a single-plane roof instead of a multi-plane roof, tilted along this pivot line."
                         },
                         "angle": {
@@ -4888,7 +4888,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                             "minItems": 1,
                             "maxItems": 16,
                             "items": {
-                                "$ref": "#/Level"
+                                "$ref": "#/RoofLevel"
                             }
                         },
                         "structureType": {
@@ -6034,7 +6034,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "minItems": 1,
                             "maxItems": 16,
                             "items": {
-                                "$ref": "#/Level"
+                                "$ref": "#/RoofLevel"
                             }
                         },
                         "structureType": {
