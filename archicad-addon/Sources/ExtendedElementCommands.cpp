@@ -3586,14 +3586,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                            "description": "Floor plan display option."
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -5569,14 +5566,11 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                            "description": "Floor plan display option."
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "useCompositePriority": {
                             "type": "boolean",

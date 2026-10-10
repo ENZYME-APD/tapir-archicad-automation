@@ -441,7 +441,8 @@ GS::Optional<GS::UniString> TrimElementsCommand::GetInputParametersSchema () con
                 "description": "Optional. The roof or shell that trims every element in the list."
             },
             "trimType": {
-                "$ref": "#/TrimType"
+                "$ref": "#/TrimType",
+                "description": "Used with trimmingElement; defaults to KeepInside."
             }
         },
         "additionalProperties": false,

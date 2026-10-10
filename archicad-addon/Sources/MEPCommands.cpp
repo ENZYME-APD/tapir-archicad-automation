@@ -179,7 +179,7 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "Optional filter for the MEP domains.",
                 "items": {
-                    "$ref": "#/MEPDomains"
+                    "$ref": "#/MEPDomain"
                 }
             }
         },
@@ -597,7 +597,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "$ref": "#/MEPSystemDomain"
+                            "$ref": "#/MEPDomain"
                         },
                         "nodeCoordinates": {
                             "type": "array",
@@ -791,7 +791,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                             "$ref": "#/MEPComponentType"
                         },
                         "domain": {
-                            "$ref": "#/MEPSystemDomain",
+                            "$ref": "#/MEPDomain",
                             "description": "Required for all types except Equipment."
                         },
                         "position": {

@@ -1147,7 +1147,7 @@
                 "type": "array",
                 "description": "The domain(s) this system belongs to. Archicad 29+ allows only one; earlier versions may report several.",
                 "items": {
-                    "$ref": "#/MEPSystemDomain"
+                    "$ref": "#/MEPDomain"
                 }
             },
             "contourPen": {
@@ -2831,15 +2831,6 @@
             "SubtractFromZone"
         ]
     },
-    "HatchOrientationType": {
-        "type": "string",
-        "enum": [
-            "Global",
-            "Rotated",
-            "Distorted",
-            "Centered"
-        ]
-    },
     "WallGeometryType": {
         "type": "string",
         "enum": [
@@ -2922,9 +2913,9 @@
             "LinkedToDesignOption"
         ]
     },
-    "MEPSystemDomain": {
+    "MEPDomain": {
         "type": "string",
-        "description": "The MEP system domain.",
+        "description": "The MEP domain.",
         "enum": [
             "Ventilation",
             "Piping",
@@ -2945,14 +2936,6 @@
             "Fitting",
             "FlexibleSegment",
             "TakeOff"
-        ]
-    },
-    "MEPDomains": {
-        "type": "string",
-        "enum": [
-            "Ventilation",
-            "Piping",
-            "CableCarrier"
         ]
     },
     "DrawingNameType": {
@@ -5261,14 +5244,11 @@
                 "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
             },
             "displayOption": {
-                "type": "string",
-                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                "description": "Floor plan display option."
+                "$ref": "#/DisplayOption"
             },
             "viewDepthLimitation": {
-                "type": "string",
-                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                "$ref": "#/ViewDepthLimitation",
+                "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
             },
             "connectionPriority": {
                 "type": "integer",
@@ -9245,6 +9225,15 @@
             "fillId",
             "use3DHatching",
             "orientation"
+        ]
+    },
+    "HatchOrientationType": {
+        "type": "string",
+        "enum": [
+            "Global",
+            "Rotated",
+            "Distorted",
+            "Centered"
         ]
     },
     "HatchOrientation": {
