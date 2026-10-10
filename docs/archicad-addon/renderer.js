@@ -21,17 +21,25 @@ function ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKey
             ResolveReferences(schemaDefinitions, node, key, resolvedKeys);
         } else if (typeof childNode === 'string' && key == '$ref') {
             let refKey = childNode.substr(2);
-            let refValue = schemaDefinitions[refKey];
+            // Each use needs its own copy so caller context cannot leak into
+            // the shared definition or another command's rendered schema.
+            let refValue = JSON.parse(JSON.stringify(schemaDefinitions[refKey]));
             if (resolvedKeys.has(refKey)) {
                 parentNode[parentKey] = {
-                    type: refKey
+                    type: refKey,
+                    description: refValue.description
                 };
             } else {
                 parentNode[parentKey] = refValue;
                 parentNode[parentKey].title = refKey;
                 resolvedKeys.add(refKey);
                 ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKeys);
-                resolvedKeys.delete(refKey)
+                resolvedKeys.delete(refKey);
+            }
+            let descriptions = [parentNode[parentKey].description, node.description]
+                .filter(description => typeof description === 'string' && description.length > 0);
+            if (descriptions.length > 0) {
+                parentNode[parentKey].description = [...new Set(descriptions)].join('\n\n');
             }
         }
     }
@@ -62,7 +70,7 @@ function CreateSchemaElement(parentElement, title, schema, schemaDefinitions) {
     CreateElement(parentElement, 'div', 'scheme_title', title);
     let schemeContainer = CreateElement(parentElement, 'div', 'scheme_container', null);
     let resolvedObject = {
-        schema: schema
+        schema: JSON.parse(JSON.stringify(schema))
     };
     ResolveReferences(schemaDefinitions, resolvedObject, 'schema', new Set());
     EnsureRenderableSchemas(resolvedObject.schema, new Set());
