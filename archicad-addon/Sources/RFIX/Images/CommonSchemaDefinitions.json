@@ -4386,29 +4386,8 @@
                 "description": "Whether changing to the view should ignore its stored zoom."
             },
             "zoom": {
-                "type": "object",
-                "description": "Stored zoom box in model coordinates. Used only when saveZoom is true.",
-                "properties": {
-                    "xMin": {
-                        "type": "number"
-                    },
-                    "yMin": {
-                        "type": "number"
-                    },
-                    "xMax": {
-                        "type": "number"
-                    },
-                    "yMax": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "xMin",
-                    "yMin",
-                    "xMax",
-                    "yMax"
-                ]
+                "$ref": "#/Zoom",
+                "description": "Stored zoom box in model coordinates. Used only when saveZoom is true."
             },
             "rotation": {
                 "type": "number",
@@ -4454,33 +4433,8 @@
         "type": "object",
         "properties": {
             "zoom": {
-                "type": "object",
-                "description": "The actual zoom parameters, rectangular region of the model.",
-                "properties": {
-                    "xMin": {
-                        "type": "number",
-                        "description": "The minimum X value of the zoom box."
-                    },
-                    "yMin": {
-                        "type": "number",
-                        "description": "The minimum Y value of the zoom box."
-                    },
-                    "xMax": {
-                        "type": "number",
-                        "description": "The maximum X value of the zoom box."
-                    },
-                    "yMax": {
-                        "type": "number",
-                        "description": "The maximum Y value of the zoom box."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "xMin",
-                    "yMin",
-                    "xMax",
-                    "yMax"
-                ]
+                "$ref": "#/Zoom",
+                "description": "The actual zoom parameters, rectangular region of the model."
             },
             "rotation": {
                 "type": "number",
@@ -5022,18 +4976,8 @@
                 "description": "Single-plane: the slope in radians."
             },
             "pivotLine": {
-                "type": "object",
-                "description": "Single-plane: the pivot line the plane rotates about.",
-                "properties": {
-                    "begin": {
-                        "$ref": "#/Coordinate2D"
-                    },
-                    "end": {
-                        "$ref": "#/Coordinate2D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "begin", "end" ]
+                "$ref": "#/RoofDetailsPivotLine",
+                "description": "Single-plane: the pivot line the plane rotates about."
             },
             "eavesOverhang": {
                 "type": "number",
@@ -5043,17 +4987,7 @@
                 "type": "array",
                 "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "height": {
-                            "type": "number"
-                        },
-                        "angle": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "height", "angle" ]
+                    "$ref": "#/RoofDetailsLevel"
                 }
             },
             "pivotPolygonOutline": {
@@ -6512,16 +6446,8 @@
                 "description": "Whether the drawing is clipped by a custom polygon (see clipPolygon) instead of showing the full auto-fit extent."
             },
             "bounds": {
-                "type": "object",
-                "description": "Bounding box of the drawing on the layout.",
-                "properties": {
-                    "xMin": { "type": "number" },
-                    "yMin": { "type": "number" },
-                    "xMax": { "type": "number" },
-                    "yMax": { "type": "number" }
-                },
-                "additionalProperties": false,
-                "required": ["xMin", "yMin", "xMax", "yMax"]
+                "$ref": "#/BoundingBox2D",
+                "description": "Bounding box of the drawing on the layout."
             },
             "clipPolygon": {
                 "type": "array",
@@ -6953,6 +6879,233 @@
             "modifiedByUser",
             "isIssued",
             "isArchived"
+        ]
+    },
+    "LayoutCustomData": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "type": "string"
+            },
+            "customSchemeName": {
+                "type": "string"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "customSchemeKey",
+            "customSchemeValue"
+        ],
+        "additionalProperties": false
+    },
+    "LayoutCustomDataToSet": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "type": "string"
+            },
+            "customSchemeName": {
+                "type": "string"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "customSchemeValue"
+        ],
+        "additionalProperties": false
+    },
+    "Level": {
+        "type": "object",
+        "properties": {
+            "levelHeight": {
+                "type": "number"
+            },
+            "levelAngle": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "levelHeight",
+            "levelAngle"
+        ]
+    },
+    "PivotLine": {
+        "type": "object",
+        "description": "If given, a single-plane roof is created instead of a multi-plane roof: one plane tilted along this pivot line. The plane rises on the left side of the line direction (begCoordinate towards endCoordinate); flip the line to tilt towards the other side.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate"
+        ]
+    },
+    "DesignOptionData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the design option."
+            },
+            "id": {
+                "type": "string",
+                "description": "The string id of the design option."
+            },
+            "ownerSetName": {
+                "type": "string",
+                "description": "The name of the owner design option set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "id",
+            "ownerSetName"
+        ]
+    },
+    "DesignOptionCombinationDetails": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/GuidId",
+                "description": "The guid identifier of the design option combination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the design option combination."
+            },
+            "activeDesignOptions": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DesignOptionIdArrayItem"
+                },
+                "description": "The list of active design options in the combination. Available from Archicad 29."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId",
+            "name"
+        ]
+    },
+    "DesignOptionCombinationData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the design option combination."
+            },
+            "activeDesignOptions": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DesignOptionIdArrayItem"
+                },
+                "description": "The list of active design options in the combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "activeDesignOptions"
+        ]
+    },
+    "RoofDetailsLevel": {
+        "type": "object",
+        "properties": {
+            "height": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "height",
+            "angle"
+        ]
+    },
+    "Zoom": {
+        "type": "object",
+        "description": "The actual zoom parameters, rectangular region of the model.",
+        "properties": {
+            "xMin": {
+                "type": "number",
+                "description": "The minimum X value of the zoom box."
+            },
+            "yMin": {
+                "type": "number",
+                "description": "The minimum Y value of the zoom box."
+            },
+            "xMax": {
+                "type": "number",
+                "description": "The maximum X value of the zoom box."
+            },
+            "yMax": {
+                "type": "number",
+                "description": "The maximum Y value of the zoom box."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xMin",
+            "yMin",
+            "xMax",
+            "yMax"
+        ]
+    },
+    "BoundingBox2D": {
+        "type": "object",
+        "description": "Bounding box of the drawing on the layout.",
+        "properties": {
+            "xMin": {
+                "type": "number"
+            },
+            "yMin": {
+                "type": "number"
+            },
+            "xMax": {
+                "type": "number"
+            },
+            "yMax": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xMin",
+            "yMin",
+            "xMax",
+            "yMax"
+        ]
+    },
+    "RoofDetailsPivotLine": {
+        "type": "object",
+        "description": "Single-plane: the pivot line the plane rotates about.",
+        "properties": {
+            "begin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "end": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begin",
+            "end"
         ]
     },
     "LayoutInfo": {

@@ -184,29 +184,7 @@ GS::Optional<GS::UniString> GetDesignOptionCombinationsCommand::GetRawResponseSc
             "designOptionCombinations": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionCombinationId": {
-                            "$ref": "#/GuidId",
-                            "description": "The guid identifier of the design option combination."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the design option combination."
-                        },
-                        "activeDesignOptions": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/DesignOptionIdArrayItem"
-                            },
-                            "description": "The list of active design options in the combination. Available from Archicad 29."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionCombinationId",
-                        "name"
-                    ]
+                    "$ref": "#/DesignOptionCombinationDetails"
                 }
             }
         },
@@ -281,16 +259,7 @@ GS::Optional<GS::UniString> GetElementsOfDesignOptionsCommand::GetInputParameter
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionIdArrayItem"
                 }
             }
         },
@@ -600,27 +569,7 @@ GS::Optional<GS::UniString> CreateDesignOptionsCommand::GetInputParametersSchema
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the design option."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "The string id of the design option."
-                        },
-                        "ownerSetName": {
-                            "type": "string",
-                            "description": "The name of the owner design option set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "id",
-                        "ownerSetName"
-                    ]
+                    "$ref": "#/DesignOptionData"
                 }
             }
         },
@@ -727,25 +676,7 @@ GS::Optional<GS::UniString> CreateDesignOptionCombinationsCommand::GetInputParam
             "designOptionCombinations": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the design option combination."
-                        },
-                        "activeDesignOptions": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/DesignOptionIdArrayItem"
-                            },
-                            "description": "The list of active design options in the combination."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "activeDesignOptions"
-                    ]
+                    "$ref": "#/DesignOptionCombinationData"
                 }
             }
         },
