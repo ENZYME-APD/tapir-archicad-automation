@@ -271,44 +271,8 @@ GS::Optional<GS::UniString> GetLibrariesCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "A list of project libraries.",
                 "items": {
-                    "type": "object",
-                    "description": "Library",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "Library name."
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "A filesystem path to library location."
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "Library type."
-                        },
-                        "available": {
-                            "type": "boolean",
-                            "description": "Is library not missing."
-                        },
-                        "readOnly": {
-                            "type": "boolean",
-                            "description": "Is library not writable."
-                        },
-                        "twServerUrl": {
-                            "type": "string",
-                            "description": "URL address of the TeamWork server hosting the library."
-                        },
-                        "urlWebLibrary": {
-                            "type": "string",
-                            "description": "URL of the downloaded Internet library."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "type",
-                        "path"
-                    ]
+                    "$ref": "#/Library",
+                    "description": "Library"
                 }
             }
         },
@@ -330,16 +294,7 @@ static const char* LibraryPathsSchema = R"({
                 "type": "array",
                 "description": "Local library folders or container files, by absolute path.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "path"
-                    ]
+                    "$ref": "#/LibraryLocation"
                 }
             }
         },
@@ -480,7 +435,7 @@ GS::ObjectState AddLibrariesCommand::Execute (const GS::ObjectState& parameters,
 }
 
 GetLibrariesCommand::GetLibrariesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 

@@ -5056,18 +5056,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                         "witnessPoints": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "elementId": { "$ref": "#/ElementId" },
-                                    "line": { "type": "boolean" },
-                                    "inIndex": { "type": "integer" },
-                                    "special": { "type": "integer" },
-                                    "nodeType": { "type": "integer" },
-                                    "nodeStatus": { "type": "integer" },
-                                    "nodeId": { "type": "number", "minimum": 0.0 }
-                                },
-                                "additionalProperties": false,
-                                "required": ["elementId"]
+                                "$ref": "#/AssociativeWitnessPoint"
                             },
                             "minItems": 2
                         }
@@ -6983,34 +6972,7 @@ GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create Interior Elevation elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "nodeCoordinates": {
-                            "type": "array",
-                            "description": "The corner points of the connected segment chain. Each consecutive pair of points becomes one segment, so a room with four walls needs five points to be closed, or four to be left open.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 2
-                        },
-                        "depth": {
-                            "type": "number",
-                            "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Name of the interior elevation. Each segment is named after it."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "ID string of the interior elevation."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "The story to place the interior elevation on. Defaults to the current story."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["nodeCoordinates"]
+                    "$ref": "#/InteriorElevationData"
                 }
             }
         },

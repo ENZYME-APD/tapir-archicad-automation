@@ -922,21 +922,8 @@ GS::Optional<GS::UniString> UpdateFavoritesFromElementsCommand::GetInputParamete
             "favoritesFromElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "The identifier of the element and the name of the existing Favorite to update from it.",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "favorite": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "favorite"
-                    ]
+                    "$ref": "#/FavoritesFromElementUpdate",
+                    "description": "The identifier of the element and the name of the existing Favorite to update from it."
                 }
             }
         },
@@ -1027,13 +1014,7 @@ GS::Optional<GS::UniString> RenameFavoritesCommand::GetInputParametersSchema () 
             "renames": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "oldName": { "type": "string" },
-                        "newName": { "type": "string" }
-                    },
-                    "additionalProperties": false,
-                    "required": ["oldName", "newName"]
+                    "$ref": "#/FavoriteRename"
                 }
             }
         },

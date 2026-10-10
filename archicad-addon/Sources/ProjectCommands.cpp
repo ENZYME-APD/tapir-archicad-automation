@@ -319,8 +319,7 @@ GS::Optional<GS::UniString> GetAutoTextNameCommand::GetInputParametersSchema () 
                 "type": "array",
                 "description": "Autotext keys as returned by GetAutoTextKeys or GetProjectInfoFields (without the surrounding '<' and '>'), e.g. 'PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548' or 'PROJECTNAME'.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/AutoTextKeyValue"
                 },
                 "minItems": 1
             }
@@ -427,22 +426,7 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of custom project info fields to create.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "Display name of the project info field.",
-                            "minLength": 1
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "Initial value of the project info field."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoName"
-                    ]
+                    "$ref": "#/ProjectInfoFieldData"
                 }
             }
         },
@@ -2681,61 +2665,7 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The hotlink instances to place.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId",
-                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
-                        },
-                        "origin": {
-                            "$ref": "#/HotlinkOrigin"
-                        },
-                        "rotationAngle": {
-                            "type": "number",
-                            "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
-                        },
-                        "mirrored": {
-                            "type": "boolean",
-                            "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional story the instance is placed on. Defaults to the current story."
-                        },
-                        "floorDifference": {
-                            "type": "integer",
-                            "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
-                        },
-                        "skipNested": {
-                            "type": "boolean",
-                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
-                        },
-                        "suspendFixAngle": {
-                            "type": "boolean",
-                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
-                        },
-                        "ignoreTopFloorLinks": {
-                            "type": "boolean",
-                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
-                        },
-                        "relinkWallOpenings": {
-                            "type": "boolean",
-                            "description": "Optional. Defaults to the hotlink tool's current default."
-                        },
-                        "adjustLevelDiffs": {
-                            "type": "boolean",
-                            "description": "Optional. Defaults to the hotlink tool's current default."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId",
-                        "origin"
-                    ]
+                    "$ref": "#/HotlinkInstanceCreation"
                 }
             }
         },
@@ -2869,49 +2799,7 @@ GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The placed hotlink instances to change. Every field but elementId is optional; a field that is omitted keeps its current value.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "origin": {
-                            "$ref": "#/HotlinkOrigin"
-                        },
-                        "rotationAngle": {
-                            "type": "number",
-                            "description": "Rotation about the origin, counter-clockwise, in radians."
-                        },
-                        "mirrored": {
-                            "type": "boolean",
-                            "description": "Reflect the module's local X axis before the rotation."
-                        },
-                        "floorDifference": {
-                            "type": "integer"
-                        },
-                        "skipNested": {
-                            "type": "boolean"
-                        },
-                        "suspendFixAngle": {
-                            "type": "boolean"
-                        },
-                        "ignoreTopFloorLinks": {
-                            "type": "boolean"
-                        },
-                        "relinkWallOpenings": {
-                            "type": "boolean"
-                        },
-                        "adjustLevelDiffs": {
-                            "type": "boolean"
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Move the instance to this layer."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/HotlinkInstanceChange"
                 }
             }
         },
