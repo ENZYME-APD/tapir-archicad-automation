@@ -3797,34 +3797,16 @@ GS::Optional<GS::UniString> RotateElementsCommand::GetInputParametersSchema () c
                             "description": "Rotation parameters for an element.",
                             "properties": {
                                 "beginPoint": {
-                                    "type": "object",
-                                    "description": "Starting point of the rotation arc.",
-                                    "properties": {
-                                        "x": { "type": "number" },
-                                        "y": { "type": "number" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["x", "y"]
+                                    "$ref": "#/Coordinate2D",
+                                    "description": "Starting point of the rotation arc."
                                 },
                                 "endPoint": {
-                                    "type": "object",
-                                    "description": "End point of the rotation arc.",
-                                    "properties": {
-                                        "x": { "type": "number" },
-                                        "y": { "type": "number" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["x", "y"]
+                                    "$ref": "#/Coordinate2D",
+                                    "description": "End point of the rotation arc."
                                 },
                                 "origin": {
-                                    "type": "object",
-                                    "description": "Center of rotation.",
-                                    "properties": {
-                                        "x": { "type": "number" },
-                                        "y": { "type": "number" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["x", "y"]
+                                    "$ref": "#/Coordinate2D",
+                                    "description": "Center of rotation."
                                 }
                             },
                             "additionalProperties": false,

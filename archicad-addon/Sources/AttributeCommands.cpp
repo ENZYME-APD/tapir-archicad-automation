@@ -3298,19 +3298,7 @@ GS::Optional<GS::UniString> CreateLinesCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Dash-gap pairs describing one period (Dashed line type only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "dash": {
-                                        "type": "number",
-                                        "description": "Length of the visible part of the item."
-                                    },
-                                    "gap": {
-                                        "type": "number",
-                                        "description": "Length of the invisible part of the item."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["dash", "gap"]
+                                "$ref": "#/LineDashItem"
                             }
                         },
                         "lineItems": {
@@ -3581,64 +3569,21 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Vectorial fill line items (Vector fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "frequency": {
-                                        "type": "number",
-                                        "description": "The distance between two instances of this item."
-                                    },
-                                    "direction": {
-                                        "type": "number",
-                                        "description": "The angle of the item, measured CCW from the horizontal axis, in radians."
-                                    },
-                                    "offsetLine": {
-                                        "type": "number",
-                                        "description": "The parallel offset of the item, measured from the (rotated) horizontal axis."
-                                    },
-                                    "offset": {
-                                        "description": "The offset of the item, given by its coordinates.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "lineLengths": {
-                                        "type": "array",
-                                        "description": "Dash-gap length pairs describing this line item. Must contain an even number of items.",
-                                        "items": {
-                                            "type": "number"
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["frequency", "direction", "offsetLine", "offset"]
+                                "$ref": "#/FillLineItem"
                             }
                         },
                         "symbolLines": {
                             "type": "array",
                             "description": "Line items of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "begin": { "$ref": "#/Coordinate2D" },
-                                    "end": { "$ref": "#/Coordinate2D" }
-                                },
-                                "additionalProperties": false,
-                                "required": ["begin", "end"]
+                                "$ref": "#/FillSymbolLine"
                             }
                         },
                         "symbolArcs": {
                             "type": "array",
                             "description": "Arc items of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "begin": { "$ref": "#/Coordinate2D" },
-                                    "origin": { "$ref": "#/Coordinate2D" },
-                                    "angle": {
-                                        "type": "number",
-                                        "description": "Arc angle in radians, measured CCW."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["begin", "origin", "angle"]
+                                "$ref": "#/FillSymbolArc"
                             }
                         },
                         "symbolHotspots": {

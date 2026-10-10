@@ -1440,15 +1440,7 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
         "isAutoOnStoryVisibility": { "type": "boolean" },
         "visibility": {
-            "type": "object",
-            "properties": {
-                "showOnHome": { "type": "boolean" },
-                "showAllAbove": { "type": "boolean" },
-                "showAllBelow": { "type": "boolean" },
-                "showRelAbove": { "type": "integer" },
-                "showRelBelow": { "type": "integer" }
-            },
-            "additionalProperties": false
+            "$ref": "#/StoryVisibility"
         },
         "linkToSettings": {
             "type": "object",

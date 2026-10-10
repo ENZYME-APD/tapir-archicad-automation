@@ -2807,16 +2807,7 @@
                 "type": "array",
                 "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": {
-                            "$ref": "#/Guid"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "guid"
-                    ]
+                    "$ref": "#/GuidId"
                 }
             }
         },
@@ -5457,26 +5448,8 @@
                 "description": "Lamp only."
             },
             "visibility": {
-                "type": "object",
-                "description": "Per-story visibility settings.",
-                "properties": {
-                    "showOnHome": {
-                        "type": "boolean"
-                    },
-                    "showAllAbove": {
-                        "type": "boolean"
-                    },
-                    "showAllBelow": {
-                        "type": "boolean"
-                    },
-                    "showRelAbove": {
-                        "type": "integer"
-                    },
-                    "showRelBelow": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/StoryVisibility",
+                "description": "Per-story visibility settings."
             },
             "linkToSettings": {
                 "type": "object",
