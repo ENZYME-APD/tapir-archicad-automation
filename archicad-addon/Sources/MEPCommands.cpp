@@ -199,26 +199,7 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "The MEP elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The type of the MEP element."
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "type",
-                        "domain"
-                    ]
+                    "$ref": "#/MEPElement"
                 }
             }
         },
@@ -514,20 +495,7 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
                 "type": "array",
                 "description": "The distribution systems of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "type": "string"
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["domain", "elements"]
+                    "$ref": "#/MEPDistributionSystem"
                 }
             }
         },
@@ -1290,25 +1258,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
                 "type": "array",
                 "description": "The circular segment preference tables of the domain.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": { "type": "string" },
-                        "rows": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "referenceId": { "type": "integer" },
-                                    "diameter": { "type": "number" },
-                                    "description": { "type": "string" }
-                                },
-                                "required": ["referenceId", "diameter"],
-                                "additionalProperties": false
-                            }
-                        }
-                    },
-                    "required": ["guid", "rows"],
-                    "additionalProperties": false
+                    "$ref": "#/MEPPreferenceTable"
                 }
             }
         },
