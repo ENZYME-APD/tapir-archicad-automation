@@ -4875,7 +4875,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                         "holes": { "$ref": "#/Holes2D" },
                         "pivotLine": {
                             "$ref": "#/PivotLine",
-                            "description": "If given, a single-plane roof is created instead of a multi-plane roof: one plane tilted along this pivot line. The plane rises on the left side of the line direction (begCoordinate towards endCoordinate); flip the line to tilt towards the other side."
+                            "description": "If given, creates a single-plane roof instead of a multi-plane roof, tilted along this pivot line."
                         },
                         "angle": {
                             "type": "number",

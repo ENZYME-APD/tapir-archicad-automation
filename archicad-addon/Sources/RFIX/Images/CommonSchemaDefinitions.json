@@ -4387,7 +4387,7 @@
             },
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "Stored zoom box in model coordinates. Used only when saveZoom is true."
+                "description": "Stored zoom box. Used only when saveZoom is true."
             },
             "rotation": {
                 "type": "number",
@@ -4434,7 +4434,7 @@
         "properties": {
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "The actual zoom parameters, rectangular region of the model."
+                "description": "The current zoom parameters."
             },
             "rotation": {
                 "type": "number",
@@ -4977,7 +4977,7 @@
             },
             "pivotLine": {
                 "$ref": "#/RoofDetailsPivotLine",
-                "description": "Single-plane: the pivot line the plane rotates about."
+                "description": "For single-plane roofs."
             },
             "eavesOverhang": {
                 "type": "number",
@@ -6447,7 +6447,7 @@
             },
             "bounds": {
                 "$ref": "#/BoundingBox2D",
-                "description": "Bounding box of the drawing on the layout."
+                "description": "Bounds of the drawing on the layout."
             },
             "clipPolygon": {
                 "type": "array",
@@ -6937,7 +6937,7 @@
     },
     "PivotLine": {
         "type": "object",
-        "description": "If given, a single-plane roof is created instead of a multi-plane roof: one plane tilted along this pivot line. The plane rises on the left side of the line direction (begCoordinate towards endCoordinate); flip the line to tilt towards the other side.",
+        "description": "A directed pivot line defined by its beginning and end coordinates. The roof plane rises on the left side of the line direction (begCoordinate towards endCoordinate); reverse the direction to tilt towards the other side.",
         "properties": {
             "begCoordinate": {
                 "$ref": "#/Coordinate2D"
@@ -7039,7 +7039,7 @@
     },
     "Zoom": {
         "type": "object",
-        "description": "The actual zoom parameters, rectangular region of the model.",
+        "description": "A rectangular zoom box in model coordinates.",
         "properties": {
             "xMin": {
                 "type": "number",
@@ -7068,7 +7068,7 @@
     },
     "BoundingBox2D": {
         "type": "object",
-        "description": "Bounding box of the drawing on the layout.",
+        "description": "A two-dimensional bounding box defined by its minimum and maximum coordinates.",
         "properties": {
             "xMin": {
                 "type": "number"
@@ -7093,7 +7093,7 @@
     },
     "RoofDetailsPivotLine": {
         "type": "object",
-        "description": "Single-plane: the pivot line the plane rotates about.",
+        "description": "The pivot line about which a roof plane rotates.",
         "properties": {
             "begin": {
                 "$ref": "#/Coordinate2D"
@@ -7107,6 +7107,233 @@
             "begin",
             "end"
         ]
+    },
+    "SurveyPointPosition": {
+        "type": "object",
+        "properties": {
+            "eastings": {
+                "type": "number",
+                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+            },
+            "northings": {
+                "type": "number",
+                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "Orthogonal height relative to the vertical datum specified."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "eastings",
+            "northings",
+            "elevation"
+        ]
+    },
+    "GeoReferencingParameters": {
+        "type": "object",
+        "properties": {
+            "crsName": {
+                "type": "string",
+                "description": "Name by which the coordinate reference system is identified."
+            },
+            "description": {
+                "type": "string",
+                "description": "Informal description of this coordinate reference system."
+            },
+            "geodeticDatum": {
+                "type": "string",
+                "description": "Name by which this datum is identified."
+            },
+            "verticalDatum": {
+                "type": "string",
+                "description": "Name by which the vertical datum is identified."
+            },
+            "mapProjection": {
+                "type": "string",
+                "description": "Name by which the map projection is identified."
+            },
+            "mapZone": {
+                "type": "string",
+                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+            },
+            "xAxisAbscissa": {
+                "type": "number",
+                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+            },
+            "xAxisOrdinate": {
+                "type": "number",
+                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "crsName",
+            "description",
+            "geodeticDatum",
+            "verticalDatum",
+            "mapProjection",
+            "mapZone",
+            "xAxisAbscissa",
+            "xAxisOrdinate",
+            "scale"
+        ]
+    },
+    "SurveyPointPositionUpdate": {
+        "type": "object",
+        "properties": {
+            "eastings": {
+                "type": "number",
+                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+            },
+            "northings": {
+                "type": "number",
+                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "Orthogonal height relative to the vertical datum specified."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "GeoReferencingParametersUpdate": {
+        "type": "object",
+        "properties": {
+            "crsName": {
+                "type": "string",
+                "description": "Name by which the coordinate reference system is identified."
+            },
+            "description": {
+                "type": "string",
+                "description": "Informal description of this coordinate reference system."
+            },
+            "geodeticDatum": {
+                "type": "string",
+                "description": "Name by which this datum is identified."
+            },
+            "verticalDatum": {
+                "type": "string",
+                "description": "Name by which the vertical datum is identified."
+            },
+            "mapProjection": {
+                "type": "string",
+                "description": "Name by which the map projection is identified."
+            },
+            "mapZone": {
+                "type": "string",
+                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+            },
+            "xAxisAbscissa": {
+                "type": "number",
+                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+            },
+            "xAxisOrdinate": {
+                "type": "number",
+                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ProjectLocation": {
+        "type": "object",
+        "properties": {
+            "longitude": {
+                "type": "number",
+                "description": "longitude in degrees"
+            },
+            "latitude": {
+                "type": "number",
+                "description": "latitude in degrees"
+            },
+            "altitude": {
+                "type": "number",
+                "description": "altitude in meters"
+            },
+            "north": {
+                "type": "number",
+                "description": "north direction in radians"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "longitude",
+            "latitude",
+            "altitude",
+            "north"
+        ]
+    },
+    "SurveyPoint": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/SurveyPointPosition"
+            },
+            "positionInProject": {
+                "$ref": "#/Coordinate3D",
+                "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
+            },
+            "geoReferencingParameters": {
+                "$ref": "#/GeoReferencingParameters"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "positionInProject",
+            "geoReferencingParameters"
+        ]
+    },
+    "ProjectLocationUpdate": {
+        "type": "object",
+        "properties": {
+            "longitude": {
+                "type": "number",
+                "description": "longitude in degrees"
+            },
+            "latitude": {
+                "type": "number",
+                "description": "latitude in degrees"
+            },
+            "altitude": {
+                "type": "number",
+                "description": "altitude in meters"
+            },
+            "north": {
+                "type": "number",
+                "description": "north direction in radians"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SurveyPointUpdate": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/SurveyPointPositionUpdate"
+            },
+            "positionInProject": {
+                "$ref": "#/Coordinate3D",
+                "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
+            },
+            "geoReferencingParameters": {
+                "$ref": "#/GeoReferencingParametersUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     },
     "LayoutInfo": {
         "type": "object",
