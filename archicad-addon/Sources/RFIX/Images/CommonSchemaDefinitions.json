@@ -935,8 +935,7 @@
                 "type": "string"
             },
             "subType": {
-                "type": "string",
-                "enum": ["Vector", "Solid", "Empty", "Symbol", "LinearGradient", "RadialGradient"]
+                "$ref": "#/FillSubType"
             },
             "scaleWithPlan": {
                 "type": "boolean"
@@ -1299,8 +1298,7 @@
             "useWith": {
                 "type": "array",
                 "items": {
-                    "type": "string",
-                    "enum": ["Wall", "Beam", "Column", "Handrail", "Other"]
+                    "$ref": "#/ProfileUseWith"
                 }
             },
             "width": {
@@ -1527,8 +1525,7 @@
         "type": "object",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": ["Core", "Finish", "Other"]
+                "$ref": "#/CompositeSkinType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeIdArrayItem"
@@ -2541,6 +2538,344 @@
                 ]
             }
         ]
+    },
+    "FillAttributeField": {
+        "type": "string",
+        "enum": [
+            "subType",
+            "scaleWithPlan",
+            "useForWalls",
+            "useForDraft",
+            "useForCover",
+            "horizontalSpacing",
+            "verticalSpacing",
+            "angle",
+            "bitPattern",
+            "gradientStart",
+            "gradientEnd",
+            "percent",
+            "texture",
+            "lineItems",
+            "symbolLines",
+            "symbolArcs",
+            "symbolHotspots"
+        ]
+    },
+    "ZoneCategoryAttributeField": {
+        "type": "string",
+        "enum": [
+            "categoryCode",
+            "color",
+            "stampName",
+            "stampMainGuid",
+            "stampRevGuid"
+        ]
+    },
+    "MEPSystemAttributeField": {
+        "type": "string",
+        "enum": [
+            "domain",
+            "contourPen",
+            "fillPen",
+            "fillBackgroundPen",
+            "centerLinePen",
+            "fillId",
+            "centerLineTypeId",
+            "materialId",
+            "insulationMaterialId"
+        ]
+    },
+    "PenTableAttributeField": {
+        "type": "string",
+        "enum": [
+            "isActiveForModel",
+            "isActiveForLayout",
+            "pens"
+        ]
+    },
+    "ProfileAttributeField": {
+        "type": "string",
+        "enum": [
+            "wallType",
+            "beamType",
+            "coluType",
+            "handrailType",
+            "otherGDLObjectType",
+            "useWith",
+            "width",
+            "height",
+            "minimumWidth",
+            "minimumHeight",
+            "widthStretchable",
+            "heightStretchable",
+            "hasCoreSkin",
+            "profileModifiers",
+            "skins",
+            "skinOutlines"
+        ]
+    },
+    "CompositeAttributeField": {
+        "type": "string",
+        "enum": [
+            "useWith",
+            "skins",
+            "separators"
+        ]
+    },
+    "CompositeSkinType": {
+        "type": "string",
+        "enum": [
+            "Core",
+            "Finish",
+            "Other"
+        ]
+    },
+    "SurfaceAttributeField": {
+        "type": "string",
+        "enum": [
+            "materialType",
+            "ambientReflection",
+            "diffuseReflection",
+            "specularReflection",
+            "transparency",
+            "shine",
+            "transparencyAttenuation",
+            "emissionAttenuation",
+            "surfaceColor",
+            "specularColor",
+            "emissionColor",
+            "fillId",
+            "texture"
+        ]
+    },
+    "LayerAttributeField": {
+        "type": "string",
+        "enum": [
+            "isHidden",
+            "isLocked",
+            "isWireframe",
+            "intersectionGroupNr"
+        ]
+    },
+    "BuildingMaterialAttributeField": {
+        "type": "string",
+        "enum": [
+            "id",
+            "manufacturer",
+            "description",
+            "connPriority",
+            "cutFillIndex",
+            "cutFillPen",
+            "cutFillBackgroundPen",
+            "cutSurfaceIndex",
+            "cutFillOrientation",
+            "thermalConductivity",
+            "density",
+            "heatCapacity",
+            "embodiedEnergy",
+            "embodiedCarbon",
+            "showUncutLines",
+            "collisionDetection"
+        ]
+    },
+    "LineAttributeField": {
+        "type": "string",
+        "enum": [
+            "scaleWithPlan",
+            "defineScale",
+            "lineType",
+            "period",
+            "height",
+            "dashItems",
+            "lineItems"
+        ]
+    },
+    "FillSubType": {
+        "type": "string",
+        "enum": [
+            "Vector",
+            "Solid",
+            "Empty",
+            "Symbol",
+            "LinearGradient",
+            "RadialGradient"
+        ]
+    },
+    "ProfileUseWith": {
+        "type": "string",
+        "enum": [
+            "Wall",
+            "Beam",
+            "Column",
+            "Handrail",
+            "Other"
+        ]
+    },
+    "WallStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite",
+            "Profile"
+        ]
+    },
+    "SlabStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
+    "RoofStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
+    "DisplayOption": {
+        "type": "string",
+        "description": "Floor plan display option.",
+        "enum": [
+            "Standard",
+            "StandardWithAbstract",
+            "CutOnly",
+            "OutLinesOnly",
+            "AbstractAll",
+            "CutAll"
+        ]
+    },
+    "ViewDepthLimitation": {
+        "type": "string",
+        "description": "Floor plan view depth limitation.",
+        "enum": [
+            "ToFloorPlanRange",
+            "ToAbsoluteLimit",
+            "EntireElement"
+        ]
+    },
+    "TextureProjectionType": {
+        "type": "string",
+        "description": "Projection type of the 3D texture.",
+        "enum": [
+            "Invalid",
+            "Planar",
+            "Default",
+            "Cylindric",
+            "Spheric",
+            "Box"
+        ]
+    },
+    "MeshRidges": {
+        "type": "string",
+        "description": "How ridges between mesh facets are displayed in 3D.",
+        "enum": [
+            "AllSharp",
+            "AllSmooth",
+            "UserDefined"
+        ]
+    },
+    "BeamAnchorPoint": {
+        "type": "string",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "ColumnCoreAnchor": {
+        "type": "string",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "SlabReferencePlaneLocation": {
+        "type": "string",
+        "enum": [
+            "Top",
+            "CoreTop",
+            "CoreBottom",
+            "Bottom"
+        ]
+    },
+    "WallReferenceLineLocation": {
+        "type": "string",
+        "enum": [
+            "Outside",
+            "Center",
+            "Inside",
+            "CoreOutside",
+            "CoreCenter",
+            "CoreInside"
+        ],
+        "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
+    },
+    "WallZoneRelation": {
+        "type": "string",
+        "enum": [
+            "Boundary",
+            "ReduceArea",
+            "None",
+            "SubtractFromZone"
+        ]
+    },
+    "HatchOrientationType": {
+        "type": "string",
+        "enum": [
+            "Global",
+            "Rotated",
+            "Distorted",
+            "Centered"
+        ]
+    },
+    "WallGeometryType": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Trapezoid",
+            "Polygonal"
+        ]
+    },
+    "WallModificationGeometryType": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Trapezoid"
+        ],
+        "description": "The wall's plan outline shape (Polygonal is not settable here, read-only via GetDetailsOfElements). This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on."
+    },
+    "WallProfileType": {
+        "type": "string",
+        "enum": [
+            "Normal",
+            "Slanted",
+            "Trapez",
+            "Poly"
+        ],
+        "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
+    },
+    "WallModificationProfileType": {
+        "type": "string",
+        "enum": [
+            "Normal",
+            "Slanted",
+            "Trapez"
+        ],
+        "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). slantAlpha/slantBeta only have an effect once this is set to Slanted."
     },
     "LengthType": {
         "type": "string",
@@ -4589,12 +4924,7 @@
         "type": "object",
         "properties": {
             "geometryType": {
-                "type": "string",
-                "enum": [
-                    "Straight",
-                    "Trapezoid",
-                    "Polygonal"
-                ]
+                "$ref": "#/WallGeometryType"
             },
             "begCoordinate": {
                 "$ref": "#/Coordinate2D"
@@ -4647,12 +4977,7 @@
                 }
             },
             "structureType": {
-                "type": "string",
-                "enum": [
-                    "Basic",
-                    "Composite",
-                    "Profile"
-                ]
+                "$ref": "#/WallStructureType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -4664,25 +4989,11 @@
                 "$ref": "#/AttributeId"
             },
             "referenceLineLocation": {
-                "type": "string",
-                "enum": [
-                    "Outside",
-                    "Center",
-                    "Inside",
-                    "CoreOutside",
-                    "CoreCenter",
-                    "CoreInside"
-                ],
+                "$ref": "#/WallReferenceLineLocation",
                 "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
             },
             "profileType": {
-                "type": "string",
-                "enum": [
-                    "Normal",
-                    "Slanted",
-                    "Trapez",
-                    "Poly"
-                ],
+                "$ref": "#/WallProfileType",
                 "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
             },
             "slantAlpha": {
@@ -4702,13 +5013,7 @@
                 "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' via ModifyWalls in the same call."
             },
             "zoneRel": {
-                "type": "string",
-                "enum": [
-                    "Boundary",
-                    "ReduceArea",
-                    "None",
-                    "SubtractFromZone"
-                ]
+                "$ref": "#/WallZoneRelation"
             },
             "visibility": {
                 "$ref": "#/StoryVisibility"
@@ -4890,18 +5195,7 @@
                 "type": "number"
             },
             "anchorPoint": {
-                "type": "string",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/BeamAnchorPoint"
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -4998,8 +5292,7 @@
                 "enum": [ "SinglePlane", "MultiPlane" ]
             },
             "structureType": {
-                "type": "string",
-                "enum": [ "Basic", "Composite" ]
+                "$ref": "#/RoofStructureType"
             },
             "thickness": {
                 "type": "number"
@@ -5126,11 +5419,7 @@
                 "$ref": "#/Holes2D"
             },
             "structureType": {
-                "type": "string",
-                "enum": [
-                    "Basic",
-                    "Composite"
-                ]
+                "$ref": "#/SlabStructureType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -5139,13 +5428,7 @@
                 "$ref": "#/AttributeId"
             },
             "referencePlaneLocation": {
-                "type": "string",
-                "enum": [
-                    "Top",
-                    "CoreTop",
-                    "CoreBottom",
-                    "Bottom"
-                ]
+                "$ref": "#/SlabReferencePlaneLocation"
             },
             "topMaterial": {
                 "$ref": "#/OverriddenMaterial"
@@ -5197,18 +5480,7 @@
                 "type": "number"
             },
             "coreAnchor": {
-                "type": "string",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/ColumnCoreAnchor"
             },
             "isSlanted": {
                 "type": "boolean"
@@ -6059,9 +6331,8 @@
                 "description": "The height of the skirt."
             },
             "ridges": {
-                "type": "string",
-                "description": "How ridges between mesh facets are displayed in 3D.",
-                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                "$ref": "#/MeshRidges",
+                "description": "How ridges between mesh facets are displayed in 3D."
             },
             "showLines": {
                 "type": "boolean",
@@ -6355,14 +6626,12 @@
                 "additionalProperties": false
             },
             "displayOption": {
-                "type": "string",
-                "description": "Floor plan display option.",
-                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                "$ref": "#/DisplayOption",
+                "description": "Floor plan display option."
             },
             "viewDepthLimitation": {
-                "type": "string",
-                "description": "Floor plan view depth limitation.",
-                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                "$ref": "#/ViewDepthLimitation",
+                "description": "Floor plan view depth limitation."
             },
             "cutFillPen": {
                 "type": "integer",
@@ -6460,9 +6729,8 @@
                 "description": "Show the floor plan hatching as if projected onto a plane."
             },
             "textureProjectionType": {
-                "type": "string",
-                "description": "Projection type of the 3D texture.",
-                "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                "$ref": "#/TextureProjectionType",
+                "description": "Projection type of the 3D texture."
             },
             "textureProjectionCoords": {
                 "type": "array",
@@ -8803,13 +9071,7 @@
         "description": "Orientation and distortion parameters of a fill.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [
-                    "Global",
-                    "Rotated",
-                    "Distorted",
-                    "Centered"
-                ]
+                "$ref": "#/HatchOrientationType"
             },
             "origin": {
                 "$ref": "#/Coordinate2D",
