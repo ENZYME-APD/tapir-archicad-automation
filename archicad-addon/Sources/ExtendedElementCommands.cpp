@@ -4617,12 +4617,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         "showContour": { "$ref": "#/StoryVisibility" },
                         "showFill": { "$ref": "#/StoryVisibility" },
                         "linkToSettings": {
-                            "type": "object",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "displayOption": {
                             "$ref": "#/DisplayOption"
@@ -4645,17 +4640,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         "coverFillBGPen": { "type": "integer" },
                         "use3DHatching": { "type": "boolean" },
                         "coverFillOrientation": {
-                            "type": "object",
-                            "properties": {
-                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
-                                "origo": { "$ref": "#/Coordinate2D" },
-                                "matrix00": { "type": "number" },
-                                "matrix10": { "type": "number" },
-                                "matrix01": { "type": "number" },
-                                "matrix11": { "type": "number" },
-                                "innerRadius": { "type": "number" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/CoverFillOrientation"
                         },
                         "useDistortedCoverFill": { "type": "boolean" },
                         "textureProjectionType": {
@@ -6608,12 +6593,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                         "showContour": { "$ref": "#/StoryVisibility" },
                         "showFill": { "$ref": "#/StoryVisibility" },
                         "linkToSettings": {
-                            "type": "object",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "displayOption": {
                             "$ref": "#/DisplayOption"
@@ -6636,17 +6616,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                         "coverFillBGPen": { "type": "integer" },
                         "use3DHatching": { "type": "boolean" },
                         "coverFillOrientation": {
-                            "type": "object",
-                            "properties": {
-                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
-                                "origo": { "$ref": "#/Coordinate2D" },
-                                "matrix00": { "type": "number" },
-                                "matrix10": { "type": "number" },
-                                "matrix01": { "type": "number" },
-                                "matrix11": { "type": "number" },
-                                "innerRadius": { "type": "number" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/CoverFillOrientation"
                         },
                         "useDistortedCoverFill": { "type": "boolean" },
                         "textureProjectionType": {
@@ -7347,16 +7317,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
                                 "type": "array",
                                 "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
                                 "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "coordinates": {
-                                            "type": "array",
-                                            "description": "The 3D coordinates of the leveling subline.",
-                                            "items": { "$ref": "#/Coordinate3D" }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["coordinates"]
+                                    "$ref": "#/MeshSubline"
                                 }
                             }
                         },

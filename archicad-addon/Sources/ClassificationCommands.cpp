@@ -811,8 +811,8 @@ GS::Optional<GS::UniString> ImportClassificationsXmlCommand::GetRawResponseSchem
         "type": "object",
         "properties": {
             "executionResult": { "$ref": "#/ExecutionResult" },
-            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
-            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+            "created": { "type": "array", "items": { "$ref": "#/GuidId" } },
+            "removed": { "type": "array", "items": { "$ref": "#/GuidId" } }
         },
         "additionalProperties": false,
         "required": [ "executionResult", "created", "removed" ]
