@@ -51,6 +51,25 @@ static void TAPIR_Browser_SetZoomEnabled (DG::Browser& browser, bool enabled)
 #endif
 #endif
 
+// Inserts script right before "</body>" (found case-insensitively); falls back to appending at the
+// end when absent/malformed.
+static GS::UniString InjectScriptBeforeBodyEnd (const GS::UniString& htmlContent, const GS::UniString& script)
+{
+#ifdef ServerMainVers_3000
+    const GS::UniString lowerContent = htmlContent.GetLowerCased ();
+#else
+    const GS::UniString lowerContent = htmlContent.ToLowerCase ();
+#endif
+    if (!lowerContent.Contains (GS::UniString ("</body>"))) {
+        return htmlContent + script;
+    }
+
+    const UIndex insertAt = lowerContent.FindFirst (GS::UniString ("</body>"));
+    GS::UniString result = htmlContent;
+    result.Insert (insertAt, script);
+    return result;
+}
+
 // Archicad's own browser.onContentHeightChanged event does not fire on dynamic DOM changes (only
 // ever observed at initial page load, undocumented) so autoHeight instead injects a small
 // ResizeObserver that reports content size changes through the same JS bridge scripts already use
@@ -87,20 +106,30 @@ static GS::UniString InjectAutoHeightScript (const GS::UniString& htmlContent)
         "setTimeout (doReport, 100);"
         "})();</script>";
 
-    // Find "</body>" case-insensitively; fall back to appending at the end when absent/malformed.
-#ifdef ServerMainVers_3000
-    const GS::UniString lowerContent = htmlContent.GetLowerCased ();
-#else
-    const GS::UniString lowerContent = htmlContent.ToLowerCase ();
-#endif
-    if (!lowerContent.Contains (GS::UniString ("</body>"))) {
-        return htmlContent + observerScript;
-    }
+    return InjectScriptBeforeBodyEnd (htmlContent, observerScript);
+}
 
-    const UIndex insertAt = lowerContent.FindFirst (GS::UniString ("</body>"));
-    GS::UniString result = htmlContent;
-    result.Insert (insertAt, observerScript);
-    return result;
+// DG::Browser::DisableNavigation (true) blocks every navigation, including the LoadHTML that
+// follows it: with navigationDisabled the palette showed up blank and the page's scripts never ran
+// (issue #768). Rather than depending on a DG::Browser load-finished event, the page is loaded with
+// navigation enabled and this injected script reports back through the same JS bridge SubmitResult
+// uses once the page has finished loading; the bridge then disables navigation. The
+// ACAPI object is not always registered by the time the first scripts run (the autoHeight script
+// above checks for it as well), hence the short polling.
+static GS::UniString InjectPageLoadedScript (const GS::UniString& htmlContent)
+{
+    static const GS::UniString pageLoadedScript =
+        "<script>(function () {"
+        "var attempts = 0;"
+        "function notify() {"
+        "  if (window.ACAPI && ACAPI.NotifyPageLoaded) { ACAPI.NotifyPageLoaded (); }"
+        "  else if (++attempts < 500) { setTimeout (notify, 20); }"
+        "}"
+        "if (document.readyState === 'complete') { notify (); }"
+        "else { window.addEventListener ('load', notify); }"
+        "})();</script>";
+
+    return InjectScriptBeforeBodyEnd (htmlContent, pageLoadedScript);
 }
 
 ScriptUIPalette::ScriptUIPalette ()
@@ -161,18 +190,28 @@ void ScriptUIPalette::ShowWithHTML (const GS::UniString& htmlContent, const Scri
     }
     browser.SetScrollBarVisibility (options.scrollBarsVisible);
     TAPIR_Browser_SetContextMenuEnabled (browser, options.contextMenuEnabled);
-    browser.DisableNavigation (options.navigationDisabled);
+    // Navigation must be enabled while the page loads, otherwise LoadHTML itself is blocked (see
+    // InjectPageLoadedScript); a previous navigationDisabled page may have left it disabled.
+    browser.DisableNavigation (false);
     TAPIR_Browser_SetAllowSelfSignedCertificates (browser, options.allowSelfSignedCertificates);
     if (options.clearCookies) {
         browser.DeleteAllCookies ();
     }
 
     autoHeightEnabled = options.autoHeight;
+    navigationDisableRequested = options.navigationDisabled;
 
     hasPendingResult = false;
     pendingResult = GS::EmptyUniString;
 
-    browser.LoadHTML (options.autoHeight ? InjectAutoHeightScript (htmlContent) : htmlContent);
+    GS::UniString content = htmlContent;
+    if (options.autoHeight) {
+        content = InjectAutoHeightScript (content);
+    }
+    if (options.navigationDisabled) {
+        content = InjectPageLoadedScript (content);
+    }
+    browser.LoadHTML (content);
     Show ();
 }
 
@@ -232,6 +271,16 @@ void ScriptUIPalette::RegisterACAPIJavaScriptObject ()
             if (palette.autoHeightEnabled) {
                 const Int32 pixelHeight = (jsValue->GetType () == JS::Value::DOUBLE) ? (Int32) jsValue->GetDouble () : jsValue->GetInteger ();
                 palette.SetClientHeight ((short) pixelHeight);
+            }
+        }
+        return GS::Ref<JS::Base> (new JS::Value (true));
+    }));
+
+    jsACAPI->AddItem (new JS::Function ("NotifyPageLoaded", [] (GS::Ref<JS::Base>) {
+        if (ScriptUIPalette::HasInstance ()) {
+            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+            if (palette.navigationDisableRequested) {
+                palette.browser.DisableNavigation (true);
             }
         }
         return GS::Ref<JS::Base> (new JS::Value (true));

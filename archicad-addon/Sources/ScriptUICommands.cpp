@@ -58,7 +58,7 @@ GS::Optional<GS::UniString> ShowScriptUICommand::GetInputParametersSchema () con
             },
             "navigationDisabled": {
                 "type": "boolean",
-                "description": "Prevents the page from navigating away (e.g. clicking a link to another site). Defaults to false."
+                "description": "Prevents the page from navigating away (e.g. clicking a link to another site) once it has loaded. Defaults to false."
             },
             "allowSelfSignedCertificates": {
                 "type": "boolean",
