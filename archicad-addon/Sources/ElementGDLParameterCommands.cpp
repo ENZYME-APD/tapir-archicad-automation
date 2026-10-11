@@ -228,6 +228,31 @@ static double ToStoredSize (double storedSize, const GS::Optional<double>& size,
     return *size * *scale;
 }
 
+// The dimensions a flat list gives an array parameter whose array currently has columnCount
+// columns. GetGDLParametersOfElements returns every array value flat, row by row, so a flat list
+// written to a two-dimensional array is read the same way, keeping the number of columns: the
+// value read back can then be written back as it is. Before, a flat list always made the array
+// itemCount x 1, and a library part whose script indexes the second dimension of a 4 x 2 array
+// stopped working after a flat list of its own 8 values was written (#812). A flat list that
+// does not fill whole rows is refused.
+static bool GetFlatListDimensions (USize itemCount, Int32 columnCount, Int32& dim1, Int32& dim2)
+{
+    if (itemCount == 0) {
+        return false;
+    }
+    if (columnCount <= 1) {
+        dim1 = static_cast<Int32> (itemCount);
+        dim2 = 1;
+        return true;
+    }
+    if (itemCount % static_cast<USize> (columnCount) != 0) {
+        return false;
+    }
+    dim1 = static_cast<Int32> (itemCount / static_cast<USize> (columnCount));
+    dim2 = columnCount;
+    return true;
+}
+
 // Retrieving a list of numbers via ObjectState::Get<GS::Array<double>> does not convert integer items
 // (their bit pattern is reinterpreted as double), so numbers are collected item by item instead.
 class NumberArrayValueCollector : public GS::ObjectState::Processor
@@ -284,7 +309,9 @@ public:
         --depth;
     }
 
-    bool GetCollectedValues (GS::Array<double>& outFlatValues, Int32& outDim1, Int32& outDim2) const
+    // columnCount: the current second dimension of the array parameter, for a flat list (see
+    // GetFlatListDimensions).
+    bool GetCollectedValues (Int32 columnCount, GS::Array<double>& outFlatValues, Int32& outDim1, Int32& outDim2) const
     {
         if (failed || (!rows.IsEmpty () && !flatValues.IsEmpty ())) {
             return false;
@@ -306,8 +333,9 @@ public:
             return true;
         }
         if (!flatValues.IsEmpty ()) {
-            outDim1 = static_cast<Int32> (flatValues.GetSize ());
-            outDim2 = 1;
+            if (!GetFlatListDimensions (flatValues.GetSize (), columnCount, outDim1, outDim2)) {
+                return false;
+            }
             outFlatValues = flatValues;
             return true;
         }
@@ -332,18 +360,18 @@ private:
     bool failed = false;
 };
 
-static bool GetNumberArrayValueField (const GS::ObjectState& parameter, GS::Array<double>& flatValues, Int32& dim1, Int32& dim2)
+static bool GetNumberArrayValueField (const GS::ObjectState& parameter, Int32 columnCount, GS::Array<double>& flatValues, Int32& dim1, Int32& dim2)
 {
     if (!parameter.IsList (ParameterValueFieldName)) {
         return false;
     }
     NumberArrayValueCollector collector;
     parameter.Enumerate (ParameterValueFieldName, collector);
-    return collector.GetCollectedValues (flatValues, dim1, dim2);
+    return collector.GetCollectedValues (columnCount, flatValues, dim1, dim2);
 }
 
 template<typename T>
-static bool GetArrayValueField (const GS::ObjectState& parameter, GS::Array<T>& flatValues, Int32& dim1, Int32& dim2)
+static bool GetArrayValueField (const GS::ObjectState& parameter, Int32 columnCount, GS::Array<T>& flatValues, Int32& dim1, Int32& dim2)
 {
     GS::Array<GS::Array<T>> valuesIn2D;
     if (parameter.Get (ParameterValueFieldName, valuesIn2D)) {
@@ -368,11 +396,9 @@ static bool GetArrayValueField (const GS::ObjectState& parameter, GS::Array<T>& 
 
     GS::Array<T> valuesIn1D;
     if (parameter.Get (ParameterValueFieldName, valuesIn1D)) {
-        dim1 = static_cast<Int32> (valuesIn1D.GetSize ());
-        if (dim1 == 0) {
+        if (!GetFlatListDimensions (valuesIn1D.GetSize (), columnCount, dim1, dim2)) {
             return false;
         }
-        dim2 = 1;
         flatValues = valuesIn1D;
         return true;
     }
@@ -945,8 +971,12 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
         ArrayParameterChange change;
         change.name = changeParam.name;
         change.typeID = gdlParametersTypeDictionary[changeParam.name];
-        if (!ParseArrayParameterValue (parameter, change.typeID, change)) {
-            errMessage = GS::UniString::Printf ("Invalid input: the given value is not a valid array for parameter %s of element %T (use [v1, v2, ...] for one-dimensional and [[v11, v12], [v21, v22]] for two-dimensional arrays)", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        if (!ParseArrayParameterValue (parameter, change.typeID, actParam->dim2, change)) {
+            if (actParam->dim2 > 1) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a valid array for parameter %s of element %T (it is a two-dimensional array of %d x %d items: use [[v11, v12], [v21, v22]], or a flat list of a multiple of %d items which is read row by row, as GetGDLParametersOfElements returns it)", changeParam.name, APIGuidToString (elemGuid).ToPrintf (), actParam->dim1, actParam->dim2, actParam->dim2);
+            } else {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a valid array for parameter %s of element %T (use [v1, v2, ...] for one-dimensional and [[v11, v12], [v21, v22]] for two-dimensional arrays)", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+            }
             return APIERR_BADPARS;
         }
         pendingArrayChanges.Push (change);
@@ -1047,6 +1077,7 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
 bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
     const GS::ObjectState& parameter,
     API_AddParID typeID,
+    Int32 currentDim2,
     ArrayParameterChange& change)
 {
     switch (typeID) {
@@ -1058,7 +1089,7 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
         case APIParT_BuildingMaterial:
         case APIParT_Profile: {
             GS::Array<Int32> values;
-            if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
+            if (!GetArrayValueField (parameter, currentDim2, values, change.dim1, change.dim2)) {
                 return false;
             }
             for (Int32 value : values) {
@@ -1071,10 +1102,10 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
         case APIParT_Length:
         case APIParT_RealNum:
         case APIParT_Angle:
-            return GetNumberArrayValueField (parameter, change.numberValues, change.dim1, change.dim2);
+            return GetNumberArrayValueField (parameter, currentDim2, change.numberValues, change.dim1, change.dim2);
         case APIParT_LightSw: {
             GS::Array<GS::String> values;
-            if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
+            if (!GetArrayValueField (parameter, currentDim2, values, change.dim1, change.dim2)) {
                 return false;
             }
             for (const GS::String& value : values) {
@@ -1084,7 +1115,7 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
         }
         case APIParT_Boolean: {
             GS::Array<bool> values;
-            if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
+            if (!GetArrayValueField (parameter, currentDim2, values, change.dim1, change.dim2)) {
                 return false;
             }
             for (bool value : values) {
@@ -1094,7 +1125,7 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
         }
         case APIParT_CString:
         case APIParT_Title:
-            return GetArrayValueField (parameter, change.stringValues, change.dim1, change.dim2);
+            return GetArrayValueField (parameter, currentDim2, change.stringValues, change.dim1, change.dim2);
         default:
         case APIParT_Dictionary:
             // Not supported by the Archicad API yet

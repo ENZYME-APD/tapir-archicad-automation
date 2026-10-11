@@ -42,9 +42,12 @@ private:
         GS::Array<ArrayParameterChange>& pendingArrayChanges,
         GS::UniString& errMessage);
 
+    // currentDim2 is the array's current second dimension: a flat list is read row by row with
+    // that many columns (see GetFlatListDimensions in the .cpp).
     static bool ParseArrayParameterValue (
         const GS::ObjectState& parameter,
         API_AddParID typeID,
+        Int32 currentDim2,
         ArrayParameterChange& change);
 
     static GSErrCode ApplyArrayParameterChanges (
