@@ -29,7 +29,7 @@ else:
 
     detailsAfter = GetDetails (targetWindow)
     stayedInPlace = all (
-        detailsBefore['typeSpecificDetails'][field] == detailsAfter['typeSpecificDetails'][field]
+        detailsBefore['details'][field] == detailsAfter['details'][field]
         for field in ['centerOffset', 'sillHeight', 'reflected', 'refSide', 'oSide'])
     print ('Window stayed in place: {}'.format (stayedInPlace))
 
