@@ -1344,40 +1344,40 @@ GSErrCode Initialize (void)
     { // Graphical Override Commands - ACAPI_GraphicalOverride_* functions require Archicad 27+
         CommandGroup graphicalOverrideCommands ("Graphical Override Commands");
         err |= RegisterCommand<GetGraphicalOverrideCombinationsCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Returns all graphical override combinations with their contained rule IDs."
+            graphicalOverrideCommands, "1.7.1",
+            "Returns all graphical override combinations with their contained rule IDs. Available from Archicad 27."
         );
         err |= RegisterCommand<GetGraphicalOverrideRuleGroupsCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Returns all graphical override rule groups with their contained rule IDs in order."
+            graphicalOverrideCommands, "1.7.1",
+            "Returns all graphical override rule groups with their contained rule IDs in order. Available from Archicad 27."
         );
         err |= RegisterCommand<GetGraphicalOverrideRulesCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Returns all graphical override rules with their criterion XML and style."
+            graphicalOverrideCommands, "1.7.1",
+            "Returns all graphical override rules with their criterion XML and style. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateGraphicalOverrideRuleGroupsCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Creates graphical override rule groups with the given names."
+            graphicalOverrideCommands, "1.7.1",
+            "Creates graphical override rule groups with the given names. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateGraphicalOverrideRulesCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Creates graphical override rules with the given names, criterion XML, and style. Note: fillBackgroundPenOverride.penIndex=0 (transparent background) is rejected by the ArchiCAD API; use isOverridden:false or an RGB color instead."
+            graphicalOverrideCommands, "1.7.1",
+            "Creates graphical override rules with the given names, criterion XML, and style. Note: fillBackgroundPenOverride.penIndex=0 (transparent background) is rejected by the ArchiCAD API; use overridden:false or an RGB color instead. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateGraphicalOverrideCombinationsCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Creates graphical override combinations with the given names and rule lists."
+            graphicalOverrideCommands, "1.7.1",
+            "Creates graphical override combinations with the given names and rule lists. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteGraphicalOverrideRulesCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Deletes the given graphical override rules by ID."
+            graphicalOverrideCommands, "1.7.1",
+            "Deletes the given graphical override rules by ID. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteGraphicalOverrideRuleGroupsCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Deletes the given graphical override rule groups (and all rules they contain) by ID."
+            graphicalOverrideCommands, "1.7.1",
+            "Deletes the given graphical override rule groups (and all rules they contain) by ID. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteGraphicalOverrideCombinationsCommand> (
-            graphicalOverrideCommands, "1.5.7",
-            "Deletes the given graphical override combinations by ID."
+            graphicalOverrideCommands, "1.7.1",
+            "Deletes the given graphical override combinations by ID. Available from Archicad 27."
         );
         AddCommandGroup (graphicalOverrideCommands);
     }

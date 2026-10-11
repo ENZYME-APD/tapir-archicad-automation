@@ -351,6 +351,20 @@ static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info)
 // mismatched custom property/group name does. kDefaultClassificationSystemName is only a fallback
 // for the common case; callers targeting a different system must pass classificationSystem
 // explicitly.
+// User-supplied strings (names, ids, comparison values) are spliced into the criterion XML, so
+// escape the XML special characters; a name like "Doors & Windows" would otherwise produce
+// malformed XML that Archicad silently reduces to a match-all rule.
+static GS::UniString EscapeXML (const GS::UniString& text)
+{
+    GS::UniString escaped = text;
+    escaped.ReplaceAll ("&", "&amp;");
+    escaped.ReplaceAll ("<", "&lt;");
+    escaped.ReplaceAll (">", "&gt;");
+    escaped.ReplaceAll ("\"", "&quot;");
+    escaped.ReplaceAll ("'", "&apos;");
+    return escaped;
+}
+
 static const char* kDefaultClassificationSystemName = "Classification Archicad - 2.0";
 
 static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bool isNot, const GS::UniString& systemName)
@@ -361,7 +375,7 @@ static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bo
          +         "<PropertyDefinitionUserId Version=\"2\">"
          +             "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +             "<Guid>00000000-0000-0000-0000-000000000000</Guid>"
-         +             "<HasNameId>true</HasNameId><Name>" + systemName + "</Name>"
+         +             "<HasNameId>true</HasNameId><Name>" + EscapeXML (systemName) + "</Name>"
          +             "<PropertyDefinitionGroupUserId Version=\"2\">"
          +                 "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +                 "<Guid>00000000-0000-0000-0000-000000000000</Guid>"
@@ -369,7 +383,7 @@ static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bo
          +             "</PropertyDefinitionGroupUserId>"
          +         "</PropertyDefinitionUserId>"
          +         GS::UniString (isNot ? "<CriteriaOperatorEnum>14</CriteriaOperatorEnum>" : "<CriteriaOperatorEnum>12</CriteriaOperatorEnum>")
-         +         "<ClassificationValue><ClassificationItemUserID>" + itemId + "</ClassificationItemUserID></ClassificationValue>"
+         +         "<ClassificationValue><ClassificationItemUserID>" + EscapeXML (itemId) + "</ClassificationItemUserID></ClassificationValue>"
          +     "</VBEF::ConditionIO>"
          + "</PropertyCriterion>";
 }
@@ -502,11 +516,11 @@ static GS::UniString CustomPropertyHeaderXML (const GS::UniString& propertyName,
     return GS::UniString ("<PropertyDefinitionUserId Version=\"2\">")
          +     "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +     "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
-         +     "<Name>" + propertyName + "</Name>"
+         +     "<Name>" + EscapeXML (propertyName) + "</Name>"
          +     "<PropertyDefinitionGroupUserId Version=\"2\">"
          +         "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +         "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
-         +         "<Name>" + groupName + "</Name>"
+         +         "<Name>" + EscapeXML (groupName) + "</Name>"
          +     "</PropertyDefinitionGroupUserId>"
          + "</PropertyDefinitionUserId>";
 }
@@ -546,7 +560,7 @@ static GS::UniString BoolVariantXML (bool value)
 
 static GS::UniString StringVariantXML (const GS::UniString& value)
 {
-    return GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + value + "</Value></Variant>";
+    return GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + EscapeXML (value) + "</Value></Variant>";
 }
 
 static GS::UniString NumVariantXML (double value)
@@ -597,7 +611,7 @@ static GS::UniString ProfileParameterHeaderByNameXML (const GS::UniString& prope
     return GS::UniString ("<PropertyDefinitionUserId Version=\"2\">")
          +     "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +     "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
-         +     "<Name>" + propertyName + "</Name>"
+         +     "<Name>" + EscapeXML (propertyName) + "</Name>"
          +     "<PropertyDefinitionGroupUserId Version=\"2\">"
          +         "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +         "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
@@ -693,7 +707,7 @@ static GS::UniString StringListCriterionXML (const char* propertyGuid, const GS:
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + PropertyHeaderXML (propertyGuid, groupGuid)
          + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", stringOp) + "</CriteriaOperatorEnum>"
-         + "<Value><Variant Type=\"StringListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + value + "</ValueItem></ValueArray></Variant></Value>"
+         + "<Value><Variant Type=\"StringListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + EscapeXML (value) + "</ValueItem></ValueArray></Variant></Value>"
          + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
@@ -704,7 +718,7 @@ static GS::UniString StringListCriterionXML (const char* propertyGuid, const GS:
 // don't, hence the default of false here.
 static GS::UniString StringModelViewCriterionXML (const char* propertyGuid, const GS::UniString& value, int stringOp, const char* groupGuid = kModelViewPropertyGroupGuid, bool bareVariant = false)
 {
-    const GS::UniString variantXML = GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + value + "</Value></Variant>";
+    const GS::UniString variantXML = GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + EscapeXML (value) + "</Value></Variant>";
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + PropertyHeaderXML (propertyGuid, groupGuid)
@@ -2913,7 +2927,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRuleGroupsCommand::GetRawResp
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ruleGroupId": { "type": "string" },
+                        "ruleGroupId": { "type": "string", "description": "The guid of the created rule group. Empty string when creating this item failed; see executionResults at the same index." },
                         "name":        { "type": "string" }
                     },
                     "additionalProperties": false,
@@ -3007,7 +3021,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRulesCommand::GetRawResponseS
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ruleId": { "type": "string" },
+                        "ruleId": { "type": "string", "description": "The guid of the created rule. Empty string when creating this item failed; see executionResults at the same index." },
                         "name":   { "type": "string" }
                     },
                     "additionalProperties": false,
@@ -3124,7 +3138,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideCombinationsCommand::GetRawRe
                 "items": {
                     "type": "object",
                     "properties": {
-                        "combinationId": { "type": "string" },
+                        "combinationId": { "type": "string", "description": "The guid of the created combination. Empty string when creating this item failed; see executionResults at the same index." },
                         "name":          { "type": "string" }
                     },
                     "additionalProperties": false,

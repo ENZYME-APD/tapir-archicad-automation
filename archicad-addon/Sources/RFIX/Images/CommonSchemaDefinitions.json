@@ -11517,7 +11517,7 @@
             "slabDefaultEdgeAngleGreaterOrEqual": { "type": "number" },
             "slabCutLinePen": { "type": "integer", "description": "Matches slabs whose cut line pen equals this plain pen index." },
             "slabCutLinePenNot": { "type": "integer" },
-            "slabConstructionMaterialFill": { "type": "string", "description": "Matches slabs whose construction material fill is this Building Material attribute (by name)." },
+            "slabConstructionMaterialFill": { "type": "string", "description": "Matches slabs whose construction material fill is this Fill attribute (by name)." },
             "slabConstructionMaterialFillNot": { "type": "string" },
             "roofCutBodyType": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"], "description": "Matches roofs whose cut body type equals this." },
             "roofCutBodyTypeNot": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"] },
