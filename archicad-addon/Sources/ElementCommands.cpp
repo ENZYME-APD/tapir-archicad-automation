@@ -1287,6 +1287,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("contourPenIndex", elem.hatch.contPen.penIndex);
                 typeSpecificDetails.Add ("fillPenIndex", elem.hatch.fillPen.penIndex);
                 typeSpecificDetails.Add ("fillBackgroundPenIndex", elem.hatch.fillBGPen);
+                // The RGB colors are only reported when they override the pens, so their absence means the pens are in effect.
+                if ((elem.hatch.hatchFlags & APIHatch_HasFgRGBColor) != 0) {
+                    typeSpecificDetails.Add ("foregroundColor", CreateColorObjectState (elem.hatch.foregroundRGB));
+                }
+                if ((elem.hatch.hatchFlags & APIHatch_HasBkgRGBColor) != 0) {
+                    typeSpecificDetails.Add ("backgroundColor", CreateColorObjectState (elem.hatch.backgroundRGB));
+                }
                 typeSpecificDetails.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, elem.hatch.fillInd)));
                 typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.hatch.buildingMaterial)));
                 typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
@@ -2408,15 +2415,33 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, contPen);
                     hasElementChanges = true;
                 }
+                // A given pen index clears the matching RGB override so the pen actually shows;
+                // a given color sets the override and wins over the pen.
                 short fillPenIndex = 0;
                 if (typeSpecificDetails->Get ("fillPenIndex", fillPenIndex)) {
                     elem.hatch.fillPen.penIndex = fillPenIndex;
                     elem.hatch.fillPen.colorOverridePenIndex = 0;
+                    elem.hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillPen);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchFlags);
                     hasElementChanges = true;
                 }
                 if (typeSpecificDetails->Get ("fillBackgroundPenIndex", elem.hatch.fillBGPen)) {
+                    elem.hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillBGPen);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchFlags);
+                    hasElementChanges = true;
+                }
+                if (GetColor (*typeSpecificDetails, "foregroundColor", elem.hatch.foregroundRGB)) {
+                    elem.hatch.hatchFlags |= APIHatch_HasFgRGBColor;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, foregroundRGB);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchFlags);
+                    hasElementChanges = true;
+                }
+                if (GetColor (*typeSpecificDetails, "backgroundColor", elem.hatch.backgroundRGB)) {
+                    elem.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, backgroundRGB);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchFlags);
                     hasElementChanges = true;
                 }
                 const GS::ObjectState* fillId = typeSpecificDetails->Get ("fillId");
