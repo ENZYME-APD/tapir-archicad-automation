@@ -793,7 +793,7 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
 #ifdef ServerMainVers_2800
         // The IFC GlobalId of the IfcBuildingStorey the story is exported as. The IFC
         // object accessor only exists from Archicad 28; older versions leave the field out.
-        auto storyObjectID = ifcAccessor.CreateStoryObjectID (story.index);
+        auto storyObjectID = ifcAccessor.CreateIfcBuildingStoreyObjectID (story.index);
         if (storyObjectID.IsOk ()) {
             auto unWrappedStoryObjectID = storyObjectID.Unwrap ();
             auto ifcId = ifcAccessor.GetGlobalId (unWrappedStoryObjectID);
