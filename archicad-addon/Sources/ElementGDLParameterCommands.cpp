@@ -994,7 +994,7 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
         errMessage = GS::UniString::Printf ("Invalid input: index2 is given without index1 for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     } else if (isArrayParameter) {
-        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of element %T, provide a list value to resize the array or use index1/index2 to change a single item", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of element %T, provide a list value with all of its items or use index1/index2 to change a single item", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
 
