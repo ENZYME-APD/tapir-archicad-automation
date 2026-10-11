@@ -278,7 +278,7 @@ GS::Optional<GS::UniString> GetElementsOfDesignOptionsCommand::GetRawResponseSch
             "elementsOfDesignOptions": {
                 "type": "array",
                 "items": {
-                    "#ref": "#/ElementsOfDesignOptionOrError"
+                    "$ref": "#/ElementsOfDesignOptionOrError"
                 }
             }
         },
