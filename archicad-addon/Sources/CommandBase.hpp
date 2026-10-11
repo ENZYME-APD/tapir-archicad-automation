@@ -6,6 +6,7 @@
 
 #include "ObjectState.hpp"
 #include "BiHashTable.hpp"
+#include "HashSet.hpp"
 
 #include <vector>
 #include <map>
@@ -48,6 +49,19 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 // The FailedExecutionResult shape for an error already built with CreateErrorResponse.
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
+GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+
+// Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
+// commands use it to report what an import created and removed.
+template <typename List>
+void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API_Guid>& minus, const List& list)
+{
+    for (const API_Guid& guid : from) {
+        if (!minus.Contains (guid)) {
+            list (GS::ObjectState ("guid", APIGuidToString (guid)));
+        }
+    }
+}
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
@@ -131,6 +145,12 @@ API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_Name
 // boundaries) without a "'GS' n'est pas membre de 'GS'" GDL header conflict - confirmed live,
 // root cause not fully understood, kept as two separate translation units instead.
 void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
+// Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
+GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
+bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);
+GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
+bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
 
 struct Story {
     Story (short _index, double _level)

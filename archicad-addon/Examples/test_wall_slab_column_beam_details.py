@@ -29,11 +29,14 @@ surfaces = run('GetAttributesByType', {'attributeType': 'Surface'})['attributes'
 fills = run('GetAttributesByType', {'attributeType': 'Fill'})['attributes']
 profiles = run('GetAttributesByType', {'attributeType': 'Profile'})['attributes']
 materials = run('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes']
+lineTypes = run('GetAttributesByType', {'attributeType': 'Line'})['attributes']
 surfaceId = surfaces[0]['attributeId']
 surfaceId2 = surfaces[1]['attributeId'] if len(surfaces) > 1 else surfaceId
 fillId = fills[0]['attributeId']
 profileId = profiles[0]['attributeId']
 materialId = materials[0]['attributeId']
+lineTypeId = lineTypes[0]['attributeId']
+lineTypeId2 = lineTypes[1]['attributeId'] if len(lineTypes) > 1 else lineTypeId
 
 # ======================================================================
 print('SETUP -- Wall, Slab (curved outline), Column, Beam')
@@ -81,6 +84,13 @@ r = run('ModifyWalls', {'wallsWithDetails': [{
     'sideMaterial': {'overridden': True, 'attributeId': surfaceId},
     'cutFillPen': {'overridden': True, 'penIndex': 9},
     'cutFillBackgroundPen': {'overridden': True, 'penIndex': 2},
+    'contourPen': 11, 'contourPen3D': 12,
+    'contourLineTypeId': lineTypeId, 'belowViewLineTypeId': lineTypeId2,
+    'aboveViewLinePen': 13, 'aboveViewLineTypeId': lineTypeId,
+    'displayOption': 'OutLinesOnly',
+    'useCompositePriority': False,
+    'inheritEndSurface': True, 'alignTexture': True,
+    'materialsChained': True, 'logHeight': 0.0,
 }]})
 check('combined ModifyWalls succeeds', True, r['executionResults'][0].get('success'))
 d = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': wallGuid}}]})['detailsOfElements'][0]['details']
@@ -96,14 +106,34 @@ check('referenceMaterial.attributeId', surfaceId, (d.get('referenceMaterial') or
 check('oppositeMaterial.attributeId', surfaceId2, (d.get('oppositeMaterial') or {}).get('attributeId'))
 check('cutFillPen.penIndex', 9, (d.get('cutFillPen') or {}).get('penIndex'))
 check('cutFillBackgroundPen.penIndex', 2, (d.get('cutFillBackgroundPen') or {}).get('penIndex'))
+check('contourPen', 11, d.get('contourPen'))
+check('contourPen3D', 12, d.get('contourPen3D'))
+check('contourLineTypeId', lineTypeId, d.get('contourLineTypeId'))
+check('belowViewLineTypeId', lineTypeId2, d.get('belowViewLineTypeId'))
+check('aboveViewLinePen', 13, d.get('aboveViewLinePen'))
+check('aboveViewLineTypeId', lineTypeId, d.get('aboveViewLineTypeId'))
+check('displayOption', 'OutLinesOnly', d.get('displayOption'))
+check('useCompositePriority', False, d.get('useCompositePriority'))
+check('inheritEndSurface', True, d.get('inheritEndSurface'))
+check('alignTexture', True, d.get('alignTexture'))
+check('materialsChained', True, d.get('materialsChained'))
+check('logHeight', 0.0, d.get('logHeight'))
+check('hasWindow (no openings placed)', False, d.get('hasWindow'))
+check('hasDoor (no openings placed)', False, d.get('hasDoor'))
 print()
 
 print('TEST -- Wall: relativeTopStory + topOffset (explicit height must not be set in the same call)')
-r = run('ModifyWalls', {'wallsWithDetails': [{'elementId': {'guid': wallGuid}, 'relativeTopStory': 1, 'topOffset': 0.1}]})
-check('relativeTopStory + topOffset succeeds', True, r['executionResults'][0].get('success'))
+# viewDepthLimitation is combined into this same call on purpose: it only takes effect on a
+# multi-story wall, so it must be set together with (or after) relativeTopStory, not before.
+r = run('ModifyWalls', {'wallsWithDetails': [{
+    'elementId': {'guid': wallGuid}, 'relativeTopStory': 1, 'topOffset': 0.1,
+    'viewDepthLimitation': 'ToAbsoluteLimit',
+}]})
+check('relativeTopStory + topOffset + viewDepthLimitation succeeds', True, r['executionResults'][0].get('success'))
 d = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': wallGuid}}]})['detailsOfElements'][0]['details']
 check('relativeTopStory', 1, d.get('relativeTopStory'))
 check('topOffset (only meaningful with relativeTopStory != 0)', 0.1, d.get('topOffset'))
+check('viewDepthLimitation (only takes effect on a multi-story wall)', 'ToAbsoluteLimit', d.get('viewDepthLimitation'))
 print()
 
 print('TEST -- Wall: profileType Slanted (single) vs Trapez (double, independent alpha/beta)')
@@ -318,17 +348,29 @@ dc2 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': c2guid}}]
 check('Column profileId round-trips after Modify', profileId, dc2.get('profileId'))
 print()
 
-print('TEST -- Beam: isWidthAndHeightLinked (independent width/height), buildingMaterialId, profileId')
+print('TEST -- Beam: circleBased, isWidthAndHeightLinked (independent width/height), buildingMaterialId, profileId')
 rb = run('CreateBeams', {'beamsData': [{
     'begCoordinate': {'x': 4130, 'y': 0}, 'endCoordinate': {'x': 4150, 'y': 0}, 'zCoordinate': 0,
-    'width': 0.2, 'height': 0.4, 'isWidthAndHeightLinked': False, 'buildingMaterialId': materialId,
+    'width': 0.2, 'height': 0.4, 'circleBased': False, 'isWidthAndHeightLinked': False, 'buildingMaterialId': materialId,
+}, {
+    'begCoordinate': {'x': 4130, 'y': 2}, 'endCoordinate': {'x': 4150, 'y': 2}, 'zCoordinate': 0,
+    'width': 0.3, 'circleBased': True,
 }]})
 b2guid = rb['elements'][0]['elementId']['guid']
-created.append(b2guid)
+b3guid = rb['elements'][1]['elementId']['guid']
+created.extend([b2guid, b3guid])
 db = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': b2guid}}]})['detailsOfElements'][0]['details']
 check('Beam independent width', 0.2, db.get('width'))
 check('Beam independent height', 0.4, db.get('height'))
+check('Beam circleBased False', False, db.get('circleBased'))
 check('Beam buildingMaterialId round-trips', materialId, db.get('buildingMaterialId'))
+db3 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': b3guid}}]})['detailsOfElements'][0]['details']
+check('circular Beam created next to rectangular one in the same call', True, db3.get('circleBased'))
+
+r = run('ModifyBeams', {'beamsWithDetails': [{'elementId': {'guid': b3guid}, 'circleBased': False}]})
+check('ModifyBeams circleBased to False succeeds', True, r['executionResults'][0].get('success'))
+db3 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': b3guid}}]})['detailsOfElements'][0]['details']
+check('Beam circleBased False after Modify', False, db3.get('circleBased'))
 
 r = run('ModifyBeams', {'beamsWithDetails': [{'elementId': {'guid': b2guid}, 'profileId': profileId}]})
 check('ModifyBeams to profileId succeeds', True, r['executionResults'][0].get('success'))

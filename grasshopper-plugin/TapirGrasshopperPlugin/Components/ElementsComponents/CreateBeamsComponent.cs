@@ -36,6 +36,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("CircleBased", "circleBased", FieldKind.Boolean, "True for a round beam cross section, false for rectangular (applied to all segments).")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateBeams;
 

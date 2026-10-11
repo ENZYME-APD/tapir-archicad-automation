@@ -4,7 +4,8 @@ test_layout_workflow.py
 Tests ALL options of:
   - CreateLayoutSubset: name, numberingStyle, startAt, continueNumbering,
                         addOwnPrefix, ownPrefix, useUpperPrefix, customNumbering,
-                        customNumber, parentNavigatorItemId
+                        customNumber, includeToIDSequence, parentNavigatorItemId
+                        (returns the created subset's navigatorItemId)
   - CreateLayout: layoutName, masterNavigatorItemId, masterLayoutName (alt.),
                   parentNavigatorItemId, layoutParameters (all 10 fields)
   - GetLayoutSettings: full round-trip of all returned fields
@@ -82,28 +83,33 @@ res = run("CreateLayoutSubset", {"subsetsData": [{
     "continueNumbering": False,
     "addOwnPrefix":      False,
 }]})
-assert res.get("navigatorItems", [{}])[0].get("success"), f"CreateLayoutSubset A failed: {res}"
+subset_a_id = res.get("navigatorItems", [{}])[0].get("navigatorItemId")
+assert subset_a_id, f"CreateLayoutSubset A failed: {res}"
 lb = get_lb_tree()
 all_items = collect_all(lb["navigatorTree"]["rootItem"]["children"])
 subset_a = find_by_name(all_items, SUBSET_A)
 assert subset_a, f"'{SUBSET_A}' not found in Layout Book after creation"
-subset_a_id = subset_a["navigatorItemId"]
+assert subset_a["navigatorItemId"]["guid"] == subset_a_id["guid"], \
+    f"returned id {subset_a_id['guid']} != tree id {subset_a['navigatorItemId']['guid']}"
 print(f"   PASS ({subset_a_id['guid']})")
 
 
 # ── 2. CreateLayoutSubset B — different numberingStyle ───────────────────
-print("\n2. CreateLayoutSubset B (numberingStyle=abc, continueNumbering=True)...")
+print("\n2. CreateLayoutSubset B (numberingStyle=abc, continueNumbering=True, includeToIDSequence=False)...")
 res = run("CreateLayoutSubset", {"subsetsData": [{
-    "name":              SUBSET_B,
-    "numberingStyle":    "abc",
-    "continueNumbering": True,
+    "name":                SUBSET_B,
+    "numberingStyle":      "abc",
+    "continueNumbering":   True,
+    "includeToIDSequence": False,
 }]})
-assert res.get("navigatorItems", [{}])[0].get("success"), f"CreateLayoutSubset B failed: {res}"
+subset_b_id = res.get("navigatorItems", [{}])[0].get("navigatorItemId")
+assert subset_b_id, f"CreateLayoutSubset B failed: {res}"
 lb = get_lb_tree()
 all_items = collect_all(lb["navigatorTree"]["rootItem"]["children"])
 subset_b = find_by_name(all_items, SUBSET_B)
 assert subset_b, f"'{SUBSET_B}' not found in Layout Book after creation"
-subset_b_id = subset_b["navigatorItemId"]
+assert subset_b["navigatorItemId"]["guid"] == subset_b_id["guid"], \
+    f"returned id {subset_b_id['guid']} != tree id {subset_b['navigatorItemId']['guid']}"
 print(f"   PASS ({subset_b_id['guid']})")
 
 
@@ -119,14 +125,18 @@ res = run("CreateLayoutSubset", {"subsetsData": [{
     "useUpperPrefix":        False,
     "customNumbering":       True,
     "customNumber":          "C",
+    "includeToIDSequence":   True,
     "parentNavigatorItemId": subset_a_id,   # nested inside A
 }]})
-assert res.get("navigatorItems", [{}])[0].get("success"), f"CreateLayoutSubset C failed: {res}"
+subset_c_id = res.get("navigatorItems", [{}])[0].get("navigatorItemId")
+assert subset_c_id, f"CreateLayoutSubset C failed: {res}"
 lb = get_lb_tree()
 all_items = collect_all(lb["navigatorTree"]["rootItem"]["children"])
 subset_c = find_by_name(all_items, SUBSET_C)
 assert subset_c, f"'{SUBSET_C}' not found in tree — parentNavigatorItemId may have been ignored"
-print(f"   PASS ({subset_c['navigatorItemId']['guid']})")
+assert subset_c["navigatorItemId"]["guid"] == subset_c_id["guid"], \
+    f"returned id {subset_c_id['guid']} != tree id {subset_c['navigatorItemId']['guid']}"
+print(f"   PASS ({subset_c_id['guid']})")
 
 
 # ── 4. CreateLayout L1 — ALL layoutParameters + masterNavigatorItemId ─────
@@ -315,6 +325,8 @@ wait(
     f"    - '{LAYOUT_1}' (T99, customLayoutNumbering=False, doNotInclude=False)\n"
     f"    - '{LAYOUT_2}' (T02-NAV)\n"
     f"    - Subset C (nested)\n"
+    f"  Subset B settings: 'Do not include this Subset in ID sequence' should be CHECKED.\n"
+    f"  Subset C settings: 'Do not include this Subset in ID sequence' should be UNCHECKED.\n"
     f"  Master layout '{master_name}' should be back to its original size."
 )
 

@@ -38,6 +38,12 @@
 #define ACAPI_Teamwork_ReserveElements ACAPI_TeamworkControl_ReserveElements
 #define ACAPI_Teamwork_ReleaseElements ACAPI_TeamworkControl_ReleaseElements
 #define ACAPI_Teamwork_GetUsernameFromId ACAPI_TeamworkControl_GetUsernameFromId
+#define ACAPI_Teamwork_FindLockableObjectSet ACAPI_TeamworkControl_FindLockableObjectSet
+#define ACAPI_Teamwork_ReserveLockable ACAPI_TeamworkControl_ReserveLockable
+#define ACAPI_Teamwork_ReleaseLockable ACAPI_TeamworkControl_ReleaseLockable
+#define ACAPI_Teamwork_GetLockableStatus ACAPI_TeamworkControl_GetLockableStatus
+#define ACAPI_Teamwork_ReserveHotlinkCacheManagement ACAPI_TeamworkControl_ReserveHotlinkCacheManagement
+#define ACAPI_Teamwork_ReleaseHotlinkCacheManagement ACAPI_TeamworkControl_ReleaseHotlinkCacheManagement
 
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
@@ -86,7 +92,10 @@
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
-#define ACAPI_Window_ChangeWindow(par1) ACAPI_Database (APIDb_ChangeCurrentDatabaseID, par1)
+// APIDo_ChangeWindowID brings the window to the front; APIDb_ChangeCurrentDatabaseID only
+// switches the database the API works on and leaves the front window as it is, which is
+// what ACAPI_Database_ChangeCurrentDatabase below is for.
+#define ACAPI_Window_ChangeWindow(par1) ACAPI_Automate (APIDo_ChangeWindowID, (void*) par1)
 #define ACAPI_Database_GetLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetLayoutDatabasesID, par1, par2)
 #define ACAPI_Database_GetMasterLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetMasterLayoutDatabasesID, par1, par2)
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
@@ -150,6 +159,16 @@ inline GSErrCode ACAPI_ProjectOperation_Close ()
 inline GSErrCode ACAPI_ProjectOperation_Save ()
 {
     return ACAPI_Automate (APIDo_SaveID);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Ifc* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Archive* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
 }
 
 inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
@@ -303,6 +322,33 @@ inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLi
     return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
 }
 
+// APIIo_InitProcessWindowID takes the phase count as short*, AC27+ take an Int32*.
+inline GSErrCode ACAPI_ProcessWindow_InitProcessWindow (const GS::UniString* title = nullptr, Int32* nPhase = nullptr, API_ProcessControlTypeID* processControlType = nullptr)
+{
+    short phaseCount = nPhase != nullptr ? static_cast<short> (*nPhase) : 0;
+    return ACAPI_Interface (APIIo_InitProcessWindowID, const_cast<GS::UniString*> (title), nPhase != nullptr ? &phaseCount : nullptr, processControlType);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_CloseProcessWindow ()
+{
+    return ACAPI_Interface (APIIo_CloseProcessWindowID);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_SetNextProcessPhase (const GS::UniString* subtitle, Int32* maxval, bool* showPercent = nullptr)
+{
+    return ACAPI_Interface (APIIo_SetNextProcessPhaseID, const_cast<GS::UniString*> (subtitle), maxval, showPercent);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_SetProcessValue (Int32* newval)
+{
+    return ACAPI_Interface (APIIo_SetProcessValueID, newval);
+}
+
+inline GSErrCode ACAPI_ProcessWindow_IsProcessCanceled ()
+{
+    return ACAPI_Interface (APIIo_IsProcessCanceledID);
+}
+
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
 {
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
@@ -425,7 +471,7 @@ inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier i
     return ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &ifcTranslator, &ifcRelationshipData);
 }
 
-inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators)
+inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier>& ifcExportTranslators)
 {
     return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
 }

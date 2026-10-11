@@ -92,10 +92,16 @@ Classify as actionable only when the message clearly describes:
 - a concrete request for new or changed functionality in Tapir, such as a
   new command, parameter or component ("feature").
 
+Judge the substance, not the phrasing: a message worded as a question still
+counts when it points at something concrete that Tapir does not support or
+handles wrongly. For example "Command X does not support parameter Y, how
+should I handle that?" is a feature request, and "Why does command X return
+wrong values?" is a bug report.
+
 Do NOT classify as actionable: greetings and casual chat, questions and
-requests for help using the software, general Archicad or Grasshopper
-questions unrelated to Tapir, praise or thanks, announcements, vague wishes
-with no concrete ask, messages about the Discord server itself, or anything
+requests for help using the software that do not point at such a gap or
+defect, general Archicad or Grasshopper questions unrelated to Tapir, praise
+or thanks, announcements, vague wishes with no concrete ask, messages about the Discord server itself, or anything
 you cannot tell is about Tapir.
 
 Respond with ONLY a JSON array, one object per input message, no other
@@ -941,6 +947,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             state["github_failures"] += 1
             continue
         state["created"] += 1
+        state["created_numbers"].append(issue["number"])
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))
 
         discord.add_mark(channel_id, message["id"], PROCESSED_MARK)
@@ -989,6 +996,22 @@ def report_borderline(github, state):
             "they appear only in the run summary".format(len(entries), issue["number"]))
 
 
+def write_created_issues_output(numbers):
+    """Hand the numbers of the issues this run created to the workflow as
+    the step output created_issues, so it can start the Claude issue triage
+    for them: issues created with the workflow's GITHUB_TOKEN start no
+    workflow on their own. A no-op outside GitHub Actions; a write failure
+    is logged, never fatal."""
+    output_path = os.environ.get("GITHUB_OUTPUT")
+    if not output_path or not numbers:
+        return
+    try:
+        with open(output_path, "a", encoding="utf-8") as stream:
+            stream.write("created_issues={}\n".format(" ".join(str(n) for n in numbers)))
+    except OSError as error:
+        log("  could not write the step output: {}".format(error))
+
+
 def main():
     config, missing = Config.from_env()
     if config is None:
@@ -1009,8 +1032,9 @@ def main():
     discord = DiscordClient(config.discord_token)
     github = GitHubClient(config.github_token, config.repository)
     classifier = ClaudeCodeClassifier(config.model)
-    state = {"created": 0, "unreadable_channels": 0, "github_failures": 0,
-             "human_messages": 0, "messages_with_signal": 0, "borderline": []}
+    state = {"created": 0, "created_numbers": [], "unreadable_channels": 0,
+             "github_failures": 0, "human_messages": 0, "messages_with_signal": 0,
+             "borderline": []}
 
     if not config.dry_run and config.max_issues_per_day > 0:
         recent = github.count_recent_discord_issues()
@@ -1033,6 +1057,10 @@ def main():
 
     if state["borderline"] and not config.dry_run:
         report_borderline(github, state)
+
+    # Before the failure checks below, so issues created by a run that then
+    # ends red still get their triage.
+    write_created_issues_output(state["created_numbers"])
 
     if config.channel_ids and state["unreadable_channels"] == len(config.channel_ids):
         # A revoked token or missing permission must not leave the scheduled

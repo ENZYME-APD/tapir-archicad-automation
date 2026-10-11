@@ -1,23 +1,52 @@
-name: Monthly Release
+name: Weekly Release
 
 # Automates the release process described in the wiki
 # (https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Release-process)
-# on a monthly schedule:
+# on a weekly schedule:
 #
-#   1. Skip when nothing changed since the last release tag.
-#   2. Check that the generated docs were updated since the last release when
-#      Add-On sources changed (docs are regenerated with the
-#      GenerateDocumentation command in a running Archicad, which CI cannot
-#      do - a stale docs folder fails the run with instructions).
-#   3. Tag HEAD with the current version from tools/package_info.json - the
-#      sources already carry this version, per the project's convention.
-#   4. Start the two existing release pipelines (Add-On build + release,
+#   1. Skip when nothing changed since the last release tag, or when the
+#      previous release went out less than MIN_RELEASE_INTERVAL_SECONDS ago.
+#   2. Pick the release type, which decides the version number. main
+#      carries the next patch version (1.6.1 after 1.6.0), so:
+#        patch - every week:           1.6.1 ships as 1.6.1
+#        minor - the first release of
+#                a calendar month:     1.6.1 ships as 1.7.0
+#        major - a PR merged since the
+#                last release carries
+#                the MAJOR_RELEASE_LABEL: 1.6.1 ships as 2.0.0
+#      A manual run can force the type with the release_type input. For a
+#      minor or major release, set that version in the version files and
+#      in the "introduced in" version of the commands registered with the
+#      skipped version (AddOnMain.cpp), and push it to main.
+#   3. Regenerate docs/archicad-addon from the Add-On sources
+#      (tools/generate_addon_docs.py, no Archicad needed) and push the
+#      result to main when it changed, so the release tags current docs.
+#   4. Tag HEAD with the release version.
+#   5. Start the two existing release pipelines (Add-On build + release,
 #      Grasshopper build + yak deploy) on that tag and wait for them.
 #      They must be dispatched explicitly because a tag pushed with the
 #      workflow's own GITHUB_TOKEN does not trigger on-push workflows.
-#   5. When all artifacts are built, publish the draft release with
+#      The Add-On pipeline has the Windows installer signed by SignPath
+#      (certificate by SignPath Foundation), which needs a manual approval
+#      in SignPath for every release: approve from SignPath's e-mail within
+#      3 hours of the request. Scheduled runs start hours after 06:00 UTC,
+#      so act on the e-mail, not at a fixed time, or release by dispatching
+#      this workflow while an approver is available. A missed or denied
+#      approval fails the Add-On pipeline: nothing is published and the tag
+#      stays in place. Deny the stale request in SignPath, then start a NEW
+#      run of this workflow from main (Actions > Weekly Release > Run
+#      workflow). It resumes the tagged release and dispatches a fresh
+#      pipeline with a new signing request, as long as the tag is still HEAD
+#      of main - a long approval wait makes it more likely that main has
+#      moved, which leaves only the manual recovery. Do not use GitHub's
+#      "Re-run" buttons, on this run or on the Add-On pipeline: a re-run
+#      reuses the original commit, which misses the version and docs commits
+#      this workflow pushed, and SignPath evaluates only a limited number of
+#      re-runs.
+#   6. When all artifacts are built, publish the draft release with
 #      auto-generated notes.
-#   6. Increment the patch version (tools/update_version.py) and commit, so
+#   7. Announce the published release in the project's Discord channel.
+#   8. Increment the patch version (tools/update_version.py) and commit, so
 #      development of the next version starts - the wiki's final step.
 #
 # A build failure stops the run before publishing and before the version
@@ -26,26 +55,53 @@ name: Monthly Release
 
 on:
   schedule:
-    - cron: '0 6 1 * *'   # 06:00 UTC on the 1st of every month
+    - cron: '0 6 * * 1'   # 06:00 UTC every Monday
   workflow_dispatch:
     inputs:
-      skip_docs_check:
-        description: Release even if the generated docs look stale
+      release_type:
+        description: "Which version to release: auto picks major, minor or patch as the schedule does (see the header of this file)"
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
+      skip_docs_update:
+        description: Release without regenerating docs/archicad-addon (only when the generator fails)
+        type: boolean
+        default: false
+      allow_early_release:
+        description: Release even though the previous release went out less than 3 days ago
         type: boolean
         default: false
       dry_run:
-        description: Only report what would be released - no tag, builds, publish or version bump
+        description: Only report what would be released - no tag, builds, publish, announcement or version bump
         type: boolean
         default: false
 
 concurrency:
-  group: monthly-release
+  group: weekly-release
   cancel-in-progress: false
 
 env:
-  # 5 Archicad versions x 2 platforms - update together with the build
-  # matrix in archicad_addon.yml.
-  EXPECTED_ASSETS: 10
+  # 6 Archicad versions (25-30) x 2 platforms + the Win and Mac installer
+  # executables - update together with the build matrix and the installer
+  # jobs in archicad_addon.yml.
+  EXPECTED_ASSETS: 14
+
+  # Where a published release is announced. The DISCORD_BOT_TOKEN secret
+  # that the Discord Issue Bot already uses must be able to post in this
+  # channel; without the secret the announcement step is a no-op.
+  DISCORD_RELEASE_CHANNEL_ID: '994704152703815762'
+
+  # A release this recent suppresses the next one, so the weekly schedule
+  # cannot cut a release a day after a manual or hotfix release went out.
+  # Well below a week on purpose: a release is published hours after its
+  # run starts, so the next Monday's run always finds it less than 7 days
+  # old.
+  MIN_RELEASE_INTERVAL_SECONDS: 259200   # 3 days
+
+  # A merged PR with this label makes the next release a major one
+  # (1.6.1 -> 2.0.0). Meant for significant changes, not for a new command
+  # or Grasshopper component.
+  MAJOR_RELEASE_LABEL: major-release
 
 jobs:
   release:
@@ -56,7 +112,11 @@ jobs:
     # on tags).
     if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    # Covers the Add-On pipeline's wait for the SignPath approval of the
+    # Windows installer (up to 3 h, see archicad_addon.yml), the builds and
+    # the Grasshopper pipeline. GitHub-hosted jobs stop at 6 h regardless,
+    # so nothing can be added beyond this.
+    timeout-minutes: 350
     permissions:
       contents: write   # push the tag and the version bump commit
       actions: write    # dispatch the two release pipelines
@@ -68,7 +128,7 @@ jobs:
         # version bump step.
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "::error::The Monthly Release runs only on main (dispatched on" \
+          echo "::error::The Weekly Release runs only on main (dispatched on" \
                "'${{ github.ref }}'). To resume a failed release, dispatch the" \
                "two pipeline workflows on the tag instead - this workflow" \
                "always runs from main."
@@ -116,6 +176,9 @@ jobs:
               # plus anything); --exclude keeps pre-release-style tags like
               # 1.6.0-rc1 from ever becoming LAST_TAG.
               LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' "$VERSION"^)
+              # The one-week guard in the else branch below deliberately
+              # does not apply here: resuming finishes a release that is
+              # already tagged, it does not cut a new one.
               echo "Tag $VERSION already points at HEAD - resuming the failed release (previous tag: $LAST_TAG)."
               echo "release=true" >> "$GITHUB_OUTPUT"
               echo "tag_exists=true" >> "$GITHUB_OUTPUT"
@@ -145,6 +208,24 @@ jobs:
             # --exclude for the same reason as in the resume branch above.
             LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' HEAD)
             echo "Current version: $VERSION, last release tag: $LAST_TAG"
+            # How long ago the previous release actually went out. A
+            # published release is what "there was a release" means, so ask
+            # the API for its publish time; a tag with no release behind it
+            # (an old one, or one released by hand) falls back to the date
+            # of the commit it points at.
+            # On a 404 gh api copies the raw error body to stdout instead of
+            # applying --jq, so an empty-or-not test on the output would see
+            # '{"message":"Not Found",...}' and never fall back. Branch on the
+            # exit status instead.
+            if ! LAST_RELEASE_AT=$(gh api "repos/${{ github.repository }}/releases/tags/$LAST_TAG" \
+                 --jq '.published_at // empty' 2> /dev/null); then
+              LAST_RELEASE_AT=''
+            fi
+            if [ -z "$LAST_RELEASE_AT" ]; then
+              LAST_RELEASE_AT=$(git log -1 --format=%cI "$LAST_TAG^{commit}")
+            fi
+            RELEASE_AGE=$(( $(date -u +%s) - $(date -u -d "$LAST_RELEASE_AT" +%s) ))
+            echo "$LAST_TAG was released at $LAST_RELEASE_AT ($((RELEASE_AGE / 3600))h ago)."
             # Every release ends with the "Update version after release"
             # commit on main, so a plain commit count since the last tag is
             # always at least 1. Only commits touching something other than
@@ -156,55 +237,149 @@ jobs:
               ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs' \
               ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
             if [ "$COMMITS" -eq 0 ]; then
-              echo "No changes since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
+              echo "No changes since $LAST_TAG - nothing to release this week." >> "$GITHUB_STEP_SUMMARY"
+              echo "release=false" >> "$GITHUB_OUTPUT"
+            elif [ "$RELEASE_AGE" -lt "$MIN_RELEASE_INTERVAL_SECONDS" ] \
+                 && [ '${{ inputs.allow_early_release }}' != 'true' ]; then
+              # Checked after the commit count so that the "nothing
+              # changed" summary, the more informative of the two, wins
+              # when both apply.
+              echo "$LAST_TAG was released $((RELEASE_AGE / 3600))h ago, less than" \
+                   "$((MIN_RELEASE_INTERVAL_SECONDS / 86400)) day(s) - not releasing again yet." \
+                   "Dispatch this workflow with 'allow_early_release' to release anyway." >> "$GITHUB_STEP_SUMMARY"
               echo "release=false" >> "$GITHUB_OUTPUT"
             else
-              echo "$COMMITS commit(s) with changes since $LAST_TAG - releasing $VERSION."
               echo "release=true" >> "$GITHUB_OUTPUT"
+              RELEASE_TYPE='${{ inputs.release_type }}'
+              if [ -z "$RELEASE_TYPE" ] || [ "$RELEASE_TYPE" = 'auto' ]; then
+                # Merged since the last tag's commit landed on main - not
+                # since its release was published, which happens hours
+                # later and would miss PRs merged during the builds.
+                SINCE=$(date -u -d "$(git log -1 --format=%cI "$LAST_TAG^{commit}")" +%Y-%m-%dT%H:%M:%SZ)
+                MAJOR_PRS=$(gh api -X GET search/issues \
+                  -f q="repo:${{ github.repository }} is:pr is:merged base:main label:$MAJOR_RELEASE_LABEL merged:>=$SINCE" \
+                  --jq '[.items[].number | "#\(.)"] | join(", ")')
+                if [ -n "$MAJOR_PRS" ]; then
+                  RELEASE_TYPE=major
+                  echo "Merged with the $MAJOR_RELEASE_LABEL label since $LAST_TAG: $MAJOR_PRS."
+                elif [ "$(date -u -d "$LAST_RELEASE_AT" +%Y-%m)" != "$(date -u +%Y-%m)" ]; then
+                  RELEASE_TYPE=minor
+                  echo "$LAST_TAG went out in an earlier month - this is the month's minor release."
+                else
+                  RELEASE_TYPE=patch
+                fi
+              fi
+              IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+              # A version that already has the form of the type (set by
+              # hand, or by an earlier attempt of this run that pushed the
+              # version but failed later) is released as it is.
+              case "$RELEASE_TYPE" in
+                patch) RELEASE_VERSION="$VERSION" ;;
+                minor) if [ "$PATCH" -eq 0 ]; then RELEASE_VERSION="$VERSION"; else RELEASE_VERSION="$MAJOR.$((MINOR + 1)).0"; fi ;;
+                major) if [ "$MINOR" -eq 0 ] && [ "$PATCH" -eq 0 ]; then RELEASE_VERSION="$VERSION"; else RELEASE_VERSION="$((MAJOR + 1)).0.0"; fi ;;
+                *) echo "::error::Unknown release type '$RELEASE_TYPE'."; exit 1 ;;
+              esac
+              if git rev-parse -q --verify "refs/tags/$RELEASE_VERSION" > /dev/null; then
+                echo "::error::A $RELEASE_TYPE release would be $RELEASE_VERSION, but that tag already" \
+                     "exists. Set the next version in tools/package_info.json by hand, run" \
+                     "tools/update_version.py and commit it to main."
+                exit 1
+              fi
+              echo "$COMMITS commit(s) with changes since $LAST_TAG - $RELEASE_TYPE release $RELEASE_VERSION" \
+                   "(main carries $VERSION)." | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "dev_version=$VERSION" >> "$GITHUB_OUTPUT"
+              VERSION="$RELEASE_VERSION"
             fi
             echo "tag_exists=false" >> "$GITHUB_OUTPUT"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Check that the generated docs are up to date
-        if: steps.plan.outputs.release == 'true' && inputs.skip_docs_check != true
+      - name: Set the release version
+        # Only a minor or major release changes the version main carries.
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.tag_exists != 'true' && steps.plan.outputs.dev_version != steps.plan.outputs.version
+        env:
+          DEV_VERSION: ${{ steps.plan.outputs.dev_version }}
+          VERSION: ${{ steps.plan.outputs.version }}
         run: |
           set -eu
-          LAST_TAG='${{ steps.plan.outputs.last_tag }}'
-          # The docs are generated from the registered command schemas, so
-          # they only need regenerating when the Add-On sources changed
-          # (AddOnVersion.hpp changes on every release and does not count).
-          # Ancestry, not timestamps, decides staleness: commit dates
-          # misorder long-lived branches merged after a docs regeneration.
-          # Sources commits not reachable from the newest docs commit are
-          # exactly the changes the regenerated docs cannot have seen. Git
-          # cannot tell a real regeneration from a hand edit to a docs file,
-          # so any docs/archicad-addon commit resets the anchor - the fix for
-          # a failure here is always a full GenerateDocumentation run, never
-          # touching a single docs file to appease the check.
-          DOCS_COMMIT=$(git log -1 --format=%H "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
-          SINCE="${DOCS_COMMIT:-$LAST_TAG}"
-          STALE=$(git log -1 --format=%H "$SINCE"..HEAD -- \
-            'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
-          if [ -n "$STALE" ]; then
-            echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
-                 "docs/archicad-addon. Run the full GenerateDocumentation command in Archicad and" \
-                 "commit the regenerated docs (hand-editing a docs file only hides the staleness" \
-                 "from this check), then re-run this workflow. If the regeneration produces no" \
-                 "changes, the sources changes did not affect the docs - release by dispatching" \
-                 "this workflow manually with 'skip_docs_check' (an empty commit does not reset" \
-                 "this check; only a commit touching docs/archicad-addon does)."
+          python3 - <<'EOF'
+          import os
+          import re
+          dev_version = os.environ['DEV_VERSION']
+          version = os.environ['VERSION']
+          # Substituted in place, as in the version bump step below.
+          path = 'tools/package_info.json'
+          content = open(path).read()
+          content, count = re.subn(re.escape('"' + dev_version + '"'), '"' + version + '"', content)
+          if count != 1:
+              raise SystemExit('expected the version once in {}, found it {} times'.format(path, count))
+          open(path, 'w').write(content)
+          # Commands added since the last release are registered with the
+          # version main carried; dev_version never ships, so they are
+          # introduced in this release instead.
+          path = 'archicad-addon/Sources/AddOnMain.cpp'
+          content = open(path).read()
+          content, count = re.subn(r'(\w+Commands,\s*)"' + re.escape(dev_version) + '"',
+                                   r'\g<1>"' + version + '"', content)
+          open(path, 'w').write(content)
+          print('Set the version to {}; {} command(s) now introduced in it.'.format(version, count))
+          EOF
+          python3 tools/update_version.py
+          git diff --stat
+          if [ '${{ inputs.dry_run }}' = 'true' ]; then
+            echo "DRY RUN: the version would be set to $VERSION and pushed to main." >> "$GITHUB_STEP_SUMMARY"
+            git checkout -- .
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "Set the version to $VERSION for the release"
+          # No rebase, for the same reason as in the docs step below.
+          if ! git push origin HEAD:main; then
+            echo "::error::main moved while the version was set - re-run this workflow."
             exit 1
           fi
-          echo "Docs check passed."
+          echo "Set the version to **$VERSION** (was $DEV_VERSION) and pushed it to main." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Regenerate the docs
+        # A resumed release keeps its tag, which already fixed the docs.
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.tag_exists != 'true' && inputs.skip_docs_update != true
+        run: |
+          set -eu
+          # The same output the GenerateDocumentation command writes in a
+          # running Archicad, computed from the sources. It exits with an
+          # error when it meets schema code it cannot evaluate, never with
+          # guessed docs - fix the generator (or dispatch this workflow with
+          # 'skip_docs_update') in that case.
+          python3 tools/generate_addon_docs.py
+          if git diff --quiet -- docs/archicad-addon; then
+            echo "docs/archicad-addon is up to date."
+            exit 0
+          fi
+          git diff --stat -- docs/archicad-addon
+          if [ '${{ inputs.dry_run }}' = 'true' ]; then
+            echo "DRY RUN: docs/archicad-addon would be regenerated and pushed to main." >> "$GITHUB_STEP_SUMMARY"
+            git checkout -- docs/archicad-addon
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Regenerate the Add-On docs" -- docs/archicad-addon
+          # No rebase here: the tag goes on HEAD next, and a rebase would
+          # pull in commits the plan step above never looked at.
+          if ! git push origin HEAD:main; then
+            echo "::error::main moved while the docs were regenerated - re-run this workflow."
+            exit 1
+          fi
+          echo "Regenerated docs/archicad-addon and pushed it to main." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report the dry run
         if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
         run: |
           echo "DRY RUN: would release **${{ steps.plan.outputs.version }}**" \
                "(previous tag ${{ steps.plan.outputs.last_tag }}); no tag, build," \
-               "publish or version bump was performed." >> "$GITHUB_STEP_SUMMARY"
+               "publish, Discord announcement or version bump was performed." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create and push the release tag
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true && steps.plan.outputs.tag_exists != 'true'
@@ -390,6 +565,13 @@ jobs:
           fi
           NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
             -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          # The SignPath Foundation terms want the code signing policy named
+          # on every release page. A release published by hand needs this
+          # footer added by hand, too.
+          NOTES="$NOTES
+
+          ---
+          Windows installer: [Code signing policy](https://github.com/${{ github.repository }}#code-signing-policy) - free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org)."
           # make_latest is a string enum in the REST API, draft a real boolean.
           gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
             -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null
@@ -406,6 +588,93 @@ jobs:
             gh api --method DELETE "repos/${{ github.repository }}/releases/$DUP_ID"
           done
           echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Announce the release on Discord
+        # continue-on-error on purpose: the release is already published by
+        # this point, so a Discord outage, a revoked token or a channel the
+        # bot cannot post in must not fail the run and block the version
+        # bump below - it is a warning, not a broken release. A missing
+        # secret stays quiet, as in the Discord Issue Bot.
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
+        continue-on-error: true
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.plan.outputs.version }}
+        run: |
+          set -eu
+          if [ -z "${DISCORD_BOT_TOKEN:-}" ]; then
+            echo "::warning::DISCORD_BOT_TOKEN is not configured - skipping the Discord announcement."
+            exit 0
+          fi
+          # urllib only: this job installs no Python dependencies, and one
+          # POST does not justify adding a pip step to the release path.
+          python3 - <<'EOF'
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://discord.com/api/v10'
+          CHANNEL = os.environ['DISCORD_RELEASE_CHANNEL_ID']
+          VERSION = os.environ['VERSION']
+          RELEASE_URL = os.environ['RELEASE_URL']
+          CONTENT = (
+              '**Tapir {} is out!** 🎉'
+              '\nRelease notes and downloads for the Archicad Add-On and the '
+              'Grasshopper plugin: {}'.format(VERSION, RELEASE_URL)
+          )
+
+
+          def request(method, path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              request_ = urllib.request.Request(API + path, data=data, method=method)
+              request_.add_header('Authorization', 'Bot ' + os.environ['DISCORD_BOT_TOKEN'])
+              request_.add_header('User-Agent', 'tapir-weekly-release')
+              if data is not None:
+                  request_.add_header('Content-Type', 'application/json')
+              with urllib.request.urlopen(request_, timeout=30) as response:
+                  return json.load(response)
+
+
+          # A resumed release re-runs this step after the release was
+          # already published, so look before posting a second time. The
+          # release URL carries the version and nothing else in the channel
+          # looks like it, so it identifies this announcement exactly. A
+          # channel the job cannot read is no reason to stay silent - a
+          # duplicate announcement beats a missing one.
+          try:
+              recent = request('GET', '/channels/{}/messages?limit=50'.format(CHANNEL))
+          except urllib.error.URLError as error:
+              print('::warning::Could not read channel {} to look for an earlier '
+                    'announcement ({}) - posting anyway.'.format(CHANNEL, error))
+              recent = []
+          if any(RELEASE_URL in (message.get('content') or '') for message in recent):
+              print('Channel {} already carries the announcement for {}.'.format(CHANNEL, VERSION))
+              raise SystemExit(0)
+
+          for attempt in (1, 2, 3):
+              try:
+                  request('POST', '/channels/{}/messages'.format(CHANNEL), {
+                      'content': CONTENT,
+                      # Nothing in the text is a mention, and an empty parse
+                      # list keeps that true whatever a later edit adds.
+                      'allowed_mentions': {'parse': []},
+                  })
+                  break
+              except urllib.error.URLError as error:
+                  if attempt == 3:
+                      raise
+                  print('Posting to Discord failed ({}) - retrying in 20s.'.format(error))
+                  time.sleep(20)
+
+          print('Announced {} in Discord channel {}.'.format(VERSION, CHANNEL))
+          summary = os.environ.get('GITHUB_STEP_SUMMARY')
+          if summary:
+              with open(summary, 'a') as handle:
+                  handle.write('Announced **{}** in the Discord release channel.\n'.format(VERSION))
+          EOF
 
       - name: Increment the version for the next cycle
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true

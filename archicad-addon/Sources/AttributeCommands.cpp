@@ -74,6 +74,23 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     return true;
 }
 
+// API_Attr_Head::name is the legacy 8-bit name: non-ASCII characters come back garbled from it and the
+// built-in Archicad Layer only has a control character there. Archicad hands out the real Unicode name
+// through header.uniStringNamePtr, but only when it points at storage before the Get call, so an
+// attribute that arrived through ACAPI_Attribute_GetAttributesByType has to be read once more.
+static GS::UniString GetAttributeName (const API_Attr_Head& header)
+{
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = header.typeID;
+    attr.header.index = header.index;
+    attr.header.guid = header.guid;
+    attr.header.uniStringNamePtr = &name;
+    const bool found = (ACAPI_Attribute_Get (&attr) == NoError);
+    DisposeAttribute (attr);
+    return found ? name : GS::UniString (header.name);
+}
+
 static API_AttrTypeID ConvertAttributeTypeStringToID (const GS::UniString& typeStr)
 {
     if (typeStr == "Layer")
@@ -157,7 +174,7 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
         GS::ObjectState attributeDetails;
         attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
-        attributeDetails.Add ("name", GS::UniString (attr.header.name));
+        attributeDetails.Add ("name", GetAttributeName (attr.header));
         // API_Attr_Head::modiTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC) in a UInt64,
         // the same stamp the Attribute Manager writes as ModiTime into its XML export.
         attributeDetails.Add ("modificationTime", static_cast<Int64> (attr.header.modiTime));
@@ -396,8 +413,7 @@ GS::Optional<GS::UniString> GetLinesCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Line. If omitted, every field is returned. Requesting only the fields you need avoids fetching dashItems/lineItems, which can be large.",
                 "items": {
-                    "type": "string",
-                    "enum": ["scaleWithPlan", "defineScale", "lineType", "period", "height", "dashItems", "lineItems"]
+                    "$ref": "#/LineAttributeField"
                 }
             }
         },
@@ -444,9 +460,11 @@ GS::ObjectState GetLinesCommand::Execute (const GS::ObjectState& parameters, GS:
         GS::Guid attributeGuid;
         attributeId.Get ("guid", attributeGuid);
 
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_LinetypeID;
         attr.header.guid = GSGuid2APIGuid (attributeGuid);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             lines (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -456,7 +474,7 @@ GS::ObjectState GetLinesCommand::Execute (const GS::ObjectState& parameters, GS:
         GS::ObjectState line;
         line.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         line.Add ("index", GetAttributeIndex (attr.header.index));
-        line.Add ("name", GS::UniString (attr.header.name));
+        line.Add ("name", name);
 
         if (wantsField.Wants ("scaleWithPlan")) {
             line.Add ("scaleWithPlan", (attr.header.flags & APILine_ScaleWithPlan) != 0);
@@ -565,8 +583,7 @@ GS::Optional<GS::UniString> GetFillsCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Fill. If omitted, every field is returned. Requesting only the fields you need avoids fetching lineItems/symbolLines/symbolArcs/symbolHotspots, which can be large.",
                 "items": {
-                    "type": "string",
-                    "enum": ["subType", "scaleWithPlan", "useForWalls", "useForDraft", "useForCover", "horizontalSpacing", "verticalSpacing", "angle", "bitPattern", "gradientStart", "gradientEnd", "percent", "texture", "lineItems", "symbolLines", "symbolArcs", "symbolHotspots"]
+                    "$ref": "#/FillAttributeField"
                 }
             }
         },
@@ -608,9 +625,11 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
     const auto& fills = response.AddList<GS::ObjectState> ("fills");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_FilltypeID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             fills (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -620,7 +639,7 @@ GS::ObjectState GetFillsCommand::Execute (const GS::ObjectState& parameters, GS:
         GS::ObjectState fill;
         fill.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         fill.Add ("index", GetAttributeIndex (attr.header.index));
-        fill.Add ("name", GS::UniString (attr.header.name));
+        fill.Add ("name", name);
 
         if (wantsField.Wants ("subType")) {
             fill.Add ("subType", FillSubTypeToString (attr.filltype.subType));
@@ -755,8 +774,7 @@ GS::Optional<GS::UniString> GetZoneCategoriesCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Names of the fields to return for each Zone Category. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["categoryCode", "color", "stampName", "stampMainGuid", "stampRevGuid"]
+                    "$ref": "#/ZoneCategoryAttributeField"
                 }
             }
         },
@@ -798,9 +816,11 @@ GS::ObjectState GetZoneCategoriesCommand::Execute (const GS::ObjectState& parame
     const auto& zoneCategories = response.AddList<GS::ObjectState> ("zoneCategories");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_ZoneCatID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             zoneCategories (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -810,7 +830,7 @@ GS::ObjectState GetZoneCategoriesCommand::Execute (const GS::ObjectState& parame
         GS::ObjectState zoneCategory;
         zoneCategory.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         zoneCategory.Add ("index", GetAttributeIndex (attr.header.index));
-        zoneCategory.Add ("name", GS::UniString (attr.header.name));
+        zoneCategory.Add ("name", name);
 
         if (wantsField.Wants ("categoryCode")) {
             zoneCategory.Add ("categoryCode", GS::UniString (attr.zoneCat.catCode));
@@ -857,8 +877,7 @@ GS::Optional<GS::UniString> GetMEPSystemsCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Names of the fields to return for each MEP System. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId"]
+                    "$ref": "#/MEPSystemAttributeField"
                 }
             }
         },
@@ -900,9 +919,11 @@ GS::ObjectState GetMEPSystemsCommand::Execute (const GS::ObjectState& parameters
     const auto& mepSystems = response.AddList<GS::ObjectState> ("mepSystems");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_MEPSystemID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             mepSystems (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -912,7 +933,7 @@ GS::ObjectState GetMEPSystemsCommand::Execute (const GS::ObjectState& parameters
         GS::ObjectState mepSystem;
         mepSystem.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         mepSystem.Add ("index", GetAttributeIndex (attr.header.index));
-        mepSystem.Add ("name", GS::UniString (attr.header.name));
+        mepSystem.Add ("name", name);
 
         if (wantsField.Wants ("domain")) {
             const auto& domainList = mepSystem.AddList<GS::UniString> ("domain");
@@ -959,6 +980,18 @@ GS::ObjectState GetMEPSystemsCommand::Execute (const GS::ObjectState& parameters
                 mepSystem.Add ("centerLineTypeId", *lineTypeId);
             }
         }
+        if (wantsField.Wants ("materialId")) {
+            GS::Optional<GS::ObjectState> materialId = GetAttributeIdFromIndex (API_MaterialID, attr.mepSystem.materialInd);
+            if (materialId.HasValue ()) {
+                mepSystem.Add ("materialId", *materialId);
+            }
+        }
+        if (wantsField.Wants ("insulationMaterialId")) {
+            GS::Optional<GS::ObjectState> insulationMaterialId = GetAttributeIdFromIndex (API_MaterialID, attr.mepSystem.insulationMatInd);
+            if (insulationMaterialId.HasValue ()) {
+                mepSystem.Add ("insulationMaterialId", *insulationMaterialId);
+            }
+        }
 
         mepSystems (mepSystem);
     }
@@ -988,8 +1021,7 @@ GS::Optional<GS::UniString> GetPenTablesCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "Names of the fields to return for each Pen Table. If omitted, every field is returned. Requesting only the fields you need avoids fetching the 255-element pens array.",
                 "items": {
-                    "type": "string",
-                    "enum": ["isActiveForModel", "isActiveForLayout", "pens"]
+                    "$ref": "#/PenTableAttributeField"
                 }
             }
         },
@@ -1032,9 +1064,11 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
     const auto& penTables = response.AddList<GS::ObjectState> ("penTables");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_PenTableID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             penTables (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -1044,7 +1078,7 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
         GS::ObjectState penTable;
         penTable.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         penTable.Add ("index", GetAttributeIndex (attr.header.index));
-        penTable.Add ("name", GS::UniString (attr.header.name));
+        penTable.Add ("name", name);
 
         if (wantsField.Wants ("isActiveForModel")) {
             penTable.Add ("isActiveForModel", attr.penTable.inEffectForModel);
@@ -1084,9 +1118,11 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
     const auto& penTables = response.AddList<GS::ObjectState> ("penTables");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_PenTableID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             penTables (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -1096,7 +1132,7 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
         GS::ObjectState penTable;
         penTable.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         penTable.Add ("index", GetAttributeIndex (attr.header.index));
-        penTable.Add ("name", GS::UniString (attr.header.name));
+        penTable.Add ("name", name);
 
         if (wantsField.Wants ("isActiveForModel")) {
             penTable.Add ("isActiveForModel", attr.penTable.inEffectForModel);
@@ -1150,8 +1186,7 @@ GS::Optional<GS::UniString> GetProfilesCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
                 "items": {
-                    "type": "string",
-                    "enum": ["wallType", "beamType", "coluType", "handrailType", "otherGDLObjectType", "useWith", "width", "height", "minimumWidth", "minimumHeight", "widthStretchable", "heightStretchable", "hasCoreSkin", "profileModifiers", "skins", "skinOutlines"]
+                    "$ref": "#/ProfileAttributeField"
                 }
             }
         },
@@ -1763,9 +1798,11 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
     const auto& profiles = response.AddList<GS::ObjectState> ("profiles");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_ProfileID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             profiles (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -1775,7 +1812,7 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
         GS::ObjectState profile;
         profile.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         profile.Add ("index", GetAttributeIndex (attr.header.index));
-        profile.Add ("name", GS::UniString (attr.header.name));
+        profile.Add ("name", name);
 
         if (wantsField.Wants ("wallType")) {
             profile.Add ("wallType", attr.profile.wallType);
@@ -1995,8 +2032,7 @@ GS::Optional<GS::UniString> GetCompositesCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Names of the fields to return for each Composite. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["useWith", "skins", "separators"]
+                    "$ref": "#/CompositeAttributeField"
                 }
             }
         },
@@ -2038,9 +2074,11 @@ GS::ObjectState GetCompositesCommand::Execute (const GS::ObjectState& parameters
     const auto& composites = response.AddList<GS::ObjectState> ("composites");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_CompWallID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             composites (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -2050,7 +2088,7 @@ GS::ObjectState GetCompositesCommand::Execute (const GS::ObjectState& parameters
         GS::ObjectState composite;
         composite.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         composite.Add ("index", GetAttributeIndex (attr.header.index));
-        composite.Add ("name", GS::UniString (attr.header.name));
+        composite.Add ("name", name);
 
         if (wantsField.Wants ("useWith")) {
             const auto& useWithList = composite.AddList<GS::UniString> ("useWith");
@@ -2157,8 +2195,7 @@ GS::Optional<GS::UniString> GetSurfacesCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "description": "Names of the fields to return for each Surface. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["materialType", "ambientReflection", "diffuseReflection", "specularReflection", "transparency", "shine", "transparencyAttenuation", "emissionAttenuation", "surfaceColor", "specularColor", "emissionColor", "fillId", "texture"]
+                    "$ref": "#/SurfaceAttributeField"
                 }
             }
         },
@@ -2200,9 +2237,11 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
     const auto& surfaces = response.AddList<GS::ObjectState> ("surfaces");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_MaterialID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             surfaces (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -2212,7 +2251,7 @@ GS::ObjectState GetSurfacesCommand::Execute (const GS::ObjectState& parameters, 
         GS::ObjectState surface;
         surface.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         surface.Add ("index", GetAttributeIndex (attr.header.index));
-        surface.Add ("name", GS::UniString (attr.header.name));
+        surface.Add ("name", name);
 
         if (wantsField.Wants ("materialType")) {
             surface.Add ("materialType", SurfaceTypeToString (attr.material.mtype));
@@ -2304,8 +2343,7 @@ GS::Optional<GS::UniString> GetLayersCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Layer. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["isHidden", "isLocked", "isWireframe", "intersectionGroupNr"]
+                    "$ref": "#/LayerAttributeField"
                 }
             }
         },
@@ -2347,9 +2385,11 @@ GS::ObjectState GetLayersCommand::Execute (const GS::ObjectState& parameters, GS
     const auto& layers = response.AddList<GS::ObjectState> ("layers");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        GS::UniString name;
         API_Attribute attr = {};
         attr.header.typeID = API_LayerID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+        attr.header.uniStringNamePtr = &name;
         GSErrCode err = ACAPI_Attribute_Get (&attr);
         if (err != NoError) {
             layers (CreateErrorResponse (err, "Failed to retrieve attribute."));
@@ -2359,7 +2399,7 @@ GS::ObjectState GetLayersCommand::Execute (const GS::ObjectState& parameters, GS
         GS::ObjectState layer;
         layer.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         layer.Add ("index", GetAttributeIndex (attr.header.index));
-        layer.Add ("name", GS::UniString (attr.header.name));
+        layer.Add ("name", name);
 
         if (wantsField.Wants ("isHidden")) {
             layer.Add ("isHidden", (attr.header.flags & APILay_Hidden) != 0);
@@ -2412,8 +2452,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "Names of the fields to return for each Building Material. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["id", "manufacturer", "description", "connPriority", "cutFillIndex", "cutFillPen", "cutFillBackgroundPen", "cutSurfaceIndex", "cutFillOrientation", "thermalConductivity", "density", "heatCapacity", "embodiedEnergy", "embodiedCarbon", "showUncutLines", "collisionDetection"]
+                    "$ref": "#/BuildingMaterialAttributeField"
                 }
             }
         },
@@ -2459,9 +2498,10 @@ GS::ObjectState GetBuildingMaterialsCommand::Execute (const GS::ObjectState& par
         attr.header.typeID = API_BuildingMaterialID;
         attr.header.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
 
-        // id/manufacturer/description are GS::UniString* out-parameters: Archicad only fills them in if the
-        // caller points them at real storage before the Get call, mirroring header.uniStringNamePtr.
-        GS::UniString id, manufacturer, description;
+        // name/id/manufacturer/description are GS::UniString* out-parameters: Archicad only fills them in if
+        // the caller points them at real storage before the Get call.
+        GS::UniString name, id, manufacturer, description;
+        attr.header.uniStringNamePtr = &name;
         attr.buildingMaterial.id = &id;
         attr.buildingMaterial.manufacturer = &manufacturer;
         attr.buildingMaterial.description = &description;
@@ -2475,7 +2515,7 @@ GS::ObjectState GetBuildingMaterialsCommand::Execute (const GS::ObjectState& par
         GS::ObjectState buildingMaterial;
         buildingMaterial.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         buildingMaterial.Add ("index", GetAttributeIndex (attr.header.index));
-        buildingMaterial.Add ("name", GS::UniString (attr.header.name));
+        buildingMaterial.Add ("name", name);
 
         if (wantsField.Wants ("id")) {
             buildingMaterial.Add ("id", id);
@@ -3248,62 +3288,14 @@ GS::Optional<GS::UniString> CreateLinesCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Dash-gap pairs describing one period (Dashed line type only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "dash": {
-                                        "type": "number",
-                                        "description": "Length of the visible part of the item."
-                                    },
-                                    "gap": {
-                                        "type": "number",
-                                        "description": "Length of the invisible part of the item."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["dash", "gap"]
+                                "$ref": "#/LineDashItem"
                             }
                         },
                         "lineItems": {
                             "type": "array",
                             "description": "Symbol items describing one period (Symbol line type only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "itemType": {
-                                        "type": "string",
-                                        "description": "Separator, CenterDot, CenterLine, Dot, RightAngle, Parallel, Line, Circle, or Arc."
-                                    },
-                                    "centerOffset": {
-                                        "type": "number",
-                                        "description": "Vertical distance from the origin. Used for Separator, CenterDot, and CenterLine item types."
-                                    },
-                                    "length": {
-                                        "type": "number",
-                                        "description": "Length of the item. Used for CenterLine, RightAngle, and Parallel item types."
-                                    },
-                                    "begPos": {
-                                        "description": "Beginning position. Used for Dot, RightAngle, Parallel, Line, Circle, and Arc item types.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "endPos": {
-                                        "description": "End position. Used for Line item type only.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "radius": {
-                                        "type": "number",
-                                        "description": "Radius. Used for Circle and Arc item types."
-                                    },
-                                    "beginAngle": {
-                                        "type": "number",
-                                        "description": "Beginning angle in radians, measured from the vertical axis. Used for Arc item type only."
-                                    },
-                                    "endAngle": {
-                                        "type": "number",
-                                        "description": "End angle in radians, measured from the vertical axis. Used for Arc item type only."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["itemType"]
+                                "$ref": "#/LineSymbolItemData"
                             }
                         }
                     },
@@ -3531,64 +3523,21 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Vectorial fill line items (Vector fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "frequency": {
-                                        "type": "number",
-                                        "description": "The distance between two instances of this item."
-                                    },
-                                    "direction": {
-                                        "type": "number",
-                                        "description": "The angle of the item, measured CCW from the horizontal axis, in radians."
-                                    },
-                                    "offsetLine": {
-                                        "type": "number",
-                                        "description": "The parallel offset of the item, measured from the (rotated) horizontal axis."
-                                    },
-                                    "offset": {
-                                        "description": "The offset of the item, given by its coordinates.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "lineLengths": {
-                                        "type": "array",
-                                        "description": "Dash-gap length pairs describing this line item. Must contain an even number of items.",
-                                        "items": {
-                                            "type": "number"
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["frequency", "direction", "offsetLine", "offset"]
+                                "$ref": "#/FillLineItem"
                             }
                         },
                         "symbolLines": {
                             "type": "array",
                             "description": "Line items of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "begin": { "$ref": "#/Coordinate2D" },
-                                    "end": { "$ref": "#/Coordinate2D" }
-                                },
-                                "additionalProperties": false,
-                                "required": ["begin", "end"]
+                                "$ref": "#/FillSymbolLine"
                             }
                         },
                         "symbolArcs": {
                             "type": "array",
                             "description": "Arc items of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "begin": { "$ref": "#/Coordinate2D" },
-                                    "origin": { "$ref": "#/Coordinate2D" },
-                                    "angle": {
-                                        "type": "number",
-                                        "description": "Arc angle in radians, measured CCW."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["begin", "origin", "angle"]
+                                "$ref": "#/FillSymbolArc"
                             }
                         },
                         "symbolHotspots": {
@@ -4089,6 +4038,14 @@ GS::Optional<GS::UniString> CreateMEPSystemsCommand::GetInputParametersSchema ()
                         "centerLineTypeId": {
                             "description": "Identifier of the center line type attribute.",
                             "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "materialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the 3D model of the elements of the system.",
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "insulationMaterialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the insulation of the elements of the system.",
+                            "$ref": "#/AttributeIdArrayItem"
                         }
                     },
                     "additionalProperties": false,
@@ -4151,6 +4108,22 @@ void CreateMEPSystemsCommand::SetTypeSpecificParameters (const GS::ObjectState& 
         API_AttributeIndex lineTypeIndex;
         if (GetAttributeIndexFromAttributeId (centerLineTypeId, API_LinetypeID, lineTypeIndex)) {
             attribute.mepSystem.centerLTypeInd = lineTypeIndex;
+        }
+    }
+
+    GS::ObjectState materialId;
+    if (parameters.Get ("materialId", materialId)) {
+        API_AttributeIndex materialIndex;
+        if (GetAttributeIndexFromAttributeId (materialId, API_MaterialID, materialIndex)) {
+            attribute.mepSystem.materialInd = materialIndex;
+        }
+    }
+
+    GS::ObjectState insulationMaterialId;
+    if (parameters.Get ("insulationMaterialId", insulationMaterialId)) {
+        API_AttributeIndex insulationMaterialIndex;
+        if (GetAttributeIndexFromAttributeId (insulationMaterialId, API_MaterialID, insulationMaterialIndex)) {
+            attribute.mepSystem.insulationMatInd = insulationMaterialIndex;
         }
     }
 }
@@ -4434,26 +4407,7 @@ GS::Optional<GS::UniString> CreatePenTablesCommand::GetInputParametersSchema () 
                             "type": "array",
                             "description": "The pens to set in the Pen Table, on top of the 255 pens copied from sourceAttributeId (or the current Pen Table, or an arbitrary existing one - see sourceAttributeId). Only list the pens you actually want to change.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "description": "Index of the pen [1..255]."
-                                    },
-                                    "color": {
-                                        "$ref": "#/ColorRGB"
-                                    },
-                                    "width": {
-                                        "type": "number",
-                                        "description": "Thickness of the pen defined in paper millimeters."
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "description": "Textual description of the pen."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["index"]
+                                "$ref": "#/PenData"
                             }
                         }
                     },
@@ -4852,26 +4806,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                         "type": "array",
                                         "description": "Modifications to specific edges of this skin, targeted by their position (0-based) in GetProfiles' skins[].edges.",
                                         "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "edgeIndex": {
-                                                    "type": "integer"
-                                                },
-                                                "pen": {
-                                                    "type": "integer"
-                                                },
-                                                "isVisibleLine": {
-                                                    "type": "boolean"
-                                                },
-                                                "lineTypeId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                },
-                                                "buildingMaterialId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["edgeIndex"]
+                                            "$ref": "#/ProfileEdgeOverride"
                                         }
                                     }
                                 },
@@ -4883,95 +4818,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "AC27+ only. Adds brand-new skins built from caller-supplied polygon geometry, instead of (or in addition to) whatever was copied from sourceAttributeId. Combine with sourceAttributeId to add skins to a copied Profile, or omit sourceAttributeId to build a Profile's geometry entirely from newSkins.",
                             "items": {
-                                "type": "object",
-                                "description": "One new skin (hatch). Its shape is one or more closed polygon contours: the first is the outer boundary, any further ones are holes cut out of it - the same polygon+holes convention as e.g. CreateSlabs' polygonCoordinates/polygonArcs/holes, just expressed as a list of contours instead of a separate holes array.",
-                                "properties": {
-                                    "contours": {
-                                        "type": "array",
-                                        "description": "Closed polygon contours forming this skin's cross-section, in the Profile's local coordinate system. Each contour is closed automatically - do not repeat its first vertex at the end.",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "polygonCoordinates": {
-                                                    "type": "array",
-                                                    "description": "The 2D coordinates of this contour.",
-                                                    "items": {
-                                                        "$ref": "#/Coordinate2D"
-                                                    },
-                                                    "minItems": 3
-                                                },
-                                                "polygonArcs": {
-                                                    "type": "array",
-                                                    "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.",
-                                                    "items": {
-                                                        "$ref": "#/PolyArc"
-                                                    }
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["polygonCoordinates"]
-                                        },
-                                        "minItems": 1
-                                    },
-                                    "buildingMaterialId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "surfaceId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "fillId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "contourPen": {
-                                        "type": "integer"
-                                    },
-                                    "contourLineTypeId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "isCore": {
-                                        "type": "boolean"
-                                    },
-                                    "isFinish": {
-                                        "type": "boolean"
-                                    },
-                                    "visibleCutEndLines": {
-                                        "type": "boolean"
-                                    },
-                                    "cutEndLinePen": {
-                                        "type": "integer"
-                                    },
-                                    "cutEndLineTypeId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "edgeOverrides": {
-                                        "type": "array",
-                                        "description": "Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "edgeIndex": {
-                                                    "type": "integer"
-                                                },
-                                                "pen": {
-                                                    "type": "integer"
-                                                },
-                                                "isVisibleLine": {
-                                                    "type": "boolean"
-                                                },
-                                                "lineTypeId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                },
-                                                "buildingMaterialId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["edgeIndex"]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["contours"]
+                                "$ref": "#/ProfileSkinData"
                             }
                         },
                         "replaceSkins": {

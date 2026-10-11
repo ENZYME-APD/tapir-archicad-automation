@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using System;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Issues;
 
@@ -22,7 +23,21 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             InGeneric("IssueGuid");
             InGeneric("Author");
             InGeneric("Text");
+
+            InText(
+                "Status",
+                "Status of the comment: " + string.Join(", ", CommentStatuses) + ". Optional.");
+
+            SetOptionality(new[] { 3 });
         }
+
+        private static readonly string[] CommentStatuses =
+        {
+            "Error",
+            "Warning",
+            "Info",
+            "Unknown"
+        };
 
         protected override void Solve(
             IGH_DataAccess da)
@@ -48,9 +63,25 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
+            var status = da.GetOptional<string>(
+                3,
+                null);
+
+            if (string.IsNullOrEmpty(status))
+            {
+                status = null;
+            }
+            else if (!CommentStatuses.Contains(status))
+            {
+                this.AddError(
+                    "Status must be one of: " + string.Join(", ", CommentStatuses) + ".");
+                return;
+            }
+
+            // An unset status is null, which is not sent.
             SetCadValues(
                 CommandName,
-                new { issueId, author, text },
+                new { issueId, author, text, status },
                 ToAddOn);
         }
 

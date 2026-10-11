@@ -39,15 +39,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     CommandName,
                     input,
                     ToAddOn,
-                    ExecutionResult.Deserialize,
-                    out ExecutionResult response))
+                    ExecutionResultsResponse.Deserialize,
+                    out ExecutionResultsResponse response))
             {
                 return;
             }
 
-            if (!response.Success)
+            foreach (var result in response.ExecutionResults)
             {
-                this.AddError(response.Message());
+                if (!result.Success)
+                {
+                    this.AddError(result.Message());
+                }
             }
         }
 

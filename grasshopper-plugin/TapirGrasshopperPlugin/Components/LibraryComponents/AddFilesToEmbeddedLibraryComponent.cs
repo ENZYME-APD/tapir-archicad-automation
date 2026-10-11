@@ -27,6 +27,13 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
             InTexts(
                 "OutputPaths",
                 "Relative paths of the new files inside the embedded library.");
+
+            InBoolean(
+                "OverwriteExisting",
+                "Replace an embedded library item already existing on an output path, " +
+                "so the new file is the one loaded (Archicad 27 or newer). " +
+                "When false, the already loaded library part stays in use.",
+                false);
         }
 
         protected override void AddOutputs()
@@ -59,9 +66,16 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
                 return;
             }
 
+            var overwriteExisting = da.GetOptional(
+                2,
+                false);
+
             var input = new AddFilesToEmbeddedLibraryParameters
             {
-                Files = new List<LibraryFileAddition>()
+                Files = new List<LibraryFileAddition>(),
+                // Only sent when set, so Add-On versions before the flag still
+                // accept the command.
+                OverwriteExisting = overwriteExisting ? true : (bool?)null
             };
 
             for (var i = 0; i < inputPaths.Count; i++)

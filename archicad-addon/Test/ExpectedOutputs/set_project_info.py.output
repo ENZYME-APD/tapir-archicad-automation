@@ -26,13 +26,21 @@ Response:
             "northings": 0,
             "elevation": 0
         },
+        "positionInProject": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
         "geoReferencingParameters": {
             "crsName": "Asdf",
             "description": "Fdsa",
             "geodeticDatum": "",
             "verticalDatum": "",
             "mapProjection": "",
-            "mapZone": ""
+            "mapZone": "",
+            "xAxisAbscissa": 1,
+            "xAxisOrdinate": 0,
+            "scale": 1
         }
     }
 }

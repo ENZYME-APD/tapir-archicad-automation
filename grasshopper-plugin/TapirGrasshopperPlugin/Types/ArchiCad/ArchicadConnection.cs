@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,6 +74,8 @@ namespace TapirGrasshopperPlugin.Types.ArchiCad
             string commandName,
             JObject commandParameters)
         {
+            RemoveNullProperties(commandParameters);
+
             var task = Task.Run(() => SendAddOnCommandAsync(
                 commandNamespace,
                 commandName,
@@ -147,6 +150,37 @@ namespace TapirGrasshopperPlugin.Types.ArchiCad
             }
 
             return result;
+        }
+
+        // Archicad validates the parameters against the command's input schema,
+        // and no Tapir schema accepts null: an optional field the component
+        // leaves unset has to be left out, not sent as null. Serializing the
+        // parameter objects writes their unset fields as null, so they are
+        // dropped here, at every depth, before the command is sent.
+        public static void RemoveNullProperties(
+            JToken token)
+        {
+            if (token is JObject obj)
+            {
+                foreach (var property in obj.Properties().ToList())
+                {
+                    if (property.Value.Type == JTokenType.Null)
+                    {
+                        property.Remove();
+                    }
+                    else
+                    {
+                        RemoveNullProperties(property.Value);
+                    }
+                }
+            }
+            else if (token is JArray array)
+            {
+                foreach (var item in array)
+                {
+                    RemoveNullProperties(item);
+                }
+            }
         }
 
         private int mPort;

@@ -93,8 +93,19 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
                     {
-                        if (!VersionChecker::IsUsingLatestVersion ()) {
+                        if (!VersionChecker::IsCheckCompleted ()) {
+                            DGAlert (DG_INFORMATION, "Tapir Update",
+                                "Tapir is still checking GitHub for the latest release.",
+                                "Please try again in a moment.",
+                                "OK");
+                        } else if (!VersionChecker::IsUsingLatestVersion ()) {
                             TapirPalette::Instance ().UpdateAddOn ();
+                        } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
+                            DGAlert (DG_INFORMATION, "Tapir Update",
+                                GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
+                                    VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
+                                GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+                                "OK");
                         } else {
                             DGAlert (DG_INFORMATION,
                                 RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
@@ -131,6 +142,8 @@ API_AddonType CheckEnvironment (API_EnvirParams* envir)
     RSGetIndString (&envir->addOnInfo.name, ID_ADDON_INFO, ID_ADDON_INFO_NAME, ACAPI_GetOwnResModule ());
     RSGetIndString (&envir->addOnInfo.description, ID_ADDON_INFO, ID_ADDON_INFO_DESC, ACAPI_GetOwnResModule ());
     envir->addOnInfo.description += GS::UniString (" ") + ADDON_VERSION;
+    // Only records the Archicad version: the GitHub lookup is started from Initialize, because CheckEnvironment
+    // also runs when Archicad merely lists the Add-Ons and unloads the Add-On right after.
     VersionChecker::CreateInstance (envir->serverInfo.mainVersion);
     return APIAddon_Preload;
 }
@@ -194,7 +207,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ChangeWindowCommand> (
             applicationCommands, "1.3.1",
-            "Changes the current (active) window to the given window."
+            "Changes the current (active) window to the given window. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
         );
         err |= RegisterCommand<GetUserGSIDCommand> (
             applicationCommands, "1.5.6",
@@ -281,6 +294,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SaveAsModuleFileCommand> (
             projectCommands, "1.5.9",
             "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
+        );
+        err |= RegisterCommand<SaveProjectAsArchiveCommand> (
+            projectCommands, "1.6.0",
+            "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
@@ -381,7 +398,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
-            "Deletes elements."
+            "Deletes elements. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently."
         );
         err |= RegisterCommand<LockElementsCommand> (
             elementCommands, "1.5.2",
@@ -693,7 +710,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
             propertyCommands, "1.5.4",
-            "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property."
+            "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder)."
+        );
+        err |= RegisterCommand<UpdatePropertyGroupsCommand> (
+            propertyCommands, "1.6.0",
+            "Updates the name and/or description of existing Custom Property Groups, keeping their guid."
+        );
+        err |= RegisterCommand<ImportPropertiesXmlCommand> (
+            propertyCommands, "1.6.0",
+            "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
         AddCommandGroup (propertyCommands);
     }
@@ -724,6 +749,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteClassificationItemsCommand> (
             classificationCommands, "1.5.2",
             "Deletes the given Classification Items."
+        );
+        err |= RegisterCommand<UpdateClassificationSystemsCommand> (
+            classificationCommands, "1.6.0",
+            "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid."
+        );
+        err |= RegisterCommand<UpdateClassificationItemsCommand> (
+            classificationCommands, "1.6.0",
+            "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent."
+        );
+        err |= RegisterCommand<ImportClassificationsXmlCommand> (
+            classificationCommands, "1.6.0",
+            "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed."
         );
         AddCommandGroup (classificationCommands);
     }
@@ -760,7 +797,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPSystemsCommand> (
             attributeCommands, "1.5.4",
-            "Creates or overwrites MEP System attributes based on the given parameters."
+            "Creates or overwrites MEP System attributes (domain, pens, fill, center line type, surface and insulation surface) based on the given parameters."
         );
         err |= RegisterCommand<CreatePenTablesCommand> (
             attributeCommands, "1.5.4",
@@ -804,7 +841,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPSystemsCommand> (
             attributeCommands, "1.5.4",
-            "Returns the details of the given MEP System attributes."
+            "Returns the details of the given MEP System attributes (domain, pens, fill, center line type, surface and insulation surface)."
         );
         err |= RegisterCommand<GetPenTablesCommand> (
             attributeCommands, "1.5.4",
@@ -837,7 +874,11 @@ GSErrCode Initialize (void)
         CommandGroup ifcCommands ("IFC Commands");
         err |= RegisterCommand<IFCFileOperationCommand> (
             ifcCommands, "1.2.6",
-            "Executes an IFC file operation."
+            "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use."
+        );
+        err |= RegisterCommand<GetIFCExportTranslatorsCommand> (
+            ifcCommands, "1.6.0",
+            "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName."
         );
         err |= RegisterCommand<GetElementsByIFCIdsCommand> (
             ifcCommands, "1.5.1",
@@ -855,6 +896,10 @@ GSErrCode Initialize (void)
             ifcCommands, "1.5.1",
             "Retrieves the IFC properties of the given elements."
         );
+        err |= RegisterCommand<SetIFCPropertiesOfElementsCommand> (
+            ifcCommands, "1.7.0",
+            "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now."
+        );
         AddCommandGroup (ifcCommands);
     }
 
@@ -870,7 +915,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<AddFilesToEmbeddedLibraryCommand> (
             libraryCommands, "1.2.2",
-            "Adds the given files into the embedded library."
+            "Adds the given files into the embedded library. With the overwriteExisting flag an embedded library item already existing on an outputPath is replaced (Archicad 27 or newer)."
+        );
+        err |= RegisterCommand<DeleteEmbeddedLibraryItemsCommand> (
+            libraryCommands, "1.6.0",
+            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
         );
         err |= RegisterCommand<SetLibrariesCommand> (
             libraryCommands, "1.5.9",
@@ -904,6 +953,26 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ReleaseElementsCommand> (
             teamworkCommands, "1.1.4",
             "Releases elements in Teamwork mode."
+        );
+        err |= RegisterCommand<ReserveLockableObjectSetCommand> (
+            teamworkCommands, "1.7.1",
+            "Reserves a non-element lockable object set (attributes, favorites, project info, project preferences, etc.) in Teamwork mode. The object set is given by its Archicad API name, e.g. 'Composites', 'LayerSettingsDialog' or 'ProjectInfo'."
+        );
+        err |= RegisterCommand<ReleaseLockableObjectSetCommand> (
+            teamworkCommands, "1.7.1",
+            "Releases a non-element lockable object set reserved with ReserveLockableObjectSet in Teamwork mode."
+        );
+        err |= RegisterCommand<GetLockableObjectSetStatusCommand> (
+            teamworkCommands, "1.7.1",
+            "Returns the Teamwork reservation status of a non-element lockable object set and the users who hold it."
+        );
+        err |= RegisterCommand<ReserveHotlinkCacheManagementCommand> (
+            teamworkCommands, "1.7.1",
+            "Reserves the Hotlink and XRef management in Teamwork mode, which is needed before changing hotlink nodes."
+        );
+        err |= RegisterCommand<ReleaseHotlinkCacheManagementCommand> (
+            teamworkCommands, "1.7.1",
+            "Releases the Hotlink and XRef management in Teamwork mode."
         );
         AddCommandGroup (teamworkCommands);
     }
@@ -1196,7 +1265,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data and nodes. Available from Archicad 28."
+            "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data (shape, size, preference table and reference id) and nodes. Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPPortsCommand> (
             mepCommands, "1.5.6",
@@ -1208,7 +1277,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data and MEP system. Available from Archicad 28."
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id) and MEP system. Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPElementsCommand> (
             mepCommands, "1.5.6",
@@ -1216,7 +1285,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Modifies the given MEP routing elements: MEP system, cross section data of all segments and node positions. Available from Archicad 28."
+            "Modifies the given MEP routing elements: MEP system, cross section data (shape, size, preference table and reference id) of all segments and node positions. Available from Archicad 28."
         );
         err |= RegisterCommand<ConnectMEPElementsCommand> (
             mepCommands, "1.5.6",
@@ -1266,7 +1335,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
-            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any."
+            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
         );
         AddCommandGroup (scriptUICommands);
     }
@@ -1322,6 +1391,14 @@ GSErrCode Initialize (void)
         );
         AddCommandGroup (developerCommands);
     }
+
+    // The latest release is looked up on a background thread, so Archicad does not wait for GitHub while it
+    // starts or opens a project (#798). The palette shows the "run with update" icon once the result is in.
+    VersionChecker::StartCheck ([] () {
+        if (TapirPalette::HasInstance ()) {
+            TapirPalette::Instance ().SetRunButtonIcon ();
+        }
+    });
 
     // Loading the palette singleton applies the custom shortcut menu labels and the enabled state
     // of the shortcut menu items at startup, rather than only when the user first opens the

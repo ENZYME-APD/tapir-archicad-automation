@@ -31,6 +31,23 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "FileType",
                 "The type of the IFC file: ifc, ifcxml, ifczip or ifcxmlzip.",
                 "ifc");
+
+            // Appended after the original inputs, so saved definitions keep
+            // their wiring.
+            InText(
+                "TranslatorName",
+                "Name of an IFC export translator of the project to save " +
+                "with; see GetIFCExportTranslators. Only valid with the save " +
+                "method. Optional.");
+
+            InText(
+                "ElementsToExport",
+                "The elements to export: EntireProject, " +
+                "VisibleElementsOnAllStories, AllElementsOnCurrentStory, " +
+                "VisibleElementsOnCurrentStory or SelectedElementsOnly. Only " +
+                "valid together with TranslatorName. Optional.");
+
+            SetOptionality(new[] { 3, 4 });
         }
 
         protected override void Solve(
@@ -58,11 +75,25 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 2,
                 out string fileType);
 
+            da.TryGet(
+                3,
+                out string translatorName);
+
+            da.TryGet(
+                4,
+                out string elementsToExport);
+
             var input = new IFCFileOperationParameters
             {
                 Method = method,
                 IfcFilePath = ifcFilePath,
-                FileType = string.IsNullOrEmpty(fileType) ? null : fileType
+                FileType = string.IsNullOrEmpty(fileType) ? null : fileType,
+                TranslatorName = string.IsNullOrEmpty(translatorName)
+                    ? null
+                    : translatorName,
+                ElementsToExport = string.IsNullOrEmpty(elementsToExport)
+                    ? null
+                    : elementsToExport
             };
 
             SetCadValues(

@@ -19,6 +19,21 @@ namespace TapirGrasshopperPlugin.Types.Commands
     {
         [JsonProperty("files")]
         public List<LibraryFileAddition> Files;
+
+        [JsonProperty("overwriteExisting", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? OverwriteExisting;
+    }
+
+    public class EmbeddedLibraryItem
+    {
+        [JsonProperty("path")]
+        public string Path;
+    }
+
+    public class DeleteEmbeddedLibraryItemsParameters
+    {
+        [JsonProperty("embeddedLibraryItems")]
+        public List<EmbeddedLibraryItem> EmbeddedLibraryItems;
     }
 
     // Grouping

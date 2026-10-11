@@ -94,7 +94,7 @@ var gCommands = [{
             },{
                 "name": "ChangeWindow",
                 "version": "1.3.1",
-                "description": "Changes the current (active) window to the given window.",
+                "description": "Changes the current (active) window to the given window. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
                 "inputScheme": {
         "$ref": "#/NavigatorItemIdOrDatabaseIdAndWindowType"
     },
@@ -801,6 +801,42 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "SaveProjectAsArchive",
+                "version": "1.6.0",
+                "description": "Saves the open project as an archive (.pla) file, with the library parts it uses inside.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "archiveFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does."
+            },
+            "includeLibraryParts": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the library parts the project uses go into the archive, which makes the archive usable as a linked library of another project."
+            },
+            "includeProperties": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the properties go into the archive."
+            },
+            "includeTextures": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the linked textures go into the archive."
+            },
+            "includeBackgroundPicture": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the background picture goes into the archive."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "archiveFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetCalculationUnits",
                 "version": "1.4.0",
                 "description": "Gets the project calculation units.",
@@ -968,6 +1004,10 @@ var gCommands = [{
                             "elevation"
                         ]
                     },
+                    "positionInProject": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
+                    },
                     "geoReferencingParameters": {
                         "type": "object",
                         "properties": {
@@ -994,6 +1034,18 @@ var gCommands = [{
                             "mapZone": {
                                 "type": "string",
                                 "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            },
+                            "xAxisAbscissa": {
+                                "type": "number",
+                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+                            },
+                            "xAxisOrdinate": {
+                                "type": "number",
+                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+                            },
+                            "scale": {
+                                "type": "number",
+                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
                             }
                         },
                         "additionalProperties": false,
@@ -1003,13 +1055,17 @@ var gCommands = [{
                             "geodeticDatum",
                             "verticalDatum",
                             "mapProjection",
-                            "mapZone"
+                            "mapZone",
+                            "xAxisAbscissa",
+                            "xAxisOrdinate",
+                            "scale"
                         ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "position",
+                    "positionInProject",
                     "geoReferencingParameters"
                 ]
             }
@@ -1074,6 +1130,10 @@ var gCommands = [{
                         "required": [
                         ]
                     },
+                    "positionInProject": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
+                    },
                     "geoReferencingParameters": {
                         "type": "object",
                         "properties": {
@@ -1100,6 +1160,18 @@ var gCommands = [{
                             "mapZone": {
                                 "type": "string",
                                 "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            },
+                            "xAxisAbscissa": {
+                                "type": "number",
+                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+                            },
+                            "xAxisOrdinate": {
+                                "type": "number",
+                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+                            },
+                            "scale": {
+                                "type": "number",
+                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
                             }
                         },
                         "additionalProperties": false,
@@ -1369,7 +1441,7 @@ var gCommands = [{
                         },
                         "floorPlanPolygons": {
                             "type": "array",
-                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Available for elements with a cut-fill representation (walls, columns, beams). Absent when the element has no cut fill or when the floor plan database is not accessible.",
+                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -2056,7 +2128,7 @@ var gCommands = [{
             },{
                 "name": "DeleteElements",
                 "version": "1.2.1",
-                "description": "Deletes elements.",
+                "description": "Deletes elements. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2070,7 +2142,16 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     }
             },{
                 "name": "LockElements",
@@ -2404,17 +2485,21 @@ var gCommands = [{
                             "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         },
+                        "circleBased": {
+                            "type": "boolean",
+                            "description": "True for a round beam cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments."
+                        },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
                             "description": "When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
-                            "description": "Cross section building material. Applied to all segments."
+                            "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments."
                         },
                         "profileId": {
                             "$ref": "#/AttributeId",
-                            "description": "Switches the cross section to this custom extruded profile. Applied to all segments."
+                            "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         }
                     },
                     "additionalProperties": false,
@@ -4036,7 +4121,7 @@ var gCommands = [{
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -4121,7 +4206,7 @@ var gCommands = [{
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -4270,8 +4355,9 @@ var gCommands = [{
                         "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
-                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material. Applied to all segments." },
-                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile. Applied to all segments." },
+                        "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
                         "holes": {
                             "type": "array",
                             "description": "Replaces all holes currently placed on the beam.",
@@ -4924,7 +5010,7 @@ var gCommands = [{
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
                         },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -4962,7 +5048,7 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -5699,6 +5785,21 @@ var gCommands = [{
                 "items": {
                     "$ref": "#/PropertyDetails"
                 }
+            },
+            "propertyGroups": {
+                "type": "array",
+                "description": "Every property group, including empty ones.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "isCustom": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "propertyGroupId", "name", "isCustom" ]
+                }
             }
         },
         "additionalProperties": false,
@@ -5963,43 +6064,78 @@ var gCommands = [{
             },{
                 "name": "UpdatePropertyDefinitions",
                 "version": "1.5.4",
-                "description": "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property.",
+                "description": "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder).",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The property definitions to update.",
+                "description": "The property definitions to update. Only the fields given change; the definition keeps its guid, so element values survive.",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "propertyId": {
-                            "$ref": "#/PropertyId"
-                        },
+                        "propertyId": { "$ref": "#/PropertyId" },
+                        "name": { "type": "string", "description": "New name of the property." },
+                        "description": { "type": "string", "description": "New description of the property." },
+                        "groupId": { "$ref": "#/PropertyGroupId", "description": "Move the property into this custom property group." },
+                        "defaultValue": { "$ref": "#/PropertyDefaultValue", "description": "New default value: a basic value or expressions. Switching between the two is allowed." },
                         "expressions": {
                             "type": "array",
                             "description": "The new expression strings for the property. Only for expression-based properties.",
-                            "items": {
-                                "type": "string"
-                            },
+                            "items": { "type": "string" },
                             "minItems": 1
+                        },
+                        "availability": {
+                            "type": "object",
+                            "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
+                            "properties": {
+                                "set": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } },
+                                "add": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } },
+                                "remove": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } }
+                            },
+                            "additionalProperties": false
                         },
                         "possibleEnumValues": {
                             "$ref": "#/EnumValuesToAdd",
                             "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
+                        },
+                        "renameEnumValues": {
+                            "type": "array",
+                            "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "enumValueId": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] },
+                                    "displayValue": { "type": "string" },
+                                    "nonLocalizedValue": { "type": "string" }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "enumValueId", "displayValue" ]
+                            }
+                        },
+                        "removeEnumValues": {
+                            "type": "array",
+                            "description": "Enum options to remove. Elements holding a removed option lose that value.",
+                            "items": {
+                                "type": "object",
+                                "properties": { "enumValueId": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+                                "additionalProperties": false,
+                                "required": [ "enumValueId" ]
+                            }
+                        },
+                        "enumOrder": {
+                            "type": "array",
+                            "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
+                            "items": { "type": "string" }
                         }
                     },
                     "additionalProperties": false,
-                    "required": [
-                        "propertyId"
-                    ]
+                    "required": [ "propertyId" ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": [
-            "propertyDefinitions"
-        ]
+        "required": [ "propertyDefinitions" ]
     },
                 "outputScheme": {
         "type": "object",
@@ -6012,6 +6148,60 @@ var gCommands = [{
         "required": [
             "executionResults"
         ]
+    }
+            },{
+                "name": "UpdatePropertyGroups",
+                "version": "1.6.0",
+                "description": "Updates the name and/or description of existing Custom Property Groups, keeping their guid.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyGroups": {
+                "type": "array",
+                "description": "The custom property groups to update. Only the fields given change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "propertyGroupId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyGroups" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    }
+            },{
+                "name": "ImportPropertiesXml",
+                "version": "1.6.0",
+                "description": "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "xml": { "type": "string", "description": "A Property Manager export (XML) to import." },
+            "conflictPolicy": { "type": "string", "enum": [ "append", "replace", "skip" ], "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one." }
+        },
+        "additionalProperties": false,
+        "required": [ "xml", "conflictPolicy" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResult": { "$ref": "#/ExecutionResult" },
+            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+        },
+        "additionalProperties": false,
+        "required": [ "executionResult", "created", "removed" ]
     }
             }]
         },{
@@ -6188,6 +6378,96 @@ var gCommands = [{
         "required": [
             "executionResults"
         ]
+    }
+            },{
+                "name": "UpdateClassificationSystems",
+                "version": "1.6.0",
+                "description": "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "type": "array",
+                "description": "The classification systems to update. Only the fields given change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationSystemId": { "$ref": "#/ClassificationSystemId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "source": { "type": "string" },
+                        "version": { "type": "string" },
+                        "date": { "$ref": "#/Date" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationSystemId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationSystems" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    }
+            },{
+                "name": "UpdateClassificationItems",
+                "version": "1.6.0",
+                "description": "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationItems": {
+                "type": "array",
+                "description": "The classification items to update. Only the fields given change; items keep their guid and their parent.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationItemId": { "$ref": "#/ClassificationItemId" },
+                        "id": { "type": "string", "description": "The new code of the item, e.g. 21.10." },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationItemId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationItems" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    }
+            },{
+                "name": "ImportClassificationsXml",
+                "version": "1.6.0",
+                "description": "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "xml": { "type": "string", "description": "A Classification Manager export (XML) to import." },
+            "systemConflictPolicy": { "type": "string", "enum": [ "merge", "replace", "skip" ], "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one." },
+            "itemConflictPolicy": { "type": "string", "enum": [ "replace", "skip" ], "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one." }
+        },
+        "additionalProperties": false,
+        "required": [ "xml", "systemConflictPolicy", "itemConflictPolicy" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResult": { "$ref": "#/ExecutionResult" },
+            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+        },
+        "additionalProperties": false,
+        "required": [ "executionResult", "created", "removed" ]
     }
             }]
         },{
@@ -6775,7 +7055,7 @@ var gCommands = [{
             },{
                 "name": "CreateMEPSystems",
                 "version": "1.5.4",
-                "description": "Creates or overwrites MEP System attributes based on the given parameters.",
+                "description": "Creates or overwrites MEP System attributes (domain, pens, fill, center line type, surface and insulation surface) based on the given parameters.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -6824,6 +7104,14 @@ var gCommands = [{
                         },
                         "centerLineTypeId": {
                             "description": "Identifier of the center line type attribute.",
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "materialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the 3D model of the elements of the system.",
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "insulationMaterialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the insulation of the elements of the system.",
                             "$ref": "#/AttributeIdArrayItem"
                         }
                     },
@@ -7719,7 +8007,7 @@ var gCommands = [{
             },{
                 "name": "GetMEPSystems",
                 "version": "1.5.4",
-                "description": "Returns the details of the given MEP System attributes.",
+                "description": "Returns the details of the given MEP System attributes (domain, pens, fill, center line type, surface and insulation surface).",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -7731,7 +8019,7 @@ var gCommands = [{
                 "description": "Names of the fields to return for each MEP System. If omitted, every field is returned.",
                 "items": {
                     "type": "string",
-                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId"]
+                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId", "materialId", "insulationMaterialId"]
                 }
             }
         },
@@ -8002,7 +8290,7 @@ var gCommands = [{
             "commands": [{
                 "name": "IFCFileOperation",
                 "version": "1.2.6",
-                "description": "Executes an IFC file operation.",
+                "description": "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -8019,6 +8307,15 @@ var gCommands = [{
                 "type": "string",
                 "description": "The type of the IFC file. The default is 'ifc'.",
                 "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
+            },
+            "elementsToExport": {
+                "type": "string",
+                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
+                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
             }
         },
         "additionalProperties": false,
@@ -8029,6 +8326,42 @@ var gCommands = [{
     },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetIFCExportTranslators",
+                "version": "1.6.0",
+                "description": "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "translators": {
+                "type": "array",
+                "description": "The IFC export translators of the project, the preview translator first.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the translator, as the IFC Translators dialog shows it."
+                        },
+                        "preview": {
+                            "type": "boolean",
+                            "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "preview"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "translators"
+        ]
     }
             },{
                 "name": "GetElementsByIFCIds",
@@ -8146,6 +8479,66 @@ var gCommands = [{
             "elementIFCProperties"
         ]
     }
+            },{
+                "name": "SetIFCPropertiesOfElements",
+                "version": "1.7.0",
+                "description": "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementIFCPropertyValues": {
+                "type": "array",
+                "description": "The IFC property values to set. Only single value (IfcPropertySingleValue) properties are supported.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "propertySetName": {
+                            "type": "string",
+                            "description": "The name of the property set, for example Pset_DoorCommon. Custom property set names are also accepted."
+                        },
+                        "propertyName": {
+                            "type": "string",
+                            "description": "The name of the property, for example FireRating."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure."
+                        },
+                        "value": {
+                            "description": "The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "propertySetName",
+                        "propertyName",
+                        "type",
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCPropertyValues"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             }]
         },{
             "name": "Library Commands",
@@ -8218,17 +8611,63 @@ var gCommands = [{
             },{
                 "name": "AddFilesToEmbeddedLibrary",
                 "version": "1.2.2",
-                "description": "Adds the given files into the embedded library.",
+                "description": "Adds the given files into the embedded library. With the overwriteExisting flag an embedded library item already existing on an outputPath is replaced (Archicad 27 or newer).",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "files": {
                 "$ref": "#/LibraryFileAdditions"
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Optional. When true, an embedded library item already existing on an outputPath is deleted first, so the newly added file replaces the loaded library part. By default false: the existing loaded part stays in use. Requires Archicad 27 or newer."
             }
         },
         "additionalProperties": false,
         "required": [
             "files"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "DeleteEmbeddedLibraryItems",
+                "version": "1.6.0",
+                "description": "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "embeddedLibraryItems": {
+                "type": "array",
+                "description": "A list of embedded library items to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The relative path of the library item inside the embedded library, the same path AddFilesToEmbeddedLibrary takes as outputPath."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "embeddedLibraryItems"
         ]
     },
                 "outputScheme": {
@@ -8681,13 +9120,38 @@ var gCommands = [{
                     "properties": {
                         "navigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "layoutDatabaseId": { "$ref": "#/DatabaseId" },
-                        "name": { "type": "string", "minLength": 1 },
+                        "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Custom title name of the new Drawing. Giving a name implies nameType CustomName unless nameType is set explicitly."
+                        },
+                        "nameType": {
+                            "type": "string",
+                            "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
+                            "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog). Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
+                        },
                         "position": { "$ref": "#/Coordinate2D" },
-                        "scale": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "scale": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Scale ratio applied to the drawing relative to its source view (API_DrawingType::ratio). Defaults to 1.0."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "Rotation angle of the drawing in radians. Defaults to the Drawing tool's current default."
+                        },
+                        "drawingScale": {
+                            "type": "number",
+                            "description": "The nominal scale of the drawing. Defaults to the Drawing tool's current default."
+                        },
+                        "modelOffset": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
+                        },
                         "clipPolygon": { "type": "array", "items": { "$ref": "#/Coordinate2D" }, "minItems": 3 }
                     },
                     "additionalProperties": false,
-                    "required": ["navigatorItemId", "name", "position"]
+                    "required": ["navigatorItemId", "position"]
                 }
             }
         },
@@ -10322,7 +10786,7 @@ var gCommands = [{
                     },
                     "additionalProperties": false,
                     "required": [
-                        "elementId",
+                        "designOptionId",
                         "setName"
                     ]
                 }
@@ -10427,7 +10891,8 @@ var gCommands = [{
                             "description": "The parent folder. Optional; defaults to the root folder."
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10476,7 +10941,8 @@ var gCommands = [{
                             "description": "The parent folder. Optional; defaults to the root folder."
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10529,7 +10995,8 @@ var gCommands = [{
                             "$ref": "#/KeynoteFolderId"
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10579,7 +11046,8 @@ var gCommands = [{
                             "$ref": "#/KeynoteItemId"
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10802,7 +11270,7 @@ var gCommands = [{
             },{
                 "name": "GetMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data and nodes. Available from Archicad 28.",
+                "description": "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data (shape, size, preference table and reference id) and nodes. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -10892,7 +11360,7 @@ var gCommands = [{
             },{
                 "name": "CreateMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data and MEP system. Available from Archicad 28.",
+                "description": "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id) and MEP system. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -10929,7 +11397,11 @@ var gCommands = [{
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
-                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections)."
+                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "mepSystemId": {
                             "$ref": "#/AttributeId",
@@ -11023,7 +11495,7 @@ var gCommands = [{
             },{
                 "name": "ModifyMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Modifies the given MEP routing elements: MEP system, cross section data of all segments and node positions. Available from Archicad 28.",
+                "description": "Modifies the given MEP routing elements: MEP system, cross section data (shape, size, preference table and reference id) of all segments and node positions. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -11051,6 +11523,14 @@ var gCommands = [{
                             "type": "string",
                             "description": "New cross section shape applied to all segments.",
                             "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                        },
+                        "crossSectionReferenceId": {
+                            "type": "integer",
+                            "description": "New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "nodePositions": {
                             "type": "array",

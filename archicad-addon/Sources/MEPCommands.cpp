@@ -172,16 +172,14 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "Optional filter for the MEP element types.",
                 "items": {
-                    "type": "string",
-                    "enum": ["RoutingElement", "RigidSegment", "Elbow", "Transition", "Branch", "Terminal", "Accessory", "Equipment", "Fitting", "FlexibleSegment", "TakeOff"]
+                    "$ref": "#/MEPElementType"
                 }
             },
             "domains": {
                 "type": "array",
                 "description": "Optional filter for the MEP domains.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                    "$ref": "#/MEPDomain"
                 }
             }
         },
@@ -199,26 +197,7 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "The MEP elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The type of the MEP element."
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "type",
-                        "domain"
-                    ]
+                    "$ref": "#/MEPElement"
                 }
             }
         },
@@ -359,6 +338,11 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             segmentOs.Add ("crossSectionWidth", segment->GetCrossSectionWidth ());
             segmentOs.Add ("crossSectionHeight", segment->GetCrossSectionHeight ());
             segmentOs.Add ("crossSectionShape", ConnectorShapeToString (segment->GetCrossSectionShape ()));
+            ACAPI::Result<uint32_t> referenceId = segment->GetCrossSectionReferenceId ();
+            if (referenceId.IsOk ()) {
+                segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (referenceId.Unwrap ()));
+            }
+            segmentOs.Add ("preferenceTableId", segment->GetPreferenceTableId ().GetGuid ().ToUniString ());
             segments (segmentOs);
         }
 
@@ -509,20 +493,7 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
                 "type": "array",
                 "description": "The distribution systems of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "type": "string"
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["domain", "elements"]
+                    "$ref": "#/MEPDistributionSystem"
                 }
             }
         },
@@ -594,8 +565,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "type": "string",
-                            "enum": ["Ventilation", "Piping", "CableCarrier"]
+                            "$ref": "#/MEPDomain"
                         },
                         "nodeCoordinates": {
                             "type": "array",
@@ -614,13 +584,16 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                             "description": "Optional cross section height applied to all segments."
                         },
                         "crossSectionShape": {
-                            "type": "string",
-                            "description": "Optional cross section shape applied to all segments.",
-                            "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "Optional; applied to all segments."
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
-                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections)."
+                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "mepSystemId": {
                             "$ref": "#/AttributeId",
@@ -696,12 +669,19 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             double height = 0.0;
             GS::UniString shapeStr;
             Int32 referenceId = -1;
+            GS::UniString preferenceTableIdStr;
             const bool hasWidth = routingElementData.Get ("crossSectionWidth", width);
             const bool hasHeight = routingElementData.Get ("crossSectionHeight", height);
             const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
             const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
-            if (hasWidth || hasHeight || hasShape || hasReferenceId) {
+            const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
+            if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
                 segmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
+                    // The preference table is set before the reference id, because the reference id is
+                    // resolved against the table the segment uses.
+                    if (hasPreferenceTableId) {
+                        modifier.SetPreferenceTableId (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                    }
                     if (hasShape) {
                         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
                         if (shape.has_value ()) {
@@ -776,13 +756,11 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                     "type": "object",
                     "properties": {
                         "type": {
-                            "type": "string",
-                            "enum": ["Terminal", "Accessory", "Equipment", "Fitting"]
+                            "$ref": "#/MEPComponentType"
                         },
                         "domain": {
-                            "type": "string",
-                            "description": "The MEP domain of the element. Required for all types except Equipment.",
-                            "enum": ["Ventilation", "Piping", "CableCarrier"]
+                            "$ref": "#/MEPDomain",
+                            "description": "Required for all types except Equipment."
                         },
                         "position": {
                             "$ref": "#/Coordinate3D"
@@ -953,9 +931,16 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "description": "New cross section height applied to all segments."
                         },
                         "crossSectionShape": {
-                            "type": "string",
-                            "description": "New cross section shape applied to all segments.",
-                            "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "The new shape is applied to all segments."
+                        },
+                        "crossSectionReferenceId": {
+                            "type": "integer",
+                            "description": "New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "nodePositions": {
                             "type": "array",
@@ -1032,10 +1017,14 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         double width = 0.0;
         double height = 0.0;
         GS::UniString shapeStr;
+        Int32 referenceId = -1;
+        GS::UniString preferenceTableIdStr;
         const bool hasWidth = routingElementData.Get ("crossSectionWidth", width);
         const bool hasHeight = routingElementData.Get ("crossSectionHeight", height);
         const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
-        if (hasWidth || hasHeight || hasShape) {
+        const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
+        const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
+        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
             for (const ACAPI::MEP::UniqueID& segmentId : routingElement->GetRoutingSegmentIds ()) {
                 ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
                 if (segment.IsErr ()) {
@@ -1043,6 +1032,11 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     continue;
                 }
                 ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
+                    // Same order as in CreateMEPRoutingElements: table first, then the reference id
+                    // that is resolved against it.
+                    if (hasPreferenceTableId) {
+                        modifier.SetPreferenceTableId (Adapter::UniqueID (APIGuidFromString (preferenceTableIdStr.ToCStr ())));
+                    }
                     if (hasShape) {
                         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
                         if (shape.has_value ()) {
@@ -1054,6 +1048,9 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     }
                     if (hasHeight) {
                         modifier.SetCrossSectionHeight (height);
+                    }
+                    if (hasReferenceId && referenceId >= 0) {
+                        modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId));
                     }
                 }, "Modify Cross Section of Routing Segment");
                 success &= result.IsOk ();
@@ -1220,7 +1217,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
 }
 
 GetMEPPreferenceTablesCommand::GetMEPPreferenceTablesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -1235,9 +1232,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "domain": {
-                "type": "string",
-                "description": "The MEP domain of the segment preference tables.",
-                "enum": ["Piping", "Ventilation"]
+                "$ref": "#/MEPPreferenceTableDomain"
             }
         },
         "additionalProperties": false,
@@ -1254,25 +1249,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
                 "type": "array",
                 "description": "The circular segment preference tables of the domain.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": { "type": "string" },
-                        "rows": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "referenceId": { "type": "integer" },
-                                    "diameter": { "type": "number" },
-                                    "description": { "type": "string" }
-                                },
-                                "required": ["referenceId", "diameter"],
-                                "additionalProperties": false
-                            }
-                        }
-                    },
-                    "required": ["guid", "rows"],
-                    "additionalProperties": false
+                    "$ref": "#/MEPPreferenceTable"
                 }
             }
         },

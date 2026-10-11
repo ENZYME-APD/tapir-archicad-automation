@@ -78,6 +78,18 @@ namespace TapirGrasshopperPlugin.Types.Project
         public double? Elevation;
     }
 
+    public class SurveyPointPositionInProject
+    {
+        [JsonProperty("x")]
+        public double PositionInProjectX;
+
+        [JsonProperty("y")]
+        public double PositionInProjectY;
+
+        [JsonProperty("z")]
+        public double PositionInProjectZ;
+    }
+
     public class GeoReferencingParameters
     {
         [JsonProperty("crsName", NullValueHandling = NullValueHandling.Ignore)]
@@ -97,12 +109,24 @@ namespace TapirGrasshopperPlugin.Types.Project
 
         [JsonProperty("mapZone", NullValueHandling = NullValueHandling.Ignore)]
         public string MapZone;
+
+        [JsonProperty("xAxisAbscissa", NullValueHandling = NullValueHandling.Ignore)]
+        public double? XAxisAbscissa;
+
+        [JsonProperty("xAxisOrdinate", NullValueHandling = NullValueHandling.Ignore)]
+        public double? XAxisOrdinate;
+
+        [JsonProperty("scale", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Scale;
     }
 
     public class SurveyPoint
     {
         [JsonProperty("position")]
         public SurveyPointPosition Position;
+
+        [JsonProperty("positionInProject", NullValueHandling = NullValueHandling.Ignore)]
+        public SurveyPointPositionInProject PositionInProject;
 
         [JsonProperty("geoReferencingParameters")]
         public GeoReferencingParameters GeoReferencingParams;

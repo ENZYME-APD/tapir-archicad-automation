@@ -12,7 +12,9 @@ so no server hosting is needed. Every run:
 1. Fetches the recent messages (default: last 24 hours) of each configured
    channel over the Discord REST API.
 2. Asks Claude whether each message is an actionable Tapir bug report or
-   feature request. Casual chat, questions and help requests are ignored.
+   feature request. Casual chat, questions and help requests are ignored,
+   unless the question points at something concrete that Tapir lacks or
+   gets wrong ("command X does not support Y, how should I handle that?").
    Classification runs through the Claude Code CLI on a Pro/Max
    subscription, authorized by `CLAUDE_CODE_OAUTH_TOKEN` — the same
    credential the repository's other Claude workflows use. No Anthropic
@@ -51,10 +53,14 @@ re-enable it and run the workflow once manually with the *lookback
 minutes* input raised to cover the gap.
 
 Because the issues are created with the workflow's own `GITHUB_TOKEN`,
-they do not trigger other workflows: the automatic Claude issue triage
-never runs on them (the reporter is on Discord and would not see its
-answer anyway). A maintainer can still apply the `claude-fix` label to
-have a fix attempted, exactly as for hand-written issues.
+opening them starts no other workflow. So after each run that created
+issues, a second job (`triage`, the only one holding the `actions: write`
+permission) dispatches the Claude issue bot (`claude_issue_triage.yml`) for
+each of them: it answers the issue and, where it can, opens a fix as a
+draft pull request, as for any issue a person opens. If a dispatch fails,
+a comment on the issue or the `claude-fix` label still starts it. To start
+it for issues filed earlier, run the workflow by hand with *dry run*
+checked and their numbers in *triage issues*.
 
 ## One-time setup
 
@@ -89,8 +95,8 @@ A missing label is dropped from the issue rather than failing the run,
 so this step is recommended, not required — but the label also drives
 the daily issue cap (see Tuning), which only counts labelled issues.
 
-The workflow uses the built-in `GITHUB_TOKEN` to create issues; no extra
-GitHub credential is needed. While none of the values above are configured,
+The workflow uses the built-in `GITHUB_TOKEN` to create issues and to
+start the issue triage for them; no extra GitHub credential is needed. While none of the values above are configured,
 the scheduled run exits without doing anything, so enabling the workflow
 before finishing the setup is harmless (a *partially* configured bot fails
 loudly instead, so a renamed secret cannot go unnoticed).

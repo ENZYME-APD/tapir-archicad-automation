@@ -25,6 +25,15 @@ result = aclib.RunTapirCommand (
                 'height': 2.5,
                 'angle': 0.0,
                 'justification': 'Left'
+            },
+            {
+                # Windows-style CRLF line endings are accepted and normalized to '\n',
+                # so the read-back below reports the same two lines as the entry above.
+                'coordinate': {'x': 15.0, 'y': 6.0, 'z': 0.0},
+                'text': 'windows\r\nline endings',
+                'height': 2.5,
+                'angle': 0.0,
+                'justification': 'Left'
             }
         ]
     })

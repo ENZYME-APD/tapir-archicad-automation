@@ -238,9 +238,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "exclusiveMinimum": 0.0
                         },
                         "coreAnchor": {
-                            "type": "string",
-                            "description": "Optional anchor point of the column core on a 3x3 grid.",
-                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                            "$ref": "#/ColumnCoreAnchor"
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -367,13 +365,25 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "thickness": {
                         "type": "number",
-                        "description": "Optional slab thickness.",
+                        "description": "Optional slab thickness. Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. Without structureType, buildingMaterialId or compositeId the new slab keeps the structure of the slab tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply.",
                         "exclusiveMinimum": 0.0
                     },
-                    "referencePlaneLocation": {
+                    "structureType": {
                         "type": "string",
-                        "description": "Optional location of the slab reference plane. For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid.",
-                        "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
+                        "enum": ["Basic", "Composite"]
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Building material of a Basic slab. Cannot be combined with compositeId."
+                    },
+                    "compositeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Composite attribute of a Composite slab. Cannot be combined with buildingMaterialId."
+                    },
+                    "referencePlaneLocation": {
+                        "$ref": "#/SlabReferencePlaneLocation",
+                        "description": "For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid."
                     },
                     "polygonCoordinates": { 
                         "type": "array",
@@ -487,6 +497,12 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
+
+    bool structureChanged = false;
+    auto structureError = ApplySlabStructure (element, nullptr, parameters, structureChanged);
+    if (structureError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, structureError.Get ());
+    }
 
     GS::UniString referencePlaneLocation;
     if (parameters.Get ("referencePlaneLocation", referencePlaneLocation)) {
@@ -1440,23 +1456,10 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
         "isAutoOnStoryVisibility": { "type": "boolean" },
         "visibility": {
-            "type": "object",
-            "properties": {
-                "showOnHome": { "type": "boolean" },
-                "showAllAbove": { "type": "boolean" },
-                "showAllBelow": { "type": "boolean" },
-                "showRelAbove": { "type": "integer" },
-                "showRelBelow": { "type": "integer" }
-            },
-            "additionalProperties": false
+            "$ref": "#/StoryVisibility"
         },
         "linkToSettings": {
-            "type": "object",
-            "properties": {
-                "homeStoryDifference": { "type": "integer" },
-                "newCreationMode": { "type": "boolean" }
-            },
-            "additionalProperties": false
+            "$ref": "#/LinkToSettings"
         })";
     if (isLamp) {
         fields += R"(,
@@ -1663,6 +1666,29 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     return true;
 }
 
+// The library part's own A and B; a and b are left as they are when it has none to divide by.
+static GSErrCode GetLibraryPartSize (Int32 libInd, double& a, double& b)
+{
+    double libraryPartA = 0.0;
+    double libraryPartB = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    const GSErrCode err = ACAPI_LibraryPart_GetParams (libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
+    if (addPars != nullptr) {
+        ACAPI_DisposeAddParHdl (&addPars);
+    }
+    if (err != NoError) {
+        return err;
+    }
+    if (libraryPartA > 1e-6) {
+        a = libraryPartA;
+    }
+    if (libraryPartB > 1e-6) {
+        b = libraryPartB;
+    }
+    return NoError;
+}
+
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
 // dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
 // per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
@@ -1696,10 +1722,29 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     if (parameters.Get ("dimensions", dimensions)) {
         const API_Coord3D dims = Get3DCoordinateFromObjectState (dimensions);
 
-        element.object.xRatio = dims.x;
-        element.object.yRatio = dims.y;
-        GS::ObjectState os (ParameterValueFieldName, dims.z);
-        ChangeParams (memo.params, {{"ZZYZX", os}});
+        // xRatio/yRatio hold the size itself only with useXYFixSize on; otherwise they hold the size
+        // divided by the library part's own A/B (as documented), so convert for the flag the element
+        // ends up with.
+        bool useFixSize = element.object.useXYFixSize;
+        parameters.Get ("useFixSize", useFixSize);
+        double libraryPartA = 1.0;
+        double libraryPartB = 1.0;
+        if (!useFixSize) {
+            const GSErrCode err = GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the library part's own A and B, which 'dimensions' are converted with.");
+            }
+        }
+        element.object.xRatio = dims.x / libraryPartA;
+        element.object.yRatio = dims.y / libraryPartB;
+        // A and B in the parameter memo have to agree with xRatio/yRatio: Archicad reconciles the two
+        // on a change, and after CreateObjects the memo would keep the Object tool default's A and B,
+        // which a later ModifyObjects (even one changing only the angle) then applied.
+        ChangeParams (memo.params, {
+            {"A", GS::ObjectState (ParameterValueFieldName, dims.x)},
+            {"B", GS::ObjectState (ParameterValueFieldName, dims.y)},
+            {"ZZYZX", GS::ObjectState (ParameterValueFieldName, dims.z)}
+        });
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, xRatio);
             ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, yRatio);
@@ -2089,7 +2134,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
                         },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -2216,6 +2261,9 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
                 ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
                 ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+#ifndef ServerMainVers_2800
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, charCode); // the content is UTF-16 (see ApplyTextContent)
+#endif
             }
 
             // withdel=false was tried and made things WORSE (even the style fields stopped
@@ -2251,7 +2299,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "text": { "type": "string" },
+                        "text": { "type": "string", "description": "The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF." },
                         "runs": {
                             "type": "array",
                             "items": { "$ref": "#/TextRunDetails" },
@@ -2379,6 +2427,9 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
                     ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
                     ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.useEolPos);
+#ifndef ServerMainVers_2800
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.charCode); // the content is UTF-16 (see ApplyTextContent)
+#endif
                 }
             } else {
                 const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
@@ -2432,9 +2483,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "description": "The height of the skirt."
                     },
                     "ridges": {
-                        "type": "string",
-                        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
-                        "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                        "$ref": "#/MeshRidges"
                     },
                     "showLines": {
                         "type": "boolean",
@@ -2474,20 +2523,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "array",
                         "description": "The leveling sublines inside the polygon of the mesh.",
                         "items": {
-                            "type": "object",
-                            "properties" : {
-                                "coordinates": { 
-                                    "type": "array",
-                                    "description": "The 3D coordinates of the leveling subline of the mesh.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "coordinates"
-                            ]
+                            "$ref": "#/MeshSubline"
                         },
                         "minItems": 1
                     }
@@ -2597,13 +2633,12 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "description" : "The parent element if the label is an associative label."
                     },
                     "labelClass": {
-                        "type": "string",
-                        "enum": ["Text", "Symbol"],
-                        "description": "Whether this is a textual or a symbol label. Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                        "$ref": "#/LabelClass",
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -2724,18 +2759,35 @@ API_JustID ParseJustificationString (const GS::UniString& justification)
     return APIJust_Left;
 }
 
+// The content writers below treat '\n' as the only line separator when counting nLine and
+// filling eolPos, so a Windows-style "\r\n" (or a bare '\r') arriving through the JSON
+// interface would leave stray CR characters inside memo.textContent while the line
+// bookkeeping only accounts for the LFs - an inconsistent memo. Every write path normalizes
+// the incoming content to '\n' separators first. (The "only the first character appears"
+// report on Archicad 25-27 was the missing charCode = CC_UniCode, see ApplyTextContent.)
+static GS::UniString NormalizeLineBreaks (const GS::UniString& text)
+{
+    GS::UniString normalized = text;
+    normalized.ReplaceAll ("\r\n", "\n");
+    normalized.ReplaceAll ("\r", "\n");
+    return normalized;
+}
+
 // Used by SetDetailsOfElementsCommand's generic Text/Label write case (upstream official fix);
 // TextLabelDetails::ApplyTextContent below is Tapir's own, richer equivalent used by
 // CreateTexts/CreateLabels/ModifyTexts/ModifyLabels - both build memo.textContent/paragraphs but
 // only ApplyTextContent supports multi-run content.
-void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
+void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& rawText)
 {
+    const GS::UniString text = NormalizeLineBreaks (rawText);
 #ifdef ServerMainVers_2800
     delete memo.textContent;
     memo.textContent = new GS::UniString { text };
 #else
     memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
     GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+    // See ApplyTextContent: the content above is UTF-16, which Archicad only reads as such with charCode CC_UniCode.
+    textData.charCode = CC_UniCode;
 #endif
 
     const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
@@ -3051,6 +3103,9 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             if (!runOS.Get ("text", runText)) {
                 return CreateErrorResponse (APIERR_BADPARS, "Each entry in 'runs' requires a 'text' field.");
             }
+            // Normalized per run, before the run lengths are taken, so the run ranges set
+            // below stay consistent with the concatenated content.
+            runText = NormalizeLineBreaks (runText);
             short pen = textData.pen;
             runOS.Get ("penIndex", pen);
             short font = textData.font;
@@ -3082,6 +3137,8 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         }
     } else if (!parameters.Get ("text", text)) {
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter");
+    } else {
+        text = NormalizeLineBreaks (text);
     }
 
     // 'memo' may already carry content: the Create path gets its memo from ACAPI_Element_GetDefaults,
@@ -3095,6 +3152,13 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     }
     memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
     GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+    // Before Archicad 28 textContent is a char handle that Archicad reads as an 8-bit string
+    // unless the element's charCode is CC_UniCode (APIdefs_Elements.h of the AC25-AC27 DevKits,
+    // and their Element_Test example's CreateMultiTextElement, which writes UTF-16 the same way).
+    // Without it the UTF-16 content above ends at the first character's high zero byte, so only
+    // the first character of every text appeared. CC_UniCode also makes the paragraph/run/eolPos
+    // offsets below character offsets, as they are computed.
+    textData.charCode = CC_UniCode;
 #endif
 
     const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
@@ -3157,7 +3221,13 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2800
     const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContent | APIMemoMask_Paragraph);
+#else
+    // Before Archicad 28 the plain masks may return the content as an 8-bit string with byte
+    // offsets; the *Uni masks return it as UTF-16 with character offsets, as it is read below.
+    const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContentUni | APIMemoMask_ParagraphUni);
+#endif
     if (err != NoError) {
         return err;
     }
@@ -3491,6 +3561,33 @@ void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_L
 
 } // namespace TextLabelDetails
 
+// For a Slab, ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
+// dereferences the current window's draw environment - null when the slab is not drawn in
+// that window (another story is displayed, its layer is hidden, or a non-floor-plan window
+// is active), so Archicad dies with a SIGSEGV instead of returning an error (#686). A Slab's
+// 2D extent is the extent of its polygon, so take it from the element memo instead - that is
+// available no matter what the current window shows. Curved slab edges bulge slightly beyond
+// the polygon vertices, but for a default label position the vertex extent is close enough.
+static void CalcLabelParentBounds (const API_Elem_Head& parentElemHead, API_Box3D& box)
+{
+    if (GetElemTypeId (parentElemHead) != API_SlabID) {
+        // const_cast: before AC27 ACAPI_Element_CalcBounds maps to ACAPI_Database, which takes void*
+        ACAPI_Element_CalcBounds (const_cast<API_Elem_Head*> (&parentElemHead), &box);
+        return;
+    }
+
+    bool isFirstCoord = true;
+    for (const PolygonData& polygon : GetPolygonsFromMemoCoords (parentElemHead.guid)) {
+        for (const API_Coord& coord : polygon.coords) {
+            if (isFirstCoord || coord.x < box.xMin) box.xMin = coord.x;
+            if (isFirstCoord || coord.x > box.xMax) box.xMax = coord.x;
+            if (isFirstCoord || coord.y < box.yMin) box.yMin = coord.y;
+            if (isFirstCoord || coord.y > box.yMax) box.yMax = coord.y;
+            isFirstCoord = false;
+        }
+    }
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -3520,7 +3617,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
     } else if (parentElemHead.guid != APINULLGuid) {
         API_Box3D box = {};
-        ACAPI_Element_CalcBounds (&parentElemHead, &box);
+        CalcLabelParentBounds (parentElemHead, box);
         element.label.begC.x = (box.xMin + box.xMax) / 2.0;
         element.label.begC.y = (box.yMin + box.yMax) / 2.0;
     } else {
@@ -3599,7 +3696,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
                     },
                     "runs": {
                         "type": "array",
@@ -3620,9 +3717,8 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                         "description": "Optional rotation angle in radians. Equivalent to style.angle."
                     },
                     "justification": {
-                        "type": "string",
-                        "description": "Optional text justification. Equivalent to style.justification.",
-                        "enum": ["Left", "Center", "Right", "Full"]
+                        "$ref": "#/Justification",
+                        "description": "Optional; equivalent to style.justification."
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",

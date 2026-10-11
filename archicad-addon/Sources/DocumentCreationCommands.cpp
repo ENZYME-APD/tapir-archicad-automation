@@ -114,6 +114,49 @@ bool GetLayoutInfoForDatabase (const API_DatabaseUnId& databaseUnId, API_LayoutI
     return ACAPI_Navigator_GetLayoutSets (&layoutInfo, const_cast<API_DatabaseUnId*> (&databaseUnId)) == NoError;
 }
 
+void CollectLayoutSubsetGuids (API_NavigatorItem item, GS::Array<API_Guid>& subsetGuids)
+{
+    item.mapId = API_LayoutMap;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) != NoError) {
+        return;
+    }
+    for (const API_NavigatorItem& child : children) {
+        if (child.itemType == API_SubSetNavItem) {
+            subsetGuids.Push (child.guid);
+            CollectLayoutSubsetGuids (child, subsetGuids);
+        }
+    }
+}
+
+GS::Array<API_Guid> GetLayoutSubsetGuids ()
+{
+    GS::Array<API_Guid> subsetGuids;
+    API_NavigatorSet navSet = {};
+    navSet.mapId = API_LayoutMap;
+    Int32 idx = 0;
+    if (ACAPI_Navigator_GetNavigatorSet (&navSet, &idx) != NoError) {
+        return subsetGuids;
+    }
+    API_NavigatorItem rootItem = {};
+    if (ACAPI_Navigator_GetNavigatorItem (&navSet.rootGuid, &rootItem) != NoError) {
+        return subsetGuids;
+    }
+    CollectLayoutSubsetGuids (rootItem, subsetGuids);
+    return subsetGuids;
+}
+
+GS::Optional<API_Guid> FindNewLayoutSubsetGuid (const GS::Array<API_Guid>& before)
+{
+    const GS::Array<API_Guid> after = GetLayoutSubsetGuids ();
+    for (const auto& guid : after) {
+        if (!before.Contains (guid)) {
+            return guid;
+        }
+    }
+    return {};
+}
+
 }
 
 CreateDetailsCommand::CreateDetailsCommand () :
@@ -527,6 +570,14 @@ GS::ObjectState CreateLayoutSubsetCommand::Execute (const GS::ObjectState& param
         item.Get ("continueNumbering", subSet.continueNumbering);
         item.Get ("useUpperPrefix",    subSet.useUpperPrefix);
 
+        // includeToIDSequence is the positive form of the Subset Settings dialog's
+        // "Do not include this Subset in ID sequence" checkbox, which API_SubSet
+        // stores negated
+        bool includeToIDSequence = false;
+        if (item.Get ("includeToIDSequence", includeToIDSequence)) {
+            subSet.doNotInclude = !includeToIDSequence;
+        }
+
         const GS::ObjectState* parent = item.Get ("parentNavigatorItemId");
         const API_Guid* parentGuidPtr = nullptr;
         API_Guid parentGuid = APINULLGuid;
@@ -535,13 +586,22 @@ GS::ObjectState CreateLayoutSubsetCommand::Execute (const GS::ObjectState& param
             parentGuidPtr = &parentGuid;
         }
 
+        // ACAPI_Navigator_CreateSubSet has no output guid, so the created subset's
+        // navigator item is found the same way CreateLayout finds its new database:
+        // by diffing the Layout Book's subset items around the creation
+        const GS::Array<API_Guid> before = GetLayoutSubsetGuids ();
         err = ACAPI_Navigator_CreateSubSet (&subSet, parentGuidPtr);
         if (err != NoError) {
             navigatorItems.Push (CreateErrorResponse (err, "Failed to create subset."));
             continue;
         }
 
-        navigatorItems.Push (CreateSuccessfulExecutionResult ());
+        const auto createdGuid = FindNewLayoutSubsetGuid (before);
+        if (createdGuid.HasValue ()) {
+            navigatorItems.Push (CreateIdObjectState ("navigatorItemId", createdGuid.Get ()));
+        } else {
+            navigatorItems.Push (CreateErrorResponse (APIERR_GENERAL, "Subset created but could not resolve its navigator item id."));
+        }
     }
     return CreateNavigatorItemsResponse (navigatorItems);
 }
@@ -574,9 +634,8 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "description": "Custom title name of the new Drawing. Giving a name implies nameType CustomName unless nameType is set explicitly."
                         },
                         "nameType": {
-                            "type": "string",
-                            "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
-                            "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog). Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
+                            "$ref": "#/DrawingNameType",
+                            "description": "Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
                         },
                         "position": { "$ref": "#/Coordinate2D" },
                         "scale": {
@@ -1070,14 +1129,7 @@ GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetRawResponseSchema () co
                         "customData": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "customSchemeKey":   { "type": "string" },
-                                    "customSchemeName":  { "type": "string" },
-                                    "customSchemeValue": { "type": "string" }
-                                },
-                                "required": ["customSchemeKey", "customSchemeValue"],
-                                "additionalProperties": false
+                                "$ref": "#/LayoutCustomData"
                             }
                         }
                     },
@@ -1214,14 +1266,7 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                         "customData": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "customSchemeKey":   { "type": "string" },
-                                    "customSchemeName":  { "type": "string" },
-                                    "customSchemeValue": { "type": "string" }
-                                },
-                                "required": ["customSchemeValue"],
-                                "additionalProperties": false
+                                "$ref": "#/LayoutCustomDataToSet"
                             }
                         }
                     },
