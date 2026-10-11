@@ -593,17 +593,7 @@ GS::Optional<GS::UniString> UpdateClassificationSystemsCommand::GetInputParamete
                 "type": "array",
                 "description": "The classification systems to update. Only the fields given change.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "classificationSystemId": { "$ref": "#/ClassificationSystemId" },
-                        "name": { "type": "string" },
-                        "description": { "type": "string" },
-                        "source": { "type": "string" },
-                        "version": { "type": "string" },
-                        "date": { "$ref": "#/Date" }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "classificationSystemId" ]
+                    "$ref": "#/ClassificationSystemUpdate"
                 }
             }
         },
@@ -691,15 +681,7 @@ GS::Optional<GS::UniString> UpdateClassificationItemsCommand::GetInputParameters
                 "type": "array",
                 "description": "The classification items to update. Only the fields given change; items keep their guid and their parent.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "classificationItemId": { "$ref": "#/ClassificationItemId" },
-                        "id": { "type": "string", "description": "The new code of the item, e.g. 21.10." },
-                        "name": { "type": "string" },
-                        "description": { "type": "string" }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "classificationItemId" ]
+                    "$ref": "#/ClassificationItemUpdate"
                 }
             }
         },
@@ -797,8 +779,8 @@ GS::Optional<GS::UniString> ImportClassificationsXmlCommand::GetInputParametersS
         "type": "object",
         "properties": {
             "xml": { "type": "string", "description": "A Classification Manager export (XML) to import." },
-            "systemConflictPolicy": { "type": "string", "enum": [ "merge", "replace", "skip" ], "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one." },
-            "itemConflictPolicy": { "type": "string", "enum": [ "replace", "skip" ], "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one." }
+            "systemConflictPolicy": { "$ref": "#/ClassificationSystemConflictPolicy" },
+            "itemConflictPolicy": { "$ref": "#/ClassificationItemConflictPolicy" }
         },
         "additionalProperties": false,
         "required": [ "xml", "systemConflictPolicy", "itemConflictPolicy" ]
@@ -811,8 +793,8 @@ GS::Optional<GS::UniString> ImportClassificationsXmlCommand::GetRawResponseSchem
         "type": "object",
         "properties": {
             "executionResult": { "$ref": "#/ExecutionResult" },
-            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
-            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+            "created": { "type": "array", "items": { "$ref": "#/GuidId" } },
+            "removed": { "type": "array", "items": { "$ref": "#/GuidId" } }
         },
         "additionalProperties": false,
         "required": [ "executionResult", "created", "removed" ]

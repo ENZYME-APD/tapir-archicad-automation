@@ -319,8 +319,7 @@ GS::Optional<GS::UniString> GetAutoTextNameCommand::GetInputParametersSchema () 
                 "type": "array",
                 "description": "Autotext keys as returned by GetAutoTextKeys or GetProjectInfoFields (without the surrounding '<' and '>'), e.g. 'PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548' or 'PROJECTNAME'.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/AutoTextKeyValue"
                 },
                 "minItems": 1
             }
@@ -427,22 +426,7 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of custom project info fields to create.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "Display name of the project info field.",
-                            "minLength": 1
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "Initial value of the project info field."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoName"
-                    ]
+                    "$ref": "#/ProjectInfoFieldData"
                 }
             }
         },
@@ -1573,123 +1557,10 @@ GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "projectLocation": {
-                "type": "object",
-                "properties": {
-                    "longitude": {
-                        "type": "number",
-                        "description": "longitude in degrees"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "description": "latitude in degrees"
-                    },
-                    "altitude": {
-                        "type": "number",
-                        "description": "altitude in meters"
-                    },
-                    "north": {
-                        "type": "number",
-                        "description": "north direction in radians"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "longitude",
-                    "latitude",
-                    "altitude",
-                    "north"
-                ]
+                "$ref": "#/ProjectLocation"
             },
             "surveyPoint": {
-                "type": "object",
-                "properties": {
-                    "position": {
-                        "type": "object",
-                        "properties": {
-                            "eastings": {
-                                "type": "number",
-                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
-                            },
-                            "northings": {
-                                "type": "number",
-                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
-                            },
-                            "elevation": {
-                                "type": "number",
-                                "description": "Orthogonal height relative to the vertical datum specified."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "eastings",
-                            "northings",
-                            "elevation"
-                        ]
-                    },
-                    "positionInProject": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
-                    },
-                    "geoReferencingParameters": {
-                        "type": "object",
-                        "properties": {
-                            "crsName": {
-                                "type": "string",
-                                "description": "Name by which the coordinate reference system is identified."
-                            },
-                            "description": {
-                                "type": "string",
-                                "description": "Informal description of this coordinate reference system."
-                            },
-                            "geodeticDatum": {
-                                "type": "string",
-                                "description": "Name by which this datum is identified."
-                            },
-                            "verticalDatum": {
-                                "type": "string",
-                                "description": "Name by which the vertical datum is identified."
-                            },
-                            "mapProjection": {
-                                "type": "string",
-                                "description": "Name by which the map projection is identified."
-                            },
-                            "mapZone": {
-                                "type": "string",
-                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
-                            },
-                            "xAxisAbscissa": {
-                                "type": "number",
-                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
-                            },
-                            "xAxisOrdinate": {
-                                "type": "number",
-                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
-                            },
-                            "scale": {
-                                "type": "number",
-                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "crsName",
-                            "description",
-                            "geodeticDatum",
-                            "verticalDatum",
-                            "mapProjection",
-                            "mapZone",
-                            "xAxisAbscissa",
-                            "xAxisOrdinate",
-                            "scale"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "position",
-                    "positionInProject",
-                    "geoReferencingParameters"
-                ]
+                "$ref": "#/SurveyPoint"
             }
         },
         "additionalProperties": false,
@@ -1745,104 +1616,10 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetInputParametersSchema () c
         "type": "object",
         "properties": {
             "projectLocation": {
-                "type": "object",
-                "properties": {
-                    "longitude": {
-                        "type": "number",
-                        "description": "longitude in degrees"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "description": "latitude in degrees"
-                    },
-                    "altitude": {
-                        "type": "number",
-                        "description": "altitude in meters"
-                    },
-                    "north": {
-                        "type": "number",
-                        "description": "north direction in radians"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                ]
+                "$ref": "#/ProjectLocationUpdate"
             },
             "surveyPoint": {
-                "type": "object",
-                "properties": {
-                    "position": {
-                        "type": "object",
-                        "properties": {
-                            "eastings": {
-                                "type": "number",
-                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
-                            },
-                            "northings": {
-                                "type": "number",
-                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
-                            },
-                            "elevation": {
-                                "type": "number",
-                                "description": "Orthogonal height relative to the vertical datum specified."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                        ]
-                    },
-                    "positionInProject": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
-                    },
-                    "geoReferencingParameters": {
-                        "type": "object",
-                        "properties": {
-                            "crsName": {
-                                "type": "string",
-                                "description": "Name by which the coordinate reference system is identified."
-                            },
-                            "description": {
-                                "type": "string",
-                                "description": "Informal description of this coordinate reference system."
-                            },
-                            "geodeticDatum": {
-                                "type": "string",
-                                "description": "Name by which this datum is identified."
-                            },
-                            "verticalDatum": {
-                                "type": "string",
-                                "description": "Name by which the vertical datum is identified."
-                            },
-                            "mapProjection": {
-                                "type": "string",
-                                "description": "Name by which the map projection is identified."
-                            },
-                            "mapZone": {
-                                "type": "string",
-                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
-                            },
-                            "xAxisAbscissa": {
-                                "type": "number",
-                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
-                            },
-                            "xAxisOrdinate": {
-                                "type": "number",
-                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
-                            },
-                            "scale": {
-                                "type": "number",
-                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                ]
+                "$ref": "#/SurveyPointUpdate"
             }
         },
         "additionalProperties": false,
@@ -2245,9 +2022,8 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
                 "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
             },
             "elementsToExport": {
-                "type": "string",
-                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
-                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
+                "$ref": "#/IFCElementsToExport",
+                "description": "Only for the save method, and only together with translatorName. The default is VisibleElementsOnAllStories."
             }
         },
         "additionalProperties": false,
@@ -2681,61 +2457,7 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The hotlink instances to place.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId",
-                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
-                        },
-                        "origin": {
-                            "$ref": "#/HotlinkOrigin"
-                        },
-                        "rotationAngle": {
-                            "type": "number",
-                            "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
-                        },
-                        "mirrored": {
-                            "type": "boolean",
-                            "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional story the instance is placed on. Defaults to the current story."
-                        },
-                        "floorDifference": {
-                            "type": "integer",
-                            "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
-                        },
-                        "skipNested": {
-                            "type": "boolean",
-                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
-                        },
-                        "suspendFixAngle": {
-                            "type": "boolean",
-                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
-                        },
-                        "ignoreTopFloorLinks": {
-                            "type": "boolean",
-                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
-                        },
-                        "relinkWallOpenings": {
-                            "type": "boolean",
-                            "description": "Optional. Defaults to the hotlink tool's current default."
-                        },
-                        "adjustLevelDiffs": {
-                            "type": "boolean",
-                            "description": "Optional. Defaults to the hotlink tool's current default."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId",
-                        "origin"
-                    ]
+                    "$ref": "#/HotlinkInstanceCreation"
                 }
             }
         },
@@ -2869,49 +2591,7 @@ GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The placed hotlink instances to change. Every field but elementId is optional; a field that is omitted keeps its current value.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "origin": {
-                            "$ref": "#/HotlinkOrigin"
-                        },
-                        "rotationAngle": {
-                            "type": "number",
-                            "description": "Rotation about the origin, counter-clockwise, in radians."
-                        },
-                        "mirrored": {
-                            "type": "boolean",
-                            "description": "Reflect the module's local X axis before the rotation."
-                        },
-                        "floorDifference": {
-                            "type": "integer"
-                        },
-                        "skipNested": {
-                            "type": "boolean"
-                        },
-                        "suspendFixAngle": {
-                            "type": "boolean"
-                        },
-                        "ignoreTopFloorLinks": {
-                            "type": "boolean"
-                        },
-                        "relinkWallOpenings": {
-                            "type": "boolean"
-                        },
-                        "adjustLevelDiffs": {
-                            "type": "boolean"
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Move the instance to this layer."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/HotlinkInstanceChange"
                 }
             }
         },
