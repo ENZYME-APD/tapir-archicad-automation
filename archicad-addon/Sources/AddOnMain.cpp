@@ -92,7 +92,12 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
                     {
-                        if (!VersionChecker::IsUsingLatestVersion ()) {
+                        if (!VersionChecker::IsCheckCompleted ()) {
+                            DGAlert (DG_INFORMATION, "Tapir Update",
+                                "Tapir is still checking GitHub for the latest release.",
+                                "Please try again in a moment.",
+                                "OK");
+                        } else if (!VersionChecker::IsUsingLatestVersion ()) {
                             TapirPalette::Instance ().UpdateAddOn ();
                         } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
                             DGAlert (DG_INFORMATION, "Tapir Update",
@@ -136,6 +141,8 @@ API_AddonType CheckEnvironment (API_EnvirParams* envir)
     RSGetIndString (&envir->addOnInfo.name, ID_ADDON_INFO, ID_ADDON_INFO_NAME, ACAPI_GetOwnResModule ());
     RSGetIndString (&envir->addOnInfo.description, ID_ADDON_INFO, ID_ADDON_INFO_DESC, ACAPI_GetOwnResModule ());
     envir->addOnInfo.description += GS::UniString (" ") + ADDON_VERSION;
+    // Only records the Archicad version: the GitHub lookup is started from Initialize, because CheckEnvironment
+    // also runs when Archicad merely lists the Add-Ons and unloads the Add-On right after.
     VersionChecker::CreateInstance (envir->serverInfo.mainVersion);
     return APIAddon_Preload;
 }
@@ -946,6 +953,26 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.1.4",
             "Releases elements in Teamwork mode."
         );
+        err |= RegisterCommand<ReserveLockableObjectSetCommand> (
+            teamworkCommands, "1.7.1",
+            "Reserves a non-element lockable object set (attributes, favorites, project info, project preferences, etc.) in Teamwork mode. The object set is given by its Archicad API name, e.g. 'Composites', 'LayerSettingsDialog' or 'ProjectInfo'."
+        );
+        err |= RegisterCommand<ReleaseLockableObjectSetCommand> (
+            teamworkCommands, "1.7.1",
+            "Releases a non-element lockable object set reserved with ReserveLockableObjectSet in Teamwork mode."
+        );
+        err |= RegisterCommand<GetLockableObjectSetStatusCommand> (
+            teamworkCommands, "1.7.1",
+            "Returns the Teamwork reservation status of a non-element lockable object set and the users who hold it."
+        );
+        err |= RegisterCommand<ReserveHotlinkCacheManagementCommand> (
+            teamworkCommands, "1.7.1",
+            "Reserves the Hotlink and XRef management in Teamwork mode, which is needed before changing hotlink nodes."
+        );
+        err |= RegisterCommand<ReleaseHotlinkCacheManagementCommand> (
+            teamworkCommands, "1.7.1",
+            "Releases the Hotlink and XRef management in Teamwork mode."
+        );
         AddCommandGroup (teamworkCommands);
     }
 
@@ -1307,7 +1334,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
-            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any."
+            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
         );
         AddCommandGroup (scriptUICommands);
     }
@@ -1320,6 +1347,14 @@ GSErrCode Initialize (void)
         );
         AddCommandGroup (developerCommands);
     }
+
+    // The latest release is looked up on a background thread, so Archicad does not wait for GitHub while it
+    // starts or opens a project (#798). The palette shows the "run with update" icon once the result is in.
+    VersionChecker::StartCheck ([] () {
+        if (TapirPalette::HasInstance ()) {
+            TapirPalette::Instance ().SetRunButtonIcon ();
+        }
+    });
 
     // Loading the palette singleton applies the custom shortcut menu labels and the enabled state
     // of the shortcut menu items at startup, rather than only when the user first opens the

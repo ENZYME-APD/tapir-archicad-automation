@@ -65,8 +65,11 @@ jobs:
           # because the release job executes them while signing - a CMake or
           # MSBuild file reaches the pipeline on the next tag push just as
           # surely as a script under Tools/. Sources are globbed in CMake, so
-          # an ordinary command addition does not touch these.
-          PROTECTED='^\.github/|^archicad-addon/Tools/|^tools/|CMakeLists\.txt$|\.cmake$|\.csproj$'
+          # an ordinary command addition does not touch these. The installer
+          # sources are included because the Windows installer is code signed
+          # (SignPath Foundation) and runs elevated: its code and build scripts
+          # must have a human review before they reach a signing request.
+          PROTECTED='^\.github/|^archicad-addon/Tools/|^archicad-addon/Installer/|^tools/|CMakeLists\.txt$|\.cmake$|\.csproj$'
 
           # Every trigger sweeps the open pull requests rather than reading the
           # candidates off the event. The event payloads carry no pull requests

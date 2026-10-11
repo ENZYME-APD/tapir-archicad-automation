@@ -238,9 +238,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "exclusiveMinimum": 0.0
                         },
                         "coreAnchor": {
-                            "type": "string",
-                            "description": "Optional anchor point of the column core on a 3x3 grid.",
-                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                            "$ref": "#/ColumnCoreAnchor"
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -367,13 +365,25 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "thickness": {
                         "type": "number",
-                        "description": "Optional slab thickness.",
+                        "description": "Optional slab thickness. Only effective for a Basic slab: a Composite slab takes its thickness from the composite.",
                         "exclusiveMinimum": 0.0
                     },
-                    "referencePlaneLocation": {
+                    "structureType": {
                         "type": "string",
-                        "description": "Optional location of the slab reference plane. For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid.",
-                        "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
+                        "enum": ["Basic", "Composite"]
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Building material of a Basic slab. Cannot be combined with compositeId."
+                    },
+                    "compositeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Composite attribute of a Composite slab. Cannot be combined with buildingMaterialId."
+                    },
+                    "referencePlaneLocation": {
+                        "$ref": "#/SlabReferencePlaneLocation",
+                        "description": "For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid."
                     },
                     "polygonCoordinates": { 
                         "type": "array",
@@ -487,6 +497,12 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
+
+    bool structureChanged = false;
+    auto structureError = ApplySlabStructure (element, nullptr, parameters, structureChanged);
+    if (structureError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, structureError.Get ());
+    }
 
     GS::UniString referencePlaneLocation;
     if (parameters.Get ("referencePlaneLocation", referencePlaneLocation)) {
@@ -1440,23 +1456,10 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
         "isAutoOnStoryVisibility": { "type": "boolean" },
         "visibility": {
-            "type": "object",
-            "properties": {
-                "showOnHome": { "type": "boolean" },
-                "showAllAbove": { "type": "boolean" },
-                "showAllBelow": { "type": "boolean" },
-                "showRelAbove": { "type": "integer" },
-                "showRelBelow": { "type": "integer" }
-            },
-            "additionalProperties": false
+            "$ref": "#/StoryVisibility"
         },
         "linkToSettings": {
-            "type": "object",
-            "properties": {
-                "homeStoryDifference": { "type": "integer" },
-                "newCreationMode": { "type": "boolean" }
-            },
-            "additionalProperties": false
+            "$ref": "#/LinkToSettings"
         })";
     if (isLamp) {
         fields += R"(,
@@ -2480,9 +2483,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "description": "The height of the skirt."
                     },
                     "ridges": {
-                        "type": "string",
-                        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
-                        "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                        "$ref": "#/MeshRidges"
                     },
                     "showLines": {
                         "type": "boolean",
@@ -2522,20 +2523,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "array",
                         "description": "The leveling sublines inside the polygon of the mesh.",
                         "items": {
-                            "type": "object",
-                            "properties" : {
-                                "coordinates": { 
-                                    "type": "array",
-                                    "description": "The 3D coordinates of the leveling subline of the mesh.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "coordinates"
-                            ]
+                            "$ref": "#/MeshSubline"
                         },
                         "minItems": 1
                     }
@@ -2645,9 +2633,8 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "description" : "The parent element if the label is an associative label."
                     },
                     "labelClass": {
-                        "type": "string",
-                        "enum": ["Text", "Symbol"],
-                        "description": "Whether this is a textual or a symbol label. Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                        "$ref": "#/LabelClass",
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
                     },
                     "text": {
                         "type": "string",
@@ -3730,9 +3717,8 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                         "description": "Optional rotation angle in radians. Equivalent to style.angle."
                     },
                     "justification": {
-                        "type": "string",
-                        "description": "Optional text justification. Equivalent to style.justification.",
-                        "enum": ["Left", "Center", "Right", "Full"]
+                        "$ref": "#/Justification",
+                        "description": "Optional; equivalent to style.justification."
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",

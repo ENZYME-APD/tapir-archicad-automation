@@ -43,6 +43,10 @@ GS::Ref<TapirPalette> TapirPalette::instance;
 // Run button and the shortcut slots must not start a script that the installer would then interrupt.
 static bool isUpdatingAddOn = false;
 
+// The script repositories are read from GitHub while Archicad starts, on the main thread. Without a timeout
+// a connection that GitHub accepts but never answers kept Archicad from starting or opening a project (#798).
+static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
+
 static UShort GetConnectionPort ()
 {
     UShort portNumber;
@@ -109,6 +113,7 @@ static std::vector<char> DownloadFileContent (const GS::UniString& fileDownloadU
 {
     IO::URI::URI connectionUrl (fileDownloadUrl);
     HTTP::Client::ClientConnection clientConnection (connectionUrl);
+    clientConnection.SetTimeout (RepositoryRequestTimeoutMs);
     clientConnection.Connect ();
 
     HTTP::Client::Request getRequest (HTTP::MessageHeader::Method::Get, "");
@@ -334,6 +339,7 @@ static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocati
     try {
         IO::URI::URI connectionUrl ("https://api.github.com");
         HTTP::Client::ClientConnection clientConnection (connectionUrl);
+        clientConnection.SetTimeout (RepositoryRequestTimeoutMs);
         clientConnection.Connect ();
 
         const GS::UniString& relativeLocation = relativeLoc.IsEmpty () ? repository.relativeLoc : relativeLoc;
@@ -368,7 +374,10 @@ static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocati
         }
 
         clientConnection.Close (false);
+    } catch (const GS::Exception& e) {
+        ACAPI_WriteReport ("Tapir: Failed to list " + repository.repoOwner + "/" + repository.repoName + " on GitHub: " + GetExceptionText (e), false);
     } catch (...) {
+        ACAPI_WriteReport ("Tapir: Failed to list " + repository.repoOwner + "/" + repository.repoName + " on GitHub.", false);
     }
 
     return files;
@@ -1113,7 +1122,18 @@ void TapirPalette::AddScriptsFromRepositories ()
                 ACAPI_WriteReport ("Skipping download of " + repoLoc + " due to exclude pattern", false);
                 continue;
             }
-            const auto content = DownloadFileContent (kv.second, headers);
+            // A failed download (e.g. the timeout) skips this file only: an exception here used to abort the
+            // creation of the whole palette, which runs during the Add-On's Initialize.
+            std::vector<char> content;
+            try {
+                content = DownloadFileContent (kv.second, headers);
+            } catch (const GS::Exception& e) {
+                ACAPI_WriteReport ("Tapir: Failed to download " + repoLoc + ": " + GetExceptionText (e), false);
+                continue;
+            } catch (...) {
+                ACAPI_WriteReport ("Tapir: Failed to download " + repoLoc, false);
+                continue;
+            }
             IO::RelativeLocation relLoc = repoRelativeLoc;
             relLoc.Append (IO::RelativeLocation (kv.first));
             const IO::Location fileLoc = SaveBuiltInScript (tapirTempFolder, relLoc, content);
