@@ -4113,8 +4113,8 @@ GS::Optional<GS::UniString> CreateMEPSystemsCommand::GetInputParametersSchema ()
                             "description": "Name. If overwriteExisting is true, then the existing MEP System with the given name will be overwritten."
                         },
                         "domain": {
-                            "type": "string",
-                            "description": "Ventilation, Piping, or CableCarrier. Only elements belonging to the same domain can use this system."
+                            "$ref": "#/MEPDomain",
+                            "description": "Only elements belonging to the same domain can use this system."
                         },
                         "contourPen": {
                             "type": "integer",

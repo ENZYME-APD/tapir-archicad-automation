@@ -134,7 +134,7 @@
         "description": "The details of an MEP routing element.",
         "properties": {
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
@@ -212,7 +212,7 @@
                 "type": "number"
             },
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
@@ -1149,8 +1149,7 @@
                 "type": "array",
                 "description": "The domain(s) this system belongs to. Archicad 29+ allows only one; earlier versions may report several.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                    "$ref": "#/MEPDomain"
                 }
             },
             "contourPen": {
@@ -2540,6 +2539,41 @@
                     "windowType"
                 ]
             }
+        ]
+    },
+    "MEPDomain": {
+        "type": "string",
+        "description": "The MEP domain.",
+        "enum": [
+            "Ventilation",
+            "Piping",
+            "CableCarrier"
+        ]
+    },
+    "MEPDomainOrUnknown": {
+        "type": "string",
+        "description": "The reported MEP domain. Unknown indicates that the domain could not be determined.",
+        "enum": [
+            "Ventilation",
+            "Piping",
+            "CableCarrier",
+            "Unknown"
+        ]
+    },
+    "MEPElementType": {
+        "type": "string",
+        "enum": [
+            "RoutingElement",
+            "RigidSegment",
+            "Elbow",
+            "Transition",
+            "Branch",
+            "Terminal",
+            "Accessory",
+            "Equipment",
+            "Fitting",
+            "FlexibleSegment",
+            "TakeOff"
         ]
     },
     "LengthType": {

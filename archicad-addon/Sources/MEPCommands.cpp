@@ -172,16 +172,14 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "Optional filter for the MEP element types.",
                 "items": {
-                    "type": "string",
-                    "enum": ["RoutingElement", "RigidSegment", "Elbow", "Transition", "Branch", "Terminal", "Accessory", "Equipment", "Fitting", "FlexibleSegment", "TakeOff"]
+                    "$ref": "#/MEPElementType"
                 }
             },
             "domains": {
                 "type": "array",
                 "description": "Optional filter for the MEP domains.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                    "$ref": "#/MEPDomain"
                 }
             }
         },
@@ -205,7 +203,7 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetRawResponseSchema () const
                             "$ref": "#/ElementId"
                         },
                         "type": {
-                            "type": "string",
+                            "$ref": "#/MEPElementType",
                             "description": "The type of the MEP element."
                         },
                         "domain": {
@@ -517,7 +515,7 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "type": "string"
+                            "$ref": "#/MEPDomainOrUnknown"
                         },
                         "mepSystemId": {
                             "$ref": "#/AttributeId"
