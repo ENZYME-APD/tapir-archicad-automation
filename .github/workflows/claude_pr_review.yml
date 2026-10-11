@@ -334,7 +334,7 @@ jobs:
                 node(id: $id) {
                   ... on PullRequestReviewThread {
                     isResolved
-                    pullRequest { number repository { nameWithOwner } }
+                    pullRequest { number isCrossRepository repository { nameWithOwner } }
                     comments(first: 1) { nodes { author { login } } }
                   }
                 }
@@ -353,8 +353,23 @@ jobs:
               echo "skip $id: already resolved"
               continue
             fi
-            gh api graphql -F id="$id" -f query='
-              mutation($id: ID!) { resolveReviewThread(input: {threadId: $id}) { thread { isResolved } } }' >/dev/null
+            # GitHub refuses the workflow token resolveReviewThread on pull
+            # requests from forks ("Resource not accessible by integration"),
+            # even under pull_request_target with pull-requests: write (#779).
+            # There it is a known limit, not a broken review: warn and leave
+            # the thread open. On this repository's own branches a refusal is
+            # unexpected and still fails the step.
+            if ! err=$(gh api graphql -F id="$id" -f query='
+              mutation($id: ID!) { resolveReviewThread(input: {threadId: $id}) { thread { isResolved } } }' 2>&1 >/dev/null); then
+              err=$(tr '\n' ' ' <<<"$err")
+              if [ "$(jq -r '.pullRequest.isCrossRepository' <<<"$thread")" = "true" ]; then
+                echo "::warning::could not resolve $id on this pull request from a fork ($err) - GitHub does not let the workflow token resolve threads there; left open"
+              else
+                echo "::error::could not resolve $id ($err) - left open"
+                failed=1
+              fi
+              continue
+            fi
             echo "resolved $id"
           done
           exit "$failed"

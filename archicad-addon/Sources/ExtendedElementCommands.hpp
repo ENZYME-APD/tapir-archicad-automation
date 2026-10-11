@@ -16,6 +16,15 @@ void BuildMeshSublinesMemoFromGeometry (
     API_ElementMemo& memo,
     const GS::Array<GS::ObjectState>& sublines);
 
+// Shared by CreateSlabsCommand (ElementCreationCommands.cpp) and ModifySlabsCommand: applies the
+// 'structureType' / 'buildingMaterialId' / 'compositeId' fields of details to element.slab.
+// mask may be nullptr on create. Returns an error text on an invalid or conflicting selection.
+GS::Optional<GS::UniString> ApplySlabStructure (
+    API_Element& element,
+    API_Element* mask,
+    const GS::ObjectState& details,
+    bool& changed);
+
 class CreateWallsCommand : public CreateElementsCommandBase
 {
 public:

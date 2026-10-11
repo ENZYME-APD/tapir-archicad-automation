@@ -47,7 +47,7 @@ jobs:
         python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnFile "${{ runner.temp }}/TapirAddOn_AC29_Mac.bundle" --versions 29 --archicadPort 19723
     - name: Install PyInstaller
       if: runner.os == 'Windows'
-      run: pip install pyinstaller truststore certifi
+      run: pip install -r archicad-addon/Installer/requirements-build.txt
     # The Mac steps below build with the universal2 Python from the env
     # above, so that the app also runs on Intel Macs.
     - name: Setup Universal2 Python Mac
@@ -64,10 +64,27 @@ jobs:
     - name: Install PyInstaller Mac
       if: runner.os == 'macOS'
       run: |
-        "$UNIVERSAL2_PYTHON" -m pip install pyinstaller truststore certifi
+        "$UNIVERSAL2_PYTHON" -m pip install -r archicad-addon/Installer/requirements-build.txt
+    # The same version resource and build command as the release pipeline,
+    # whose SignPath configuration requires ProductName "Tapir" and
+    # ProductVersion = the version in tools/package_info.json. No signing here.
+    - name: Write Version Resource Windows
+      if: runner.os == 'Windows'
+      run: |
+        python archicad-addon/Installer/write_version_file.py build/TapirInstaller_version.txt
+        if ($LASTEXITCODE -ne 0) { exit 1 }
     - name: Build Executable Windows
       if: runner.os == 'Windows'
-      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
+    - name: Check Version Resource Windows
+      if: runner.os == 'Windows'
+      run: |
+        $version = (Get-Content tools/package_info.json -Raw | ConvertFrom-Json).version
+        $info = (Get-Item dist/TapirInstaller.exe).VersionInfo
+        if ($info.ProductName -ne 'Tapir' -or $info.ProductVersion -ne $version) {
+          Write-Output "::error::ProductName '$($info.ProductName)' / ProductVersion '$($info.ProductVersion)', expected 'Tapir' / '$version'."
+          exit 1
+        }
     - name: Build Executable Mac
       if: runner.os == 'macOS'
       run: |

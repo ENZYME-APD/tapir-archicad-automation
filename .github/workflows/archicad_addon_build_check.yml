@@ -29,11 +29,8 @@ jobs:
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip
           - acVersion: 29
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip
-          # Release candidate DevKit, not on the GitHub releases yet: switch
-          # to the final one (here and in archicad_addon.yml) when it is
-          # published.
           - acVersion: 30
-            devKitUrl: https://dl.graphisoft.com/release-candidate/30/API.Development.Kit.WIN.30.2000.zip
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.WIN.30.3000.zip
     runs-on: [ windows-2022 ]
     steps:
     - name: Checkout Repo
@@ -71,9 +68,8 @@ jobs:
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.MAC.28.3001.zip
           - acVersion: 29
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.MAC.29.3000.zip
-          # Release candidate DevKit - see the AC30 entry of build_win.
           - acVersion: 30
-            devKitUrl: https://dl.graphisoft.com/release-candidate/30/API.Development.Kit.MAC.30.2000.zip
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.MAC.30.3000.zip
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
     steps:
     - name: Checkout repo
