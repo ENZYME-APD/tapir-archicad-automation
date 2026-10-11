@@ -197,26 +197,7 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "The MEP elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "type": {
-                            "$ref": "#/MEPElementType",
-                            "description": "The type of the MEP element."
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "type",
-                        "domain"
-                    ]
+                    "$ref": "#/MEPElement"
                 }
             }
         },
@@ -512,20 +493,7 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
                 "type": "array",
                 "description": "The distribution systems of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomainOrUnknown"
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["domain", "elements"]
+                    "$ref": "#/MEPDistributionSystem"
                 }
             }
         },
@@ -597,8 +565,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                     "type": "object",
                     "properties": {
                         "domain": {
-                            "type": "string",
-                            "enum": ["Ventilation", "Piping", "CableCarrier"]
+                            "$ref": "#/MEPDomain"
                         },
                         "nodeCoordinates": {
                             "type": "array",
@@ -617,9 +584,8 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                             "description": "Optional cross section height applied to all segments."
                         },
                         "crossSectionShape": {
-                            "type": "string",
-                            "description": "Optional cross section shape applied to all segments.",
-                            "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "Optional; applied to all segments."
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
@@ -790,13 +756,11 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                     "type": "object",
                     "properties": {
                         "type": {
-                            "type": "string",
-                            "enum": ["Terminal", "Accessory", "Equipment", "Fitting"]
+                            "$ref": "#/MEPComponentType"
                         },
                         "domain": {
-                            "type": "string",
-                            "description": "The MEP domain of the element. Required for all types except Equipment.",
-                            "enum": ["Ventilation", "Piping", "CableCarrier"]
+                            "$ref": "#/MEPDomain",
+                            "description": "Required for all types except Equipment."
                         },
                         "position": {
                             "$ref": "#/Coordinate3D"
@@ -967,9 +931,8 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "description": "New cross section height applied to all segments."
                         },
                         "crossSectionShape": {
-                            "type": "string",
-                            "description": "New cross section shape applied to all segments.",
-                            "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "The new shape is applied to all segments."
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
@@ -1254,7 +1217,7 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
 }
 
 GetMEPPreferenceTablesCommand::GetMEPPreferenceTablesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -1269,9 +1232,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "domain": {
-                "type": "string",
-                "description": "The MEP domain of the segment preference tables.",
-                "enum": ["Piping", "Ventilation"]
+                "$ref": "#/MEPPreferenceTableDomain"
             }
         },
         "additionalProperties": false,
@@ -1288,25 +1249,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
                 "type": "array",
                 "description": "The circular segment preference tables of the domain.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": { "type": "string" },
-                        "rows": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "referenceId": { "type": "integer" },
-                                    "diameter": { "type": "number" },
-                                    "description": { "type": "string" }
-                                },
-                                "required": ["referenceId", "diameter"],
-                                "additionalProperties": false
-                            }
-                        }
-                    },
-                    "required": ["guid", "rows"],
-                    "additionalProperties": false
+                    "$ref": "#/MEPPreferenceTable"
                 }
             }
         },
