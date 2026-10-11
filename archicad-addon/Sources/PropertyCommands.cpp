@@ -1976,7 +1976,7 @@ GS::Optional<GS::UniString> ImportPropertiesXmlCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "xml": { "type": "string", "description": "A Property Manager export (XML) to import." },
-            "conflictPolicy": { "type": "string", "enum": [ "append", "replace", "skip" ], "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one." }
+            "conflictPolicy": { "$ref": "#/PropertyImportConflictPolicy" }
         },
         "additionalProperties": false,
         "required": [ "xml", "conflictPolicy" ]

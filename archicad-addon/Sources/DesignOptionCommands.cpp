@@ -418,14 +418,7 @@ GS::Optional<GS::UniString> GetDesignOptionForElementsCommand::GetRawResponseSch
                             "description": "The identifier of the element."
                         },
                         "type": {
-                            "type": "string",
-                            "description": "The type of the associated design option.",
-                            "enum": [
-                                "NotExistingElement",
-                                "MissingDesignOption",
-                                "NotLinkedToAnyDesignOption",
-                                "LinkedToDesignOption"
-                            ]
+                            "$ref": "#/DesignOptionLinkType"
                         },
                         "designOption": {
                             "$ref": "#/DesignOptionDetails"
