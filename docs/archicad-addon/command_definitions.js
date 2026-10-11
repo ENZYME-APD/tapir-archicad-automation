@@ -94,7 +94,7 @@ var gCommands = [{
             },{
                 "name": "ChangeWindow",
                 "version": "1.3.1",
-                "description": "Changes the current (active) window to the given window.",
+                "description": "Changes the current (active) window to the given window. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
                 "inputScheme": {
         "$ref": "#/NavigatorItemIdOrDatabaseIdAndWindowType"
     },
@@ -1004,6 +1004,10 @@ var gCommands = [{
                             "elevation"
                         ]
                     },
+                    "positionInProject": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
+                    },
                     "geoReferencingParameters": {
                         "type": "object",
                         "properties": {
@@ -1061,6 +1065,7 @@ var gCommands = [{
                 "additionalProperties": false,
                 "required": [
                     "position",
+                    "positionInProject",
                     "geoReferencingParameters"
                 ]
             }
@@ -1124,6 +1129,10 @@ var gCommands = [{
                         "additionalProperties": false,
                         "required": [
                         ]
+                    },
+                    "positionInProject": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
                     },
                     "geoReferencingParameters": {
                         "type": "object",
@@ -1432,7 +1441,7 @@ var gCommands = [{
                         },
                         "floorPlanPolygons": {
                             "type": "array",
-                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Available for elements with a cut-fill representation (walls, columns, beams). Absent when the element has no cut fill or when the floor plan database is not accessible.",
+                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -7046,7 +7055,7 @@ var gCommands = [{
             },{
                 "name": "CreateMEPSystems",
                 "version": "1.5.4",
-                "description": "Creates or overwrites MEP System attributes based on the given parameters.",
+                "description": "Creates or overwrites MEP System attributes (domain, pens, fill, center line type, surface and insulation surface) based on the given parameters.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -7095,6 +7104,14 @@ var gCommands = [{
                         },
                         "centerLineTypeId": {
                             "description": "Identifier of the center line type attribute.",
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "materialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the 3D model of the elements of the system.",
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "insulationMaterialId": {
+                            "description": "Identifier of the surface (material) attribute applied to the insulation of the elements of the system.",
                             "$ref": "#/AttributeIdArrayItem"
                         }
                     },
@@ -7990,7 +8007,7 @@ var gCommands = [{
             },{
                 "name": "GetMEPSystems",
                 "version": "1.5.4",
-                "description": "Returns the details of the given MEP System attributes.",
+                "description": "Returns the details of the given MEP System attributes (domain, pens, fill, center line type, surface and insulation surface).",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -8002,7 +8019,7 @@ var gCommands = [{
                 "description": "Names of the fields to return for each MEP System. If omitted, every field is returned.",
                 "items": {
                     "type": "string",
-                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId"]
+                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId", "materialId", "insulationMaterialId"]
                 }
             }
         },
@@ -8460,6 +8477,66 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "elementIFCProperties"
+        ]
+    }
+            },{
+                "name": "SetIFCPropertiesOfElements",
+                "version": "1.7.0",
+                "description": "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementIFCPropertyValues": {
+                "type": "array",
+                "description": "The IFC property values to set. Only single value (IfcPropertySingleValue) properties are supported.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "propertySetName": {
+                            "type": "string",
+                            "description": "The name of the property set, for example Pset_DoorCommon. Custom property set names are also accepted."
+                        },
+                        "propertyName": {
+                            "type": "string",
+                            "description": "The name of the property, for example FireRating."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure."
+                        },
+                        "value": {
+                            "description": "The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "propertySetName",
+                        "propertyName",
+                        "type",
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCPropertyValues"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
         ]
     }
             }]
@@ -11193,7 +11270,7 @@ var gCommands = [{
             },{
                 "name": "GetMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data and nodes. Available from Archicad 28.",
+                "description": "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data (shape, size, preference table and reference id) and nodes. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -11283,7 +11360,7 @@ var gCommands = [{
             },{
                 "name": "CreateMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data and MEP system. Available from Archicad 28.",
+                "description": "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id) and MEP system. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -11320,7 +11397,11 @@ var gCommands = [{
                         },
                         "crossSectionReferenceId": {
                             "type": "integer",
-                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections)."
+                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "mepSystemId": {
                             "$ref": "#/AttributeId",
@@ -11414,7 +11495,7 @@ var gCommands = [{
             },{
                 "name": "ModifyMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Modifies the given MEP routing elements: MEP system, cross section data of all segments and node positions. Available from Archicad 28.",
+                "description": "Modifies the given MEP routing elements: MEP system, cross section data (shape, size, preference table and reference id) of all segments and node positions. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -11442,6 +11523,14 @@ var gCommands = [{
                             "type": "string",
                             "description": "New cross section shape applied to all segments.",
                             "enum": ["Rectangular", "Circular", "Oval", "UShape"]
+                        },
+                        "crossSectionReferenceId": {
+                            "type": "integer",
+                            "description": "New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use."
+                        },
+                        "preferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
                         "nodePositions": {
                             "type": "array",
