@@ -398,7 +398,7 @@ static bool IsWindowOrDoor (const API_Elem_Head& header)
 }
 
 // A window's or door's marker (the Window/Door Marker library part with its own parameters) is
-// a separate element the opening links to with API_WindowType::markGuid. A Favorite keeps it in
+// a separate element the opening links to with API_OpeningBaseType::markGuid. A Favorite keeps it in
 // API_Favorite::elementMarker/memoMarker - ApplyWindowOrDoorFavoriteToDefaults in
 // ExtendedElementCommands.cpp reads it back from there - so a Favorite captured without them
 // exported with an empty marker section, unlike one made in the Favorites palette (#812). The
@@ -410,7 +410,7 @@ static GS::Optional<GS::ObjectState> CaptureOpeningMarker (API_Favorite& favorit
         return {};
     }
 
-    const API_Guid markerGuid = favorite.element.window.markGuid;
+    const API_Guid markerGuid = favorite.element.window.openingBase.markGuid;
     if (markerGuid == APINULLGuid) {
         return {};
     }
@@ -770,7 +770,7 @@ static bool MemoCarriesGeometry (const API_Elem_Head& header)
 
 // ACAPI_Element_ChangeParameters returns APIERR_REFUSEDPAR for a Window or Door, even with a
 // Favorite made from that very window (#812). The full mask it is given covers
-// API_WindowType::owner and markGuid as well - the links to the wall and to the marker, which
+// API_WindowType::owner and openingBase.markGuid as well - the links to the wall and to the marker, which
 // no Favorite can supply. So an opening is changed with ACAPI_Element_Change instead, the call
 // SetGDLParametersOfElements and ChangeDetailsOfElements already make on openings: the
 // Favorite's whole window record and its parameters are put onto the target's own header,
@@ -782,7 +782,7 @@ static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_F
     API_Element element = favorite.element;
     element.header = targetElement.header;
     element.window.owner = targetElement.window.owner;
-    element.window.markGuid = targetElement.window.markGuid;
+    element.window.openingBase.markGuid = targetElement.window.openingBase.markGuid;
     element.window.objLoc = targetElement.window.objLoc;
     element.window.lower = targetElement.window.lower;
     element.window.openingBase.reflected = targetElement.window.openingBase.reflected;
