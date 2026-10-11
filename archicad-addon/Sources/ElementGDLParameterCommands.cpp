@@ -1180,8 +1180,11 @@ GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
 
 // --- Marker parameters of windows and doors ---
 
-// Reads a window or a door together with its Main Marker sub-element, the way
-// PrepareWindowOrDoorDefaults reads the tool default with ACAPI_Element_GetDefaultsExt.
+// Reads a window or a door together with its Main Marker sub-element. There is no
+// ACAPI_Element_GetExt for a placed element (only ACAPI_Element_GetDefaultsExt for the tool
+// default): the marker is a separate object element the opening links to with
+// openingBase.markGuid, so it is read the way the opening itself is, with ACAPI_Element_Get
+// and ACAPI_Element_GetMemo. `memo` is left empty: none of the opening's own memo is needed.
 // `memo` and `marker.memo` are the caller's to dispose, whether or not this succeeds.
 static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, GS::UniString& errMessage)
 {
@@ -1202,9 +1205,18 @@ static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Elemen
         return APIERR_BADELEMENTTYPE;
     }
 
-    // Only the marker is needed: the empty memo mask asks for none of the opening's own memo.
+    const API_Guid markerGuid = element.window.openingBase.markGuid;
+    if (markerGuid == APINULLGuid) {
+        errMessage = GS::UniString::Printf ("Element with guid %T has no marker.", APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_GENERAL;
+    }
+
     marker.subType = APISubElement_MainMarker;
-    err = ACAPI_Element_GetExt (&element, &memo, 0, 1UL, &marker);
+    marker.subElem.header.guid = markerGuid;
+    err = ACAPI_Element_Get (&marker.subElem);
+    if (err == NoError) {
+        err = ACAPI_Element_GetMemo (markerGuid, &marker.memo, APIMemoMask_AddPars);
+    }
     if (err != NoError) {
         errMessage = GS::UniString::Printf ("Failed to get the marker of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
         return err;
