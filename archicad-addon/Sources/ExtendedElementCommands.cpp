@@ -3547,25 +3547,27 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                            "description": "Optional name of a Wall favorite to base the new element on. Its settings (structure, reference line location, top link, offsets, ...) are applied first, then the explicitly given fields override them. With a favorite only begCoordinate and endCoordinate are needed."
                         },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
                         "zCoordinate": { "type": "number", "description": "Absolute Z when floorIndex is absent; bottomOffset relative to the floor when floorIndex is provided." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Optional explicit height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or the tool default. When omitted, the height and top link of the favorite (or of the Wall tool defaults) are kept." },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
-                            "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the wall tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply."
+                            "description": "Optional thickness. When omitted, the favorite's or the Wall tool default's thickness is kept. Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the favorite (or the wall tool default), which may be a composite; send structureType 'Basic' for the thickness to apply."
                         },
-                        "offset": { "type": "number" },
+                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
-                            "$ref": "#/WallReferenceLineLocation"
+                            "$ref": "#/WallReferenceLineLocation",
+                            "description": "Optional. When omitted, the favorite's or the Wall tool default's reference line location is kept. The Core* values only have an effect on a Composite or Profile wall."
                         },
                         "structureType": {
-                            "$ref": "#/WallStructureType"
+                            "$ref": "#/WallStructureType",
+                            "description": "Optional. When neither this nor one of the attribute ids below is given, the favorite's or the Wall tool default's structure is kept."
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
@@ -3642,7 +3644,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["begCoordinate", "endCoordinate", "height", "thickness"]
+                    "required": ["begCoordinate", "endCoordinate"]
                 }
             }
         },
@@ -3667,12 +3669,15 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     }
 
     double zCoordinate = 0.0;
-    double height = 0.0;
-    double thickness = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    parameters.Get ("height", height);
-    parameters.Get ("thickness", thickness);
 
+    // The element arrives filled from the Wall tool defaults, with the item's favorite
+    // (favoriteName) already applied to them by CreateElementsCommandBase. Only the
+    // fields the item actually names are written here, so a favorite's composite,
+    // reference line location, top link and offsets survive into the new wall (#766):
+    // forcing Basic / Center / relativeTopStory 0 here used to silently undo them.
+    // The plan outline is the one exception: a Poly wall needs a polygon memo that
+    // this command does not build, so the outline is always the plain Normal one.
     element.wall.type = APIWtyp_Normal;
     element.wall.begC = begCoordinate;
     element.wall.endC = endCoordinate;
@@ -3680,10 +3685,17 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     if (arcAngle.HasValue ()) {
         element.wall.angle = arcAngle.Get ();
     }
-    element.wall.height = height;
-    element.wall.relativeTopStory = 0;
-    element.wall.thickness = thickness;
-    element.wall.referenceLineLocation = APIWallRefLine_Center;
+    // An explicit height replaces a top link, as in CreateColumns: with a non-zero
+    // relativeTopStory Archicad recomputes the height from the story elevations.
+    auto height = GetOptionalDouble (parameters, "height");
+    if (height.HasValue ()) {
+        element.wall.height = height.Get ();
+        element.wall.relativeTopStory = 0;
+    }
+    auto thickness = GetOptionalDouble (parameters, "thickness");
+    if (thickness.HasValue ()) {
+        element.wall.thickness = thickness.Get ();
+    }
     GS::UniString referenceLineLocation;
     if (parameters.Get ("referenceLineLocation", referenceLineLocation)) {
         if (referenceLineLocation == "Outside") {
@@ -3700,15 +3712,13 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
             element.wall.referenceLineLocation = APIWallRefLine_CoreInside;
         }
     }
-    element.wall.modelElemStructureType = API_BasicStructure;
-    element.wall.offset = 0.0;
 
     auto offset = GetOptionalDouble (parameters, "offset");
-
     if (offset.HasValue ()) {
         element.wall.offset = offset.Get ();
     }
 
+    // The home story always comes from floorIndex/zCoordinate, never from the favorite.
     Int32 explicitFloorIndex = -1;
     if (parameters.Get ("floorIndex", explicitFloorIndex)) {
         element.header.floorInd   = static_cast<short> (explicitFloorIndex);
