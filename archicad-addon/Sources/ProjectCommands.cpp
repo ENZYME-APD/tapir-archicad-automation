@@ -1562,6 +1562,203 @@ GS::ObjectState SaveProjectAsArchiveCommand::Execute (const GS::ObjectState& par
     return CreateSuccessfulExecutionResult ();
 }
 
+SaveCurrentWindowAsImageCommand::SaveCurrentWindowAsImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveCurrentWindowAsImageCommand::GetName () const
+{
+    return "SaveCurrentWindowAsImage";
+}
+
+GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "imageFilePath": {
+                "type": "string",
+                "description": "Absolute path of the image file to write. An existing file is overwritten."
+            },
+            "format": {
+                "type": "string",
+                "description": "Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).",
+                "enum": ["png", "jpg", "bmp", "tiff", "gif"]
+            },
+            "colorDepth": {
+                "type": "string",
+                "description": "Optional, trueColor by default. The color depth of the image, as in the Save as picture dialog.",
+                "enum": ["blackAndWhite", "16Colors", "256Colors", "16Grays", "256Grays", "trueColor", "trueColorWithAlpha"]
+            },
+            "dithered": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the image is dithered when its color depth drops colors."
+            },
+            "entireDrawing": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the image covers the entire drawing of a 2D window instead of its current zoom, as the Entire Drawing option of the Save as picture dialog does."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "imageFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "imageFilePath": {
+                "type": "string",
+                "description": "The path of the written image file."
+            },
+            "zoom": {
+                "$ref": "#/Zoom",
+                "description": "The zoom of the window the image shows, as GetView2DTransformations reports it. Absent for the 3D window."
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The orientation of the window in radian, as GetView2DTransformations reports it. Absent for the 3D window."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "imageFilePath"
+        ]
+    })";
+}
+
+static bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID)
+{
+    if (format == "png") {
+        fileTypeID = APIFType_PNGFile;
+    } else if (format == "jpg") {
+        fileTypeID = APIFType_JPEGFile;
+    } else if (format == "bmp") {
+        fileTypeID = APIFType_BMPFile;
+    } else if (format == "tiff") {
+        fileTypeID = APIFType_TIFFFile;
+    } else if (format == "gif") {
+        fileTypeID = APIFType_GIFFile;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID)
+{
+    const UIndex dotIndex = imageFilePath.FindLast (GS::UniChar ('.'));
+    if (dotIndex == MaxUIndex) {
+        return false;
+    }
+    GS::UniString extension (imageFilePath.GetSubstring (dotIndex + 1, imageFilePath.GetLength () - dotIndex - 1));
+    extension.SetToLowerCase ();
+    if (extension == "jpeg") {
+        extension = "jpg";
+    } else if (extension == "tif") {
+        extension = "tiff";
+    }
+    return ParseImageFileType (extension, fileTypeID);
+}
+
+static bool ParseColorDepth (const GS::UniString& colorDepth, API_ColorDepthID& colorDepthID)
+{
+    if (colorDepth == "blackAndWhite") {
+        colorDepthID = APIColorDepth_BW;
+    } else if (colorDepth == "16Colors") {
+        colorDepthID = APIColorDepth_16;
+    } else if (colorDepth == "256Colors") {
+        colorDepthID = APIColorDepth_256;
+    } else if (colorDepth == "16Grays") {
+        colorDepthID = APIColorDepth_16Gray;
+    } else if (colorDepth == "256Grays") {
+        colorDepthID = APIColorDepth_256Gray;
+    } else if (colorDepth == "trueColor") {
+        colorDepthID = APIColorDepth_RGB;
+    } else if (colorDepth == "trueColorWithAlpha") {
+        colorDepthID = APIColorDepth_RGBA;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString imageFilePath;
+    if (!parameters.Get ("imageFilePath", imageFilePath) || imageFilePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "imageFilePath is missing.");
+    }
+    IO::Location location (imageFilePath);
+
+    API_FTypeID fileTypeID = APIFType_PNGFile;
+    GS::UniString format;
+    if (parameters.Get ("format", format)) {
+        if (!ParseImageFileType (format, fileTypeID)) {
+            return CreateErrorResponse (APIERR_BADPARS, "format must be one of png, jpg, bmp, tiff and gif.");
+        }
+    } else if (!ParseImageFileTypeFromExtension (imageFilePath, fileTypeID)) {
+        return CreateErrorResponse (APIERR_BADPARS, "format is missing and the extension of imageFilePath is not one of .png, .jpg, .jpeg, .bmp, .tif, .tiff and .gif.");
+    }
+
+    API_ColorDepthID colorDepthID = APIColorDepth_RGB;
+    GS::UniString colorDepth;
+    if (parameters.Get ("colorDepth", colorDepth) && !ParseColorDepth (colorDepth, colorDepthID)) {
+        return CreateErrorResponse (APIERR_BADPARS, "colorDepth is not one of the allowed values.");
+    }
+
+    bool dithered = false;
+    bool entireDrawing = false;
+    parameters.Get ("dithered", dithered);
+    parameters.Get ("entireDrawing", entireDrawing);
+
+    // The picture save renders the front window: the 2D content of a model or
+    // layout window, or the 3D window. view2D tells the two apart.
+    API_WindowInfo currentWindow = {};
+    const GSErrCode windowErr = ACAPI_Window_GetCurrentWindow (&currentWindow);
+    if (windowErr != NoError) {
+        return CreateErrorResponse (windowErr, "Failed to get the current window.");
+    }
+    const bool view2D = currentWindow.typeID != APIWind_3DModelID;
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = fileTypeID;
+    fileSavePars.file = &location;
+
+    API_SavePars_Picture savePars = {};
+    savePars.colorDepth = colorDepthID;
+    savePars.dithered = dithered;
+    savePars.view2D = view2D;
+    savePars.crop = entireDrawing;
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to save the current window as an image: the current window cannot be saved as a picture (only model, layout and 3D windows can), or the file cannot be written.");
+    }
+
+    GS::ObjectState response ("imageFilePath", imageFilePath);
+    if (view2D) {
+        // The same data GetView2DTransformations reports for the current database,
+        // so a caller can map the pixels of the image back to model coordinates.
+        API_Box zoomBox = {};
+        API_Tranmat tranmat = {};
+        if (ACAPI_View_GetZoom (&zoomBox, &tranmat) == NoError) {
+            response.Add ("zoom", GS::ObjectState (
+                "xMin", zoomBox.xMin,
+                "yMin", zoomBox.yMin,
+                "xMax", zoomBox.xMax,
+                "yMax", zoomBox.yMax));
+            response.Add ("rotation", std::atan2 (tranmat.tmx[4], tranmat.tmx[0]));
+        }
+    }
+    return response;
+}
+
 GetGeoLocationCommand::GetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {
