@@ -133,7 +133,7 @@
         "description": "The details of an MEP routing element.",
         "properties": {
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
@@ -211,7 +211,7 @@
                 "type": "number"
             },
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
@@ -3236,6 +3236,16 @@
             "CableCarrier"
         ]
     },
+    "MEPDomainOrUnknown": {
+        "type": "string",
+        "description": "The reported MEP domain. Unknown indicates that the domain could not be determined.",
+        "enum": [
+            "Ventilation",
+            "Piping",
+            "CableCarrier",
+            "Unknown"
+        ]
+    },
     "MEPElementType": {
         "type": "string",
         "enum": [
@@ -5752,7 +5762,7 @@
                 "$ref": "#/ElementId"
             },
             "type": {
-                "type": "string",
+                "$ref": "#/MEPElementType",
                 "description": "The type of the MEP element."
             },
             "domain": {
@@ -5771,7 +5781,7 @@
         "type": "object",
         "properties": {
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
