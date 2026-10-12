@@ -2489,6 +2489,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap UpdateHotlinks
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdateHotlinks", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ChangeHotlinkNodes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ChangeHotlinkNodes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap ChangeHotlinkInstances
         {
             get {
