@@ -8113,6 +8113,70 @@
             "paragraphCount"
         ]
     },
+    "StairDetails": {
+        "type": "object",
+        "description": "The settings of a Stair element, the ones CreateStairs takes. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "properties": {
+            "stepNum": {
+                "type": "integer",
+                "description": "Number of risers (steps)."
+            },
+            "riserHeight": {
+                "type": "number",
+                "description": "Height of each riser."
+            },
+            "treadDepth": {
+                "type": "number",
+                "description": "Depth (going) of each tread."
+            },
+            "flightWidth": {
+                "type": "number",
+                "description": "Width of the stair flight."
+            },
+            "totalHeight": {
+                "type": "number",
+                "description": "Total height of the stair."
+            },
+            "level": {
+                "type": "number",
+                "description": "Height of the stair base above the home story level."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "Absolute elevation of the stair base."
+            },
+            "finishVisible": {
+                "type": "boolean",
+                "description": "Whether the tread/riser finishes are modeled. If false only the stair structure (e.g. a monolith) is."
+            },
+            "baseLinePoints": {
+                "type": "array",
+                "description": "The baseline polyline the stair is placed along, as given to CreateStairs.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "baseLineArcs": {
+                "type": "array",
+                "description": "The curved segments of the baseline, present only when it has any.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "stepNum",
+            "riserHeight",
+            "treadDepth",
+            "flightWidth",
+            "totalHeight",
+            "level",
+            "zCoordinate",
+            "finishVisible",
+            "baseLinePoints"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -8191,6 +8255,9 @@
             },
             {
                 "$ref": "#/TextDetails"
+            },
+            {
+                "$ref": "#/StairDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
