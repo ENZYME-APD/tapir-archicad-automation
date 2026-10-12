@@ -415,6 +415,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.7",
             "Sets the given GDL parameters of the given elements."
         );
+        err |= RegisterCommand<GetMarkerParametersOfElementsCommand> (
+            elementCommands, "1.7.1",
+            "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window and Door elements. The marker is the stamp drawn next to the opening on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns."
+        );
+        err |= RegisterCommand<SetMarkerParametersOfElementsCommand> (
+            elementCommands, "1.7.1",
+            "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are."
+        );
         err |= RegisterCommand<CreateColumnsCommand> (
             elementCommands, "1.0.3",
             "Creates Column elements based on the given parameters."
