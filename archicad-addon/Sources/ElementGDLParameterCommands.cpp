@@ -563,6 +563,9 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
         if (err == NoError) {
             err = ACAPI_LibraryPart_GetActParameters (&getParams);
+            if (err != NoError) {
+                ACAPI_LibraryPart_CloseParameters ();
+            }
         }
 
         if (err != NoError) {
@@ -683,10 +686,50 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             parameterListAdder (gdlParameterDetails);
         }
         elemGdlParameterListAdder (gdlParameters);
+        // The parameter session opened above stayed open before (only SetGDLParametersOfElements
+        // closed its own); the API pairs every ACAPI_LibraryPart_OpenParameters with a close.
+        ACAPI_LibraryPart_CloseParameters ();
         ACAPI_DisposeAddParHdl (&getParams.params);
     }
 
     return response;
+}
+
+// The parameter list is read again after every write, because the Parameter Script may have
+// changed other parameters with it. The read used to go unchecked: when it fails, getParams.params
+// stays empty and the element would be changed with no parameters at all, so it is an error.
+static GSErrCode ReadParametersAgain (API_GetParamsType& getParams, const API_Guid& elemGuid, GS::UniString& errMessage)
+{
+    ACAPI_DisposeAddParHdl (&getParams.params);
+    const GSErrCode err = ACAPI_LibraryPart_GetActParameters (&getParams);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Failed to read back the GDL parameters of element with guid %T after a write (ACAPI_LibraryPart_GetActParameters)", APIGuidToString (elemGuid).ToPrintf ());
+    }
+    return err;
+}
+
+// Every parameter write ends in one ACAPI_Element_Change, which refuses an element Archicad does
+// not let the user edit either - on a locked layer, locked with Edit > Locking, or in Teamwork not
+// reserved by the user - with a bare error code, whatever the parameter (the one non-editable
+// element of TestProject.pla answers every change with -2130312912, in SetDetailsOfElements too).
+// The reason is reported next to the code, the way DeleteElements does, so the caller does not
+// take the refusal for an invalid parameter or value.
+static GS::UniString GetElementChangeFailureMessage (const API_Elem_Head& elemHead)
+{
+    const GS::UniString guidString = APIGuidToString (elemHead.guid);
+
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = elemHead.layer;
+    if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
+        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because its layer is locked", guidString.ToPrintf ());
+    }
+
+    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
+        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because the element is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)", guidString.ToPrintf ());
+    }
+
+    return GS::UniString::Printf ("The parameters of element with guid %T were set, but Archicad refused to change the element with them (ACAPI_Element_Change failed)", guidString.ToPrintf ());
 }
 
 SetGDLParametersOfElementsCommand::SetGDLParametersOfElementsCommand () :
@@ -799,7 +842,9 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             if (err == NoError) {
                 API_GetParamsType getParams = {};
                 err = ACAPI_LibraryPart_GetActParameters (&getParams);
-                if (err == NoError) {
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to read the GDL parameters of element with guid %T (ACAPI_LibraryPart_GetActParameters)", APIGuidToString (elemGuid).ToPrintf ());
+                } else {
                     const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
                     GS::HashTable<GS::String, API_AddParID> gdlParametersTypeDictionary;
                     GS::HashTable<short, GS::String> gdlParametersIndexNameDictionary;
@@ -825,24 +870,24 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
                                 err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                                if (err == NoError) {
+                                    err = ReadParametersAgain (getParams, elemGuid, errMessage);
+                                }
                                 if (err != NoError) {
                                     break;
                                 }
-
-                                ACAPI_DisposeAddParHdl (&getParams.params);
-                                ACAPI_LibraryPart_GetActParameters (&getParams);
                             }
                             if (err != NoError) {
                                 break;
                             }
                         } else {
                             err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                            if (err == NoError) {
+                                err = ReadParametersAgain (getParams, elemGuid, errMessage);
+                            }
                             if (err != NoError) {
                                 break;
                             }
-
-                            ACAPI_DisposeAddParHdl (&getParams.params);
-                            ACAPI_LibraryPart_GetActParameters (&getParams);
                         }
                     }
 
@@ -883,6 +928,9 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
                         memo.params = getParams.params;
                         err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+                        if (err != NoError) {
+                            errMessage = GetElementChangeFailureMessage (element.header);
+                        }
                     }
                 }
                 ACAPI_LibraryPart_CloseParameters ();
