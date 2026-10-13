@@ -1,5 +1,6 @@
 #include "AttributeCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "GSUnID.hpp"
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
 #include "VectorImageIterator.hpp"
@@ -2755,23 +2756,19 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
             attr.header.uniStringNamePtr = &name;
         }
 
-        SetTypeSpecificParameters (data, attr, attrDef);
-
-        if (doesExist) {
-            GSErrCode err = ACAPI_Attribute_Modify (&attr, &attrDef);
-            if (err != NoError) {
-                attributeIds (CreateErrorResponse (err, "Failed to modify."));
-                continue;
-            }
-        } else {
-            GSErrCode err = ACAPI_Attribute_Create (&attr, &attrDef);
-            if (err != NoError) {
-                attributeIds (CreateErrorResponse (err, "Failed to create."));
-                continue;
-            }
+        const GS::Optional<GS::ObjectState> parameterError = SetTypeSpecificParameters (data, attr, attrDef);
+        if (parameterError.HasValue ()) {
+            ACAPI_DisposeAttrDefsHdls (&attrDef);
+            attributeIds (*parameterError);
+            continue;
         }
 
-	    ACAPI_DisposeAttrDefsHdls (&attrDef);
+        const GSErrCode err = doesExist ? ACAPI_Attribute_Modify (&attr, &attrDef) : ACAPI_Attribute_Create (&attr, &attrDef);
+        ACAPI_DisposeAttrDefsHdls (&attrDef);
+        if (err != NoError) {
+            attributeIds (CreateErrorResponse (err, doesExist ? "Failed to modify." : "Failed to create."));
+            continue;
+        }
 
         attributeIds (CreateAttributeIdObjectState (attr.header.guid));
     }
@@ -2891,7 +2888,7 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
     })";
 }
 
-void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
+GS::Optional<GS::ObjectState> CreateBuildingMaterialsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
 {
     static GS::UniString id;
     if (parameters.Get ("id", id)) {
@@ -2974,6 +2971,8 @@ void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (const GS::Object
         else
             attribute.buildingMaterial.cutFillOrientation = APIFillOrientation_ProjectOrigin;
     }
+
+    return {};
 }
 
 CreateLayersCommand::CreateLayersCommand () :
@@ -3040,7 +3039,7 @@ GS::Optional<GS::UniString> CreateLayersCommand::GetInputParametersSchema () con
     })";
 }
 
-void CreateLayersCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
+GS::Optional<GS::ObjectState> CreateLayersCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
 {
     bool hidden;
     if (parameters.Get ("isHidden", hidden)) {
@@ -3067,6 +3066,8 @@ void CreateLayersCommand::SetTypeSpecificParameters (const GS::ObjectState& para
     }
 
     parameters.Get ("intersectionGroupNr", attribute.layer.conClassId);
+
+    return {};
 }
 
 CreateLayerCombinationsCommand::CreateLayerCombinationsCommand () :
@@ -3142,7 +3143,7 @@ static API_LayerStat DefaultLayerStat ()
     return layerStat;
 }
 
-void CreateLayerCombinationsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
+GS::Optional<GS::ObjectState> CreateLayerCombinationsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
 {
     GS::Array<GS::ObjectState> layers;
     parameters.Get ("layers", layers);
@@ -3233,6 +3234,8 @@ void CreateLayerCombinationsCommand::SetTypeSpecificParameters (const GS::Object
     if (hasExistingDef) {
         ACAPI_DisposeAttrDefsHdls (&existingDef);
     }
+
+    return {};
 }
 
 CreateLinesCommand::CreateLinesCommand () :
@@ -3317,7 +3320,7 @@ GS::Optional<GS::UniString> CreateLinesCommand::GetInputParametersSchema () cons
     })";
 }
 
-void CreateLinesCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
+GS::Optional<GS::ObjectState> CreateLinesCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
 {
     bool scaleWithPlan = false;
     if (parameters.Get ("scaleWithPlan", scaleWithPlan)) {
@@ -3352,7 +3355,7 @@ void CreateLinesCommand::SetTypeSpecificParameters (const GS::ObjectState& param
     // default, so a brand new line with no lineType still correctly comes out Solid).
     GS::UniString lineType;
     if (!parameters.Get ("lineType", lineType)) {
-        return;
+        return {};
     }
 
     if (lineType == "Dashed") {
@@ -3431,6 +3434,8 @@ void CreateLinesCommand::SetTypeSpecificParameters (const GS::ObjectState& param
     } else {
         attribute.linetype.type = APILine_SolidLine;
     }
+
+    return {};
 }
 
 CreateFillsCommand::CreateFillsCommand () :
@@ -3917,11 +3922,11 @@ GS::Optional<GS::UniString> CreateZoneCategoriesCommand::GetInputParametersSchem
                         },
                         "stampName": {
                             "type": "string",
-                            "description": "Document name of the zone stamp library part (GSM) to use, e.g. the value shown as StampDocumentName in an Attribute Manager XML export. Only used together with stampMainGuid/stampRevGuid; ignored otherwise."
+                            "description": "Document name of the zone stamp library part (GSM) to use, e.g. the value returned by GetZoneCategories or shown as StampDocumentName in an Attribute Manager XML export. Only used together with stampMainGuid/stampRevGuid; ignored otherwise."
                         },
                         "stampMainGuid": {
                             "type": "string",
-                            "description": "Main GUID of the zone stamp library part to use, e.g. the value shown as MainGuid in an Attribute Manager XML export (can be copied from an existing Zone Category obtained another way). If omitted, the stamp is copied from the Zone Category being overwritten, or from the project's first Zone Category when creating a new one."
+                            "description": "Main GUID of the zone stamp library part to use, e.g. the value returned by GetZoneCategories for an existing Zone Category or shown as MainGuid in an Attribute Manager XML export. If omitted, the stamp is copied from the Zone Category being overwritten, or from an existing Zone Category of the project when creating a new one."
                         },
                         "stampRevGuid": {
                             "type": "string",
@@ -3946,40 +3951,117 @@ GS::Optional<GS::UniString> CreateZoneCategoriesCommand::GetInputParametersSchem
     })";
 }
 
-void CreateZoneCategoriesCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
+// The default GDL parameters of the zone stamp library part with the given main GUID, or nullptr when the
+// library part is not found in the loaded libraries or its parameters cannot be read. The caller owns the
+// returned handle (ACAPI_DisposeAddParHdl / ACAPI_DisposeAttrDefsHdls). The library part is looked up the same
+// way the element creation commands look up objects, by its unique ID (the "{main}-{revision}" string the
+// API_LibPart::ownUnID field carries) and, when given, by its document name.
+static API_AddParType** GetZoneStampParameters (const API_Guid& stampMainGuid, const API_Guid& stampRevGuid, const GS::uchar_t* stampName)
 {
-    // ACAPI_Attribute_Create/Modify requires zone_addParItems (the zone stamp's GDL parameters) to be filled in
-    // for API_ZoneCatID, otherwise it fails with APIERR_BADPARS. We always seed the stamp reference and its
-    // parameters from an existing Zone Category: the one being overwritten (attribute.header.index is already
-    // resolved at this point), or - when creating a brand new one - the always-present first Zone Category. On
-    // overwrite this just reads back the attribute's own current stamp/parameters, so nothing is lost.
-    API_AttributeIndex templateIndex = IsPositiveAttributeIndex (attribute.header.index) ? attribute.header.index : ACAPI_CreateAttributeIndex (1);
-
-    API_Attribute templateAttr = {};
-    templateAttr.header.typeID = API_ZoneCatID;
-    templateAttr.header.index = templateIndex;
-    if (ACAPI_Attribute_Get (&templateAttr) == NoError) {
-        GS::ucscpy (attribute.zoneCat.stampName, templateAttr.zoneCat.stampName);
-        attribute.zoneCat.stampMainGuid = templateAttr.zoneCat.stampMainGuid;
-        attribute.zoneCat.stampRevGuid = templateAttr.zoneCat.stampRevGuid;
+    API_LibPart libPart = {};
+    libPart.typeID = APILib_RoomID;
+    const GS::UniString unIdStr = GS::UniString::Printf ("{%T}-{%T}", APIGuidToString (stampMainGuid).ToPrintf (), APIGuidToString (stampRevGuid).ToPrintf ());
+    CHTruncate (unIdStr.ToCStr ().Get (), libPart.ownUnID, sizeof (libPart.ownUnID));
+    if (stampName != nullptr) {
+        GS::ucscpy (libPart.docu_UName, stampName);
     }
 
-    ACAPI_Attribute_GetDef (API_ZoneCatID, templateIndex, &attributeDef);
+    const GSErrCode searchErr = ACAPI_LibraryPart_Search (&libPart, false, false);
+    delete libPart.location;
+    if (searchErr != NoError || GS::UnID (libPart.ownUnID).GetMainGuid () != APIGuid2GSGuid (stampMainGuid)) {
+        return nullptr;
+    }
+
+    double a = 0.0;
+    double b = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    if (ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars) != NoError) {
+        if (addPars != nullptr) {
+            ACAPI_DisposeAddParHdl (&addPars);
+        }
+        return nullptr;
+    }
+
+    return addPars;
+}
+
+GS::Optional<GS::ObjectState> CreateZoneCategoriesCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
+{
+    // ACAPI_Attribute_Create/Modify needs a zone stamp (stampName/stampMainGuid/stampRevGuid) and the stamp's GDL
+    // parameters (zone_addParItems) for API_ZoneCatID, otherwise it refuses the whole attribute - that is the
+    // "Failed to create." every CreateZoneCategories call came back with in #838. Both are copied from a template
+    // Zone Category: the one being overwritten (attribute.header.index is already resolved at this point, so this
+    // reads back its own current stamp and parameters and nothing is lost), or - when creating a brand new one -
+    // an existing Zone Category of the project. That template used to be the Zone Category at the fixed index 1.
+    // AC27+ never reuses the index of a deleted attribute, so a project whose original first Zone Category was
+    // deleted (an office template evolved over the years) has nothing at index 1, the lookups failed silently and
+    // Archicad refused the stampless result. Enumerate the project's Zone Categories instead, and report it when
+    // there is nothing to copy from.
+    GS::UniString stampMainGuidStr, stampRevGuidStr;
+    const bool hasExplicitStamp = parameters.Get ("stampMainGuid", stampMainGuidStr) && parameters.Get ("stampRevGuid", stampRevGuidStr);
+    const API_Guid explicitStampMainGuid = hasExplicitStamp ? APIGuidFromString (stampMainGuidStr.ToCStr ()) : APINULLGuid;
+
+    API_Attribute templateAttr = {};
+    bool hasTemplate = false;
+    if (IsPositiveAttributeIndex (attribute.header.index)) {
+        templateAttr.header.typeID = API_ZoneCatID;
+        templateAttr.header.index = attribute.header.index;
+        hasTemplate = (ACAPI_Attribute_Get (&templateAttr) == NoError);
+    }
+    if (!hasTemplate) {
+        // Prefer a Zone Category that already uses the requested stamp: its parameters belong to that stamp.
+        GS::Array<API_Attribute> zoneCategories;
+        ACAPI_Attribute_GetAttributesByType (API_ZoneCatID, zoneCategories);
+        for (const API_Attribute& zoneCategory : zoneCategories) {
+            const bool usesRequestedStamp = hasExplicitStamp && zoneCategory.zoneCat.stampMainGuid == explicitStampMainGuid;
+            if (!hasTemplate || usesRequestedStamp) {
+                templateAttr = zoneCategory;
+                hasTemplate = true;
+            }
+            if (!hasExplicitStamp || usesRequestedStamp) {
+                break;
+            }
+        }
+    }
+    if (!hasTemplate) {
+        return CreateErrorResponse (APIERR_BADPARS, "The project has no Zone Category to copy the zone stamp and its parameters from.");
+    }
+
+    GS::ucscpy (attribute.zoneCat.stampName, templateAttr.zoneCat.stampName);
+    attribute.zoneCat.stampMainGuid = templateAttr.zoneCat.stampMainGuid;
+    attribute.zoneCat.stampRevGuid = templateAttr.zoneCat.stampRevGuid;
+
+    const GSErrCode defErr = ACAPI_Attribute_GetDef (API_ZoneCatID, templateAttr.header.index, &attributeDef);
+    if (defErr != NoError || attributeDef.zone_addParItems == nullptr) {
+        return CreateErrorResponse (defErr != NoError ? defErr : APIERR_GENERAL,
+            GS::UniString::Printf ("Failed to get the zone stamp parameters of Zone Category '%T' to copy them (is its zone stamp in the loaded libraries?).", GetAttributeName (templateAttr.header).ToPrintf ()));
+    }
 
     // Explicit stamp reference (e.g. copied from another Zone Category's stampMainGuid/stampRevGuid/stampName,
-    // as shown in an Attribute Manager XML export) overrides the template copied above. Note that
-    // zone_addParItems (the GDL parameter values) still come from the template, not from this stamp - there is
-    // no public API to fetch a library part's own default parameters to seed them correctly for a stamp that
-    // differs from the template.
-    GS::UniString stampMainGuid, stampRevGuid;
-    if (parameters.Get ("stampMainGuid", stampMainGuid) && parameters.Get ("stampRevGuid", stampRevGuid)) {
-        attribute.zoneCat.stampMainGuid = APIGuidFromString (stampMainGuid.ToCStr ());
-        attribute.zoneCat.stampRevGuid = APIGuidFromString (stampRevGuid.ToCStr ());
-        SetUCharProperty (&parameters, "stampName", attribute.zoneCat.stampName);
+    // as shown by GetZoneCategories or in an Attribute Manager XML export) overrides the template's stamp. When
+    // the template does not use that stamp, its parameters do not belong to it either, so they are replaced with
+    // the stamp library part's own defaults; if that library part cannot be found the template's parameters are
+    // kept, as before.
+    if (hasExplicitStamp) {
+        attribute.zoneCat.stampMainGuid = explicitStampMainGuid;
+        attribute.zoneCat.stampRevGuid = APIGuidFromString (stampRevGuidStr.ToCStr ());
+        const bool hasStampName = SetUCharProperty (&parameters, "stampName", attribute.zoneCat.stampName);
+
+        if (templateAttr.zoneCat.stampMainGuid != explicitStampMainGuid) {
+            const GS::uchar_t* stampName = hasStampName ? attribute.zoneCat.stampName : nullptr;
+            API_AddParType** stampParams = GetZoneStampParameters (attribute.zoneCat.stampMainGuid, attribute.zoneCat.stampRevGuid, stampName);
+            if (stampParams != nullptr) {
+                ACAPI_DisposeAttrDefsHdls (&attributeDef);
+                attributeDef.zone_addParItems = stampParams;
+            }
+        }
     }
 
     SetUCharProperty (&parameters, "categoryCode", attribute.zoneCat.catCode);
     GetColor (parameters, "color", attribute.zoneCat.rgb);
+
+    return {};
 }
 
 CreateMEPSystemsCommand::CreateMEPSystemsCommand () :
@@ -4066,7 +4148,7 @@ GS::Optional<GS::UniString> CreateMEPSystemsCommand::GetInputParametersSchema ()
     })";
 }
 
-void CreateMEPSystemsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
+GS::Optional<GS::ObjectState> CreateMEPSystemsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
 {
     GS::UniString domain;
     if (parameters.Get ("domain", domain)) {
@@ -4126,6 +4208,8 @@ void CreateMEPSystemsCommand::SetTypeSpecificParameters (const GS::ObjectState& 
             attribute.mepSystem.insulationMatInd = insulationMaterialIndex;
         }
     }
+
+    return {};
 }
 
 CreateSurfacesCommand::CreateSurfacesCommand () :
@@ -4222,7 +4306,7 @@ GS::Optional<GS::UniString> CreateSurfacesCommand::GetInputParametersSchema () c
     })";
 }
 
-void CreateSurfacesCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
+GS::Optional<GS::ObjectState> CreateSurfacesCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef&) const
 {
     GS::UniString typeStr;
     if (parameters.Get ("materialType", typeStr)) {
@@ -4355,6 +4439,8 @@ void CreateSurfacesCommand::SetTypeSpecificParameters (const GS::ObjectState& pa
             attribute.material.texture.status |= APITxtr_DiffusePattern;
         }
     }
+
+    return {};
 }
 
 CreatePenTablesCommand::CreatePenTablesCommand () :
