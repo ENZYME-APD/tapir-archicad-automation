@@ -426,6 +426,10 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
 
         if (navigatorView.renovationFilterGuid != APINULLGuid) {
             viewSetting.Add ("renovationFilterGuid", CreateGuidObjectState (navigatorView.renovationFilterGuid));
+            GS::UniString renovationFilterName;
+            if (ACAPI_Renovation_GetRenovationFilterName (&navigatorView.renovationFilterGuid, &renovationFilterName) == NoError) {
+                viewSetting.Add ("renovationFilterName", renovationFilterName);
+            }
         }
 
         GS::UniString d3styleName (navigatorView.d3styleName);

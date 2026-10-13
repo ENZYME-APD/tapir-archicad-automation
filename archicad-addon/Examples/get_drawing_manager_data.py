@@ -1,0 +1,58 @@
+import aclib
+
+# Lists every Drawing of the layout book with the columns of Archicad's Drawing Manager:
+# Status, Update Type, Stored in Project, Source and Path come from GetDetailsOfElements,
+# the renovation filter of the source view from GetViewSettings.
+
+def get_navigator_item_guids_from_tree(current_branch, navigator_item_guids, navigator_item_type):
+    for navigator_item in current_branch:
+        navigator_item = navigator_item['navigatorItem']
+        if navigator_item['type'] == navigator_item_type:
+            navigator_item_guids.append(navigator_item['navigatorItemId'])
+        children = navigator_item.get('children')
+        if children:
+            get_navigator_item_guids_from_tree(children, navigator_item_guids, navigator_item_type)
+
+
+navigator_tree = aclib.RunCommand(command='API.GetNavigatorItemTree',
+                                  parameters={'navigatorTreeId': {'type': 'LayoutBook'}})
+
+layout_guids = []
+get_navigator_item_guids_from_tree(navigator_tree['navigatorTree']['rootItem']['children'],
+                                   layout_guids, navigator_item_type='LayoutItem')
+
+databases = aclib.RunTapirCommand(command='GetDatabaseIdFromNavigatorItemId',
+                                  parameters={'navigatorItemIds': [{'navigatorItemId': guid} for guid in layout_guids]},
+                                  debug=False)
+
+drawings = aclib.RunTapirCommand(command='GetElementsByType',
+                                 parameters={'elementType': 'Drawing',
+                                             'databases': databases['databases']},
+                                 debug=False)['elements']
+
+details = aclib.RunTapirCommand(command='GetDetailsOfElements',
+                                parameters={'elements': drawings}, debug=True)['detailsOfElements']
+
+# The renovation filter is a setting of the source view, so look it up for the drawings that
+# are linked to a view of this project.
+source_views = [{'navigatorItemId': d['details']['navigatorItemId']}
+                for d in details if d.get('details', {}).get('linkType') == 'InternalView']
+view_settings = aclib.RunTapirCommand(command='GetViewSettings',
+                                      parameters={'navigatorItemIds': source_views},
+                                      debug=True)['viewSettings'] if source_views else []
+
+renovation_filter_names = {}
+for source_view, settings in zip(source_views, view_settings):
+    if 'renovationFilterName' in settings:
+        renovation_filter_names[source_view['navigatorItemId']['guid']] = settings['renovationFilterName']
+
+for drawing, drawing_details in zip(drawings, details):
+    d = drawing_details.get('details', {})
+    print('{}: status={} updateType={} storedInProject={} source={} path={} renovationFilter={}'.format(
+        drawing['elementId']['guid'],
+        d.get('status', '-'),
+        'Manual' if d.get('manualUpdate') else 'Automatic',
+        d.get('storedInProject', '-'),
+        d.get('linkType', '-'),
+        d.get('linkPath', '-'),
+        renovation_filter_names.get(d.get('navigatorItemId', {}).get('guid'), '-')))
