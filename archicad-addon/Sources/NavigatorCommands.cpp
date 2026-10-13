@@ -1403,6 +1403,9 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
     GS::Array<GS::ObjectState> navigatorItemIds;
     parameters.Get ("navigatorItemIds", navigatorItemIds);
 
+    API_ProjectInfo projectInfo = {};
+    const bool isTeamwork = ACAPI_ProjectOperation_Project (&projectInfo) == NoError && projectInfo.teamwork;
+
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
@@ -1433,10 +1436,24 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
 
         if (err == APIERR_NOTSUPPORTED) {
             executionResults (CreateFailedExecutionResult (err, "Deleting layout subsets is not supported by the ArchiCAD API."));
-        } else if (err != NoError) {
+            continue;
+        }
+        if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to delete navigator item."));
-        } else {
+            continue;
+        }
+
+        // The delete call reports NoError in silent mode even when Archicad refuses
+        // the delete (in Teamwork: the item is not reserved or the user has no right
+        // to delete it), so success is decided by whether the item is really gone
+        // afterwards, as DeleteElements does.
+        API_NavigatorItem remainingItem = {};
+        if (ACAPI_Navigator_GetNavigatorItem (&guid, &remainingItem) != NoError) {
             executionResults (CreateSuccessfulExecutionResult ());
+        } else if (isTeamwork) {
+            executionResults (CreateFailedExecutionResult (APIERR_NOACCESSRIGHT, "The navigator item was not deleted. In a Teamwork project it must be reserved and the user needs the right to delete it."));
+        } else {
+            executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The navigator item was not deleted, because Archicad refused to delete it."));
         }
     }
 
