@@ -181,6 +181,13 @@ API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex in
 API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid);
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid);
 
+// Fonts are attributes (API_FontID) that Text and Label fields reference by index, which is what
+// the commands carry as fontIndex. These map that index to and from the font's name, as the Font
+// attributes carry it (the name the Text tool's font list shows). The lookup by name is exact
+// first, then case-insensitive; NoValue when no loaded font has the name, or the index none.
+GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName);
+GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex);
+
 class DatabaseIdResolver {
 public:
     static const DatabaseIdResolver& Instance ();

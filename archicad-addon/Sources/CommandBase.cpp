@@ -1017,6 +1017,47 @@ API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid gu
     return attr.header.index;
 }
 
+GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
+{
+    // API_Attr_Head::name is the legacy 8-bit name; Archicad hands out the real Unicode name
+    // through header.uniStringNamePtr, which has to point at storage before the Get call (the
+    // same way GetAttributeName in AttributeCommands.cpp reads attribute names).
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = API_FontID;
+    attr.header.index = ACAPI_CreateAttributeIndex (fontIndex);
+    attr.header.uniStringNamePtr = &name;
+
+    if (ACAPI_Attribute_Get (&attr) != NoError) {
+        return GS::NoValue;
+    }
+
+    return name;
+}
+
+GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
+{
+    GS::Array<API_Attribute> fonts;
+    ACAPI_Attribute_GetAttributesByType (API_FontID, fonts);
+
+    GS::Optional<short> caseInsensitiveMatch;
+    for (const API_Attribute& font : fonts) {
+        const short fontIndex = static_cast<short> (GetAttributeIndex (font.header.index));
+        const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
+        if (!name.HasValue ()) {
+            continue;
+        }
+        if (*name == fontName) {
+            return fontIndex;
+        }
+        if (!caseInsensitiveMatch.HasValue () && name->Compare (fontName, CaseInsensitive) == GS::UniString::Equal) {
+            caseInsensitiveMatch = fontIndex;
+        }
+    }
+
+    return caseInsensitiveMatch;
+}
+
 const DatabaseIdResolver& DatabaseIdResolver::Instance ()
 {
     static DatabaseIdResolver instance;
