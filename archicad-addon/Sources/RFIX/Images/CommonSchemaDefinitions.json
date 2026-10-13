@@ -714,6 +714,31 @@
             "designOptionCombinationId"
         ]
     },
+    "DesignOptionSetId": {
+        "type": "object",
+        "description": "The identifier of a design option set.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DesignOptionSetIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "designOptionSetId": {
+                "$ref": "#/DesignOptionSetId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSetId"
+        ]
+    },
     "LayersOfLayerCombination": {
         "type": "array",
         "description": "List of Layers included in the Layer Combination.",
