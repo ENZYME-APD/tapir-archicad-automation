@@ -217,7 +217,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   SignPath Foundation): on a release tag `build_installer_win` waits for a manual
   approval in SignPath, then `release_installer_win` attaches the signed file to
   the draft (split so SignPath never holds a write token); the weekly release
-  waits for both. SignPath requires the exe's ProductName `Tapir` and
+  waits for both. A failed or unapproved signing never blocks a release: the
+  unsigned installer is attached instead, and the release notes say so (the
+  SignPath footer only appears on signed releases). SignPath requires the exe's ProductName `Tapir` and
   ProductVersion = the release version, which `Installer/write_version_file.py`
   writes; the installer build tools are pinned in
   `Installer/requirements-build.txt`, used by both workflows. The README's
