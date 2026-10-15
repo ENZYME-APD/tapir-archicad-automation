@@ -3723,6 +3723,37 @@ GS::Optional<GS::UniString> MoveElementsCommand::GetRawResponseSchema () const
     })";
 }
 
+// ACAPI_Element_Edit reports NoError for an element it is not allowed to edit
+// (hidden or locked layer, locked element, teamwork access) and leaves it
+// untouched, so the element is checked before the edit. Returns the failed
+// execution result for an element that cannot be edited, and nothing when the
+// edit may go ahead. operation is the past participle of the edit ("moved").
+static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation)
+{
+    API_Elem_Head elemHead = {};
+    if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
+    }
+
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = elemHead.layer;
+    if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
+        if ((layerAttr.header.flags & APILay_Locked) != 0) {
+            return CreateFailedExecutionResult (APIERR_LOCKEDLAY, GS::UniString::Printf ("The element was not %s, because its layer is locked.", operation));
+        }
+        if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
+        }
+    }
+
+    if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because it is not editable.", operation));
+    }
+
+    return GS::NoValue;
+}
+
 static GSErrCode MoveElement (const API_Guid& elemGuid, const API_Vector3D& moveVector, bool withCopy)
 {
     GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
@@ -3761,6 +3792,12 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
 
             bool copy = false;
             elementWithMoveVector.Get ("copy", copy);
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "moved");
+            if (notEditableResult.HasValue ()) {
+                executionResults (*notEditableResult);
+                continue;
+            }
 
             const GSErrCode err = MoveElement (elemGuid,
                                                Get3DCoordinateFromObjectState (*moveVector),
@@ -3902,6 +3939,12 @@ GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameter
 
             bool copy = false;
             elementWithRotation.Get ("copy", copy);
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "rotated");
+            if (notEditableResult.HasValue ()) {
+                executionResults (*notEditableResult);
+                continue;
+            }
 
             const GSErrCode err = RotateElement (elemGuid,
                                                 Get2DCoordinateFromObjectState (*beginPoint),
