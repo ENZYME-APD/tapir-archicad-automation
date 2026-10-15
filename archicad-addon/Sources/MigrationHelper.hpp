@@ -173,6 +173,11 @@ inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePa
     return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Picture* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
 {
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
