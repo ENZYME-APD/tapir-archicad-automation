@@ -4830,7 +4830,7 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetRawResponseSchema
                                 },
                                 "composites": {
                                     "type": "array",
-                                    "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for elements without a building material, such as Zones and Morphs.",
+                                    "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
@@ -5139,7 +5139,7 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
         // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
         API_ElementQuantity elementQuantity = {};
         GS::Array<API_CompositeQuantity> composites;
-        API_Quantities quantities;
+        API_Quantities quantities = {};
         quantities.elements = &elementQuantity;
         quantities.composites = &composites;
 
