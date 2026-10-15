@@ -1,7 +1,9 @@
 import aclib
 
 # A simple bill of quantities: the volume and projected area of every building material
-# used in the skins of the walls and slabs of the project, read with GetQuantitiesOfElements.
+# used in the walls and slabs of the project, read with GetQuantitiesOfElements.
+# Composite and complex profile elements report one item per skin, and basic elements a single
+# item with their building material, so every wall and slab is counted.
 # The quantities come from Archicad's own calculation, so no property expressions are needed.
 
 elements = []

@@ -4830,7 +4830,7 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetRawResponseSchema
                                 },
                                 "composites": {
                                     "type": "array",
-                                    "description": "The quantities of the skins of a composite or complex profile element, in the order Archicad reports them. Empty for elements without skins.",
+                                    "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for elements without a building material, such as Zones and Morphs.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
@@ -4890,7 +4890,26 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetRawResponseSchema
     })";
 }
 
-static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQuantity& elementQuantity, GS::ObjectState& quantities)
+static bool AreQuantitiesSupported (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_MorphID:
+        case API_ZoneID:
+        case API_ColumnSegmentID:
+        case API_BeamSegmentID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static void AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQuantity& elementQuantity, GS::ObjectState& quantities)
 {
     switch (typeID) {
         case API_WallID: {
@@ -4918,7 +4937,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("doorsSurface", q.doorsSurf);
             quantities.Add ("emptyOpeningsSurface", q.emptyholesSurf);
             quantities.Add ("emptyOpeningsVolume", q.emptyHolesVolume);
-            return true;
+            break;
         }
         case API_ColumnID: {
             const auto& q = elementQuantity.column;
@@ -4936,7 +4955,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("maxHeight", q.maxHeight);
             quantities.Add ("crossSectionAreaCutBegin", q.crossSectionAreaCutBegin);
             quantities.Add ("crossSectionAreaCutEnd", q.crossSectionAreaCutEnd);
-            return true;
+            break;
         }
         case API_BeamID: {
             const auto& q = elementQuantity.beam;
@@ -4956,7 +4975,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("holesNumber", static_cast<Int32> (q.holesNumber));
             quantities.Add ("crossSectionAreaCutBegin", q.crossSectionAreaCutBegin);
             quantities.Add ("crossSectionAreaCutEnd", q.crossSectionAreaCutEnd);
-            return true;
+            break;
         }
         case API_SlabID: {
             const auto& q = elementQuantity.slab;
@@ -4974,7 +4993,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("perimeter", q.perimeter);
             quantities.Add ("holesSurface", q.holesSurf);
             quantities.Add ("holesPerimeter", q.holesPrm);
-            return true;
+            break;
         }
         case API_RoofID: {
             const auto& q = elementQuantity.roof;
@@ -5000,7 +5019,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("gablesLength", q.gablesLength);
             quantities.Add ("eavesLength", q.eavesLength);
             quantities.Add ("peaksLength", q.peaksLength);
-            return true;
+            break;
         }
         case API_ShellID: {
             const auto& q = elementQuantity.shell;
@@ -5019,7 +5038,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("holesSurface", q.holesSurf);
             quantities.Add ("holesPerimeter", q.holesPrm);
             quantities.Add ("floorPlanArea", q.floorplanArea);
-            return true;
+            break;
         }
         case API_MorphID: {
             const auto& q = elementQuantity.morph;
@@ -5028,7 +5047,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("floorPlanArea", q.floorPlanArea);
             quantities.Add ("floorPlanPerimeter", q.floorPlanPerimeter);
             quantities.Add ("height", q.wholeHeight);
-            return true;
+            break;
         }
         case API_ZoneID: {
             const auto& q = elementQuantity.zone;
@@ -5043,7 +5062,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("wallsSurface", q.wallsSurf);
             quantities.Add ("doorsSurface", q.doorsSurf);
             quantities.Add ("windowsSurface", q.windowsSurf);
-            return true;
+            break;
         }
         case API_ColumnSegmentID: {
             const auto& q = elementQuantity.columnSegment;
@@ -5060,7 +5079,7 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("height", q.height);
             quantities.Add ("minHeight", q.minHeight);
             quantities.Add ("maxHeight", q.maxHeight);
-            return true;
+            break;
         }
         case API_BeamSegmentID: {
             const auto& q = elementQuantity.beamSegment;
@@ -5075,10 +5094,10 @@ static bool AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("rightSurface", q.rightSurface);
             quantities.Add ("endSurface", q.endSurface);
             quantities.Add ("holesSurface", q.holesSurface);
-            return true;
+            break;
         }
         default:
-            return false;
+            break;
     }
 }
 
@@ -5109,6 +5128,14 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
             continue;
         }
 
+        // Reject unsupported types before Archicad calculates their quantities.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (!AreQuantitiesSupported (typeID)) {
+            quantitiesOfElements (CreateErrorResponse (APIERR_BADELEMENTTYPE,
+                GS::UniString ("Quantities are not supported for this element type: ") + GetElementTypeNonLocalizedName (typeID)));
+            continue;
+        }
+
         // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
         API_ElementQuantity elementQuantity = {};
         GS::Array<API_CompositeQuantity> composites;
@@ -5125,13 +5152,8 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
             continue;
         }
 
-        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
         GS::ObjectState typeSpecificQuantities;
-        if (!AddTypeSpecificQuantities (typeID, elementQuantity, typeSpecificQuantities)) {
-            quantitiesOfElements (CreateErrorResponse (APIERR_BADELEMENTTYPE,
-                GS::UniString ("Quantities are not supported for this element type: ") + GetElementTypeNonLocalizedName (typeID)));
-            continue;
-        }
+        AddTypeSpecificQuantities (typeID, elementQuantity, typeSpecificQuantities);
 
         GS::ObjectState quantitiesOfElement;
         quantitiesOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
