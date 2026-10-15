@@ -1913,6 +1913,15 @@ static bool ApplyElectricalPlacement (ModifiableElementBase::Modifier& modifier,
     return success;
 }
 
+// Archicad keeps the old library part when the given one does not exist, so the result has to be checked.
+static bool IsRequestedLibraryPartUsed (const API_Guid& usedLibraryPartId, const GS::ObjectState& data)
+{
+    const GS::ObjectState* libraryPartId = data.Get ("libraryPartId");
+    return libraryPartId == nullptr || usedLibraryPartId == GetGuidFromObjectState (*libraryPartId);
+}
+
+static const char* LibraryPartNotFound = "The library part given in 'libraryPartId' was not found.";
+
 static bool HasAnyField (const GS::ObjectState& data, std::initializer_list<const char*> fieldNames)
 {
     for (const char* fieldName : fieldNames) {
@@ -1987,8 +1996,8 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSch
                             "type": "boolean"
                         },
                         "libraryPartId": {
-                            "$ref": "#/ElementId",
-                            "description": "The guid of the library part to use."
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
                             "type": "number"
@@ -2063,6 +2072,10 @@ GS::ObjectState CreateElectricalPanelsCommand::Execute (const GS::ObjectState& p
             ACAPI::Result<void> defaultResult = ApplyElectricalDefaultPlacement (*panelDefault, panelData);
             if (defaultResult.IsErr ()) {
                 elements (CreateErrorResponse (defaultResult.UnwrapErr ().kind, "Failed to set the library part, size, rotation or mirroring of the electrical panel."));
+                continue;
+            }
+            if (!IsRequestedLibraryPartUsed (panelDefault->GetObjectId (), panelData)) {
+                elements (CreateErrorResponse (APIERR_BADID, LibraryPartNotFound));
                 continue;
             }
 
@@ -2144,8 +2157,8 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSc
                             "type": "boolean"
                         },
                         "libraryPartId": {
-                            "$ref": "#/ElementId",
-                            "description": "The guid of the library part to use."
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
                             "type": "number"
@@ -2242,6 +2255,10 @@ GS::ObjectState CreateElectricalDevicesCommand::Execute (const GS::ObjectState& 
                 elements (CreateErrorResponse (defaultResult.UnwrapErr ().kind, "Failed to set the library part, size, rotation or mirroring of the electrical device."));
                 continue;
             }
+            if (!IsRequestedLibraryPartUsed (deviceDefault->GetObjectId (), deviceData)) {
+                elements (CreateErrorResponse (APIERR_BADID, LibraryPartNotFound));
+                continue;
+            }
 
             const GS::ObjectState* orientationOs = deviceData.Get ("orientation");
             const Orientation orientation = orientationOs != nullptr ? GetMEPOrientationFromObjectState (*orientationOs) : GetMEPOrientationFromObjectState (GS::ObjectState ());
@@ -2334,8 +2351,8 @@ GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetInputParametersSch
                             "type": "boolean"
                         },
                         "libraryPartId": {
-                            "$ref": "#/ElementId",
-                            "description": "The guid of the library part to use."
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
                             "type": "number"
@@ -2418,6 +2435,8 @@ GS::ObjectState ModifyElectricalPanelsCommand::Execute (const GS::ObjectState& p
             executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical panel."));
         } else if (!placementSuccess) {
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical panel."));
+        } else if (!IsRequestedLibraryPartUsed (ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)))->GetObjectId (), panelData)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
         } else {
             executionResults (CreateSuccessfulExecutionResult ());
         }
@@ -2866,8 +2885,8 @@ GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetInputParametersSc
                             "type": "boolean"
                         },
                         "libraryPartId": {
-                            "$ref": "#/ElementId",
-                            "description": "The guid of the library part to use."
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
                             "type": "number"
@@ -2957,6 +2976,8 @@ GS::ObjectState ModifyElectricalDevicesCommand::Execute (const GS::ObjectState& 
             executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical device."));
         } else if (!placementSuccess) {
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical device."));
+        } else if (!IsRequestedLibraryPartUsed (ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)))->GetObjectId (), deviceData)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
         } else {
             executionResults (CreateSuccessfulExecutionResult ());
         }

@@ -1,10 +1,17 @@
+import sys
 import aclib
 
-# Requires Archicad 30 or newer.
+# Builds a small electrical system near the project origin: a main panel feeding a kitchen
+# sub-panel, a lighting circuit with two lights and a socket on the kitchen panel.
+# Every run places a new set of elements at the same coordinates.
+# Requires Archicad 30 or newer; on older versions the first command fails and the example stops.
 
 # Add a wiring type and a load classification to the electrical project settings,
 # unless they are already there (adding an existing name fails).
 settings = aclib.RunTapirCommand ('GetElectricalProjectSettings')
+if settings is None or 'error' in settings:
+    print ('Could not get the electrical project settings, this example needs Archicad 30 or newer.')
+    sys.exit ()
 settingsChanges = {}
 if 'Cu 1.5' not in [wiringType['name'] for wiringType in settings['wiringTypes']]:
     settingsChanges['wiringTypesToAdd'] = [{'name': 'Cu 1.5', 'crossSectionalArea': 1.5}]
@@ -70,5 +77,8 @@ aclib.RunTapirCommand ('ModifyElectricalPanels', {
 mainPanel = aclib.RunTapirCommand ('GetElectricalPanels', {'elements': [{'elementId': mainPanelId}]})['electricalPanels'][0]
 print (f"{mainPanel['panelName']}: connected load {mainPanel['connectedLoad']['total']}, demand load {mainPanel['demandLoad']['total']}")
 
-# Remove the kitchen circuit again: the socket is disconnected.
-aclib.RunTapirCommand ('DeleteElectricalCircuits', {'electricalCircuits': [{'elementId': kitchenCircuitId}]})
+# Add a spare circuit and remove it again. Removing a circuit disconnects its devices and sub-panels.
+spareCircuitId = aclib.RunTapirCommand ('CreateElectricalCircuits', {
+        'electricalCircuitsData': [{'electricalPanelId': kitchenPanelId, 'description': 'Spare'}]
+    })['elements'][0]['elementId']
+aclib.RunTapirCommand ('DeleteElectricalCircuits', {'electricalCircuits': [{'elementId': spareCircuitId}]})
