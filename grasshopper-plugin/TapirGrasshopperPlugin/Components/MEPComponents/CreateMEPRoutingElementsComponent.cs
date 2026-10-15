@@ -53,7 +53,20 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "MEPSystemGuids",
                 "MEP system attribute of each route (input only 1 to use the same system for all). Optional.");
 
-            SetOptionality(new[] { 2, 3, 4, 5 });
+            InIntegers(
+                "CrossSectionReferenceIds",
+                "Cross section reference id of the segment preference table row applied to all segments of each route " +
+                "(used for circular cross sections; see GetMEPPreferenceTables). Resolved against the PreferenceTableGuids " +
+                "table if given, otherwise against the table of the current routing tool default " +
+                "(input only 1 to use the same id for all). Optional.");
+
+            InTexts(
+                "PreferenceTableGuids",
+                "Identifier of the segment preference table applied to all segments of each route " +
+                "(see GetMEPPreferenceTables; not applicable to the CableCarrier domain; " +
+                "input only 1 to use the same table for all). Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5, 6, 7 });
         }
 
         protected override void AddOutputs()
@@ -105,13 +118,19 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             shapes = shapes ?? new List<string>();
             da.TryGetList(5, out List<GH_ObjectWrapper> mepSystemWrappers);
             mepSystemWrappers = mepSystemWrappers ?? new List<GH_ObjectWrapper>();
+            da.TryGetList(6, out List<int> referenceIds);
+            referenceIds = referenceIds ?? new List<int>();
+            da.TryGetList(7, out List<string> preferenceTableGuids);
+            preferenceTableGuids = preferenceTableGuids ?? new List<string>();
 
             foreach (var pair in new (string Name, int Count)[]
                      {
                          ("CrossSectionWidths", widths.Count),
                          ("CrossSectionHeights", heights.Count),
                          ("CrossSectionShapes", shapes.Count),
-                         ("MEPSystemGuids", mepSystemWrappers.Count)
+                         ("MEPSystemGuids", mepSystemWrappers.Count),
+                         ("CrossSectionReferenceIds", referenceIds.Count),
+                         ("PreferenceTableGuids", preferenceTableGuids.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -119,6 +138,15 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 {
                     this.AddError(
                         $"The size of the input {pair.Name} must be 0, 1 or equal to the number of branches in the Polylines input.");
+                    return;
+                }
+            }
+
+            foreach (var tableGuid in preferenceTableGuids)
+            {
+                if (!Guid.TryParse(tableGuid, out _))
+                {
+                    this.AddError("Invalid identifier in the PreferenceTableGuids input.");
                     return;
                 }
             }
@@ -173,6 +201,14 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 if (shapes.Count > 0)
                 {
                     item["crossSectionShape"] = shapes[shapes.Count == 1 ? 0 : i];
+                }
+                if (referenceIds.Count > 0)
+                {
+                    item["crossSectionReferenceId"] = referenceIds[referenceIds.Count == 1 ? 0 : i];
+                }
+                if (preferenceTableGuids.Count > 0)
+                {
+                    item["preferenceTableId"] = preferenceTableGuids[preferenceTableGuids.Count == 1 ? 0 : i];
                 }
                 if (mepSystemIds.Count > 0)
                 {
