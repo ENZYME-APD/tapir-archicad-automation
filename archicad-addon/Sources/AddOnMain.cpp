@@ -363,6 +363,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.2",
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
         );
+        err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
+            elementCommands, "1.7.1",
+            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area of each skin per building material for composite and complex profile elements. Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values."
+        );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
