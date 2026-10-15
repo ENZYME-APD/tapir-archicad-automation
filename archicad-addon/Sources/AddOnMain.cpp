@@ -1326,6 +1326,42 @@ GSErrCode Initialize (void)
             mepCommands, "1.7.2",
             "Gets the electrical project settings: the default voltage, the wiring types with their cross-sectional area and the load classifications with their demand factor. Available from Archicad 30."
         );
+        err |= RegisterCommand<CreateElectricalPanelsCommand> (
+            mepCommands, "1.7.2",
+            "Places electrical panels with the default settings of the Electrical Panel tool, optionally with the given library part, size, rotation, mirroring, panel name and circuit naming. Available from Archicad 30."
+        );
+        err |= RegisterCommand<CreateElectricalDevicesCommand> (
+            mepCommands, "1.7.2",
+            "Places electrical devices with the default settings of the Electrical Device tool, optionally with the given library part, size, rotation, mirroring, apparent power and load classification, and connects them to a circuit. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalPanelsCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the name, circuit naming and placement (anchor point, orientation, rotation, mirroring, library part, size) of electrical panels. Available from Archicad 30."
+        );
+        err |= RegisterCommand<CreateElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Adds new circuits to electrical panels, optionally with the given description, voltage, wiring type and used phases. Available from Archicad 30."
+        );
+        err |= RegisterCommand<DeleteElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Removes electrical circuits from their panels. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the description, voltage, wiring type and used phases of electrical circuits. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalDevicesCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the apparent power, load classification and placement (anchor point, orientation, rotation, mirroring, library part, size) of electrical devices. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ConnectToElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Connects electrical devices, or panels as sub-panels, to electrical circuits. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalProjectSettingsCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30."
+        );
         AddCommandGroup (mepCommands);
     }
 
