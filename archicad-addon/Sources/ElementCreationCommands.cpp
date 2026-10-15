@@ -2633,6 +2633,452 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
+CreateCurtainWallsCommand::CreateCurtainWallsCommand () :
+    CreateElementsCommandBase ("CreateCurtainWalls", API_CurtainWallID, "curtainWallsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "curtainWallsData": {
+            "type": "array",
+            "description": "Array of data to create Curtain Walls.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Curtain Wall. Everything not given here - the frame and panel classes, the surfaces, the boundary and corner frames, the pattern - comes from the favorite or from the Curtain Wall tool defaults of the open project.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates becomes one straight segment, so two coordinates give a single-segment curtain wall.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 2
+                    },
+                    "zCoordinate": {
+                        "type": "number",
+                        "description": "Optional Z coordinate (absolute elevation) of the bottom of the curtain wall. When omitted, the base level of the favorite (or of the Curtain Wall tool defaults) relative to the floor is kept."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index. When omitted, derived from zCoordinate if that is given, otherwise the current story."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Optional height of the curtain wall. When omitted, the height of the favorite (or of the Curtain Wall tool defaults) is kept.",
+                        "exclusiveMinimum": 0.0
+                    },
+                    "primaryPattern": {
+                        "$ref": "#/CurtainWallPattern",
+                        "description": "Optional column pattern: the sizes of the columns along the segment (the primary grid). When omitted, the pattern of the favorite (or of the tool defaults) is kept."
+                    },
+                    "secondaryPattern": {
+                        "$ref": "#/CurtainWallPattern",
+                        "description": "Optional row pattern: the sizes of the rows from the bottom up (the secondary grid). When omitted, the pattern of the favorite (or of the tool defaults) is kept."
+                    },
+                    "cells": {
+                        "type": "array",
+                        "description": "Optional assignment of panel and frame classes to the cells of the pattern unit. The unit repeats along and up the segment, so an assignment applies to every repetition of that cell. A cell not listed here keeps the assignment of the favorite (or of the tool defaults) when the pattern is unchanged, otherwise the assignment of the first default cell.",
+                        "items": {
+                            "$ref": "#/CurtainWallPatternCell"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "curtainWallsData"
+    ]
+})";
+}
+
+// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
+// (their bit pattern is taken as a double), so the items are collected one by one.
+class DoubleListCollector : public GS::ObjectState::Processor
+{
+public:
+    virtual void IntFound (const GS::String&, Int64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void UIntFound (const GS::String&, UInt64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void RealFound (const GS::String&, double value) override
+    {
+        values.Push (value);
+    }
+
+    virtual void BoolFound (const GS::String&, bool) override
+    {
+        failed = true;
+    }
+
+    virtual void StringFound (const GS::String&, const GS::UniString&) override
+    {
+        failed = true;
+    }
+
+    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
+    {
+        failed = true;
+        return false;
+    }
+
+    virtual bool ListFound (const GS::String&) override
+    {
+        return !failed;
+    }
+
+    virtual void ListEntered (const GS::String&) override
+    {
+        if (++depth > 1) {
+            failed = true;
+        }
+    }
+
+    virtual void ListExited (const GS::String&) override
+    {
+        --depth;
+    }
+
+    bool Get (GS::Array<double>& outValues) const
+    {
+        if (failed) {
+            return false;
+        }
+        outValues = values;
+        return true;
+    }
+
+private:
+    GS::Array<double> values;
+    Int32 depth = 0;
+    bool failed = false;
+};
+
+static bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
+{
+    if (!parameters.IsList (fieldName)) {
+        return false;
+    }
+    DoubleListCollector collector;
+    parameters.Enumerate (fieldName, collector);
+    return collector.Get (outValues);
+}
+
+template <typename T>
+static void ReplaceCWPatternArray (T*& array, const GS::Array<T>& values)
+{
+    if (array != nullptr) {
+        BMpKill (reinterpret_cast<GSPtr*> (&array));
+    }
+    array = reinterpret_cast<T*> (BMpAllClear (values.GetSize () * sizeof (T)));
+    for (UIndex i = 0; i < values.GetSize (); ++i) {
+        array[i] = values[i];
+    }
+}
+
+// Rewrites the column (primary) or row (secondary) pattern of the segment from the "sizes",
+// "logic", "origin" and "flexibleIndices" fields. Returns the reason when the fields are invalid.
+static GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern)
+{
+    GS::Array<double> sizes;
+    if (!GetDoubleList (patternOS, "sizes", sizes) || sizes.IsEmpty ()) {
+        return GS::UniString (fieldName) + ".sizes must be a non-empty list of numbers.";
+    }
+    for (double size : sizes) {
+        if (size <= 0.0) {
+            return GS::UniString (fieldName) + ".sizes must only contain positive numbers.";
+        }
+    }
+
+    GS::UniString logic;
+    if (patternOS.Get ("logic", logic)) {
+        if (logic == "FixedSizes") {
+            pattern.logic = APICWSePL_FixedSizes;
+        } else if (logic == "BestDivision") {
+            pattern.logic = APICWSePL_BestDivision;
+        } else {
+            return GS::UniString (fieldName) + ".logic must be 'FixedSizes' or 'BestDivision'.";
+        }
+    } else if (pattern.logic == APICWSePL_NumberOfDivisions) {
+        // The number-of-divisions logic of the favorite or the tool defaults has no meaning
+        // for an explicitly given list of sizes.
+        pattern.logic = APICWSePL_FixedSizes;
+    }
+
+    GS::UniString origin;
+    if (patternOS.Get ("origin", origin)) {
+        if (origin == "StartWithPattern") {
+            pattern.gridOriginType = APICWSeGridOrigin_StartWithPattern;
+        } else if (origin == "StartFromCenter") {
+            pattern.gridOriginType = APICWSeGridOrigin_StartFromCenter;
+        } else if (origin == "AlignToCenter") {
+            pattern.gridOriginType = APICWSeGridOrigin_AlignToCenter;
+        } else if (origin == "EndWithPattern") {
+            pattern.gridOriginType = APICWSeGridOrigin_EndWithPattern;
+        } else {
+            return GS::UniString (fieldName) + ".origin must be 'StartWithPattern', 'StartFromCenter', 'AlignToCenter' or 'EndWithPattern'.";
+        }
+    }
+
+    const UInt32 nPattern = sizes.GetSize ();
+
+    // Which columns/rows may be stretched by the best-division logic: the given ones, or all of
+    // them. Always rewritten, because the flexible indices of the defaults belong to the default
+    // pattern and may be out of range for the new one.
+    GS::Array<UInt32> flexibleIDs;
+    if (patternOS.Contains ("flexibleIndices")) {
+        GS::Array<double> flexibleIndices;
+        if (!GetDoubleList (patternOS, "flexibleIndices", flexibleIndices)) {
+            return GS::UniString (fieldName) + ".flexibleIndices must be a list of integers.";
+        }
+        for (double flexibleIndex : flexibleIndices) {
+            if (flexibleIndex < 0.0 || flexibleIndex >= static_cast<double> (nPattern) || flexibleIndex != static_cast<double> (static_cast<Int64> (flexibleIndex))) {
+                return GS::UniString (fieldName) + GS::UniString::Printf (".flexibleIndices must only contain indices from 0 to %u.", nPattern - 1);
+            }
+            const UInt32 id = static_cast<UInt32> (flexibleIndex);
+            if (!flexibleIDs.Contains (id)) {
+                flexibleIDs.Push (id);
+            }
+        }
+    } else {
+        for (UInt32 i = 0; i < nPattern; ++i) {
+            flexibleIDs.Push (i);
+        }
+    }
+
+    ReplaceCWPatternArray (pattern.pattern, sizes);
+    pattern.nPattern = nPattern;
+    pattern.endWithID = nPattern - 1;
+    ReplaceCWPatternArray (pattern.flexibleIDs, flexibleIDs);
+    pattern.nFlexibleIDs = flexibleIDs.GetSize ();
+    pattern.nDivisions = 1;
+
+    return {};
+}
+
+static GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged)
+{
+    const UInt32 nColumns = memo.cWSegPrimaryPattern.nPattern;
+    const UInt32 nRows = memo.cWSegSecondaryPattern.nPattern;
+    const UInt32 nCells = nColumns * nRows;
+    if (nCells == 0) {
+        return GS::UniString ("The curtain wall has no pattern cells.");
+    }
+    if (cells.IsEmpty () && !patternChanged) {
+        return {};
+    }
+
+    const UInt32 nDefaultCells = memo.cWSegPatternCells != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWSegPatternCells)) / sizeof (API_CWSegmentPatternCellData))
+        : 0;
+    const UInt32 nPanelClasses = memo.cWallPanelDefaults != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanelDefaults)) / sizeof (API_CWPanelType))
+        : element.curtainWall.nPanelDefaults;
+    const UInt32 nFrameClasses = memo.cWallFrameDefaults != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType))
+        : element.curtainWall.nFrameDefaults;
+
+    // Every cell starts from the matching default cell when the pattern is the default one,
+    // otherwise from the first default cell (or a plain cell when there is none).
+    API_CWSegmentPatternCellData templateCell = {};
+    templateCell.crossingFrameType = APICWCFT_NoCrossingFrame;
+    templateCell.leftPanelID = APICWPanelClass_FirstCustomClass;
+    templateCell.rightPanelID = APICWPanelClass_FirstCustomClass;
+    templateCell.leftFrameID = APICWFrameClass_Division;
+    templateCell.bottomFrameID = APICWFrameClass_Division;
+    templateCell.crossingFrameID = APICWFrameClass_Division;
+    if (nDefaultCells > 0) {
+        templateCell = memo.cWSegPatternCells[0];
+    }
+
+    auto newCells = reinterpret_cast<API_CWSegmentPatternCellData*> (BMpAllClear (nCells * sizeof (API_CWSegmentPatternCellData)));
+    for (UInt32 i = 0; i < nCells; ++i) {
+        newCells[i] = (nDefaultCells == nCells) ? memo.cWSegPatternCells[i] : templateCell;
+    }
+    const GS::OnExit newCellsGuard ([&newCells] () {
+        if (newCells != nullptr) {
+            BMpKill (reinterpret_cast<GSPtr*> (&newCells));
+        }
+    });
+
+    const auto isValidPanelClass = [&] (Int32 index) {
+        return index == APICWPanelClass_Deleted ||
+               (index >= APICWPanelClass_FirstCustomClass && static_cast<UInt32> (index - APICWPanelClass_FirstCustomClass) < nPanelClasses);
+    };
+    const auto isValidFrameClass = [&] (Int32 index) {
+        return index == APICWFrameClass_Merged || index == APICWFrameClass_Division || index == APICWFrameClass_Corner || index == APICWFrameClass_Boundary ||
+               (index >= APICWFrameClass_FirstCustomClass && static_cast<UInt32> (index - APICWFrameClass_FirstCustomClass) < nFrameClasses);
+    };
+
+    for (UIndex i = 0; i < cells.GetSize (); ++i) {
+        const GS::ObjectState& cellOS = cells[i];
+        Int32 columnIndex = -1;
+        Int32 rowIndex = -1;
+        cellOS.Get ("columnIndex", columnIndex);
+        cellOS.Get ("rowIndex", rowIndex);
+        if (columnIndex < 0 || static_cast<UInt32> (columnIndex) >= nColumns) {
+            return GS::UniString::Printf ("cells[%u].columnIndex must be between 0 and %u (the pattern has %u columns).", i, nColumns - 1, nColumns);
+        }
+        if (rowIndex < 0 || static_cast<UInt32> (rowIndex) >= nRows) {
+            return GS::UniString::Printf ("cells[%u].rowIndex must be between 0 and %u (the pattern has %u rows).", i, nRows - 1, nRows);
+        }
+        // Cells are stored row by row from the bottom row, each row from the start of the segment.
+        API_CWSegmentPatternCellData& cell = newCells[static_cast<UInt32> (rowIndex) * nColumns + static_cast<UInt32> (columnIndex)];
+
+        Int32 classIndex = 0;
+        if (cellOS.Get ("panelClassIndex", classIndex)) {
+            if (!isValidPanelClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].panelClassIndex %d is not a panel class of the curtain wall (0 or 1 to %u).", i, classIndex, nPanelClasses);
+            }
+            cell.leftPanelID = static_cast<UInt32> (classIndex);
+            cell.rightPanelID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("rightPanelClassIndex", classIndex)) {
+            if (!isValidPanelClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].rightPanelClassIndex %d is not a panel class of the curtain wall (0 or 1 to %u).", i, classIndex, nPanelClasses);
+            }
+            cell.rightPanelID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("leftFrameClassIndex", classIndex)) {
+            if (!isValidFrameClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].leftFrameClassIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", i, classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1);
+            }
+            cell.leftFrameID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("bottomFrameClassIndex", classIndex)) {
+            if (!isValidFrameClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].bottomFrameClassIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", i, classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1);
+            }
+            cell.bottomFrameID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("crossingFrameClassIndex", classIndex)) {
+            if (!isValidFrameClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].crossingFrameClassIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", i, classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1);
+            }
+            cell.crossingFrameID = static_cast<UInt32> (classIndex);
+        }
+        GS::UniString crossingFrameType;
+        if (cellOS.Get ("crossingFrameType", crossingFrameType)) {
+            if (crossingFrameType == "None") {
+                cell.crossingFrameType = APICWCFT_NoCrossingFrame;
+            } else if (crossingFrameType == "FromBottomLeftToTopRight") {
+                cell.crossingFrameType = APICWCFT_FromBottomLeftToTopRight;
+            } else if (crossingFrameType == "FromTopLeftToBottomRight") {
+                cell.crossingFrameType = APICWCFT_FromTopLeftToBottomRight;
+            } else {
+                return GS::UniString::Printf ("cells[%u].crossingFrameType must be 'None', 'FromBottomLeftToTopRight' or 'FromTopLeftToBottomRight'.", i);
+            }
+        }
+    }
+
+    if (memo.cWSegPatternCells != nullptr) {
+        BMpKill (reinterpret_cast<GSPtr*> (&memo.cWSegPatternCells));
+    }
+    memo.cWSegPatternCells = newCells;
+    newCells = nullptr;
+
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+    if (coordinates.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
+        }
+    }
+
+    // The bottom of the curtain wall. planeOffset is what ACAPI_Element_Create places the base
+    // surface by (storyRelLevel is read back, but not applied on creation - confirmed live).
+    // Without zCoordinate the base level of the favorite (or of the tool defaults) is kept,
+    // on the given floorIndex or on the current story.
+    double zCoordinate = 0.0;
+    short floorIndex = 0;
+    if (parameters.Get ("zCoordinate", zCoordinate)) {
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+        element.curtainWall.planeOffset = floorIndexAndOffset.second;
+        element.curtainWall.storyRelLevel = floorIndexAndOffset.second;
+    } else if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    }
+
+    // The element arrives filled from the Curtain Wall tool defaults, with the item's favorite
+    // (favoriteName) already applied to them by CreateElementsCommandBase: the frame and panel
+    // classes, surfaces, boundary and corner frames and the pattern all come from there. Only
+    // the fields the item names are written here.
+    double height = 0.0;
+    if (parameters.Get ("height", height)) {
+        element.curtainWall.height = height;
+    }
+
+    // The reference polyline: memo.coords holds the vertices from index 1 (index 0 is unused,
+    // as in every polygon memo), and every pair of consecutive vertices is one segment.
+    const UInt32 nCoords = coordinates.GetSize ();
+    if (memo.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    for (UIndex i = 0; i < nCoords; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+    }
+    element.curtainWall.nSegments = nCoords - 1;
+
+    bool patternChanged = false;
+    const GS::ObjectState* primaryPattern = parameters.Get ("primaryPattern");
+    if (primaryPattern != nullptr) {
+        const auto error = ApplyCurtainWallPattern (*primaryPattern, "primaryPattern", memo.cWSegPrimaryPattern);
+        if (error.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+        }
+        patternChanged = true;
+    }
+    const GS::ObjectState* secondaryPattern = parameters.Get ("secondaryPattern");
+    if (secondaryPattern != nullptr) {
+        const auto error = ApplyCurtainWallPattern (*secondaryPattern, "secondaryPattern", memo.cWSegSecondaryPattern);
+        if (error.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+        }
+        patternChanged = true;
+    }
+
+    GS::Array<GS::ObjectState> cells;
+    parameters.Get ("cells", cells);
+    const auto cellsError = ApplyCurtainWallPatternCells (cells, element, memo, patternChanged);
+    if (cellsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, cellsError.Get ());
+    }
+
+    return {};
+}
+
 CreateLabelsCommand::CreateLabelsCommand () :
     CreateElementsCommandBase ("CreateLabels", API_LabelID, "labelsData")
 {

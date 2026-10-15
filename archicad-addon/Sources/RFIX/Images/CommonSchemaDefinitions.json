@@ -2199,6 +2199,88 @@
             "coordinates"
         ]
     },
+    "CurtainWallPattern": {
+        "type": "object",
+        "description": "The column (primary) or row (secondary) pattern of a curtain wall segment: the sizes of the columns/rows of one pattern unit and how the unit is repeated along the segment.",
+        "properties": {
+            "sizes": {
+                "type": "array",
+                "description": "The sizes (widths of the columns or heights of the rows) of the pattern unit in meters, in order from the start of the segment or from the bottom. The unit is repeated to fill the segment.",
+                "items": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "minItems": 1
+            },
+            "logic": {
+                "$ref": "#/CurtainWallPatternLogic"
+            },
+            "origin": {
+                "$ref": "#/CurtainWallPatternOrigin"
+            },
+            "flexibleIndices": {
+                "type": "array",
+                "description": "Zero-based indices of the columns/rows of the pattern unit that 'BestDivision' may stretch. When omitted, all of them are flexible. Ignored by 'FixedSizes'.",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sizes"
+        ]
+    },
+    "CurtainWallPatternCell": {
+        "type": "object",
+        "description": "The panel and frame classes of one cell of the pattern unit of a curtain wall segment. Panel classes are numbered as Archicad numbers them: 0 is no panel (the cell is left empty), 1 is the first panel class of the curtain wall (as listed in the Curtain Wall Settings, from the favorite or the tool defaults), 2 the second and so on. Frame classes: 0 is no frame (the cell is merged with its neighbour), 1 the Division frame, 2 the Corner frame, 3 the Boundary frame, 4 the first custom frame class of the curtain wall, 5 the second and so on. Fields not given keep the default assignment of the cell.",
+        "properties": {
+            "columnIndex": {
+                "type": "integer",
+                "description": "Zero-based column of the cell within the pattern unit, counted from the start of the segment.",
+                "minimum": 0
+            },
+            "rowIndex": {
+                "type": "integer",
+                "description": "Zero-based row of the cell within the pattern unit, counted from the bottom.",
+                "minimum": 0
+            },
+            "panelClassIndex": {
+                "type": "integer",
+                "description": "The panel class of the cell. 0 leaves the cell without a panel (Archicad keeps a hidden 'deleted panel' subelement there). With a crossing frame it is the class of the left (or lower) half; see rightPanelClassIndex for the other half.",
+                "minimum": 0
+            },
+            "rightPanelClassIndex": {
+                "type": "integer",
+                "description": "The panel class of the right (or upper) half of a cell with a crossing frame. Defaults to panelClassIndex.",
+                "minimum": 0
+            },
+            "leftFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the frame on the left edge of the cell (the grid line at the start of the column).",
+                "minimum": 0
+            },
+            "bottomFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the frame on the bottom edge of the cell (the grid line at the bottom of the row).",
+                "minimum": 0
+            },
+            "crossingFrameType": {
+                "$ref": "#/CurtainWallCrossingFrameType"
+            },
+            "crossingFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the diagonal frame of the cell. Only used when crossingFrameType is not 'None'.",
+                "minimum": 0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "columnIndex",
+            "rowIndex"
+        ]
+    },
     "BeamHole": {
         "type": "object",
         "properties": {
@@ -3081,6 +3163,33 @@
             "AllSharp",
             "AllSmooth",
             "UserDefined"
+        ]
+    },
+    "CurtainWallPatternLogic": {
+        "type": "string",
+        "description": "How the pattern unit fills the segment: 'FixedSizes' keeps the given sizes and repeats the unit, which may leave a partial unit at the end (Archicad: Fixed Size); 'BestDivision' stretches the flexible columns/rows so that whole units fill the segment with the least stretching (Archicad: Best Division).",
+        "enum": [
+            "FixedSizes",
+            "BestDivision"
+        ]
+    },
+    "CurtainWallPatternOrigin": {
+        "type": "string",
+        "description": "Where the pattern unit is anchored on the segment: at its start, centered with a unit starting at the center, centered with a unit centered on the center, or at its end.",
+        "enum": [
+            "StartWithPattern",
+            "StartFromCenter",
+            "AlignToCenter",
+            "EndWithPattern"
+        ]
+    },
+    "CurtainWallCrossingFrameType": {
+        "type": "string",
+        "description": "The diagonal frame of a pattern cell: none, or from the bottom left to the top right corner, or from the top left to the bottom right corner.",
+        "enum": [
+            "None",
+            "FromBottomLeftToTopRight",
+            "FromTopLeftToBottomRight"
         ]
     },
     "BeamAnchorPoint": {
