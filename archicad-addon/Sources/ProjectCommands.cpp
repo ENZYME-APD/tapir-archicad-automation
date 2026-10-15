@@ -1666,6 +1666,15 @@ static bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath,
     return ParseImageFileType (extension, fileTypeID);
 }
 
+// The true color depths are platform-specific enumerators of API_ColorDepthID.
+#if defined (macintosh)
+static const API_ColorDepthID TrueColorDepth = APIColorDepth_MiC;            // Millions of Colors
+static const API_ColorDepthID TrueColorWithAlphaDepth = APIColorDepth_MiCP;  // Millions of Colors+
+#else
+static const API_ColorDepthID TrueColorDepth = APIColorDepth_TC24;           // True Color - 24 bit
+static const API_ColorDepthID TrueColorWithAlphaDepth = APIColorDepth_TC32;  // True Color - 32 bit
+#endif
+
 static bool ParseColorDepth (const GS::UniString& colorDepth, API_ColorDepthID& colorDepthID)
 {
     if (colorDepth == "blackAndWhite") {
@@ -1679,9 +1688,9 @@ static bool ParseColorDepth (const GS::UniString& colorDepth, API_ColorDepthID& 
     } else if (colorDepth == "256Grays") {
         colorDepthID = APIColorDepth_256G;
     } else if (colorDepth == "trueColor") {
-        colorDepthID = APIColorDepth_MiC;
+        colorDepthID = TrueColorDepth;
     } else if (colorDepth == "trueColorWithAlpha") {
-        colorDepthID = APIColorDepth_MiCP;
+        colorDepthID = TrueColorWithAlphaDepth;
     } else {
         return false;
     }
@@ -1706,7 +1715,7 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
         return CreateErrorResponse (APIERR_BADPARS, "format is missing and the extension of imageFilePath is not one of .png, .jpg, .jpeg, .bmp, .tif, .tiff and .gif.");
     }
 
-    API_ColorDepthID colorDepthID = APIColorDepth_MiC;
+    API_ColorDepthID colorDepthID = TrueColorDepth;
     GS::UniString colorDepth;
     if (parameters.Get ("colorDepth", colorDepth) && !ParseColorDepth (colorDepth, colorDepthID)) {
         return CreateErrorResponse (APIERR_BADPARS, "colorDepth is not one of the allowed values.");
