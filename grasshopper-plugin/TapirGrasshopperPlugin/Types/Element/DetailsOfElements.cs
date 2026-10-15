@@ -387,12 +387,28 @@ namespace TapirGrasshopperPlugin.Types.Element
         public double ZCoordinate;
     }
 
+    // The part of a text style the details components hand out.
+    public class TextStyleDetails
+    {
+        // Absent when no loaded font has the style's font index.
+        [JsonProperty(
+            "fontName",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string FontName;
+    }
+
     public class LabelDetails
     {
         [JsonProperty(
             "text",
             NullValueHandling = NullValueHandling.Ignore)]
         public string Text;
+
+        // Present for text labels only.
+        [JsonProperty(
+            "style",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public TextStyleDetails Style;
     }
 
     public class TextDetails
@@ -417,6 +433,11 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("zCoordinate")]
         public double ZCoordinate;
+
+        [JsonProperty(
+            "style",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public TextStyleDetails Style;
     }
 
     public class ZoneDetails
