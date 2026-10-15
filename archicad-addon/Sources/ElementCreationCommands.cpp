@@ -4,6 +4,9 @@
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 
+#include <algorithm>
+#include <vector>
+
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
@@ -544,6 +547,116 @@ CreateZonesCommand::CreateZonesCommand () :
 {
 }
 
+// An automatic zone - one placed by geometry.referencePosition - is found around its
+// reference point on the story that is ACTIVE in the floor plan, not on the story its
+// floorIndex names: with any other story active ACAPI_Element_Create answers APIERR_GENERAL
+// ("Failed to create new Zone"), and the very same call succeeds once that story is
+// activated with ChangeWindow (#853). A manual zone is created on its floorIndex from
+// any story.
+//
+// So the items whose automatic zone names a story other than the active one are created
+// with that story made active (APIStory_GoTo, which is what ChangeWindow and SetStories
+// use), and the previously active story is put back afterwards. The story is switched
+// outside the undoable command, as those two commands do, so the items are created in
+// groups of one story each - one undoable command per group - and the responses are put
+// back in the order of the request. A call with no such item runs exactly as before.
+GS::ObjectState CreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    GS::Array<GS::ObjectState> zonesData;
+    parameters.Get (arrayFieldName, zonesData);
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    // The story each item needs active: its floorIndex for an automatic zone, the active
+    // story for everything else (a manual zone, or an automatic one without floorIndex,
+    // which stays on the story of the Zone tool defaults).
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (zonesData.GetSize ());
+    for (const GS::ObjectState& data : zonesData) {
+        short story = originalActStory;
+        const GS::ObjectState* geometry = data.Get ("geometry");
+        if (geometry != nullptr && geometry->Get ("referencePosition") != nullptr) {
+            data.Get ("floorIndex", story);
+        }
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (zonesData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::ObjectState groupParameters;
+        const auto& groupItems = groupParameters.AddList<GS::ObjectState> ("zonesData");
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems (zonesData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                // Archicad would answer the create with the bare "Failed to create new Zone"
+                // of the issue; say what it actually needs instead.
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where an automatic zone is found around its referencePosition; "
+                    "see GetStories for the valid story indices, or activate the story with ChangeWindow first.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateElementsCommandBase::Execute (groupParameters, processControl);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create new Zone");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
+}
+
 GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () const
 {
     return R"({
@@ -561,7 +674,8 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
                     "floorIndex": {
-                        "type": "number"
+                        "type": "number",
+                        "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
                     },
                     "name": {
                         "type": "string",
