@@ -1237,6 +1237,30 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.5.1",
             "Moves the given design options to another sets. Available from Archicad 29."
         );
+        err |= RegisterCommand<RenameDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name and/or the string id of the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option combinations. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option combinations. Available from Archicad 29."
+        );
         AddCommandGroup (designOptionsCommands);
     }
 
