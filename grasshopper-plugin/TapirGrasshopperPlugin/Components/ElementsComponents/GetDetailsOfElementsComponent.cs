@@ -1374,6 +1374,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutIntegers(
                 "Pens",
                 "Pen indices of the texts.");
+
+            OutTexts(
+                "FontNames",
+                "Font name of each text (null when no loaded font has the text's font index).");
         }
 
         protected override void ManageResponse(
@@ -1386,6 +1390,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var heights = new List<double>();
             var justifications = new List<string>();
             var pens = new List<int>();
+            var fontNames = new List<string>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -1417,6 +1422,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 heights.Add(textDetails.Height);
                 justifications.Add(textDetails.Justification);
                 pens.Add(textDetails.Pen);
+                fontNames.Add(textDetails.Style?.FontName);
             }
 
             da.SetDataList(
@@ -1440,6 +1446,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 6,
                 pens);
+            da.SetDataList(
+                7,
+                fontNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -1468,6 +1477,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutTexts(
                 "Texts",
                 "Content of the text-type labels.");
+
+            OutTexts(
+                "FontNames",
+                "Font name of each text-type label (null when no loaded font has the label's font index).");
         }
 
         protected override void ManageResponse(
@@ -1475,6 +1488,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             var labels = new List<ElementGuidWrapper>();
             var contents = new List<string>();
+            var fontNames = new List<string>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -1497,6 +1511,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ElementId = inputs.Elements[i].ElementId
                     });
                 contents.Add(labelDetails.Text);
+                fontNames.Add(labelDetails.Style?.FontName);
             }
 
             da.SetDataList(
@@ -1505,6 +1520,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 1,
                 contents);
+            da.SetDataList(
+                2,
+                fontNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>

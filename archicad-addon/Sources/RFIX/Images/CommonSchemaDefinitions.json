@@ -6368,8 +6368,8 @@
                 "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
             },
             "renovationFilterGuid": {
-                "$ref": "#/Guid",
-                "description": "GUID of the renovation filter applied to the view."
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter applied to the view."
             },
             "d3styleName": {
                 "type": "string",

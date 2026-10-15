@@ -772,6 +772,26 @@ namespace TapirGrasshopperPlugin.Components
             if (cadResponse.Succeeded)
             {
                 response = cadResponse.Result;
+
+                // A Tapir command that fails as a whole (for example one that
+                // needs a newer Archicad) still succeeds on the connection,
+                // with nothing but an error in its result.
+                if (response != null &&
+                    response.Count == 1 &&
+                    response["error"] is JToken error &&
+                    error.Type != JTokenType.Null)
+                {
+                    var message = error is JObject errorObject
+                        ? errorObject["message"]?.ToString()
+                        : error.ToString();
+                    this.AddError(
+                        string.IsNullOrEmpty(message)
+                            ? $"The {commandName} command failed."
+                            : message);
+                    response = null;
+                    return false;
+                }
+
                 return true;
             }
             else
