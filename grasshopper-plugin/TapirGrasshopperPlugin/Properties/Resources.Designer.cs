@@ -318,6 +318,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetQuantitiesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetQuantitiesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -1056,6 +1064,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetMarkerParametersOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMarkerParametersOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetMarkerParametersOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetMarkerParametersOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap TeamworkSend
         {
             get {
@@ -1084,6 +1108,46 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ReleaseElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReserveLockableObjectSet
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReserveLockableObjectSet", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReleaseLockableObjectSet
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReleaseLockableObjectSet", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLockableObjectSetStatus
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLockableObjectSetStatus", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReserveHotlinkCacheManagement
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReserveHotlinkCacheManagement", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReleaseHotlinkCacheManagement
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReleaseHotlinkCacheManagement", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1536,6 +1600,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetIFCPropertiesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetIFCPropertiesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetRevisionIssues
         {
             get {
@@ -1860,6 +1932,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateWalls", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateCurtainWalls
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateCurtainWalls", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
