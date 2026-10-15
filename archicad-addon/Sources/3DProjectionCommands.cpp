@@ -6,51 +6,6 @@
 // (API_PerspPars) or the axonometric transformation (API_AxonoPars), whichever the
 // projection currently is.
 
-static const char* PerspectiveParametersSchema = R"({
-    "type": "object",
-    "description": "The parameters of a perspective projection.",
-    "properties": {
-        "cameraPosition": {
-            "$ref": "#/Coordinate3D",
-            "description": "The position of the camera."
-        },
-        "targetPosition": {
-            "$ref": "#/Coordinate3D",
-            "description": "The position of the target point the camera looks at."
-        },
-        "distance": {
-            "type": "number",
-            "description": "The distance between the camera and the target."
-        },
-        "azimuth": {
-            "type": "number",
-            "description": "The azimuth angle of the camera."
-        },
-        "viewCone": {
-            "type": "number",
-            "description": "The view cone angle of the camera."
-        },
-        "rollAngle": {
-            "type": "number",
-            "description": "The roll angle of the camera."
-        },
-        "isTwoPointPersp": {
-            "type": "boolean",
-            "description": "True for a two-point perspective (vertical edges stay vertical)."
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "cameraPosition",
-        "targetPosition",
-        "distance",
-        "azimuth",
-        "viewCone",
-        "rollAngle",
-        "isTwoPointPersp"
-    ]
-})";
-
 Get3DProjectionSettingsCommand::Get3DProjectionSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -62,7 +17,7 @@ GS::String Get3DProjectionSettingsCommand::GetName () const
 
 GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
     "type": "object",
     "properties": {
         "isPersp": {
@@ -77,10 +32,13 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             "$ref": "#/ElementId",
             "description": "The active Camera Set element. Missing when there is none."
         },
-        "perspective": )") + PerspectiveParametersSchema + R"(,
+        "perspective": {
+            "$ref": "#/PerspectiveProjectionParameters",
+            "description": "The perspective parameters. Present only when isPersp is true."
+        },
         "axonometric": {
             "type": "object",
-            "description": "The parameters of an axonometric projection.",
+            "description": "The parameters of an axonometric projection. Present only when isPersp is false.",
             "properties": {
                 "transformationMatrix": {
                     "type": "array",
@@ -124,8 +82,8 @@ GS::ObjectState Get3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
     if (projectionInfo.isPersp) {
         const API_PerspPars& persp = projectionInfo.u.persp;
         response.Add ("perspective", GS::ObjectState (
-            "cameraPosition", Create3DCoordinateObjectState (persp.pos),
-            "targetPosition", Create3DCoordinateObjectState (persp.target),
+            "cameraPosition", Create3DCoordinateObjectState (API_Coord3D { persp.pos.x, persp.pos.y, persp.cameraZ }),
+            "targetPosition", Create3DCoordinateObjectState (API_Coord3D { persp.target.x, persp.target.y, persp.targetZ }),
             "distance", persp.distance,
             "azimuth", persp.azimuth,
             "viewCone", persp.viewCone,
@@ -154,10 +112,12 @@ GS::String Set3DProjectionSettingsCommand::GetName () const
 
 GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
     "type": "object",
     "properties": {
-        "perspective": )") + PerspectiveParametersSchema + R"(
+        "perspective": {
+            "$ref": "#/PerspectiveProjectionParameters"
+        }
     },
     "additionalProperties": false,
     "required": [
@@ -205,12 +165,23 @@ GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
         return CreateFailedExecutionResult (err, "Failed to get the current 3D projection settings.");
     }
 
+    // The sun position is part of both the perspective and the axonometric settings;
+    // keep the current one instead of zeroing it with the rest of the parameters.
+    const API_SunAngleSettings sunAngSets = projectionInfo.isPersp ? projectionInfo.u.persp.sunAngSets : projectionInfo.u.axono.sunAngSets;
+
     projectionInfo.isPersp = true;
     projectionInfo.camGuid = APINULLGuid;
     API_PerspPars& persp = projectionInfo.u.persp;
     persp = API_PerspPars {};
-    persp.pos = Get3DCoordinateFromObjectState (cameraPosition);
-    persp.target = Get3DCoordinateFromObjectState (targetPosition);
+    persp.sunAngSets = sunAngSets;
+    // API_PerspPars keeps the X/Y of the camera and the target as 2D coordinates and
+    // their heights in separate fields.
+    const API_Coord3D camera = Get3DCoordinateFromObjectState (cameraPosition);
+    const API_Coord3D target = Get3DCoordinateFromObjectState (targetPosition);
+    persp.pos = API_Coord { camera.x, camera.y };
+    persp.cameraZ = camera.z;
+    persp.target = API_Coord { target.x, target.y };
+    persp.targetZ = target.z;
     persp.distance = distance;
     persp.azimuth = azimuth;
     persp.viewCone = viewCone;
