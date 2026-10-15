@@ -103,6 +103,39 @@ namespace TapirGrasshopperPlugin.Types.Element
             "arcAngle",
             NullValueHandling = NullValueHandling.Ignore)]
         public double? ArcAngle;
+
+        // The fields below mirror the inputs of CreateWalls and ModifyWalls.
+
+        [JsonProperty("begThickness")]
+        public double BegThickness;
+
+        [JsonProperty("offset")]
+        public double Offset;
+
+        [JsonProperty("bottomOffset")]
+        public double BottomOffset;
+
+        [JsonProperty("referenceLineLocation")]
+        public string ReferenceLineLocation;
+
+        [JsonProperty("structureType")]
+        public string StructureType;
+
+        // Only the one matching the structure type is present.
+        [JsonProperty(
+            "buildingMaterialId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject BuildingMaterialId;
+
+        [JsonProperty(
+            "compositeId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject CompositeId;
+
+        [JsonProperty(
+            "profileId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject ProfileId;
     }
 
     public class BeamDetails
@@ -130,6 +163,39 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("verticalCurveHeight")]
         public double VerticalCurveHeight;
+
+        // The fields below mirror the inputs of CreateBeams. The section
+        // fields come from the first segment of the beam and are absent when
+        // the segments could not be read.
+
+        [JsonProperty("anchorPoint")]
+        public string AnchorPoint;
+
+        [JsonProperty(
+            "width",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? Width;
+
+        [JsonProperty(
+            "height",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? Height;
+
+        [JsonProperty(
+            "circleBased",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CircleBased;
+
+        // Only the one matching the structure of the segment is present.
+        [JsonProperty(
+            "buildingMaterialId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject BuildingMaterialId;
+
+        [JsonProperty(
+            "profileId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject ProfileId;
     }
 
     public class ColumnDetails
@@ -139,6 +205,48 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("zCoordinate")]
         public double ZCoordinate;
+
+        // The fields below mirror the inputs of CreateColumns and
+        // ModifyColumns. The section fields come from the first segment of
+        // the column and are absent when the segments could not be read.
+
+        [JsonProperty("height")]
+        public double Height;
+
+        [JsonProperty("bottomOffset")]
+        public double BottomOffset;
+
+        [JsonProperty("axisRotationAngle")]
+        public double AxisRotationAngle;
+
+        [JsonProperty("coreAnchor")]
+        public string CoreAnchor;
+
+        [JsonProperty(
+            "width",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? Width;
+
+        [JsonProperty(
+            "depth",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? Depth;
+
+        [JsonProperty(
+            "circleBased",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CircleBased;
+
+        // Only the one matching the structure of the segment is present.
+        [JsonProperty(
+            "buildingMaterialId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject BuildingMaterialId;
+
+        [JsonProperty(
+            "profileId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject ProfileId;
     }
 
     public class HoleDetails
@@ -167,6 +275,28 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("holes")]
         public List<HoleDetails> Holes;
+
+        // The fields below mirror the inputs of CreateSlabs and ModifySlabs.
+
+        [JsonProperty("thickness")]
+        public double Thickness;
+
+        [JsonProperty("structureType")]
+        public string StructureType;
+
+        [JsonProperty("referencePlaneLocation")]
+        public string ReferencePlaneLocation;
+
+        // Only the one matching the structure type is present.
+        [JsonProperty(
+            "buildingMaterialId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject BuildingMaterialId;
+
+        [JsonProperty(
+            "compositeId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public AttributeGuidObject CompositeId;
     }
 
     public class RoofPivotLine
