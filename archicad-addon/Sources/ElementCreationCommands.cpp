@@ -4,6 +4,9 @@
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 
+#include <algorithm>
+#include <vector>
+
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
@@ -544,6 +547,116 @@ CreateZonesCommand::CreateZonesCommand () :
 {
 }
 
+// An automatic zone - one placed by geometry.referencePosition - is found around its
+// reference point on the story that is ACTIVE in the floor plan, not on the story its
+// floorIndex names: with any other story active ACAPI_Element_Create answers APIERR_GENERAL
+// ("Failed to create new Zone"), and the very same call succeeds once that story is
+// activated with ChangeWindow (#853). A manual zone is created on its floorIndex from
+// any story.
+//
+// So the items whose automatic zone names a story other than the active one are created
+// with that story made active (APIStory_GoTo, which is what ChangeWindow and SetStories
+// use), and the previously active story is put back afterwards. The story is switched
+// outside the undoable command, as those two commands do, so the items are created in
+// groups of one story each - one undoable command per group - and the responses are put
+// back in the order of the request. A call with no such item runs exactly as before.
+GS::ObjectState CreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    GS::Array<GS::ObjectState> zonesData;
+    parameters.Get (arrayFieldName, zonesData);
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    // The story each item needs active: its floorIndex for an automatic zone, the active
+    // story for everything else (a manual zone, or an automatic one without floorIndex,
+    // which stays on the story of the Zone tool defaults).
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (zonesData.GetSize ());
+    for (const GS::ObjectState& data : zonesData) {
+        short story = originalActStory;
+        const GS::ObjectState* geometry = data.Get ("geometry");
+        if (geometry != nullptr && geometry->Get ("referencePosition") != nullptr) {
+            data.Get ("floorIndex", story);
+        }
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (zonesData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::ObjectState groupParameters;
+        const auto& groupItems = groupParameters.AddList<GS::ObjectState> ("zonesData");
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems (zonesData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                // Archicad would answer the create with the bare "Failed to create new Zone"
+                // of the issue; say what it actually needs instead.
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where an automatic zone is found around its referencePosition; "
+                    "see GetStories for the valid story indices, or activate the story with ChangeWindow first.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateElementsCommandBase::Execute (groupParameters, processControl);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create new Zone");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
+}
+
 GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () const
 {
     return R"({
@@ -561,7 +674,8 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
                     "floorIndex": {
-                        "type": "number"
+                        "type": "number",
+                        "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
                     },
                     "name": {
                         "type": "string",
@@ -2243,7 +2357,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // change of those is written into the runs by the content rebuild below. The
                 // element-level fields apply through their own masks without a rebuild, which
                 // keeps the content, and any autotext reference in it, as it is.
-                TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+                auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+                if (styleErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (*styleErr));
+                    continue;
+                }
             }
             const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
 
@@ -2422,7 +2540,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 if (styleOS != nullptr) {
                     // Same as ModifyTexts: applied before the content rebuild, which only the
                     // run-level fields need.
-                    TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                    auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                    if (styleErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*styleErr));
+                        continue;
+                    }
                 }
                 const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
                 // See ModifyTexts for why the value-returning overloads are required here (the
@@ -2460,7 +2582,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             } else {
                 const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
                 if (symbolStyleOS != nullptr) {
-                    TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                    auto symbolStyleErr = TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                    if (symbolStyleErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*symbolStyleErr));
+                        continue;
+                    }
                 }
             }
 
@@ -2983,10 +3109,40 @@ static API_ArrowID StringToArrowType (const GS::UniString& s)
 
 namespace TextLabelDetails {
 
+// The font a style or a run gives: fontName resolved to the index of the loaded font of that name,
+// otherwise fontIndex as given; fontName wins when both are present. A fontName no loaded font has
+// is an error rather than a silently kept default (issue #844). NoValue when neither is given.
+static GS::Optional<GS::ObjectState> GetFontIndexFromDetails (const GS::ObjectState& details, GS::Optional<short>& fontIndex)
+{
+    GS::UniString fontName;
+    if (details.Get ("fontName", fontName)) {
+        fontIndex = GetFontIndexFromName (fontName);
+        if (!fontIndex.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADNAME, GS::UniString::Printf ("No loaded font is named '%T'. fontName takes the name of a Font attribute, as GetDetailsOfElements reports it in fontName; use fontIndex to give the font by its index instead.", fontName.ToPrintf ()));
+        }
+        return {};
+    }
+
+    short index = 0;
+    if (details.Get ("fontIndex", index)) {
+        fontIndex = index;
+    }
+    return {};
+}
+
+static void AddFontName (GS::ObjectState& os, short fontIndex)
+{
+    const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (fontIndex);
+    if (fontName.HasValue ()) {
+        os.Add ("fontName", *fontName);
+    }
+}
+
 void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly)
 {
     os.Add ("penIndex", text.pen);
     os.Add ("fontIndex", text.font);
+    AddFontName (os, text.font);
     os.Add ("bold", (text.faceBits & APIFace_Bold) != 0);
     os.Add ("italic", (text.faceBits & APIFace_Italic) != 0);
     os.Add ("underline", (text.faceBits & APIFace_Underline) != 0);
@@ -3028,7 +3184,7 @@ void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool in
     }
 }
 
-void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
+GS::Optional<GS::ObjectState> ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
 {
     // Mask bits must target the real top-level union member (API_TextType for a standalone
     // Text element, API_LabelType::u.text for a text-class Label) - both share byte layout for
@@ -3041,7 +3197,17 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
     }
 
     if (details.Get ("penIndex", text.pen)) { TEXT_MASK_SET (pen) }
-    if (details.Get ("fontIndex", text.font)) { TEXT_MASK_SET (font) }
+    {
+        GS::Optional<short> fontIndex;
+        const auto fontErr = GetFontIndexFromDetails (details, fontIndex);
+        if (fontErr.HasValue ()) {
+            return fontErr;
+        }
+        if (fontIndex.HasValue ()) {
+            text.font = *fontIndex;
+            TEXT_MASK_SET (font)
+        }
+    }
 
     bool bold = (text.faceBits & APIFace_Bold) != 0;
     bool italic = (text.faceBits & APIFace_Italic) != 0;
@@ -3107,6 +3273,8 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
 #endif
 
 #undef TEXT_MASK_SET
+
+    return {};
 }
 
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters)
@@ -3133,8 +3301,12 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             runText = NormalizeLineBreaks (runText);
             short pen = textData.pen;
             runOS.Get ("penIndex", pen);
-            short font = textData.font;
-            runOS.Get ("fontIndex", font);
+            GS::Optional<short> runFont;
+            const auto fontErr = GetFontIndexFromDetails (runOS, runFont);
+            if (fontErr.HasValue ()) {
+                return fontErr;
+            }
+            const short font = runFont.HasValue () ? *runFont : textData.font;
             bool bold = (textData.faceBits & APIFace_Bold) != 0;
             bool italic = (textData.faceBits & APIFace_Italic) != 0;
             bool underline = (textData.faceBits & APIFace_Underline) != 0;
@@ -3316,6 +3488,7 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         runOS.Add ("text", GS::UniString (content.GetSubstring (start, end > start ? end - start : 0)));
         runOS.Add ("penIndex", run.pen);
         runOS.Add ("fontIndex", run.font);
+        AddFontName (runOS, run.font);
         runOS.Add ("bold", (run.faceBits & APIFace_Bold) != 0);
         runOS.Add ("italic", (run.faceBits & APIFace_Italic) != 0);
         runOS.Add ("underline", (run.faceBits & APIFace_Underline) != 0);
@@ -3332,7 +3505,7 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 
 bool StyleNeedsContentRebuild (const GS::ObjectState& style)
 {
-    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "bold", "italic", "underline", "height",
+    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "fontName", "bold", "italic", "underline", "height",
                                                   "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
     for (const char* field : runLevelFields) {
         if (style.Contains (GS::String (field))) {
@@ -3374,7 +3547,12 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
 
     // Every run keeps its own values except the ones the style names: those are set on all runs,
     // otherwise a style-only "bold": true would be overridden by the runs' read-back faces.
-    static const char* const shortFields[] = { "penIndex", "fontIndex" };
+    // The style's font comes as fontName or fontIndex; the runs get it as the index either way.
+    GS::Optional<short> styleFontIndex;
+    const auto fontErr = GetFontIndexFromDetails (style, styleFontIndex);
+    if (fontErr.HasValue ()) {
+        return fontErr;
+    }
     static const char* const boolFields[] = { "bold", "italic", "underline",
                                               "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
     const auto& runList = contentParams.AddList<GS::ObjectState> ("runs");
@@ -3383,11 +3561,15 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
         GS::UniString runText;
         run.Get ("text", runText);
         mergedRun.Add ("text", runText);
-        for (const char* field : shortFields) {
-            short value = 0;
-            if (style.Get (field, value) || run.Get (field, value)) {
-                mergedRun.Add (field, value);
-            }
+        short penIndex = 0;
+        if (style.Get ("penIndex", penIndex) || run.Get ("penIndex", penIndex)) {
+            mergedRun.Add ("penIndex", penIndex);
+        }
+        short fontIndex = 0;
+        if (styleFontIndex.HasValue ()) {
+            mergedRun.Add ("fontIndex", *styleFontIndex);
+        } else if (run.Get ("fontIndex", fontIndex)) {
+            mergedRun.Add ("fontIndex", fontIndex);
         }
         for (const char* field : boolFields) {
             bool value = false;
@@ -3519,6 +3701,7 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
 {
     os.Add ("textWay", LabelTextWayToString (label.textWay));
     os.Add ("fontIndex", label.font);
+    AddFontName (os, label.font);
     os.Add ("bold", (label.faceBits & APIFace_Bold) != 0);
     os.Add ("italic", (label.faceBits & APIFace_Italic) != 0);
     os.Add ("underline", (label.faceBits & APIFace_Underline) != 0);
@@ -3533,15 +3716,23 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
     os.Add ("effectProtected", (label.effectsBits & APIEffect_Protected) != 0);
 }
 
-void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
+GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
 {
     GS::UniString strVal;
     if (details.Get ("textWay", strVal)) {
         label.textWay = StringToLabelTextWay (strVal);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textWay);
     }
-    if (details.Get ("fontIndex", label.font)) {
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+    {
+        GS::Optional<short> fontIndex;
+        const auto fontErr = GetFontIndexFromDetails (details, fontIndex);
+        if (fontErr.HasValue ()) {
+            return fontErr;
+        }
+        if (fontIndex.HasValue ()) {
+            label.font = *fontIndex;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+        }
     }
     bool bold = (label.faceBits & APIFace_Bold) != 0;
     bool italic = (label.faceBits & APIFace_Italic) != 0;
@@ -3582,6 +3773,8 @@ void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_L
         label.effectsBits = (strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, effectsBits);
     }
+
+    return {};
 }
 
 } // namespace TextLabelDetails
@@ -3678,7 +3871,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         // element - only the run's own copies matter once paragraphs exist.
         const GS::ObjectState* styleOS = parameters.Get ("style");
         if (styleOS != nullptr) {
-            TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+            auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+            if (styleErr.HasValue ()) {
+                return styleErr;
+            }
         }
         auto err = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, parameters);
         if (err.HasValue ()) {
@@ -3687,7 +3883,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     } else {
         const GS::ObjectState* symbolStyleOS = parameters.Get ("symbolStyle");
         if (symbolStyleOS != nullptr) {
-            TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+            auto symbolStyleErr = TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+            if (symbolStyleErr.HasValue ()) {
+                return symbolStyleErr;
+            }
         }
     }
 
@@ -3793,7 +3992,10 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
 
     const GS::ObjectState* styleOS = parameters.Get ("style");
     if (styleOS != nullptr) {
-        TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+        auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+        if (styleErr.HasValue ()) {
+            return styleErr;
+        }
     }
 
     // Top-level height/pen/angle/justification take precedence over 'style' for backward

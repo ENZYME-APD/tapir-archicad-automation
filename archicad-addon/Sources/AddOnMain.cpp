@@ -9,6 +9,7 @@
 #include "DeveloperTools.hpp"
 
 #include "3DCutPlaneCommands.hpp"
+#include "3DProjectionCommands.hpp"
 
 
 
@@ -306,6 +307,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.6.0",
             "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
         );
+        err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
+            projectCommands, "1.7.1",
+            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format."
+        );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
             "Gets the project calculation units."
@@ -362,6 +367,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<Get3DBoundingBoxesCommand> (
             elementCommands, "1.1.2",
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
+        );
+        err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
+        );
+        err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values."
         );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
@@ -1081,6 +1094,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
         );
+        err |= RegisterCommand<Get3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry."
+        );
+        err |= RegisterCommand<Set3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
+        );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
@@ -1227,6 +1248,30 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<MoveDesignOptionsToAnotherSetCommand> (
             designOptionsCommands, "1.5.1",
             "Moves the given design options to another sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name and/or the string id of the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option combinations. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option combinations. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
     }

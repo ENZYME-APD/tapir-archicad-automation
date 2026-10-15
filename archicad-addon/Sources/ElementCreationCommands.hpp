@@ -44,6 +44,7 @@ class CreateZonesCommand : public CreateElementsCommandBase
 {
 public:
     CreateZonesCommand ();
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
@@ -189,7 +190,8 @@ public:
 namespace TextLabelDetails {
 
 void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly);
-void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
+// Returns an error response for a fontName no loaded font has.
+GS::Optional<GS::ObjectState> ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
 
 // Reads memo.textContent and every paragraph's runs back into "text" (flat concatenation),
 // "paragraphCount" and, when the content has paragraphs, "runs" (array of TextRunDetails).
@@ -214,6 +216,7 @@ void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
 GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
 
 void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label);
-void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+// Returns an error response for a fontName no loaded font has.
+GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
 
 }
