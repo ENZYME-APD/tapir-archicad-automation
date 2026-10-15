@@ -1015,4 +1015,43 @@
   <data name="ChangeHotlinkNodes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ChangeHotlinkNodes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetElectricalPanels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElectricalPanels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElectricalCircuits" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElectricalCircuits.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElectricalDevices" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElectricalDevices.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElectricalProjectSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElectricalProjectSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateElectricalPanels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateElectricalPanels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateElectricalDevices" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateElectricalDevices.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyElectricalPanels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyElectricalPanels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateElectricalCircuits" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateElectricalCircuits.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteElectricalCircuits" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteElectricalCircuits.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyElectricalCircuits" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyElectricalCircuits.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyElectricalDevices" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyElectricalDevices.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ConnectToElectricalCircuits" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ConnectToElectricalCircuits.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyElectricalProjectSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyElectricalProjectSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
