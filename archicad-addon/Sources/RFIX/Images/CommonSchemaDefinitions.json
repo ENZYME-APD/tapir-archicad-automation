@@ -10844,5 +10844,851 @@
             "effectProtected": { "type": "boolean" }
         },
         "additionalProperties": false
+    },
+    "WallQuantities": {
+        "type": "object",
+        "description": "Quantities of a Wall element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the wall."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the wall (openings smaller than minOpeningSize are not subtracted)."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the wall (openings not subtracted)."
+            },
+            "referenceSideSurface": {
+                "type": "number",
+                "description": "Net surface on the reference line side."
+            },
+            "oppositeSideSurface": {
+                "type": "number",
+                "description": "Net surface on the side opposite to the reference line."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Surface of the edges of the wall."
+            },
+            "referenceSideSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional surface on the reference line side."
+            },
+            "oppositeSideSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional surface on the side opposite to the reference line."
+            },
+            "grossReferenceSideSurface": {
+                "type": "number",
+                "description": "Gross surface on the reference line side."
+            },
+            "grossOppositeSideSurface": {
+                "type": "number",
+                "description": "Gross surface on the side opposite to the reference line."
+            },
+            "length": {
+                "type": "number",
+                "description": "Average of the lengths on the two sides of the wall."
+            },
+            "referenceSideLength": {
+                "type": "number",
+                "description": "Length on the reference line side."
+            },
+            "oppositeSideLength": {
+                "type": "number",
+                "description": "Length on the side opposite to the reference line."
+            },
+            "centerLength": {
+                "type": "number",
+                "description": "Length of the wall at its center."
+            },
+            "referenceLineLength": {
+                "type": "number",
+                "description": "Length of the reference line."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the wall."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the wall."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the wall."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Floor plan perimeter of the wall."
+            },
+            "windowsSurface": {
+                "type": "number",
+                "description": "Surface of the windows in the wall."
+            },
+            "doorsSurface": {
+                "type": "number",
+                "description": "Surface of the doors in the wall."
+            },
+            "emptyOpeningsSurface": {
+                "type": "number",
+                "description": "Surface of the empty openings in the wall."
+            },
+            "emptyOpeningsVolume": {
+                "type": "number",
+                "description": "Volume of the empty openings in the wall."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "referenceSideSurface",
+            "oppositeSideSurface",
+            "edgeSurface",
+            "referenceSideSurfaceConditional",
+            "oppositeSideSurfaceConditional",
+            "grossReferenceSideSurface",
+            "grossOppositeSideSurface",
+            "length",
+            "referenceSideLength",
+            "oppositeSideLength",
+            "centerLength",
+            "referenceLineLength",
+            "minHeight",
+            "maxHeight",
+            "area",
+            "perimeter",
+            "windowsSurface",
+            "doorsSurface",
+            "emptyOpeningsSurface",
+            "emptyOpeningsVolume"
+        ]
+    },
+    "ColumnQuantities": {
+        "type": "object",
+        "description": "Quantities of a Column element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "coreVolume": {
+                "type": "number",
+                "description": "Net volume of the column core."
+            },
+            "veneerVolume": {
+                "type": "number",
+                "description": "Net volume of the column veneer."
+            },
+            "coreGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column core."
+            },
+            "veneerGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column veneer."
+            },
+            "coreSurface": {
+                "type": "number",
+                "description": "Net side surface of the column core."
+            },
+            "veneerSurface": {
+                "type": "number",
+                "description": "Net side surface of the column veneer."
+            },
+            "coreGrossSurface": {
+                "type": "number",
+                "description": "Gross side surface of the column core."
+            },
+            "veneerGrossSurface": {
+                "type": "number",
+                "description": "Gross side surface of the column veneer."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the column."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Floor plan perimeter of the column."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the column."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the column."
+            },
+            "crossSectionAreaCutBegin": {
+                "type": "number",
+                "description": "Area of the cross section at the beginning of the column."
+            },
+            "crossSectionAreaCutEnd": {
+                "type": "number",
+                "description": "Area of the cross section at the end of the column."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coreVolume",
+            "veneerVolume",
+            "coreGrossVolume",
+            "veneerGrossVolume",
+            "coreSurface",
+            "veneerSurface",
+            "coreGrossSurface",
+            "veneerGrossSurface",
+            "area",
+            "perimeter",
+            "minHeight",
+            "maxHeight",
+            "crossSectionAreaCutBegin",
+            "crossSectionAreaCutEnd"
+        ]
+    },
+    "BeamQuantities": {
+        "type": "object",
+        "description": "Quantities of a Beam element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the beam."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the beam."
+            },
+            "holesVolume": {
+                "type": "number",
+                "description": "Total volume of the holes in the beam."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the beam."
+            },
+            "leftLength": {
+                "type": "number",
+                "description": "Length on the left side of the reference line."
+            },
+            "rightLength": {
+                "type": "number",
+                "description": "Length on the right side of the reference line."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Surface of the top of the beam."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Surface of the bottom of the beam."
+            },
+            "leftSurface": {
+                "type": "number",
+                "description": "Side surface on the left side of the reference line."
+            },
+            "rightSurface": {
+                "type": "number",
+                "description": "Side surface on the right side of the reference line."
+            },
+            "endSurface": {
+                "type": "number",
+                "description": "Surface of both ends of the beam."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total surface of the holes in the beam."
+            },
+            "holesEdgeSurface": {
+                "type": "number",
+                "description": "Total surface of the hole edges in the beam."
+            },
+            "holesNumber": {
+                "type": "integer",
+                "description": "Number of holes in the beam."
+            },
+            "crossSectionAreaCutBegin": {
+                "type": "number",
+                "description": "Area of the cross section at the beginning of the beam."
+            },
+            "crossSectionAreaCutEnd": {
+                "type": "number",
+                "description": "Area of the cross section at the end of the beam."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "holesVolume",
+            "area",
+            "leftLength",
+            "rightLength",
+            "topSurface",
+            "bottomSurface",
+            "leftSurface",
+            "rightSurface",
+            "endSurface",
+            "holesSurface",
+            "holesEdgeSurface",
+            "holesNumber",
+            "crossSectionAreaCutBegin",
+            "crossSectionAreaCutEnd"
+        ]
+    },
+    "SlabQuantities": {
+        "type": "object",
+        "description": "Quantities of a Slab element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the slab."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the slab."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the slab."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Net top surface of the slab."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Net bottom surface of the slab."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Net surface of the edges of the slab."
+            },
+            "topSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional top surface of the slab."
+            },
+            "bottomSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional bottom surface of the slab."
+            },
+            "grossTopSurface": {
+                "type": "number",
+                "description": "Gross top surface of the slab."
+            },
+            "grossBottomSurface": {
+                "type": "number",
+                "description": "Gross bottom surface of the slab."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross surface of the edges of the slab."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the slab."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes in the slab."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes in the slab."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "topSurface",
+            "bottomSurface",
+            "edgeSurface",
+            "topSurfaceConditional",
+            "bottomSurfaceConditional",
+            "grossTopSurface",
+            "grossBottomSurface",
+            "grossEdgeSurface",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter"
+        ]
+    },
+    "RoofQuantities": {
+        "type": "object",
+        "description": "Quantities of a Roof element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the roof."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the roof."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the roof."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Net top surface of the roof."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Net bottom surface of the roof."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Net surface of the edges of the roof."
+            },
+            "topSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional top surface of the roof."
+            },
+            "bottomSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional bottom surface of the roof."
+            },
+            "grossTopSurface": {
+                "type": "number",
+                "description": "Gross top surface of the roof."
+            },
+            "grossBottomSurface": {
+                "type": "number",
+                "description": "Gross bottom surface of the roof."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross surface of the edges of the roof."
+            },
+            "contourArea": {
+                "type": "number",
+                "description": "Area of the roof contour polygon."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the roof."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes in the roof."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes in the roof."
+            },
+            "openingsSurface": {
+                "type": "number",
+                "description": "Total surface of the roof openings."
+            },
+            "ridgesLength": {
+                "type": "number",
+                "description": "Length of the ridge edges (divided by 2, as Archicad reports it)."
+            },
+            "valleysLength": {
+                "type": "number",
+                "description": "Length of the valley edges (divided by 2, as Archicad reports it)."
+            },
+            "hipsLength": {
+                "type": "number",
+                "description": "Length of the hip edges (divided by 2, as Archicad reports it)."
+            },
+            "gablesLength": {
+                "type": "number",
+                "description": "Length of the gable edges."
+            },
+            "eavesLength": {
+                "type": "number",
+                "description": "Length of the eave edges."
+            },
+            "peaksLength": {
+                "type": "number",
+                "description": "Length of the peak edges."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "topSurface",
+            "bottomSurface",
+            "edgeSurface",
+            "topSurfaceConditional",
+            "bottomSurfaceConditional",
+            "grossTopSurface",
+            "grossBottomSurface",
+            "grossEdgeSurface",
+            "contourArea",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter",
+            "openingsSurface",
+            "ridgesLength",
+            "valleysLength",
+            "hipsLength",
+            "gablesLength",
+            "eavesLength",
+            "peaksLength"
+        ]
+    },
+    "ShellQuantities": {
+        "type": "object",
+        "description": "Quantities of a Shell element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the shell."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the shell."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the shell."
+            },
+            "referenceSurface": {
+                "type": "number",
+                "description": "Net area of the reference surface."
+            },
+            "oppositeSurface": {
+                "type": "number",
+                "description": "Net area of the surface opposite to the reference."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Total area of the edges."
+            },
+            "referenceSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional area of the reference surface."
+            },
+            "oppositeSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional area of the opposite surface."
+            },
+            "grossReferenceSurface": {
+                "type": "number",
+                "description": "Gross area of the reference surface."
+            },
+            "grossOppositeSurface": {
+                "type": "number",
+                "description": "Gross area of the opposite surface."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross area of the edges."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the contour polygon."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes."
+            },
+            "floorPlanArea": {
+                "type": "number",
+                "description": "Projected floor plan area of the contour polygon."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "referenceSurface",
+            "oppositeSurface",
+            "edgeSurface",
+            "referenceSurfaceConditional",
+            "oppositeSurfaceConditional",
+            "grossReferenceSurface",
+            "grossOppositeSurface",
+            "grossEdgeSurface",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter",
+            "floorPlanArea"
+        ]
+    },
+    "MorphQuantities": {
+        "type": "object",
+        "description": "Quantities of a Morph element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the body."
+            },
+            "surface": {
+                "type": "number",
+                "description": "Net area of the body surface."
+            },
+            "floorPlanArea": {
+                "type": "number",
+                "description": "Net area of the floor plan projection."
+            },
+            "floorPlanPerimeter": {
+                "type": "number",
+                "description": "Perimeter of the floor plan projection."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the morph."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "surface",
+            "floorPlanArea",
+            "floorPlanPerimeter",
+            "height"
+        ]
+    },
+    "ZoneQuantities": {
+        "type": "object",
+        "description": "Quantities of a Zone element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "area": {
+                "type": "number",
+                "description": "Measured area of the zone."
+            },
+            "netArea": {
+                "type": "number",
+                "description": "Net area of the zone."
+            },
+            "calculatedArea": {
+                "type": "number",
+                "description": "Calculated area of the zone (after reductions)."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the zone."
+            },
+            "netPerimeter": {
+                "type": "number",
+                "description": "Net perimeter of the zone."
+            },
+            "volume": {
+                "type": "number",
+                "description": "Volume of the zone."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the zone."
+            },
+            "wallsPerimeter": {
+                "type": "number",
+                "description": "Length of the perimeter walls."
+            },
+            "wallsSurface": {
+                "type": "number",
+                "description": "Surface of the perimeter walls."
+            },
+            "doorsSurface": {
+                "type": "number",
+                "description": "Surface of the doors in the zone."
+            },
+            "windowsSurface": {
+                "type": "number",
+                "description": "Surface of the windows in the zone."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "area",
+            "netArea",
+            "calculatedArea",
+            "perimeter",
+            "netPerimeter",
+            "volume",
+            "height",
+            "wallsPerimeter",
+            "wallsSurface",
+            "doorsSurface",
+            "windowsSurface"
+        ]
+    },
+    "ColumnSegmentQuantities": {
+        "type": "object",
+        "description": "Quantities of a ColumnSegment element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the column segment."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column segment."
+            },
+            "coreVolume": {
+                "type": "number",
+                "description": "Net volume of the segment core."
+            },
+            "coreGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the segment core."
+            },
+            "veneerVolume": {
+                "type": "number",
+                "description": "Net volume of the segment veneer."
+            },
+            "veneerGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the segment veneer."
+            },
+            "coreSurface": {
+                "type": "number",
+                "description": "Net surface of the segment core."
+            },
+            "veneerSideSurface": {
+                "type": "number",
+                "description": "Side surface of the segment veneer."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the column segment."
+            },
+            "area": {
+                "type": "number",
+                "description": "Area of the column segment."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the column segment."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the column segment."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the column segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "grossVolume",
+            "coreVolume",
+            "coreGrossVolume",
+            "veneerVolume",
+            "veneerGrossVolume",
+            "coreSurface",
+            "veneerSideSurface",
+            "length",
+            "area",
+            "height",
+            "minHeight",
+            "maxHeight"
+        ]
+    },
+    "BeamSegmentQuantities": {
+        "type": "object",
+        "description": "Quantities of a BeamSegment element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the beam segment."
+            },
+            "holesVolume": {
+                "type": "number",
+                "description": "Total volume of the holes in the beam segment."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the beam segment."
+            },
+            "leftLength": {
+                "type": "number",
+                "description": "Length on the left side."
+            },
+            "rightLength": {
+                "type": "number",
+                "description": "Length on the right side."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Surface of the top of the beam segment."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Surface of the bottom of the beam segment."
+            },
+            "leftSurface": {
+                "type": "number",
+                "description": "Surface of the left side of the beam segment."
+            },
+            "rightSurface": {
+                "type": "number",
+                "description": "Surface of the right side of the beam segment."
+            },
+            "endSurface": {
+                "type": "number",
+                "description": "Surface of the ends of the beam segment."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total surface of the holes in the beam segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "holesVolume",
+            "length",
+            "leftLength",
+            "rightLength",
+            "topSurface",
+            "bottomSurface",
+            "leftSurface",
+            "rightSurface",
+            "endSurface",
+            "holesSurface"
+        ]
+    },
+    "ElementQuantities": {
+        "description": "The type-specific quantities of an element. The fields depend on the type of the element.",
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallQuantities"
+            },
+            {
+                "$ref": "#/ColumnQuantities"
+            },
+            {
+                "$ref": "#/BeamQuantities"
+            },
+            {
+                "$ref": "#/SlabQuantities"
+            },
+            {
+                "$ref": "#/RoofQuantities"
+            },
+            {
+                "$ref": "#/ShellQuantities"
+            },
+            {
+                "$ref": "#/MorphQuantities"
+            },
+            {
+                "$ref": "#/ZoneQuantities"
+            },
+            {
+                "$ref": "#/ColumnSegmentQuantities"
+            },
+            {
+                "$ref": "#/BeamSegmentQuantities"
+            }
+        ]
     }
 }
