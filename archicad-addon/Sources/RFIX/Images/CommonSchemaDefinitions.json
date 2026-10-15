@@ -7282,6 +7282,14 @@
             "fillBackgroundPenIndex": {
                 "type": "integer"
             },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill foreground. Only present when it overrides fillPenIndex."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill background. Only present when it overrides fillBackgroundPenIndex."
+            },
             "fillId": {
                 "$ref": "#/AttributeId",
                 "description": "The fill attribute used, if the hatch's type is a plain fill hatch."
@@ -9286,10 +9294,20 @@
                 "type": "integer"
             },
             "fillPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the foregroundColor override, so the pen shows."
             },
             "fillBackgroundPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the backgroundColor override, so the pen shows."
+            },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
             },
             "fillId": {
                 "$ref": "#/AttributeId"
