@@ -5084,14 +5084,17 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
             continue;
         }
 
-        // Both output pointers are set, so the mask can stay nullptr and every field is calculated.
+        // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
         API_ElementQuantity elementQuantity = {};
         GS::Array<API_CompositeQuantity> composites;
         API_Quantities quantities;
         quantities.elements = &elementQuantity;
         quantities.composites = &composites;
 
-        err = ACAPI_Element_GetQuantities (elemHead.guid, &quantityParams, &quantities);
+        API_QuantitiesMask mask;
+        ACAPI_ELEMENT_QUANTITIES_MASK_SETFULL (mask);
+
+        err = ACAPI_Element_GetQuantities (elemHead.guid, &quantityParams, &quantities, &mask);
         if (err != NoError) {
             quantitiesOfElements (CreateErrorResponse (err, "Failed to get the quantities of the element"));
             continue;
