@@ -1310,6 +1310,22 @@ GSErrCode Initialize (void)
             mepCommands, "1.5.7",
             "Gets the circular cross section preference tables (referenceId, diameter, description) of the Piping or Ventilation domain. Available from Archicad 28."
         );
+        err |= RegisterCommand<GetElectricalPanelsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the electrical panels (distribution boards) of the project or the given ones: name, circuit naming, circuits, parent circuit, placement and the connected and demand loads in total and per phase. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the given electrical circuits, the circuits of the given panels, or every circuit of the project: name, description, owner panel, connected devices and panels, voltage, phases, wiring type, loads, voltage drop and estimated cable length. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetElectricalDevicesCommand> (
+            mepCommands, "1.7.2",
+            "Gets the electrical devices (lights, sockets and other consumers) of the project or the given ones: parent circuit, placement, apparent power, load classification, demand load and directly connected MEP elements. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetElectricalProjectSettingsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the electrical project settings: the default voltage, the wiring types with their cross-sectional area and the load classifications with their demand factor. Available from Archicad 30."
+        );
         AddCommandGroup (mepCommands);
     }
 
