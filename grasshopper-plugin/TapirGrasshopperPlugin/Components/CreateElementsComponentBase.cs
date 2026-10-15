@@ -57,7 +57,12 @@ namespace TapirGrasshopperPlugin.Components
             // have it at its usual place (after the typed fields) when they
             // were released. Only supported in TrailingFields; its JsonKey is
             // unused.
-            AdditionalSettings
+            AdditionalSettings,
+            // One branch of numbers / integers per element (or a single branch
+            // for all), written as a JSON array. Unlike the point trees they
+            // can follow the first field. A null item is written as null.
+            NumbersTree,
+            IntegersTree
         }
 
         protected sealed class Field
@@ -96,8 +101,9 @@ namespace TapirGrasshopperPlugin.Components
 
         // The typed fields of the command. The first field must be required;
         // it defines the number of created elements (its list length, or its
-        // branch count for tree kinds). Tree kinds are only supported as the
-        // first field.
+        // branch count for tree kinds). The point tree kinds are only
+        // supported as the first field. A JsonKey with dots (e.g.
+        // "primaryPattern.sizes") writes into nested objects of the item.
         protected abstract IReadOnlyList<Field> Fields { get; }
 
         private static readonly IReadOnlyList<Field> NoFields = new List<Field>();
@@ -261,6 +267,20 @@ namespace TapirGrasshopperPlugin.Components
                     break;
                 case FieldKind.HoleCurvesTree:
                     inManager.AddCurveParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.tree);
+                    break;
+                case FieldKind.NumbersTree:
+                    inManager.AddNumberParameter(
+                        field.InputName,
+                        field.InputName,
+                        description,
+                        GH_ParamAccess.tree);
+                    break;
+                case FieldKind.IntegersTree:
+                    inManager.AddIntegerParameter(
                         field.InputName,
                         field.InputName,
                         description,
@@ -604,6 +624,42 @@ namespace TapirGrasshopperPlugin.Components
                         }
                         break;
                     }
+                case FieldKind.NumbersTree:
+                    {
+                        tokens = new List<JToken>();
+                        if (!da.TryGetTree(inputIndex, out GH_Structure<GH_Number> numberTree))
+                        {
+                            break;
+                        }
+                        foreach (var branch in numberTree.Branches)
+                        {
+                            var array = new JArray();
+                            foreach (var number in branch)
+                            {
+                                array.Add(number == null ? JValue.CreateNull() : new JValue(number.Value));
+                            }
+                            tokens.Add(array);
+                        }
+                        break;
+                    }
+                case FieldKind.IntegersTree:
+                    {
+                        tokens = new List<JToken>();
+                        if (!da.TryGetTree(inputIndex, out GH_Structure<GH_Integer> integerTree))
+                        {
+                            break;
+                        }
+                        foreach (var branch in integerTree.Branches)
+                        {
+                            var array = new JArray();
+                            foreach (var integer in branch)
+                            {
+                                array.Add(integer == null ? JValue.CreateNull() : new JValue(integer.Value));
+                            }
+                            tokens.Add(array);
+                        }
+                        break;
+                    }
                 case FieldKind.Number:
                     {
                         var values = new List<double>();
@@ -736,6 +792,17 @@ namespace TapirGrasshopperPlugin.Components
             }
         }
 
+        // Called for each item once the typed inputs are written into it and
+        // before AdditionalSettings is merged, so a derived component can
+        // reshape what the declarative fields cannot express (e.g. turn
+        // parallel input lists into an array of objects). Returns an error
+        // message, or null when the item is fine.
+        protected virtual string CompleteItem(
+            JObject item)
+        {
+            return null;
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -850,6 +917,16 @@ namespace TapirGrasshopperPlugin.Components
                         items[i],
                         field,
                         tokens.Count == 1 ? tokens[0].DeepClone() : tokens[i]);
+                }
+            }
+
+            foreach (var item in items)
+            {
+                var error = CompleteItem(item);
+                if (error != null)
+                {
+                    this.AddError(error);
+                    return;
                 }
             }
 
