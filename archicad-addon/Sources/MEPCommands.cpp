@@ -1,4 +1,5 @@
 #include "MEPCommands.hpp"
+#include <cmath>
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
@@ -1922,6 +1923,22 @@ static bool IsRequestedLibraryPartUsed (const API_Guid& usedLibraryPartId, const
 
 static const char* LibraryPartNotFound = "The library part given in 'libraryPartId' was not found.";
 
+// Some library parts (for example the electrical outlet) calculate their own size and ignore the given one without an error.
+static bool IsRequestedSizeUsed (double xSize, double ySize, const GS::ObjectState& data)
+{
+    const double tolerance = 1e-4;
+    double size = 0.0;
+    if (data.Get ("xSize", size) && std::fabs (xSize - size) > tolerance) {
+        return false;
+    }
+    if (data.Get ("ySize", size) && std::fabs (ySize - size) > tolerance) {
+        return false;
+    }
+    return true;
+}
+
+static const char* SizeNotApplied = "The library part does not allow the given 'xSize' or 'ySize', it keeps its own size.";
+
 static bool HasAnyField (const GS::ObjectState& data, std::initializer_list<const char*> fieldNames)
 {
     for (const char* fieldName : fieldNames) {
@@ -2000,10 +2017,12 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSch
                             "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
                         },
                         "ySize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
                         },
                         "panelName": {
                             "type": "string"
@@ -2086,6 +2105,14 @@ GS::ObjectState CreateElectricalPanelsCommand::Execute (const GS::ObjectState& p
                 elements (CreateErrorResponse (newPanelId.UnwrapErr ().kind, "Failed to place the electrical panel."));
                 continue;
             }
+            if (HasAnyField (panelData, { "xSize", "ySize" })) {
+                ACAPI::Result<ElectricalPanel> placed = ElectricalPanel::Get (newPanelId.Unwrap ());
+                if (placed.IsOk () && !IsRequestedSizeUsed (placed->GetObjectXSize (), placed->GetObjectYSize (), panelData)) {
+                    ACAPI_Element_Delete ({ MEPUniqueIDToAPIGuid (newPanelId.Unwrap ()) });
+                    elements (CreateErrorResponse (APIERR_BADPARS, SizeNotApplied));
+                    continue;
+                }
+            }
 
             if (HasAnyField (panelData, { "panelName", "circuitNamePrefix", "circuitIdStyle" })) {
                 ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (newPanelId.Unwrap ());
@@ -2161,10 +2188,12 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSc
                             "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
                         },
                         "ySize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
                         },
                         "apparentPower": {
                             "type": "integer",
@@ -2267,6 +2296,14 @@ GS::ObjectState CreateElectricalDevicesCommand::Execute (const GS::ObjectState& 
                 elements (CreateErrorResponse (newDeviceId.UnwrapErr ().kind, "Failed to place the electrical device."));
                 continue;
             }
+            if (HasAnyField (deviceData, { "xSize", "ySize" })) {
+                ACAPI::Result<ElectricalDevice> placed = ElectricalDevice::Get (newDeviceId.Unwrap ());
+                if (placed.IsOk () && !IsRequestedSizeUsed (placed->GetObjectXSize (), placed->GetObjectYSize (), deviceData)) {
+                    ACAPI_Element_Delete ({ MEPUniqueIDToAPIGuid (newDeviceId.Unwrap ()) });
+                    elements (CreateErrorResponse (APIERR_BADPARS, SizeNotApplied));
+                    continue;
+                }
+            }
 
             if (HasAnyField (deviceData, { "apparentPower", "isApparentPowerEnabled", "loadClassificationName", "circuitId" })) {
                 ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (newDeviceId.Unwrap ());
@@ -2355,10 +2392,12 @@ GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetInputParametersSch
                             "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
                         },
                         "ySize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
                         }
                     },
                     "additionalProperties": false,
@@ -2435,10 +2474,15 @@ GS::ObjectState ModifyElectricalPanelsCommand::Execute (const GS::ObjectState& p
             executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical panel."));
         } else if (!placementSuccess) {
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical panel."));
-        } else if (!IsRequestedLibraryPartUsed (ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)))->GetObjectId (), panelData)) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
         } else {
-            executionResults (CreateSuccessfulExecutionResult ());
+            ACAPI::Result<ElectricalPanel> modified = ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), panelData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
+            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), panelData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
         }
     }
 
@@ -2889,10 +2933,12 @@ GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetInputParametersSc
                             "description": "The library part to use, as listed by GetAvailableLibraryParts."
                         },
                         "xSize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
                         },
                         "ySize": {
-                            "type": "number"
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
                         }
                     },
                     "additionalProperties": false,
@@ -2976,10 +3022,15 @@ GS::ObjectState ModifyElectricalDevicesCommand::Execute (const GS::ObjectState& 
             executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical device."));
         } else if (!placementSuccess) {
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical device."));
-        } else if (!IsRequestedLibraryPartUsed (ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)))->GetObjectId (), deviceData)) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
         } else {
-            executionResults (CreateSuccessfulExecutionResult ());
+            ACAPI::Result<ElectricalDevice> modified = ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), deviceData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
+            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), deviceData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
         }
     }
 
