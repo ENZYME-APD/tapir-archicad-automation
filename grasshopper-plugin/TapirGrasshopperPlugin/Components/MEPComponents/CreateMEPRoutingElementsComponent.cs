@@ -142,13 +142,15 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 }
             }
 
-            foreach (var tableGuid in preferenceTableGuids)
+            // The add-on accepts only the hyphenated form of a guid.
+            for (var i = 0; i < preferenceTableGuids.Count; i++)
             {
-                if (!Guid.TryParse(tableGuid, out _))
+                if (!Guid.TryParse(preferenceTableGuids[i], out var tableGuid))
                 {
                     this.AddError("Invalid identifier in the PreferenceTableGuids input.");
                     return;
                 }
+                preferenceTableGuids[i] = tableGuid.ToString("D");
             }
 
             var mepSystemIds = new List<AttributeGuidObject>();

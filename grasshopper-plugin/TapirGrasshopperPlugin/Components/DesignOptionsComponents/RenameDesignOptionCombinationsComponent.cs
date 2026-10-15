@@ -77,6 +77,13 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                     return;
                 }
 
+                if (string.IsNullOrEmpty(names[i]))
+                {
+                    this.AddError(
+                        "Every item of the Names input needs a name.");
+                    return;
+                }
+
                 input.DesignOptionCombinations.Add(
                     new RenameDesignOptionCombinationParameter
                     {

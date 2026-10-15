@@ -14,7 +14,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     // (used for every cell of that branch) or nothing (the cells keep their
     // default class), and a null item leaves that class of that cell as it is.
     // The rarely used cell fields (rightPanelClassIndex, crossing frames) and
-    // the flexible indices of the patterns go through AdditionalSettings.
+    // the flexible indices of the patterns go through AdditionalSettings. A
+    // "cells" array there replaces the cells built from the cell inputs (the
+    // merge replaces arrays), so it has to list every cell.
     public class CreateCurtainWallsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateCurtainWalls";

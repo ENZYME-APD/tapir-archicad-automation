@@ -318,8 +318,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             string jsonKey)
         {
             return Add<string>(da, index, jsonKey, v =>
-                Guid.TryParse(v, out _)
-                    ? new JObject { ["guid"] = v.Trim() }
+                Guid.TryParse(v, out var guid)
+                    ? new JObject { ["guid"] = guid.ToString("D") }
                     : null);
         }
 
