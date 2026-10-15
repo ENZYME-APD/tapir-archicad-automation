@@ -9,6 +9,7 @@
 #include "DeveloperTools.hpp"
 
 #include "3DCutPlaneCommands.hpp"
+#include "3DProjectionCommands.hpp"
 
 
 
@@ -305,6 +306,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SaveProjectAsArchiveCommand> (
             projectCommands, "1.6.0",
             "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
+        );
+        err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
+            projectCommands, "1.7.1",
+            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
@@ -1081,6 +1086,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
         );
+        err |= RegisterCommand<Get3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry."
+        );
+        err |= RegisterCommand<Set3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
+        );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
@@ -1227,6 +1240,30 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<MoveDesignOptionsToAnotherSetCommand> (
             designOptionsCommands, "1.5.1",
             "Moves the given design options to another sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name and/or the string id of the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option combinations. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option combinations. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
     }
