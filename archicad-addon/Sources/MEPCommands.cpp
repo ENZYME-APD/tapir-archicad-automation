@@ -1454,9 +1454,12 @@ static GS::ObjectState GetElectricalCircuitDetails (const ACAPI::MEP::UniqueID& 
     return circuitOs;
 }
 
-#endif
+#else
 
+// Only the pre-Archicad 30 branches use it; on Archicad 30 it would be an unused variable.
 static const char* ElectricalRequiresArchicad30 = "This command requires Archicad 30 or newer.";
+
+#endif
 
 // GetElectricalPanels
 
