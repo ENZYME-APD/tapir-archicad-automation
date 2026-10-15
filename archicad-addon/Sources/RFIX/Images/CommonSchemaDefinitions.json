@@ -2517,6 +2517,50 @@
             "z"
         ]
     },
+    "PerspectiveProjectionParameters": {
+        "type": "object",
+        "description": "The parameters of a perspective projection of the 3D window.",
+        "properties": {
+            "cameraPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The position of the camera."
+            },
+            "targetPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The position of the target point the camera looks at."
+            },
+            "distance": {
+                "type": "number",
+                "description": "The distance between the camera and the target."
+            },
+            "azimuth": {
+                "type": "number",
+                "description": "The azimuth angle of the camera."
+            },
+            "viewCone": {
+                "type": "number",
+                "description": "The view cone angle of the camera."
+            },
+            "rollAngle": {
+                "type": "number",
+                "description": "The roll angle of the camera."
+            },
+            "isTwoPointPersp": {
+                "type": "boolean",
+                "description": "True for a two-point perspective (vertical edges stay vertical)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cameraPosition",
+            "targetPosition",
+            "distance",
+            "azimuth",
+            "viewCone",
+            "rollAngle",
+            "isTwoPointPersp"
+        ]
+    },
     "Dimensions3D": {
         "type": "object",
         "description": "Dimensions in 3D.",

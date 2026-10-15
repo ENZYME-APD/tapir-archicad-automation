@@ -9,6 +9,7 @@
 #include "DeveloperTools.hpp"
 
 #include "3DCutPlaneCommands.hpp"
+#include "3DProjectionCommands.hpp"
 
 
 
@@ -1080,6 +1081,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
+        );
+        err |= RegisterCommand<Get3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry."
+        );
+        err |= RegisterCommand<Set3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
         );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.1",
