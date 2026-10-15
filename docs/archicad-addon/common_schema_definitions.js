@@ -1035,7 +1035,7 @@ var gSchemaDefinitions = {
             },
             "offset": {
                 "$ref": "#/Coordinate2D",
-                "description": "The offset of the item, given by its coordinates."
+                "description": "The offset of the item."
             },
             "lineLengths": {
                 "type": "array",
@@ -2683,8 +2683,7 @@ var gSchemaDefinitions = {
                 "enum": [ false ]
             },
             "error": {
-                "$ref": "#/Error",
-                "description": "The details of an execution failure."
+                "$ref": "#/Error"
             }
         },
         "additionalProperties": false,
@@ -7282,6 +7281,14 @@ var gSchemaDefinitions = {
             "fillBackgroundPenIndex": {
                 "type": "integer"
             },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill foreground. Only present when it overrides fillPenIndex."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill background. Only present when it overrides fillBackgroundPenIndex."
+            },
             "fillId": {
                 "$ref": "#/AttributeId",
                 "description": "The fill attribute used, if the hatch's type is a plain fill hatch."
@@ -8088,7 +8095,7 @@ var gSchemaDefinitions = {
             },
             "style": {
                 "$ref": "#/TextStyleDetails",
-                "description": "The full style state; the flat fields above are the subset SetDetailsOfElements takes back."
+                "description": "The flat fields above are the subset SetDetailsOfElements takes back."
             },
             "paragraphCount": {
                 "type": "integer",
@@ -9286,10 +9293,20 @@ var gSchemaDefinitions = {
                 "type": "integer"
             },
             "fillPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the foregroundColor override, so the pen shows."
             },
             "fillBackgroundPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the backgroundColor override, so the pen shows."
+            },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
             },
             "fillId": {
                 "$ref": "#/AttributeId"
@@ -9746,7 +9763,7 @@ var gSchemaDefinitions = {
                 "description": "The relative path to the new file inside embedded library."
             },
             "type": {
-                "description": "The type of the library part. By default 'Pict'.",
+                "description": "By default 'Pict'.",
                 "$ref": "#/LibraryPartType"
             }
         },
@@ -10677,7 +10694,7 @@ var gSchemaDefinitions = {
     },
     "LabelLeaderLineSettableDetails": {
         "type": "object",
-        "description": "Every user-configurable leader-line/frame setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
+        "description": "Every user-configurable leader-line/frame/arrow setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
             "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
