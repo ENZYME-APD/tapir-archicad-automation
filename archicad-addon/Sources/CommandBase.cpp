@@ -1019,10 +1019,20 @@ API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid gu
 
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
 {
-    // API_Attr_Head::name is the legacy 8-bit name; Archicad hands out the real Unicode name
-    // through header.uniStringNamePtr, which has to point at storage before the Get call (the
+    // The legacy 8-bit name field loses characters; Archicad hands out the real Unicode name
+    // through uniStringNamePtr, which has to point at storage before the Get call (the
     // same way GetAttributeName in AttributeCommands.cpp reads attribute names).
     GS::UniString name;
+#ifdef ServerMainVers_2700
+    // From Archicad 27 fonts are no attributes; they have their own API, indexed from 1.
+    API_FontType font = {};
+    font.head.index = fontIndex;
+    font.head.uniStringNamePtr = &name;
+
+    if (ACAPI_Font_GetFont (font) != NoError) {
+        return GS::NoValue;
+    }
+#else
     API_Attribute attr = {};
     attr.header.typeID = API_FontID;
     attr.header.index = ACAPI_CreateAttributeIndex (fontIndex);
@@ -1031,18 +1041,29 @@ GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
     if (ACAPI_Attribute_Get (&attr) != NoError) {
         return GS::NoValue;
     }
+#endif
 
     return name;
 }
 
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
 {
+    GS::Array<short> fontIndices;
+#ifdef ServerMainVers_2700
+    const Int32 fontNum = ACAPI_Font_GetFontNum ();
+    for (Int32 fontIndex = 1; fontIndex <= fontNum; ++fontIndex) {
+        fontIndices.Push (static_cast<short> (fontIndex));
+    }
+#else
     GS::Array<API_Attribute> fonts;
     ACAPI_Attribute_GetAttributesByType (API_FontID, fonts);
+    for (const API_Attribute& font : fonts) {
+        fontIndices.Push (static_cast<short> (GetAttributeIndex (font.header.index)));
+    }
+#endif
 
     GS::Optional<short> caseInsensitiveMatch;
-    for (const API_Attribute& font : fonts) {
-        const short fontIndex = static_cast<short> (GetAttributeIndex (font.header.index));
+    for (const short fontIndex : fontIndices) {
         const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
         if (!name.HasValue ()) {
             continue;
