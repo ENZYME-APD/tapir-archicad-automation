@@ -1250,6 +1250,14 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "fillBackgroundPenIndex": {
                         "type": "integer"
                     },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
                     "fillId": {
                         "$ref": "#/AttributeId",
                         "description": "Optional fill attribute. By default the current fill is used."
@@ -1326,12 +1334,23 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         element.hatch.contPen.penIndex = contourPenIndex;
         element.hatch.contPen.colorOverridePenIndex = 0;
     }
+    // A given pen index clears the matching RGB override, which the tool defaults may carry,
+    // so the pen actually shows. A given color sets the override and wins over the pen.
     short fillPenIndex = 0;
     if (parameters.Get ("fillPenIndex", fillPenIndex)) {
         element.hatch.fillPen.penIndex = fillPenIndex;
         element.hatch.fillPen.colorOverridePenIndex = 0;
+        element.hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
     }
-    parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen);
+    if (parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen)) {
+        element.hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
+    }
+    if (GetColor (parameters, "foregroundColor", element.hatch.foregroundRGB)) {
+        element.hatch.hatchFlags |= APIHatch_HasFgRGBColor;
+    }
+    if (GetColor (parameters, "backgroundColor", element.hatch.backgroundRGB)) {
+        element.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
+    }
     const GS::ObjectState* fillId = parameters.Get ("fillId");
     if (fillId != nullptr) {
         element.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
@@ -2224,7 +2243,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // change of those is written into the runs by the content rebuild below. The
                 // element-level fields apply through their own masks without a rebuild, which
                 // keeps the content, and any autotext reference in it, as it is.
-                TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+                auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+                if (styleErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (*styleErr));
+                    continue;
+                }
             }
             const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
 
@@ -2403,7 +2426,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 if (styleOS != nullptr) {
                     // Same as ModifyTexts: applied before the content rebuild, which only the
                     // run-level fields need.
-                    TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                    auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                    if (styleErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*styleErr));
+                        continue;
+                    }
                 }
                 const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
                 // See ModifyTexts for why the value-returning overloads are required here (the
@@ -2441,7 +2468,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             } else {
                 const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
                 if (symbolStyleOS != nullptr) {
-                    TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                    auto symbolStyleErr = TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                    if (symbolStyleErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*symbolStyleErr));
+                        continue;
+                    }
                 }
             }
 
@@ -2655,15 +2686,14 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Style settings for a text label (font, pen, size, frame, etc). Ignored for symbol labels."
+                        "description": "Ignored for symbol labels."
                     },
                     "symbolStyle": {
                         "$ref": "#/LabelSymbolStyleSettableDetails",
-                        "description": "Style settings specific to a symbol label. Ignored for text labels."
+                        "description": "Ignored for text labels."
                     },
                     "leaderLine": {
-                        "$ref": "#/LabelLeaderLineSettableDetails",
-                        "description": "Leader line, frame and arrow settings, shared by both label classes."
+                        "$ref": "#/LabelLeaderLineSettableDetails"
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -2965,10 +2995,40 @@ static API_ArrowID StringToArrowType (const GS::UniString& s)
 
 namespace TextLabelDetails {
 
+// The font a style or a run gives: fontName resolved to the index of the loaded font of that name,
+// otherwise fontIndex as given; fontName wins when both are present. A fontName no loaded font has
+// is an error rather than a silently kept default (issue #844). NoValue when neither is given.
+static GS::Optional<GS::ObjectState> GetFontIndexFromDetails (const GS::ObjectState& details, GS::Optional<short>& fontIndex)
+{
+    GS::UniString fontName;
+    if (details.Get ("fontName", fontName)) {
+        fontIndex = GetFontIndexFromName (fontName);
+        if (!fontIndex.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADNAME, GS::UniString::Printf ("No loaded font is named '%T'. fontName takes the name of a Font attribute, as GetDetailsOfElements reports it in fontName; use fontIndex to give the font by its index instead.", fontName.ToPrintf ()));
+        }
+        return {};
+    }
+
+    short index = 0;
+    if (details.Get ("fontIndex", index)) {
+        fontIndex = index;
+    }
+    return {};
+}
+
+static void AddFontName (GS::ObjectState& os, short fontIndex)
+{
+    const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (fontIndex);
+    if (fontName.HasValue ()) {
+        os.Add ("fontName", *fontName);
+    }
+}
+
 void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly)
 {
     os.Add ("penIndex", text.pen);
     os.Add ("fontIndex", text.font);
+    AddFontName (os, text.font);
     os.Add ("bold", (text.faceBits & APIFace_Bold) != 0);
     os.Add ("italic", (text.faceBits & APIFace_Italic) != 0);
     os.Add ("underline", (text.faceBits & APIFace_Underline) != 0);
@@ -3010,7 +3070,7 @@ void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool in
     }
 }
 
-void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
+GS::Optional<GS::ObjectState> ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
 {
     // Mask bits must target the real top-level union member (API_TextType for a standalone
     // Text element, API_LabelType::u.text for a text-class Label) - both share byte layout for
@@ -3023,7 +3083,17 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
     }
 
     if (details.Get ("penIndex", text.pen)) { TEXT_MASK_SET (pen) }
-    if (details.Get ("fontIndex", text.font)) { TEXT_MASK_SET (font) }
+    {
+        GS::Optional<short> fontIndex;
+        const auto fontErr = GetFontIndexFromDetails (details, fontIndex);
+        if (fontErr.HasValue ()) {
+            return fontErr;
+        }
+        if (fontIndex.HasValue ()) {
+            text.font = *fontIndex;
+            TEXT_MASK_SET (font)
+        }
+    }
 
     bool bold = (text.faceBits & APIFace_Bold) != 0;
     bool italic = (text.faceBits & APIFace_Italic) != 0;
@@ -3089,6 +3159,8 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
 #endif
 
 #undef TEXT_MASK_SET
+
+    return {};
 }
 
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters)
@@ -3115,8 +3187,12 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             runText = NormalizeLineBreaks (runText);
             short pen = textData.pen;
             runOS.Get ("penIndex", pen);
-            short font = textData.font;
-            runOS.Get ("fontIndex", font);
+            GS::Optional<short> runFont;
+            const auto fontErr = GetFontIndexFromDetails (runOS, runFont);
+            if (fontErr.HasValue ()) {
+                return fontErr;
+            }
+            const short font = runFont.HasValue () ? *runFont : textData.font;
             bool bold = (textData.faceBits & APIFace_Bold) != 0;
             bool italic = (textData.faceBits & APIFace_Italic) != 0;
             bool underline = (textData.faceBits & APIFace_Underline) != 0;
@@ -3298,6 +3374,7 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         runOS.Add ("text", GS::UniString (content.GetSubstring (start, end > start ? end - start : 0)));
         runOS.Add ("penIndex", run.pen);
         runOS.Add ("fontIndex", run.font);
+        AddFontName (runOS, run.font);
         runOS.Add ("bold", (run.faceBits & APIFace_Bold) != 0);
         runOS.Add ("italic", (run.faceBits & APIFace_Italic) != 0);
         runOS.Add ("underline", (run.faceBits & APIFace_Underline) != 0);
@@ -3314,7 +3391,7 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 
 bool StyleNeedsContentRebuild (const GS::ObjectState& style)
 {
-    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "bold", "italic", "underline", "height",
+    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "fontName", "bold", "italic", "underline", "height",
                                                   "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
     for (const char* field : runLevelFields) {
         if (style.Contains (GS::String (field))) {
@@ -3356,7 +3433,12 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
 
     // Every run keeps its own values except the ones the style names: those are set on all runs,
     // otherwise a style-only "bold": true would be overridden by the runs' read-back faces.
-    static const char* const shortFields[] = { "penIndex", "fontIndex" };
+    // The style's font comes as fontName or fontIndex; the runs get it as the index either way.
+    GS::Optional<short> styleFontIndex;
+    const auto fontErr = GetFontIndexFromDetails (style, styleFontIndex);
+    if (fontErr.HasValue ()) {
+        return fontErr;
+    }
     static const char* const boolFields[] = { "bold", "italic", "underline",
                                               "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
     const auto& runList = contentParams.AddList<GS::ObjectState> ("runs");
@@ -3365,11 +3447,15 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
         GS::UniString runText;
         run.Get ("text", runText);
         mergedRun.Add ("text", runText);
-        for (const char* field : shortFields) {
-            short value = 0;
-            if (style.Get (field, value) || run.Get (field, value)) {
-                mergedRun.Add (field, value);
-            }
+        short penIndex = 0;
+        if (style.Get ("penIndex", penIndex) || run.Get ("penIndex", penIndex)) {
+            mergedRun.Add ("penIndex", penIndex);
+        }
+        short fontIndex = 0;
+        if (styleFontIndex.HasValue ()) {
+            mergedRun.Add ("fontIndex", *styleFontIndex);
+        } else if (run.Get ("fontIndex", fontIndex)) {
+            mergedRun.Add ("fontIndex", fontIndex);
         }
         for (const char* field : boolFields) {
             bool value = false;
@@ -3501,6 +3587,7 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
 {
     os.Add ("textWay", LabelTextWayToString (label.textWay));
     os.Add ("fontIndex", label.font);
+    AddFontName (os, label.font);
     os.Add ("bold", (label.faceBits & APIFace_Bold) != 0);
     os.Add ("italic", (label.faceBits & APIFace_Italic) != 0);
     os.Add ("underline", (label.faceBits & APIFace_Underline) != 0);
@@ -3515,15 +3602,23 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
     os.Add ("effectProtected", (label.effectsBits & APIEffect_Protected) != 0);
 }
 
-void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
+GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
 {
     GS::UniString strVal;
     if (details.Get ("textWay", strVal)) {
         label.textWay = StringToLabelTextWay (strVal);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textWay);
     }
-    if (details.Get ("fontIndex", label.font)) {
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+    {
+        GS::Optional<short> fontIndex;
+        const auto fontErr = GetFontIndexFromDetails (details, fontIndex);
+        if (fontErr.HasValue ()) {
+            return fontErr;
+        }
+        if (fontIndex.HasValue ()) {
+            label.font = *fontIndex;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+        }
     }
     bool bold = (label.faceBits & APIFace_Bold) != 0;
     bool italic = (label.faceBits & APIFace_Italic) != 0;
@@ -3564,6 +3659,8 @@ void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_L
         label.effectsBits = (strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, effectsBits);
     }
+
+    return {};
 }
 
 } // namespace TextLabelDetails
@@ -3660,7 +3757,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         // element - only the run's own copies matter once paragraphs exist.
         const GS::ObjectState* styleOS = parameters.Get ("style");
         if (styleOS != nullptr) {
-            TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+            auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+            if (styleErr.HasValue ()) {
+                return styleErr;
+            }
         }
         auto err = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, parameters);
         if (err.HasValue ()) {
@@ -3669,7 +3769,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     } else {
         const GS::ObjectState* symbolStyleOS = parameters.Get ("symbolStyle");
         if (symbolStyleOS != nullptr) {
-            TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+            auto symbolStyleErr = TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+            if (symbolStyleErr.HasValue ()) {
+                return symbolStyleErr;
+            }
         }
     }
 
@@ -3729,7 +3832,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Full style settings (font, effects, frame, anchor, etc). height/pen/angle/justification above take precedence over the same fields here if both are given."
+                        "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -3775,7 +3878,10 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
 
     const GS::ObjectState* styleOS = parameters.Get ("style");
     if (styleOS != nullptr) {
-        TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+        auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+        if (styleErr.HasValue ()) {
+            return styleErr;
+        }
     }
 
     // Top-level height/pen/angle/justification take precedence over 'style' for backward
