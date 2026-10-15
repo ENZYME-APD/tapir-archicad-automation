@@ -717,6 +717,17 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
+        public void OutMeshes(
+            string name,
+            string description = "")
+        {
+            outManager.AddMeshParameter(
+                name,
+                name,
+                description.WithTypeName("meshList"),
+                GH_ParamAccess.list);
+        }
+
         public void OutCurveTree(
             string name,
             string description = "")

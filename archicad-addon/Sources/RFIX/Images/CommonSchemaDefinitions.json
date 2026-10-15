@@ -5773,6 +5773,69 @@
             "$ref": "#/BoundingBox3DOrError"
         }
     },
+    "Body3D": {
+        "type": "object",
+        "description": "One solid body of an element's 3D model: a flat vertex list in world coordinates and the planar faces referencing it. The faces are not triangulated: a face is a closed loop of vertex indices (counterclockwise seen from outside the body) plus the loops of its holes.",
+        "properties": {
+            "vertices": {
+                "type": "array",
+                "description": "The vertices of the body in world coordinates (meters, absolute Z).",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "polygons": {
+                "type": "array",
+                "description": "The faces of the body.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "description": "The outer contour of the face: 0-based indices into vertices.",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 3
+                        },
+                        "holes": {
+                            "type": "array",
+                            "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "vertexIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "minItems": 3
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "vertexIds"
+                                ]
+                            }
+                        },
+                        "surfaceId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertices",
+            "polygons"
+        ]
+    },
     "LibPartUnId": {
         "type": "object",
         "properties": {
