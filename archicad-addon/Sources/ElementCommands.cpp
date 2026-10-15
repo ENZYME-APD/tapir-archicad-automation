@@ -4355,6 +4355,307 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+// Body-local vertex -> world coordinates with the body's placement. API_Tranmat is a 3x4 matrix
+// stored row by row (tmx[3], tmx[7] and tmx[11] are the translation), the same layout the Morph
+// code in ExtendedElementCommands.cpp reads and writes.
+static API_Coord3D TransformBodyVertex (const API_Tranmat& tranmat, double x, double y, double z)
+{
+    const double* tmx = tranmat.tmx;
+    return API_Coord3D {
+        tmx[0] * x + tmx[1] * y + tmx[2] * z + tmx[3],
+        tmx[4] * x + tmx[5] * y + tmx[6] * z + tmx[7],
+        tmx[8] * x + tmx[9] * y + tmx[10] * z + tmx[11]
+    };
+}
+
+// Adds the solid bodies of the element's own 3D model to `bodies`, in the shape the "Body3D"
+// schema definition describes: world-coordinate vertices and the faces as 0-based vertex loops.
+// The model is walked through the component API like AccumulateSolidBodyBounds above: once a
+// body has been fetched, the vertex, edge, polygon-edge and polygon indices are 1-based within
+// that body. A polygon lists its edges in fpedg..lpedg as signed edge indices - the sign is the
+// direction the edge is traversed in, so the loop continues with vert1 of a positive and vert2 of
+// a negative entry - and a 0 entry separates the outer contour from the holes that follow it.
+static GSErrCode CollectSolidBodies (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
+{
+    API_ElemInfo3D info3D = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+            continue;
+        }
+        if (component.body.nPgon == 0) { // Skip non-solid bodies
+            continue;
+        }
+
+        // `component` is reused for every other component type below, so keep the body's data.
+        const API_BodyType body = component.body;
+
+        GS::ObjectState bodyOS;
+        const auto& vertices = bodyOS.AddList<GS::ObjectState> ("vertices");
+        for (Int32 iVert = 1; iVert <= body.nVert; ++iVert) {
+            component.header.typeID = API_VertID;
+            component.header.index = iVert;
+            API_Coord3D vertex = { 0.0, 0.0, 0.0 };
+            if (ACAPI_ModelAccess_GetComponent (&component) == NoError) {
+                vertex = TransformBodyVertex (body.tranmat, component.vert.x, component.vert.y, component.vert.z);
+            }
+            // Written even when the read failed, so the polygons' indices keep pointing at the
+            // right vertices.
+            vertices (Create3DCoordinateObjectState (vertex));
+        }
+
+        const auto& polygons = bodyOS.AddList<GS::ObjectState> ("polygons");
+        for (Int32 iPgon = 1; iPgon <= body.nPgon; ++iPgon) {
+            component.header.typeID = API_PgonID;
+            component.header.index = iPgon;
+            if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+                continue;
+            }
+            const API_PgonType pgon = component.pgon;
+
+            GS::Array<GS::Array<Int32>> contours;
+            contours.Push (GS::Array<Int32> ());
+            for (Int32 iPedg = pgon.fpedg; iPedg <= pgon.lpedg; ++iPedg) {
+                component.header.typeID = API_PedgID;
+                component.header.index = iPedg;
+                if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+                    continue;
+                }
+                const Int32 pedg = component.pedg.pedg;
+                if (pedg == 0) {
+                    contours.Push (GS::Array<Int32> ());
+                    continue;
+                }
+                component.header.typeID = API_EdgeID;
+                component.header.index = pedg > 0 ? pedg : -pedg;
+                if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+                    continue;
+                }
+                contours.GetLast ().Push ((pedg > 0 ? component.edge.vert1 : component.edge.vert2) - 1);
+            }
+            if (contours[0].GetSize () < 3) {
+                continue;
+            }
+
+            GS::ObjectState polygonOS;
+            {
+                const auto& vertexIds = polygonOS.AddList<Int32> ("vertexIds");
+                for (Int32 vertexId : contours[0]) {
+                    vertexIds (vertexId);
+                }
+            }
+            if (contours.GetSize () > 1) {
+                const auto& holes = polygonOS.AddList<GS::ObjectState> ("holes");
+                for (UIndex h = 1; h < contours.GetSize (); ++h) {
+                    if (contours[h].GetSize () < 3) {
+                        continue;
+                    }
+                    GS::ObjectState hole;
+                    const auto& holeVertexIds = hole.AddList<Int32> ("vertexIds");
+                    for (Int32 vertexId : contours[h]) {
+                        holeVertexIds (vertexId);
+                    }
+                    holes (hole);
+                }
+            }
+
+            // The face's surface: the entry of the model's material table the polygon refers to
+            // carries the surface attribute it was made from. A material defined by a GDL script
+            // is not a project attribute, so it has no guid and the field is left out.
+            if (pgon.iumat > 0) {
+                component.header.typeID = API_UmatID;
+                component.header.index = pgon.iumat;
+                if (ACAPI_ModelAccess_GetComponent (&component) == NoError) {
+                    const API_Guid surfaceGuid = GetAttributeGuidFromIndex (API_MaterialID, component.umat.mater.head.index);
+                    if (surfaceGuid != APINULLGuid) {
+                        polygonOS.Add ("surfaceId", CreateGuidObjectState (surfaceGuid));
+                    }
+                }
+            }
+
+            polygons (polygonOS);
+        }
+
+        bodies.Push (bodyOS);
+    }
+
+    return NoError;
+}
+
+template<typename APIElemType>
+static void CollectSubelementBodies (APIElemType* subelemArray, GS::Array<GS::ObjectState>& bodies)
+{
+    if (subelemArray == nullptr) {
+        return;
+    }
+
+    const GSSize nSubelements = BMGetPtrSize (reinterpret_cast<GSPtr>(subelemArray)) / sizeof (APIElemType);
+    for (GSIndex i = 0; i < nSubelements; ++i) {
+        CollectSolidBodies (subelemArray[i].head, bodies);
+    }
+}
+
+// A Stair carries its 3D geometry in its subelements (see CalculateStairBounds above), and so do
+// a Railing and a Curtain Wall, so their subelements' bodies are collected too. Returns whether
+// the element is one of those.
+static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
+{
+    const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+    if (typeID != API_StairID && typeID != API_RailingID && typeID != API_CurtainWallID) {
+        return false;
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemHead.guid, &memo, APIMemoMask_All) != NoError) {
+        return true;
+    }
+
+    CollectSubelementBodies (memo.stairRisers, bodies);
+    CollectSubelementBodies (memo.stairTreads, bodies);
+    CollectSubelementBodies (memo.stairStructures, bodies);
+
+    CollectSubelementBodies (memo.railingPosts, bodies);
+    CollectSubelementBodies (memo.railingInnerPosts, bodies);
+    CollectSubelementBodies (memo.railingBalusters, bodies);
+    CollectSubelementBodies (memo.railingPanels, bodies);
+    CollectSubelementBodies (memo.railingRails, bodies);
+    CollectSubelementBodies (memo.railingToprails, bodies);
+    CollectSubelementBodies (memo.railingHandrails, bodies);
+    CollectSubelementBodies (memo.railingRailEnds, bodies);
+    CollectSubelementBodies (memo.railingToprailEnds, bodies);
+    CollectSubelementBodies (memo.railingHandrailEnds, bodies);
+    CollectSubelementBodies (memo.railingRailConnections, bodies);
+    CollectSubelementBodies (memo.railingToprailConnections, bodies);
+    CollectSubelementBodies (memo.railingHandrailConnections, bodies);
+
+    CollectSubelementBodies (memo.cWallFrames, bodies);
+    CollectSubelementBodies (memo.cWallPanels, bodies);
+    CollectSubelementBodies (memo.cWallJunctions, bodies);
+    CollectSubelementBodies (memo.cWallAccessories, bodies);
+
+    return true;
+}
+
+Get3DGeometryOfElementsCommand::Get3DGeometryOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get3DGeometryOfElementsCommand::GetName () const
+{
+    return "Get3DGeometryOfElements";
+}
+
+GS::Optional<GS::UniString> Get3DGeometryOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> Get3DGeometryOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "geometries3D": {
+                "type": "array",
+                "description": "The 3D geometry of each element, aligned with the input: the solid bodies of its 3D model, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "bodies": {
+                                    "type": "array",
+                                    "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
+                                    "items": {
+                                        "$ref": "#/Body3D"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "bodies"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "geometries3D"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& geometries3D = response.AddList<GS::ObjectState> ("geometries3D");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            geometries3D (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            geometries3D (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        GS::Array<GS::ObjectState> bodies;
+        err = CollectSolidBodies (elemHead, bodies);
+        if (CollectBodiesOfSubelements (elemHead, bodies)) {
+            // A hierarchical element may have no 3D model of its own (a Stair answers Get3DInfo
+            // with nothing, see CalculateStairBounds); its subelements' bodies are the answer.
+            err = NoError;
+        }
+        if (err != NoError) {
+            geometries3D (CreateErrorResponse (err, "Failed to get the 3D model of the element"));
+            continue;
+        }
+
+        GS::ObjectState geometry;
+        const auto& bodiesList = geometry.AddList<GS::ObjectState> ("bodies");
+        for (const GS::ObjectState& body : bodies) {
+            bodiesList (body);
+        }
+        geometries3D (geometry);
+    }
+
+    return response;
+}
+
 DeleteElementsCommand::DeleteElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
