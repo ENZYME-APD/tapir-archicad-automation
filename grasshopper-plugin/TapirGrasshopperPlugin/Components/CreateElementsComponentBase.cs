@@ -49,7 +49,15 @@ namespace TapirGrasshopperPlugin.Components
             OutlineCurve,
             // One branch of closed curves per element, written as the element's
             // holes - each hole an object of polygonCoordinates and polygonArcs.
-            HoleCurvesTree
+            HoleCurvesTree,
+            // A color, written as a ColorRGB object (red, green and blue
+            // between 0.0 and 1.0).
+            Color,
+            // The AdditionalSettings JSON input, for components that did not
+            // have it at its usual place (after the typed fields) when they
+            // were released. Only supported in TrailingFields; its JsonKey is
+            // unused.
+            AdditionalSettings
         }
 
         protected sealed class Field
@@ -97,9 +105,23 @@ namespace TapirGrasshopperPlugin.Components
         // Optional typed fields added after the component was released. Their
         // inputs come after every other input (AdditionalSettings and the
         // metadata toggles), so the inputs of saved definitions, which
-        // Grasshopper binds by index, keep their places. Tree kinds are not
-        // supported here.
+        // Grasshopper binds by index, keep their places. New ones are always
+        // appended at the end. Tree kinds are not supported here.
         protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
+
+        private const string AdditionalSettingsDescription =
+            "One JSON object per element with further optional settings matching the " +
+            "command's documented item schema. Input only 1 to use the same settings for all. Optional.";
+
+        // The AdditionalSettings input as a trailing field, for a component
+        // without HasAdditionalSettingsInput whose command gained fields that
+        // have no typed input.
+        protected static Field TrailingAdditionalSettingsField =>
+            new Field(
+                "AdditionalSettings",
+                null,
+                FieldKind.AdditionalSettings,
+                AdditionalSettingsDescription);
 
         private int FirstTrailingFieldInputIndex =>
             Fields.Count +
@@ -152,8 +174,7 @@ namespace TapirGrasshopperPlugin.Components
             {
                 InTexts(
                     "AdditionalSettings",
-                    "One JSON object per element with further optional settings matching the " +
-                    "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
+                    AdditionalSettingsDescription);
                 SetOptionality(fields.Count);
             }
 
@@ -175,7 +196,9 @@ namespace TapirGrasshopperPlugin.Components
                 var field = trailingFields[index];
                 AddFieldInput(
                     field,
-                    field.Description + " Input only 1 to use the same value for all elements. Optional.");
+                    field.Kind == FieldKind.AdditionalSettings
+                        ? field.Description
+                        : field.Description + " Input only 1 to use the same value for all elements. Optional.");
                 SetOptionality(FirstTrailingFieldInputIndex + index);
             }
         }
@@ -196,7 +219,15 @@ namespace TapirGrasshopperPlugin.Components
                     InBooleans(field.InputName, description);
                     break;
                 case FieldKind.Text:
+                case FieldKind.AdditionalSettings:
                     InTexts(field.InputName, description);
+                    break;
+                case FieldKind.Color:
+                    inManager.AddColourParameter(
+                        field.InputName,
+                        field.InputName,
+                        description.WithTypeName("colorList"),
+                        GH_ParamAccess.list);
                     break;
                 case FieldKind.Point2D:
                 case FieldKind.Point3D:
@@ -644,6 +675,19 @@ namespace TapirGrasshopperPlugin.Components
                         tokens = ConvertValues(values, ConvertGuidWrapper<AttributeGuidObject>);
                         break;
                     }
+                case FieldKind.Color:
+                    {
+                        var values = new List<System.Drawing.Color>();
+                        da.GetDataList(inputIndex, values);
+                        tokens = ConvertValues(values, v =>
+                            (JToken)new JObject
+                            {
+                                ["red"] = v.R / 255.0,
+                                ["green"] = v.G / 255.0,
+                                ["blue"] = v.B / 255.0
+                            });
+                        break;
+                    }
                 default:
                     this.AddError(
                         $"Tree inputs are only supported as the first input ({field.InputName}).");
@@ -675,7 +719,20 @@ namespace TapirGrasshopperPlugin.Components
             }
             else
             {
-                item[field.JsonKey] = token;
+                // A dotted key ("style.fontName") goes into a nested object
+                // of the item, created when missing.
+                var path = field.JsonKey.Split('.');
+                var container = item;
+                for (var i = 0; i < path.Length - 1; i++)
+                {
+                    if (!(container[path[i]] is JObject child))
+                    {
+                        child = new JObject();
+                        container[path[i]] = child;
+                    }
+                    container = child;
+                }
+                container[path[path.Length - 1]] = token;
             }
         }
 
@@ -748,11 +805,18 @@ namespace TapirGrasshopperPlugin.Components
             {
                 typedInputs.Add((fields[fieldIndex], fieldIndex));
             }
+            var additionalSettingsInputIndex =
+                HasAdditionalSettingsInput ? fields.Count : -1;
             var trailingFields = TrailingFields;
             for (var trailingIndex = 0; trailingIndex < trailingFields.Count; trailingIndex++)
             {
-                typedInputs.Add(
-                    (trailingFields[trailingIndex], FirstTrailingFieldInputIndex + trailingIndex));
+                var inputIndex = FirstTrailingFieldInputIndex + trailingIndex;
+                if (trailingFields[trailingIndex].Kind == FieldKind.AdditionalSettings)
+                {
+                    additionalSettingsInputIndex = inputIndex;
+                    continue;
+                }
+                typedInputs.Add((trailingFields[trailingIndex], inputIndex));
             }
 
             foreach (var (field, inputIndex) in typedInputs)
@@ -790,9 +854,9 @@ namespace TapirGrasshopperPlugin.Components
             }
 
             var additionalSettings = new List<string>();
-            if (HasAdditionalSettingsInput)
+            if (additionalSettingsInputIndex >= 0)
             {
-                da.GetDataList(fields.Count, additionalSettings);
+                da.GetDataList(additionalSettingsInputIndex, additionalSettings);
             }
             if (additionalSettings.Count > 0)
             {
