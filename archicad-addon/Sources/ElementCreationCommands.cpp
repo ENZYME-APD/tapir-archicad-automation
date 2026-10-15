@@ -1250,6 +1250,14 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "fillBackgroundPenIndex": {
                         "type": "integer"
                     },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
                     "fillId": {
                         "$ref": "#/AttributeId",
                         "description": "Optional fill attribute. By default the current fill is used."
@@ -1326,12 +1334,23 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         element.hatch.contPen.penIndex = contourPenIndex;
         element.hatch.contPen.colorOverridePenIndex = 0;
     }
+    // A given pen index clears the matching RGB override, which the tool defaults may carry,
+    // so the pen actually shows. A given color sets the override and wins over the pen.
     short fillPenIndex = 0;
     if (parameters.Get ("fillPenIndex", fillPenIndex)) {
         element.hatch.fillPen.penIndex = fillPenIndex;
         element.hatch.fillPen.colorOverridePenIndex = 0;
+        element.hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
     }
-    parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen);
+    if (parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen)) {
+        element.hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
+    }
+    if (GetColor (parameters, "foregroundColor", element.hatch.foregroundRGB)) {
+        element.hatch.hatchFlags |= APIHatch_HasFgRGBColor;
+    }
+    if (GetColor (parameters, "backgroundColor", element.hatch.backgroundRGB)) {
+        element.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
+    }
     const GS::ObjectState* fillId = parameters.Get ("fillId");
     if (fillId != nullptr) {
         element.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
@@ -2655,15 +2674,14 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Style settings for a text label (font, pen, size, frame, etc). Ignored for symbol labels."
+                        "description": "Ignored for symbol labels."
                     },
                     "symbolStyle": {
                         "$ref": "#/LabelSymbolStyleSettableDetails",
-                        "description": "Style settings specific to a symbol label. Ignored for text labels."
+                        "description": "Ignored for text labels."
                     },
                     "leaderLine": {
-                        "$ref": "#/LabelLeaderLineSettableDetails",
-                        "description": "Leader line, frame and arrow settings, shared by both label classes."
+                        "$ref": "#/LabelLeaderLineSettableDetails"
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -3729,7 +3747,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Full style settings (font, effects, frame, anchor, etc). height/pen/angle/justification above take precedence over the same fields here if both are given."
+                        "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
                     },
                     "floorIndex": {
                         "type": "integer",
