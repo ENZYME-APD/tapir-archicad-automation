@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Types.DesignOptions
@@ -165,6 +166,10 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("elements")]
         public List<ElementGuidWrapper> Elements;
+
+        // Set instead of the fields above when the design option was not found.
+        [JsonProperty("error")]
+        public Error Error;
     }
 
     public class GetElementsOfDesignOptionsResponse
