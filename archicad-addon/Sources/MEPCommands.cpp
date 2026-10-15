@@ -1,4 +1,5 @@
 #include "MEPCommands.hpp"
+#include <cmath>
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
@@ -46,6 +47,15 @@
 #include <optional>
 
 using namespace ACAPI::MEP;
+#endif
+
+#ifdef ServerMainVers_3000
+#include "ACAPI/MEPElectricalPanel.hpp"
+#include "ACAPI/MEPElectricalCircuit.hpp"
+#include "ACAPI/MEPElectricalDevice.hpp"
+#include "ACAPI/MEPElectricalProjectSettings.hpp"
+#include "ACAPI/MEPElectricalPanelDefault.hpp"
+#include "ACAPI/MEPElectricalDeviceDefault.hpp"
 #endif
 
 #ifdef ServerMainVers_2800
@@ -149,6 +159,14 @@ static GS::UniString GetMEPElementTypeName (const API_Guid& classId)
     if (IsTakeOff (classId)) {
         return "TakeOff";
     }
+#ifdef ServerMainVers_3000
+    if (IsElectricalPanel (classId)) {
+        return "ElectricalPanel";
+    }
+    if (IsElectricalDevice (classId)) {
+        return "ElectricalDevice";
+    }
+#endif
     return "";
 }
 
@@ -238,6 +256,18 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
 
     GS::Array<API_Guid> elemList;
     ACAPI_Element_GetElemList (API_ExternalElemID, &elemList);
+#ifdef ServerMainVers_3000
+    // Electrical elements are only listed when asked for by their classID.
+    for (const API_Guid& classId : { ElectricalPanelID, ElectricalDeviceID }) {
+        GS::Array<API_Guid> electricalElemList;
+        ACAPI_Element_GetElemList (API_ElemType (classId), &electricalElemList);
+        for (const API_Guid& elemGuid : electricalElemList) {
+            if (!elemList.Contains (elemGuid)) {
+                elemList.Push (elemGuid);
+            }
+        }
+    }
+#endif
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
@@ -1581,6 +1611,1993 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 }
 #endif
+
+#ifdef ServerMainVers_3000
+
+static GS::ObjectState CreateMEPElementIdObjectState (const ACAPI::MEP::UniqueID& id)
+{
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (id));
+}
+
+static GS::ObjectState CreateMEPOrientationObjectState (const Orientation& orientation)
+{
+    GS::ObjectState orientationOs;
+    orientationOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
+    orientationOs.Add ("rotation", Create3DCoordinateObjectState (API_Coord3D { orientation.rotation.x, orientation.rotation.y, orientation.rotation.z }));
+    return orientationOs;
+}
+
+static void AddElectricalPlacement (GS::ObjectState& os, const ACAPI::MEP::ElementBase& element)
+{
+    os.Add ("anchorPoint", Create3DCoordinateObjectState (element.GetAnchorPoint ()));
+    os.Add ("orientation", CreateMEPOrientationObjectState (element.GetOrientation ()));
+    os.Add ("rotation", element.GetBaseRotation ());
+    os.Add ("isReflected", element.GetReflected ());
+    os.Add ("libraryPartId", CreateGuidObjectState (element.GetObjectId ()));
+    os.Add ("xSize", element.GetObjectXSize ());
+    os.Add ("ySize", element.GetObjectYSize ());
+}
+
+static GS::ObjectState CreateElectricalLoadsObjectState (double total, double phaseA, double phaseB, double phaseC)
+{
+    GS::ObjectState loadsOs;
+    loadsOs.Add ("total", total);
+    loadsOs.Add ("phaseA", phaseA);
+    loadsOs.Add ("phaseB", phaseB);
+    loadsOs.Add ("phaseC", phaseC);
+    return loadsOs;
+}
+
+// Electrical elements are not listed by GetElemList (API_ExternalElemID), they have to be asked for by their classID.
+static GS::Array<API_Guid> CollectElementsOfClass (const API_Guid& classId)
+{
+    GS::Array<API_Guid> elemList;
+    ACAPI_Element_GetElemList (API_ElemType (classId), &elemList);
+    return elemList;
+}
+
+// The guids of the given elements parameter, or every element accepted by isType when it is not given.
+static GS::Array<API_Guid> GetRequestedOrAllElements (const GS::ObjectState& parameters, const char* parameterName, const API_Guid& classId)
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get (parameterName, elements)) {
+        return CollectElementsOfClass (classId);
+    }
+    GS::Array<API_Guid> result;
+    for (const GS::ObjectState& element : elements) {
+        result.Push (GetGuidFromElementsArrayItem (element));
+    }
+    return result;
+}
+
+static GS::ObjectState GetElectricalCircuitDetails (const ACAPI::MEP::UniqueID& circuitId)
+{
+    ACAPI::Result<ElectricalCircuit> circuit = ElectricalCircuit::Get (circuitId);
+    if (circuit.IsErr ()) {
+        return CreateErrorResponse (circuit.UnwrapErr ().kind, "Failed to get the electrical circuit.");
+    }
+
+    GS::ObjectState circuitOs;
+    circuitOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (circuitId)));
+    circuitOs.Add ("name", circuit->GetCircuitNameWithPrefix ());
+    circuitOs.Add ("description", circuit->GetCircuitDescription ());
+    circuitOs.Add ("ownerPanelId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (circuit->GetOwnerPanelId ())));
+
+    const auto& childDevices = circuitOs.AddList<GS::ObjectState> ("childDevices");
+    for (const ACAPI::MEP::UniqueID& deviceId : circuit->GetChildDeviceIds ()) {
+        childDevices (CreateMEPElementIdObjectState (deviceId));
+    }
+    const auto& childPanels = circuitOs.AddList<GS::ObjectState> ("childPanels");
+    for (const ACAPI::MEP::UniqueID& panelId : circuit->GetChildPanelIds ()) {
+        childPanels (CreateMEPElementIdObjectState (panelId));
+    }
+
+    circuitOs.Add ("voltage", circuit->GetVoltage ());
+    circuitOs.Add ("phases", circuit->GetPhaseString ());
+    circuitOs.Add ("isPhaseAUsed", circuit->IsPhaseAUsed ());
+    circuitOs.Add ("isPhaseBUsed", circuit->IsPhaseBUsed ());
+    circuitOs.Add ("isPhaseCUsed", circuit->IsPhaseCUsed ());
+    circuitOs.Add ("wiringTypeName", circuit->GetWiringTypeName ());
+    circuitOs.Add ("connectedLoad", CreateElectricalLoadsObjectState (circuit->GetConnectedLoad (),
+        circuit->GetConnectedLoadPhaseA (), circuit->GetConnectedLoadPhaseB (), circuit->GetConnectedLoadPhaseC ()));
+    circuitOs.Add ("demandLoad", CreateElectricalLoadsObjectState (circuit->GetDemandLoad (),
+        circuit->GetDemandLoadPhaseA (), circuit->GetDemandLoadPhaseB (), circuit->GetDemandLoadPhaseC ()));
+    circuitOs.Add ("voltageDrop", circuit->GetVoltageDrop ());
+    circuitOs.Add ("estimatedCableLength", circuit->GetEstimatedCableLength ());
+    return circuitOs;
+}
+
+#else
+
+// Only the pre-Archicad 30 branches use it; on Archicad 30 it would be an unused variable.
+static const char* ElectricalRequiresArchicad30 = "This command requires Archicad 30 or newer.";
+
+#endif
+
+// GetElectricalPanels
+
+GetElectricalPanelsCommand::GetElectricalPanelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalPanelsCommand::GetName () const
+{
+    return "GetElectricalPanels";
+}
+
+GS::Optional<GS::UniString> GetElectricalPanelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical panels. Every electrical panel of the project is returned when it is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElectricalPanelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalPanels": {
+                "type": "array",
+                "description": "The electrical panels, in the order of the given elements.",
+                "items": {
+                    "$ref": "#/ElectricalPanelDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalPanels"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::ObjectState response;
+    const auto& electricalPanels = response.AddList<GS::ObjectState> ("electricalPanels");
+
+    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", ElectricalPanelID)) {
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (elemGuid));
+        if (panel.IsErr ()) {
+            electricalPanels (CreateErrorResponse (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
+            continue;
+        }
+
+        GS::ObjectState panelOs;
+        panelOs.Add ("elementId", CreateGuidObjectState (elemGuid));
+        panelOs.Add ("panelName", panel->GetPanelName ());
+        panelOs.Add ("circuitNamePrefix", panel->GetCircuitNamePrefix ());
+        panelOs.Add ("circuitIdStyle", static_cast<Int32> (panel->GetCircuitIdStyle ()));
+
+        const auto& circuits = panelOs.AddList<GS::ObjectState> ("circuits");
+        for (const ACAPI::MEP::UniqueID& circuitId : panel->GetCircuitIds ()) {
+            circuits (CreateMEPElementIdObjectState (circuitId));
+        }
+        const std::optional<ACAPI::MEP::UniqueID> parentCircuitId = panel->GetParentCircuitId ();
+        if (parentCircuitId.has_value ()) {
+            panelOs.Add ("parentCircuitId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (*parentCircuitId)));
+        }
+
+        AddElectricalPlacement (panelOs, *panel);
+        panelOs.Add ("connectedLoad", CreateElectricalLoadsObjectState (panel->GetConnectedLoad (),
+            panel->GetConnectedLoadPhaseA (), panel->GetConnectedLoadPhaseB (), panel->GetConnectedLoadPhaseC ()));
+        panelOs.Add ("demandLoad", CreateElectricalLoadsObjectState (panel->GetDemandLoad (),
+            panel->GetDemandLoadPhaseA (), panel->GetDemandLoadPhaseB (), panel->GetDemandLoadPhaseC ()));
+        electricalPanels (panelOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+// GetElectricalCircuits
+
+GetElectricalCircuitsCommand::GetElectricalCircuitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalCircuitsCommand::GetName () const
+{
+    return "GetElectricalCircuits";
+}
+
+GS::Optional<GS::UniString> GetElectricalCircuitsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical circuits."
+            },
+            "electricalPanels": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical panels whose circuits are returned. When neither elements nor electricalPanels is given, every circuit of every electrical panel of the project is returned."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElectricalCircuitsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalCircuits": {
+                "type": "array",
+                "description": "The given circuits first, in their order, then the circuits of the given panels, in the order of the panels.",
+                "items": {
+                    "$ref": "#/ElectricalCircuitDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalCircuits"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> elements;
+    const bool hasElements = parameters.Get ("elements", elements);
+    GS::Array<GS::ObjectState> panels;
+    const bool hasPanels = parameters.Get ("electricalPanels", panels);
+
+    GS::Array<API_Guid> panelGuids;
+    if (hasPanels) {
+        for (const GS::ObjectState& panel : panels) {
+            panelGuids.Push (GetGuidFromElementsArrayItem (panel));
+        }
+    } else if (!hasElements) {
+        panelGuids = CollectElementsOfClass (ElectricalPanelID);
+    }
+
+    GS::ObjectState response;
+    const auto& electricalCircuits = response.AddList<GS::ObjectState> ("electricalCircuits");
+
+    for (const GS::ObjectState& element : elements) {
+        electricalCircuits (GetElectricalCircuitDetails (Adapter::UniqueID (GetGuidFromElementsArrayItem (element))));
+    }
+    for (const API_Guid& panelGuid : panelGuids) {
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (panelGuid));
+        if (panel.IsErr ()) {
+            electricalCircuits (CreateErrorResponse (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
+            continue;
+        }
+        for (const ACAPI::MEP::UniqueID& circuitId : panel->GetCircuitIds ()) {
+            electricalCircuits (GetElectricalCircuitDetails (circuitId));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+// GetElectricalDevices
+
+GetElectricalDevicesCommand::GetElectricalDevicesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalDevicesCommand::GetName () const
+{
+    return "GetElectricalDevices";
+}
+
+GS::Optional<GS::UniString> GetElectricalDevicesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical devices. Every electrical device of the project is returned when it is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElectricalDevicesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalDevices": {
+                "type": "array",
+                "description": "The electrical devices, in the order of the given elements.",
+                "items": {
+                    "$ref": "#/ElectricalDeviceDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalDevices"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::ObjectState response;
+    const auto& electricalDevices = response.AddList<GS::ObjectState> ("electricalDevices");
+
+    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", ElectricalDeviceID)) {
+        ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (Adapter::UniqueID (elemGuid));
+        if (device.IsErr ()) {
+            electricalDevices (CreateErrorResponse (device.UnwrapErr ().kind, "Failed to get the electrical device."));
+            continue;
+        }
+
+        GS::ObjectState deviceOs;
+        deviceOs.Add ("elementId", CreateGuidObjectState (elemGuid));
+        const std::optional<ACAPI::MEP::UniqueID> parentCircuitId = device->GetParentCircuitId ();
+        if (parentCircuitId.has_value ()) {
+            deviceOs.Add ("parentCircuitId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (*parentCircuitId)));
+        }
+        AddElectricalPlacement (deviceOs, *device);
+        deviceOs.Add ("apparentPower", static_cast<double> (device->GetApparentPower ()));
+        deviceOs.Add ("isApparentPowerEnabled", device->GetApparentPowerEnabled ());
+        deviceOs.Add ("loadClassificationName", device->GetLoadClassificationName ());
+        deviceOs.Add ("demandLoad", device->GetDemandLoad ());
+
+        const auto& connectedElements = deviceOs.AddList<GS::ObjectState> ("connectedElements");
+        for (const ACAPI::MEP::UniqueID& connectedId : device->GetDirectConnectedMEPElementIds ()) {
+            connectedElements (CreateMEPElementIdObjectState (connectedId));
+        }
+        electricalDevices (deviceOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+// GetElectricalProjectSettings
+
+GetElectricalProjectSettingsCommand::GetElectricalProjectSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalProjectSettingsCommand::GetName () const
+{
+    return "GetElectricalProjectSettings";
+}
+
+GS::Optional<GS::UniString> GetElectricalProjectSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "voltage": {
+                "type": "number",
+                "description": "The default voltage of the project."
+            },
+            "wiringTypes": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "crossSectionalArea": {
+                            "type": "number",
+                            "description": "The cross-sectional area of the wire in square millimeters."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "crossSectionalArea"
+                    ]
+                }
+            },
+            "loadClassifications": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "demandFactor": {
+                            "type": "number",
+                            "description": "The demand factor, between 0 and 1."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "demandFactor"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "voltage",
+            "wiringTypes",
+            "loadClassifications"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalProjectSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
+    if (settings.IsErr ()) {
+        return CreateErrorResponse (settings.UnwrapErr ().kind, "Failed to get the electrical project settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("voltage", settings->GetVoltage ());
+
+    const auto& wiringTypes = response.AddList<GS::ObjectState> ("wiringTypes");
+    for (const GS::UniString& name : settings->GetWiringTypeNames ()) {
+        wiringTypes (GS::ObjectState ("name", name, "crossSectionalArea", settings->GetWiringTypeCrossSectionalArea (name)));
+    }
+    const auto& loadClassifications = response.AddList<GS::ObjectState> ("loadClassifications");
+    for (const GS::UniString& name : settings->GetLoadClassificationNames ()) {
+        loadClassifications (GS::ObjectState ("name", name, "demandFactor", settings->GetLoadClassificationDemandFactor (name)));
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+#ifdef ServerMainVers_3000
+
+static Orientation GetMEPOrientationFromObjectState (const GS::ObjectState& orientationOs)
+{
+    Orientation orientation = { { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 } };
+    const GS::ObjectState* direction = orientationOs.Get ("direction");
+    if (direction != nullptr) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (*direction);
+        orientation.direction = { coord.x, coord.y, coord.z };
+    }
+    const GS::ObjectState* rotation = orientationOs.Get ("rotation");
+    if (rotation != nullptr) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (*rotation);
+        orientation.rotation = { coord.x, coord.y, coord.z };
+    }
+    return orientation;
+}
+
+// Applies the optional library part, size, rotation and mirroring of the given data to an electrical default before placing it.
+template <typename DefaultT>
+static ACAPI::Result<void> ApplyElectricalDefaultPlacement (DefaultT& elemDefault, const GS::ObjectState& data)
+{
+    return elemDefault.Modify ([&](ACAPI::MEP::ElementDefault::Modifier& modifier) -> ACAPI::Result<void> {
+        // The library part first, the sizes are meant for the new library part.
+        const GS::ObjectState* libraryPartId = data.Get ("libraryPartId");
+        if (libraryPartId != nullptr) {
+            modifier.SetObjectId (GetGuidFromObjectState (*libraryPartId));
+        }
+        double size = 0.0;
+        if (data.Get ("xSize", size)) {
+            ACAPI::Result<void> result = modifier.SetObjectXSize (size);
+            if (result.IsErr ()) {
+                return result;
+            }
+        }
+        if (data.Get ("ySize", size)) {
+            ACAPI::Result<void> result = modifier.SetObjectYSize (size);
+            if (result.IsErr ()) {
+                return result;
+            }
+        }
+        double rotation = 0.0;
+        if (data.Get ("rotation", rotation)) {
+            modifier.SetBaseRotation (rotation);
+        }
+        bool isReflected = false;
+        if (data.Get ("isReflected", isReflected)) {
+            modifier.SetReflected (isReflected);
+        }
+        return ACAPI::Ok ();
+    });
+}
+
+// Applies the optional placement fields of the given data to an electrical panel or device. Returns false if any of them failed.
+static bool ApplyElectricalPlacement (ModifiableElementBase::Modifier& modifier, const GS::ObjectState& data)
+{
+    bool success = true;
+    const GS::ObjectState* libraryPartId = data.Get ("libraryPartId");
+    if (libraryPartId != nullptr) {
+        modifier.SetObjectId (GetGuidFromObjectState (*libraryPartId));
+    }
+    const GS::ObjectState* anchorPoint = data.Get ("anchorPoint");
+    if (anchorPoint != nullptr) {
+        modifier.SetAnchorPoint (Get3DCoordinateFromObjectState (*anchorPoint));
+    }
+    const GS::ObjectState* orientation = data.Get ("orientation");
+    if (orientation != nullptr) {
+        modifier.SetOrientation (GetMEPOrientationFromObjectState (*orientation));
+    }
+    double rotation = 0.0;
+    if (data.Get ("rotation", rotation)) {
+        modifier.SetBaseRotation (rotation);
+    }
+    bool isReflected = false;
+    if (data.Get ("isReflected", isReflected)) {
+        modifier.SetReflected (isReflected);
+    }
+    double size = 0.0;
+    if (data.Get ("xSize", size)) {
+        success &= modifier.SetObjectXSize (size).IsOk ();
+    }
+    if (data.Get ("ySize", size)) {
+        success &= modifier.SetObjectYSize (size).IsOk ();
+    }
+    return success;
+}
+
+// Archicad keeps the old library part when the given one does not exist, so the result has to be checked.
+static bool IsRequestedLibraryPartUsed (const API_Guid& usedLibraryPartId, const GS::ObjectState& data)
+{
+    const GS::ObjectState* libraryPartId = data.Get ("libraryPartId");
+    return libraryPartId == nullptr || usedLibraryPartId == GetGuidFromObjectState (*libraryPartId);
+}
+
+static const char* LibraryPartNotFound = "The library part given in 'libraryPartId' was not found.";
+
+// Some library parts (for example the electrical outlet) calculate their own size and ignore the given one without an error.
+static bool IsRequestedSizeUsed (double xSize, double ySize, const GS::ObjectState& data)
+{
+    const double tolerance = 1e-4;
+    double size = 0.0;
+    if (data.Get ("xSize", size) && std::fabs (xSize - size) > tolerance) {
+        return false;
+    }
+    if (data.Get ("ySize", size) && std::fabs (ySize - size) > tolerance) {
+        return false;
+    }
+    return true;
+}
+
+static const char* SizeNotApplied = "The library part does not allow the given 'xSize' or 'ySize', it keeps its own size.";
+
+static bool HasAnyField (const GS::ObjectState& data, std::initializer_list<const char*> fieldNames)
+{
+    for (const char* fieldName : fieldNames) {
+        if (data.Contains (fieldName)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ContainsName (const std::vector<GS::UniString>& names, const GS::UniString& name)
+{
+    return std::find (names.begin (), names.end (), name) != names.end ();
+}
+
+// An empty load classification name means "Not set".
+static bool IsKnownLoadClassification (const GS::UniString& name)
+{
+    if (name.IsEmpty ()) {
+        return true;
+    }
+    ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
+    return settings.IsOk () && ContainsName (settings->GetLoadClassificationNames (), name);
+}
+
+// An empty wiring type name means "Not set".
+static bool IsKnownWiringType (const GS::UniString& name)
+{
+    if (name.IsEmpty ()) {
+        return true;
+    }
+    ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
+    return settings.IsOk () && ContainsName (settings->GetWiringTypeNames (), name);
+}
+
+#endif
+
+CreateElectricalPanelsCommand::CreateElectricalPanelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateElectricalPanelsCommand::GetName () const
+{
+    return "CreateElectricalPanels";
+}
+
+GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalPanelsData": {
+                "type": "array",
+                "description": "Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "position": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The anchor point of the new panel."
+                        },
+                        "orientation": {
+                            "$ref": "#/MEPOrientation",
+                            "description": "Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0)."
+                        },
+                        "rotation": {
+                            "type": "number",
+                            "description": "The base rotation in radians."
+                        },
+                        "isReflected": {
+                            "type": "boolean"
+                        },
+                        "libraryPartId": {
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
+                        },
+                        "xSize": {
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
+                        },
+                        "ySize": {
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
+                        },
+                        "panelName": {
+                            "type": "string"
+                        },
+                        "circuitNamePrefix": {
+                            "type": "string"
+                        },
+                        "circuitIdStyle": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "position"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalPanelsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalPanelsData;
+    if (!parameters.Get ("electricalPanelsData", electricalPanelsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalPanelsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    ACAPI_CallUndoableCommand ("Create Electrical Panels", [&]() -> GSErrCode {
+        for (const GS::ObjectState& panelData : electricalPanelsData) {
+            const GS::ObjectState* position = panelData.Get ("position");
+            if (position == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'position' parameter."));
+                continue;
+            }
+
+            ACAPI::Result<ElectricalPanelDefault> panelDefault = CreateElectricalPanelDefault ();
+            if (panelDefault.IsErr ()) {
+                elements (CreateErrorResponse (panelDefault.UnwrapErr ().kind, "Failed to get the default electrical panel."));
+                continue;
+            }
+            ACAPI::Result<void> defaultResult = ApplyElectricalDefaultPlacement (*panelDefault, panelData);
+            if (defaultResult.IsErr ()) {
+                elements (CreateErrorResponse (defaultResult.UnwrapErr ().kind, "Failed to set the library part, size, rotation or mirroring of the electrical panel."));
+                continue;
+            }
+            if (!IsRequestedLibraryPartUsed (panelDefault->GetObjectId (), panelData)) {
+                elements (CreateErrorResponse (APIERR_BADID, LibraryPartNotFound));
+                continue;
+            }
+
+            const GS::ObjectState* orientationOs = panelData.Get ("orientation");
+            const Orientation orientation = orientationOs != nullptr ? GetMEPOrientationFromObjectState (*orientationOs) : GetMEPOrientationFromObjectState (GS::ObjectState ());
+            ACAPI::Result<ACAPI::MEP::UniqueID> newPanelId = panelDefault->Place (Get3DCoordinateFromObjectState (*position), orientation);
+            if (newPanelId.IsErr ()) {
+                elements (CreateErrorResponse (newPanelId.UnwrapErr ().kind, "Failed to place the electrical panel."));
+                continue;
+            }
+            if (HasAnyField (panelData, { "xSize", "ySize" })) {
+                ACAPI::Result<ElectricalPanel> placed = ElectricalPanel::Get (newPanelId.Unwrap ());
+                if (placed.IsOk () && !IsRequestedSizeUsed (placed->GetObjectXSize (), placed->GetObjectYSize (), panelData)) {
+                    ACAPI_Element_Delete ({ MEPUniqueIDToAPIGuid (newPanelId.Unwrap ()) });
+                    elements (CreateErrorResponse (APIERR_BADPARS, SizeNotApplied));
+                    continue;
+                }
+            }
+
+            if (HasAnyField (panelData, { "panelName", "circuitNamePrefix", "circuitIdStyle" })) {
+                ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (newPanelId.Unwrap ());
+                ACAPI::Result<void> modifyResult = panel.IsErr () ? ACAPI::Result<void> (panel.UnwrapErr (), panel.Token ()) : panel->Modify ([&](ElectricalPanel::Modifier& modifier) {
+                    GS::UniString text;
+                    if (panelData.Get ("panelName", text)) {
+                        modifier.SetPanelName (text);
+                    }
+                    if (panelData.Get ("circuitNamePrefix", text)) {
+                        modifier.SetCircuitNamePrefix (text);
+                    }
+                    Int32 circuitIdStyle = 0;
+                    if (panelData.Get ("circuitIdStyle", circuitIdStyle)) {
+                        modifier.SetCircuitIdStyle (static_cast<short> (circuitIdStyle));
+                    }
+                }, "Set Electrical Panel Data");
+                if (modifyResult.IsErr ()) {
+                    elements (CreateErrorResponse (modifyResult.UnwrapErr ().kind, "The electrical panel was placed, but its name, circuit name prefix or circuit id style could not be set."));
+                    continue;
+                }
+            }
+
+            elements (CreateMEPElementIdObjectState (newPanelId.Unwrap ()));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+CreateElectricalDevicesCommand::CreateElectricalDevicesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateElectricalDevicesCommand::GetName () const
+{
+    return "CreateElectricalDevices";
+}
+
+GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalDevicesData": {
+                "type": "array",
+                "description": "Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "position": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The anchor point of the new device."
+                        },
+                        "orientation": {
+                            "$ref": "#/MEPOrientation",
+                            "description": "Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0)."
+                        },
+                        "rotation": {
+                            "type": "number",
+                            "description": "The base rotation in radians."
+                        },
+                        "isReflected": {
+                            "type": "boolean"
+                        },
+                        "libraryPartId": {
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
+                        },
+                        "xSize": {
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
+                        },
+                        "ySize": {
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
+                        },
+                        "apparentPower": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The apparent power in VA."
+                        },
+                        "isApparentPowerEnabled": {
+                            "type": "boolean"
+                        },
+                        "loadClassificationName": {
+                            "type": "string",
+                            "description": "One of the load classifications of the electrical project settings, or an empty string for none."
+                        },
+                        "circuitId": {
+                            "$ref": "#/ElementId",
+                            "description": "The circuit to connect the new device to."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "position"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalDevicesData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalDevicesData;
+    if (!parameters.Get ("electricalDevicesData", electricalDevicesData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalDevicesData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    ACAPI_CallUndoableCommand ("Create Electrical Devices", [&]() -> GSErrCode {
+        for (const GS::ObjectState& deviceData : electricalDevicesData) {
+            const GS::ObjectState* position = deviceData.Get ("position");
+            if (position == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'position' parameter."));
+                continue;
+            }
+
+            GS::UniString loadClassificationName;
+            const bool hasLoadClassification = deviceData.Get ("loadClassificationName", loadClassificationName);
+            if (hasLoadClassification && !IsKnownLoadClassification (loadClassificationName)) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "The load classification '" + loadClassificationName + "' is not defined in the electrical project settings."));
+                continue;
+            }
+
+            const GS::ObjectState* circuitId = deviceData.Get ("circuitId");
+            if (circuitId != nullptr && ElectricalCircuit::Get (Adapter::UniqueID (GetGuidFromObjectState (*circuitId))).IsErr ()) {
+                elements (CreateErrorResponse (APIERR_BADID, "The 'circuitId' is not an electrical circuit."));
+                continue;
+            }
+
+            ACAPI::Result<ElectricalDeviceDefault> deviceDefault = CreateElectricalDeviceDefault ();
+            if (deviceDefault.IsErr ()) {
+                elements (CreateErrorResponse (deviceDefault.UnwrapErr ().kind, "Failed to get the default electrical device."));
+                continue;
+            }
+            ACAPI::Result<void> defaultResult = ApplyElectricalDefaultPlacement (*deviceDefault, deviceData);
+            if (defaultResult.IsErr ()) {
+                elements (CreateErrorResponse (defaultResult.UnwrapErr ().kind, "Failed to set the library part, size, rotation or mirroring of the electrical device."));
+                continue;
+            }
+            if (!IsRequestedLibraryPartUsed (deviceDefault->GetObjectId (), deviceData)) {
+                elements (CreateErrorResponse (APIERR_BADID, LibraryPartNotFound));
+                continue;
+            }
+
+            const GS::ObjectState* orientationOs = deviceData.Get ("orientation");
+            const Orientation orientation = orientationOs != nullptr ? GetMEPOrientationFromObjectState (*orientationOs) : GetMEPOrientationFromObjectState (GS::ObjectState ());
+            ACAPI::Result<ACAPI::MEP::UniqueID> newDeviceId = deviceDefault->Place (Get3DCoordinateFromObjectState (*position), orientation);
+            if (newDeviceId.IsErr ()) {
+                elements (CreateErrorResponse (newDeviceId.UnwrapErr ().kind, "Failed to place the electrical device."));
+                continue;
+            }
+            if (HasAnyField (deviceData, { "xSize", "ySize" })) {
+                ACAPI::Result<ElectricalDevice> placed = ElectricalDevice::Get (newDeviceId.Unwrap ());
+                if (placed.IsOk () && !IsRequestedSizeUsed (placed->GetObjectXSize (), placed->GetObjectYSize (), deviceData)) {
+                    ACAPI_Element_Delete ({ MEPUniqueIDToAPIGuid (newDeviceId.Unwrap ()) });
+                    elements (CreateErrorResponse (APIERR_BADPARS, SizeNotApplied));
+                    continue;
+                }
+            }
+
+            if (HasAnyField (deviceData, { "apparentPower", "isApparentPowerEnabled", "loadClassificationName", "circuitId" })) {
+                ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (newDeviceId.Unwrap ());
+                ACAPI::Result<void> modifyResult = device.IsErr () ? ACAPI::Result<void> (device.UnwrapErr (), device.Token ()) : device->Modify ([&](ElectricalDevice::Modifier& modifier) {
+                    Int32 apparentPower = 0;
+                    if (deviceData.Get ("apparentPower", apparentPower)) {
+                        modifier.SetApparentPower (static_cast<uint32_t> (apparentPower));
+                    }
+                    bool isApparentPowerEnabled = false;
+                    if (deviceData.Get ("isApparentPowerEnabled", isApparentPowerEnabled)) {
+                        modifier.SetApparentPowerEnabled (isApparentPowerEnabled);
+                    }
+                    if (hasLoadClassification) {
+                        modifier.SetLoadClassificationName (loadClassificationName);
+                    }
+                    if (circuitId != nullptr) {
+                        modifier.ConnectToCircuit (Adapter::UniqueID (GetGuidFromObjectState (*circuitId)));
+                    }
+                }, "Set Electrical Device Data");
+                if (modifyResult.IsErr ()) {
+                    elements (CreateErrorResponse (modifyResult.UnwrapErr ().kind, "The electrical device was placed, but its electrical data or circuit could not be set."));
+                    continue;
+                }
+            }
+
+            elements (CreateMEPElementIdObjectState (newDeviceId.Unwrap ()));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+ModifyElectricalPanelsCommand::ModifyElectricalPanelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyElectricalPanelsCommand::GetName () const
+{
+    return "ModifyElectricalPanels";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalPanelsData": {
+                "type": "array",
+                "description": "Array of data to modify electrical panels. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "panelName": {
+                            "type": "string"
+                        },
+                        "circuitNamePrefix": {
+                            "type": "string"
+                        },
+                        "circuitIdStyle": {
+                            "type": "integer"
+                        },
+                        "anchorPoint": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "orientation": {
+                            "$ref": "#/MEPOrientation"
+                        },
+                        "rotation": {
+                            "type": "number",
+                            "description": "The base rotation in radians."
+                        },
+                        "isReflected": {
+                            "type": "boolean"
+                        },
+                        "libraryPartId": {
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
+                        },
+                        "xSize": {
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
+                        },
+                        "ySize": {
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalPanelsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalPanelsData;
+    if (!parameters.Get ("electricalPanelsData", electricalPanelsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalPanelsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& panelData : electricalPanelsData) {
+        const GS::ObjectState* elementId = panelData.Get ("elementId");
+        if (elementId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter."));
+            continue;
+        }
+
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+        if (panel.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
+            continue;
+        }
+
+        bool placementSuccess = true;
+        ACAPI::Result<void> modifyResult = panel->Modify ([&](ElectricalPanel::Modifier& modifier) {
+            GS::UniString text;
+            if (panelData.Get ("panelName", text)) {
+                modifier.SetPanelName (text);
+            }
+            if (panelData.Get ("circuitNamePrefix", text)) {
+                modifier.SetCircuitNamePrefix (text);
+            }
+            Int32 circuitIdStyle = 0;
+            if (panelData.Get ("circuitIdStyle", circuitIdStyle)) {
+                modifier.SetCircuitIdStyle (static_cast<short> (circuitIdStyle));
+            }
+            placementSuccess = ApplyElectricalPlacement (modifier, panelData);
+        }, "Modify Electrical Panel");
+
+        if (modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical panel."));
+        } else if (!placementSuccess) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical panel."));
+        } else {
+            ACAPI::Result<ElectricalPanel> modified = ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), panelData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
+            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), panelData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+CreateElectricalCircuitsCommand::CreateElectricalCircuitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateElectricalCircuitsCommand::GetName () const
+{
+    return "CreateElectricalCircuits";
+}
+
+GS::Optional<GS::UniString> CreateElectricalCircuitsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalCircuitsData": {
+                "type": "array",
+                "description": "Array of data to create electrical circuits. Each item adds one circuit to the given panel.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "electricalPanelId": {
+                            "$ref": "#/ElementId",
+                            "description": "The panel to add the new circuit to."
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "voltage": {
+                            "type": "number"
+                        },
+                        "wiringTypeName": {
+                            "type": "string",
+                            "description": "One of the wiring types of the electrical project settings, or an empty string for none."
+                        },
+                        "isPhaseAUsed": {
+                            "type": "boolean"
+                        },
+                        "isPhaseBUsed": {
+                            "type": "boolean"
+                        },
+                        "isPhaseCUsed": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "electricalPanelId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalCircuitsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateElectricalCircuitsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_3000
+
+// Sets the given circuit fields of the data. Returns the error of the modification, if any.
+static std::optional<ACAPI::Error> ModifyElectricalCircuit (ElectricalCircuit& circuit, const GS::ObjectState& circuitData, const GS::UniString& undoString)
+{
+    ACAPI::Result<void> modifyResult = circuit.Modify ([&](ElectricalCircuit::Modifier& modifier) {
+        GS::UniString text;
+        if (circuitData.Get ("description", text)) {
+            modifier.SetCircuitDescription (text);
+        }
+        if (circuitData.Get ("wiringTypeName", text)) {
+            modifier.SetWiringTypeName (text);
+        }
+        double voltage = 0.0;
+        if (circuitData.Get ("voltage", voltage)) {
+            modifier.SetVoltage (voltage);
+        }
+        bool isUsed = false;
+        if (circuitData.Get ("isPhaseAUsed", isUsed)) {
+            modifier.SetIsPhaseAUsed (isUsed);
+        }
+        if (circuitData.Get ("isPhaseBUsed", isUsed)) {
+            modifier.SetIsPhaseBUsed (isUsed);
+        }
+        if (circuitData.Get ("isPhaseCUsed", isUsed)) {
+            modifier.SetIsPhaseCUsed (isUsed);
+        }
+    }, undoString);
+    if (modifyResult.IsErr ()) {
+        return modifyResult.UnwrapErr ();
+    }
+    return std::nullopt;
+}
+
+#endif
+
+GS::ObjectState CreateElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalCircuitsData;
+    if (!parameters.Get ("electricalCircuitsData", electricalCircuitsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalCircuitsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    for (const GS::ObjectState& circuitData : electricalCircuitsData) {
+        const GS::ObjectState* panelId = circuitData.Get ("electricalPanelId");
+        if (panelId == nullptr) {
+            elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'electricalPanelId' parameter."));
+            continue;
+        }
+
+        GS::UniString wiringTypeName;
+        if (circuitData.Get ("wiringTypeName", wiringTypeName) && !IsKnownWiringType (wiringTypeName)) {
+            elements (CreateErrorResponse (APIERR_BADPARS, "The wiring type '" + wiringTypeName + "' is not defined in the electrical project settings."));
+            continue;
+        }
+
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (GetGuidFromObjectState (*panelId)));
+        if (panel.IsErr ()) {
+            elements (CreateErrorResponse (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
+            continue;
+        }
+
+        std::optional<ACAPI::MEP::UniqueID> newCircuitId;
+        std::optional<ACAPI::Error> addError;
+        ACAPI::Result<void> modifyResult = panel->Modify ([&](ElectricalPanel::Modifier& modifier) {
+            ACAPI::Result<ACAPI::MEP::UniqueID> result = modifier.AddCircuit ();
+            if (result.IsOk ()) {
+                newCircuitId = result.Unwrap ();
+            } else {
+                addError = result.UnwrapErr ();
+            }
+        }, "Create Electrical Circuit");
+
+        if (addError.has_value () || modifyResult.IsErr () || !newCircuitId.has_value ()) {
+            const GSErrCode errorCode = addError.has_value () ? addError->kind : (modifyResult.IsErr () ? modifyResult.UnwrapErr ().kind : APIERR_GENERAL);
+            elements (CreateErrorResponse (errorCode, "Failed to add a circuit to the electrical panel."));
+            continue;
+        }
+
+        if (HasAnyField (circuitData, { "description", "voltage", "wiringTypeName", "isPhaseAUsed", "isPhaseBUsed", "isPhaseCUsed" })) {
+            ACAPI::Result<ElectricalCircuit> circuit = ElectricalCircuit::Get (newCircuitId.value ());
+            const std::optional<ACAPI::Error> circuitError = circuit.IsErr () ? std::optional<ACAPI::Error> (circuit.UnwrapErr ()) : ModifyElectricalCircuit (*circuit, circuitData, "Set Electrical Circuit Data");
+            if (circuitError.has_value ()) {
+                elements (CreateErrorResponse (circuitError->kind, "The circuit was added, but its data could not be set."));
+                continue;
+            }
+        }
+
+        elements (CreateMEPElementIdObjectState (newCircuitId.value ()));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+DeleteElectricalCircuitsCommand::DeleteElectricalCircuitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteElectricalCircuitsCommand::GetName () const
+{
+    return "DeleteElectricalCircuits";
+}
+
+GS::Optional<GS::UniString> DeleteElectricalCircuitsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalCircuits": {
+                "$ref": "#/Elements",
+                "description": "The circuits to remove from their panels."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalCircuits"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteElectricalCircuitsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalCircuits;
+    if (!parameters.Get ("electricalCircuits", electricalCircuits)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalCircuits' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& circuitItem : electricalCircuits) {
+        const ACAPI::MEP::UniqueID circuitId = Adapter::UniqueID (GetGuidFromElementsArrayItem (circuitItem));
+        ACAPI::Result<ElectricalCircuit> circuit = ElectricalCircuit::Get (circuitId);
+        if (circuit.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (circuit.UnwrapErr ().kind, "Failed to get the electrical circuit."));
+            continue;
+        }
+
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (circuit->GetOwnerPanelId ());
+        if (panel.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (panel.UnwrapErr ().kind, "Failed to get the panel of the electrical circuit."));
+            continue;
+        }
+
+        std::optional<ACAPI::Error> removeError;
+        ACAPI::Result<void> modifyResult = panel->Modify ([&](ElectricalPanel::Modifier& modifier) {
+            ACAPI::Result<void> result = modifier.RemoveCircuit (circuitId);
+            if (result.IsErr ()) {
+                removeError = result.UnwrapErr ();
+            }
+        }, "Delete Electrical Circuit");
+
+        if (removeError.has_value ()) {
+            executionResults (CreateFailedExecutionResult (removeError->kind, "Failed to remove the circuit from its panel."));
+        } else if (modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to remove the circuit from its panel."));
+        } else {
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+ModifyElectricalCircuitsCommand::ModifyElectricalCircuitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyElectricalCircuitsCommand::GetName () const
+{
+    return "ModifyElectricalCircuits";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalCircuitsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalCircuitsData": {
+                "type": "array",
+                "description": "Array of data to modify electrical circuits. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "voltage": {
+                            "type": "number"
+                        },
+                        "wiringTypeName": {
+                            "type": "string",
+                            "description": "One of the wiring types of the electrical project settings, or an empty string for none."
+                        },
+                        "isPhaseAUsed": {
+                            "type": "boolean"
+                        },
+                        "isPhaseBUsed": {
+                            "type": "boolean"
+                        },
+                        "isPhaseCUsed": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalCircuitsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalCircuitsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalCircuitsData;
+    if (!parameters.Get ("electricalCircuitsData", electricalCircuitsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalCircuitsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& circuitData : electricalCircuitsData) {
+        const GS::ObjectState* elementId = circuitData.Get ("elementId");
+        if (elementId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter."));
+            continue;
+        }
+
+        GS::UniString wiringTypeName;
+        if (circuitData.Get ("wiringTypeName", wiringTypeName) && !IsKnownWiringType (wiringTypeName)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The wiring type '" + wiringTypeName + "' is not defined in the electrical project settings."));
+            continue;
+        }
+
+        ACAPI::Result<ElectricalCircuit> circuit = ElectricalCircuit::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+        if (circuit.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (circuit.UnwrapErr ().kind, "Failed to get the electrical circuit."));
+            continue;
+        }
+
+        const std::optional<ACAPI::Error> error = ModifyElectricalCircuit (*circuit, circuitData, "Modify Electrical Circuit");
+        executionResults (error.has_value ()
+            ? CreateFailedExecutionResult (error->kind, "Failed to modify the electrical circuit.")
+            : CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+ModifyElectricalDevicesCommand::ModifyElectricalDevicesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyElectricalDevicesCommand::GetName () const
+{
+    return "ModifyElectricalDevices";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalDevicesData": {
+                "type": "array",
+                "description": "Array of data to modify electrical devices. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "apparentPower": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The apparent power in VA."
+                        },
+                        "isApparentPowerEnabled": {
+                            "type": "boolean"
+                        },
+                        "loadClassificationName": {
+                            "type": "string",
+                            "description": "One of the load classifications of the electrical project settings, or an empty string for none."
+                        },
+                        "anchorPoint": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "orientation": {
+                            "$ref": "#/MEPOrientation"
+                        },
+                        "rotation": {
+                            "type": "number",
+                            "description": "The base rotation in radians."
+                        },
+                        "isReflected": {
+                            "type": "boolean"
+                        },
+                        "libraryPartId": {
+                            "$ref": "#/LibPartUnId",
+                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
+                        },
+                        "xSize": {
+                            "type": "number",
+                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
+                        },
+                        "ySize": {
+                            "type": "number",
+                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalDevicesData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> electricalDevicesData;
+    if (!parameters.Get ("electricalDevicesData", electricalDevicesData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalDevicesData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& deviceData : electricalDevicesData) {
+        const GS::ObjectState* elementId = deviceData.Get ("elementId");
+        if (elementId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter."));
+            continue;
+        }
+
+        GS::UniString loadClassificationName;
+        const bool hasLoadClassification = deviceData.Get ("loadClassificationName", loadClassificationName);
+        if (hasLoadClassification && !IsKnownLoadClassification (loadClassificationName)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The load classification '" + loadClassificationName + "' is not defined in the electrical project settings."));
+            continue;
+        }
+
+        ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+        if (device.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (device.UnwrapErr ().kind, "Failed to get the electrical device."));
+            continue;
+        }
+
+        bool placementSuccess = true;
+        ACAPI::Result<void> modifyResult = device->Modify ([&](ElectricalDevice::Modifier& modifier) {
+            Int32 apparentPower = 0;
+            if (deviceData.Get ("apparentPower", apparentPower)) {
+                modifier.SetApparentPower (static_cast<uint32_t> (apparentPower));
+            }
+            bool isApparentPowerEnabled = false;
+            if (deviceData.Get ("isApparentPowerEnabled", isApparentPowerEnabled)) {
+                modifier.SetApparentPowerEnabled (isApparentPowerEnabled);
+            }
+            if (hasLoadClassification) {
+                modifier.SetLoadClassificationName (loadClassificationName);
+            }
+            placementSuccess = ApplyElectricalPlacement (modifier, deviceData);
+        }, "Modify Electrical Device");
+
+        if (modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical device."));
+        } else if (!placementSuccess) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to set the size of the electrical device."));
+        } else {
+            ACAPI::Result<ElectricalDevice> modified = ElectricalDevice::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
+            if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), deviceData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
+            } else if (modified.IsOk () && !IsRequestedSizeUsed (modified->GetObjectXSize (), modified->GetObjectYSize (), deviceData)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+ConnectToElectricalCircuitsCommand::ConnectToElectricalCircuitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ConnectToElectricalCircuitsCommand::GetName () const
+{
+    return "ConnectToElectricalCircuits";
+}
+
+GS::Optional<GS::UniString> ConnectToElectricalCircuitsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "connectionsData": {
+                "type": "array",
+                "description": "Array of electrical devices or panels and the circuits to connect them to. A panel connected to a circuit becomes a sub-panel of the panel of that circuit.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "An electrical device or an electrical panel."
+                        },
+                        "circuitId": {
+                            "$ref": "#/ElementId",
+                            "description": "The electrical circuit to connect to."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "circuitId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectionsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ConnectToElectricalCircuitsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ConnectToElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> connectionsData;
+    if (!parameters.Get ("connectionsData", connectionsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'connectionsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& connectionData : connectionsData) {
+        const GS::ObjectState* elementId = connectionData.Get ("elementId");
+        const GS::ObjectState* circuitIdOs = connectionData.Get ("circuitId");
+        if (elementId == nullptr || circuitIdOs == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' or 'circuitId' parameter."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID circuitId = Adapter::UniqueID (GetGuidFromObjectState (*circuitIdOs));
+        if (ElectricalCircuit::Get (circuitId).IsErr ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'circuitId' is not an electrical circuit."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID uniqueId = Adapter::UniqueID (GetGuidFromObjectState (*elementId));
+        ACAPI::Result<void> modifyResult = [&]() -> ACAPI::Result<void> {
+            ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (uniqueId);
+            if (device.IsOk ()) {
+                return device->Modify ([&](ElectricalDevice::Modifier& modifier) {
+                    modifier.ConnectToCircuit (circuitId);
+                }, "Connect Electrical Device to Circuit");
+            }
+            ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (uniqueId);
+            if (panel.IsOk ()) {
+                return panel->Modify ([&](ElectricalPanel::Modifier& modifier) {
+                    modifier.ConnectToCircuit (circuitId);
+                }, "Connect Electrical Panel to Circuit");
+            }
+            return { panel.UnwrapErr (), panel.Token () };
+        } ();
+
+        executionResults (modifyResult.IsErr ()
+            ? CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to connect the element to the circuit. The element must be an electrical device or panel.")
+            : CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+ModifyElectricalProjectSettingsCommand::ModifyElectricalProjectSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyElectricalProjectSettingsCommand::GetName () const
+{
+    return "ModifyElectricalProjectSettings";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "voltage": {
+                "type": "number"
+            },
+            "wiringTypesToAdd": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "crossSectionalArea": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "crossSectionalArea"
+                    ]
+                }
+            },
+            "wiringTypesToRemove": {
+                "type": "array",
+                "description": "The names of the wiring types to remove.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "loadClassificationsToAdd": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "demandFactor": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "demandFactor"
+                    ]
+                }
+            },
+            "loadClassificationsToRemove": {
+                "type": "array",
+                "description": "The names of the load classifications to remove.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ModifyElectricalProjectSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
+    if (settings.IsErr ()) {
+        return CreateFailedExecutionResult (settings.UnwrapErr ().kind, "Failed to get the electrical project settings.");
+    }
+
+    GS::Array<GS::ObjectState> wiringTypesToAdd;
+    parameters.Get ("wiringTypesToAdd", wiringTypesToAdd);
+    GS::Array<GS::UniString> wiringTypesToRemove;
+    parameters.Get ("wiringTypesToRemove", wiringTypesToRemove);
+    GS::Array<GS::ObjectState> loadClassificationsToAdd;
+    parameters.Get ("loadClassificationsToAdd", loadClassificationsToAdd);
+    GS::Array<GS::UniString> loadClassificationsToRemove;
+    parameters.Get ("loadClassificationsToRemove", loadClassificationsToRemove);
+
+    // Removing an unknown name is reported instead of being silently ignored.
+    const std::vector<GS::UniString> wiringTypeNames = settings->GetWiringTypeNames ();
+    for (const GS::UniString& name : wiringTypesToRemove) {
+        if (!ContainsName (wiringTypeNames, name)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The wiring type '" + name + "' is not defined in the electrical project settings.");
+        }
+    }
+    const std::vector<GS::UniString> loadClassificationNames = settings->GetLoadClassificationNames ();
+    for (const GS::UniString& name : loadClassificationsToRemove) {
+        if (!ContainsName (loadClassificationNames, name)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The load classification '" + name + "' is not defined in the electrical project settings.");
+        }
+    }
+
+    // Archicad accepts the same name twice, so adding an existing name is refused unless it is removed in the same call.
+    std::vector<GS::UniString> remainingWiringTypeNames;
+    for (const GS::UniString& name : wiringTypeNames) {
+        if (!wiringTypesToRemove.Contains (name)) {
+            remainingWiringTypeNames.push_back (name);
+        }
+    }
+    for (const GS::ObjectState& wiringType : wiringTypesToAdd) {
+        GS::UniString name;
+        wiringType.Get ("name", name);
+        if (ContainsName (remainingWiringTypeNames, name)) {
+            return CreateFailedExecutionResult (APIERR_NAMEALREADYUSED, "The wiring type '" + name + "' already exists in the electrical project settings.");
+        }
+        remainingWiringTypeNames.push_back (name);
+    }
+    std::vector<GS::UniString> remainingLoadClassificationNames;
+    for (const GS::UniString& name : loadClassificationNames) {
+        if (!loadClassificationsToRemove.Contains (name)) {
+            remainingLoadClassificationNames.push_back (name);
+        }
+    }
+    for (const GS::ObjectState& loadClassification : loadClassificationsToAdd) {
+        GS::UniString name;
+        loadClassification.Get ("name", name);
+        if (ContainsName (remainingLoadClassificationNames, name)) {
+            return CreateFailedExecutionResult (APIERR_NAMEALREADYUSED, "The load classification '" + name + "' already exists in the electrical project settings.");
+        }
+        remainingLoadClassificationNames.push_back (name);
+    }
+
+    std::optional<ACAPI::Error> removeError;
+    ACAPI::Result<void> modifyResult = settings->Modify ([&](ElectricalProjectSettings::Modifier& modifier) {
+        double voltage = 0.0;
+        if (parameters.Get ("voltage", voltage)) {
+            modifier.SetVoltage (voltage);
+        }
+        // Removals first, so that a wiring type or load classification can be replaced in one call.
+        for (const GS::UniString& name : wiringTypesToRemove) {
+            ACAPI::Result<void> result = modifier.RemoveWiringType (name);
+            if (result.IsErr () && !removeError.has_value ()) {
+                removeError = result.UnwrapErr ();
+            }
+        }
+        for (const GS::UniString& name : loadClassificationsToRemove) {
+            ACAPI::Result<void> result = modifier.RemoveLoadClassification (name);
+            if (result.IsErr () && !removeError.has_value ()) {
+                removeError = result.UnwrapErr ();
+            }
+        }
+        for (const GS::ObjectState& wiringType : wiringTypesToAdd) {
+            GS::UniString name;
+            double crossSectionalArea = 0.0;
+            wiringType.Get ("name", name);
+            wiringType.Get ("crossSectionalArea", crossSectionalArea);
+            modifier.AddWiringType (name, crossSectionalArea);
+        }
+        for (const GS::ObjectState& loadClassification : loadClassificationsToAdd) {
+            GS::UniString name;
+            double demandFactor = 0.0;
+            loadClassification.Get ("name", name);
+            loadClassification.Get ("demandFactor", demandFactor);
+            modifier.AddLoadClassification (name, demandFactor);
+        }
+    }, "Modify Electrical Project Settings");
+
+    if (removeError.has_value ()) {
+        return CreateFailedExecutionResult (removeError->kind, "Failed to remove a wiring type or load classification.");
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the electrical project settings.");
+    }
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
 
 #ifdef ServerMainVers_2900
 
