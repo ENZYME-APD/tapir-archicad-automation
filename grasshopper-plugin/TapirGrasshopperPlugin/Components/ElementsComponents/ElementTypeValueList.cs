@@ -8,19 +8,30 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         private ElementTypeValueListType type;
 
+        // The item selected when the list is created; null keeps the first
+        // item of each list (Wall, CurtainWallPanel).
+        private readonly string defaultSelected;
+
         public ElementTypeValueList()
             : this(ElementTypeValueListType.AllElements)
         {
         }
 
         public ElementTypeValueList(
-            ElementTypeValueListType t)
+            ElementTypeValueListType t,
+            string defaultSelected = null)
             : base(
                 "ElementsType",
                 "Value List for Archicad Elements Types.",
                 GroupNames.Elements)
         {
             type = t;
+            this.defaultSelected = defaultSelected;
+
+            // The base constructor already filled the list, but it ran before
+            // the fields above were set (so with the default MainElementsOnly
+            // type and no default selection); fill it again with them.
+            RefreshItems();
         }
 
         public override void AppendAdditionalMenuItems(
@@ -95,6 +106,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (type != ElementTypeValueListType.MainElementsOnly)
             {
                 AddEnumItems(defaultSelected: SubElementType.CurtainWallPanel);
+            }
+
+            if (defaultSelected != null)
+            {
+                foreach (var item in ListItems)
+                {
+                    item.Selected = item.Name == defaultSelected;
+                }
             }
 
             ExpireSolution(true);
