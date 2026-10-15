@@ -3641,6 +3641,8 @@ GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::Ob
         label.effectsBits = (strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, effectsBits);
     }
+
+    return {};
 }
 
 } // namespace TextLabelDetails
