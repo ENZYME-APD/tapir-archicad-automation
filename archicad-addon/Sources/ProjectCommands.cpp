@@ -1671,17 +1671,17 @@ static bool ParseColorDepth (const GS::UniString& colorDepth, API_ColorDepthID& 
     if (colorDepth == "blackAndWhite") {
         colorDepthID = APIColorDepth_BW;
     } else if (colorDepth == "16Colors") {
-        colorDepthID = APIColorDepth_16;
+        colorDepthID = APIColorDepth_16C;
     } else if (colorDepth == "256Colors") {
-        colorDepthID = APIColorDepth_256;
+        colorDepthID = APIColorDepth_256C;
     } else if (colorDepth == "16Grays") {
-        colorDepthID = APIColorDepth_16Gray;
+        colorDepthID = APIColorDepth_16G;
     } else if (colorDepth == "256Grays") {
-        colorDepthID = APIColorDepth_256Gray;
+        colorDepthID = APIColorDepth_256G;
     } else if (colorDepth == "trueColor") {
-        colorDepthID = APIColorDepth_RGB;
+        colorDepthID = APIColorDepth_MiC;
     } else if (colorDepth == "trueColorWithAlpha") {
-        colorDepthID = APIColorDepth_RGBA;
+        colorDepthID = APIColorDepth_MiCP;
     } else {
         return false;
     }
@@ -1706,7 +1706,7 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
         return CreateErrorResponse (APIERR_BADPARS, "format is missing and the extension of imageFilePath is not one of .png, .jpg, .jpeg, .bmp, .tif, .tiff and .gif.");
     }
 
-    API_ColorDepthID colorDepthID = APIColorDepth_RGB;
+    API_ColorDepthID colorDepthID = APIColorDepth_MiC;
     GS::UniString colorDepth;
     if (parameters.Get ("colorDepth", colorDepth) && !ParseColorDepth (colorDepth, colorDepthID)) {
         return CreateErrorResponse (APIERR_BADPARS, "colorDepth is not one of the allowed values.");
@@ -1734,7 +1734,8 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
     savePars.colorDepth = colorDepthID;
     savePars.dithered = dithered;
     savePars.view2D = view2D;
-    savePars.crop = entireDrawing;
+    // crop means "crop to the current zoom"; the Entire Drawing option is its opposite.
+    savePars.crop = !entireDrawing;
 
     const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
     if (err != NoError) {
