@@ -3327,7 +3327,9 @@
             "Equipment",
             "Fitting",
             "FlexibleSegment",
-            "TakeOff"
+            "TakeOff",
+            "ElectricalPanel",
+            "ElectricalDevice"
         ]
     },
     "DrawingNameType": {
@@ -11751,6 +11753,317 @@
             },
             {
                 "$ref": "#/BeamSegmentQuantities"
+            }
+        ]
+    },
+    "MEPOrientation": {
+        "type": "object",
+        "description": "The orientation of an MEP element, given by a direction and a rotation vector.",
+        "properties": {
+            "direction": {
+                "$ref": "#/Coordinate3D",
+                "description": "The direction vector."
+            },
+            "rotation": {
+                "$ref": "#/Coordinate3D",
+                "description": "The rotation vector."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "direction",
+            "rotation"
+        ]
+    },
+    "ElectricalLoads": {
+        "type": "object",
+        "description": "An electrical load in total and per phase, as Archicad calculates it.",
+        "properties": {
+            "total": {
+                "type": "number"
+            },
+            "phaseA": {
+                "type": "number"
+            },
+            "phaseB": {
+                "type": "number"
+            },
+            "phaseC": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "total",
+            "phaseA",
+            "phaseB",
+            "phaseC"
+        ]
+    },
+    "ElectricalPanelDetails": {
+        "type": "object",
+        "description": "The details of an electrical panel (distribution board).",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "panelName": {
+                "type": "string"
+            },
+            "circuitNamePrefix": {
+                "type": "string",
+                "description": "The prefix of the names of the circuits of the panel."
+            },
+            "circuitIdStyle": {
+                "type": "integer",
+                "description": "The index of the style of the circuit ids."
+            },
+            "circuits": {
+                "$ref": "#/Elements",
+                "description": "The circuits owned by the panel."
+            },
+            "parentCircuitId": {
+                "$ref": "#/ElementId",
+                "description": "The circuit the panel is connected to. Missing when the panel is not connected to a circuit."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the element."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation"
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The base rotation of the element in radians."
+            },
+            "isReflected": {
+                "type": "boolean",
+                "description": "The element is mirrored."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part of the element."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the element along its local x axis."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the element along its local y axis."
+            },
+            "connectedLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "demandLoad": {
+                "$ref": "#/ElectricalLoads"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "panelName",
+            "circuitNamePrefix",
+            "circuitIdStyle",
+            "circuits",
+            "anchorPoint",
+            "orientation",
+            "rotation",
+            "isReflected",
+            "libraryPartId",
+            "xSize",
+            "ySize",
+            "connectedLoad",
+            "demandLoad"
+        ]
+    },
+    "ElectricalPanelDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical panel or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalPanelDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElectricalCircuitDetails": {
+        "type": "object",
+        "description": "The details of an electrical circuit.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the circuit, including the circuit name prefix of its panel."
+            },
+            "description": {
+                "type": "string"
+            },
+            "ownerPanelId": {
+                "$ref": "#/ElementId",
+                "description": "The panel that owns the circuit."
+            },
+            "childDevices": {
+                "$ref": "#/Elements",
+                "description": "The electrical devices connected to the circuit."
+            },
+            "childPanels": {
+                "$ref": "#/Elements",
+                "description": "The electrical panels connected to the circuit."
+            },
+            "voltage": {
+                "type": "number"
+            },
+            "phases": {
+                "type": "string",
+                "description": "The used phases, as Archicad displays them."
+            },
+            "isPhaseAUsed": {
+                "type": "boolean"
+            },
+            "isPhaseBUsed": {
+                "type": "boolean"
+            },
+            "isPhaseCUsed": {
+                "type": "boolean"
+            },
+            "wiringTypeName": {
+                "type": "string",
+                "description": "The name of the wiring type, as defined in the electrical project settings."
+            },
+            "connectedLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "demandLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "voltageDrop": {
+                "type": "number"
+            },
+            "estimatedCableLength": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "name",
+            "description",
+            "ownerPanelId",
+            "childDevices",
+            "childPanels",
+            "voltage",
+            "phases",
+            "isPhaseAUsed",
+            "isPhaseBUsed",
+            "isPhaseCUsed",
+            "wiringTypeName",
+            "connectedLoad",
+            "demandLoad",
+            "voltageDrop",
+            "estimatedCableLength"
+        ]
+    },
+    "ElectricalCircuitDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical circuit or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalCircuitDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElectricalDeviceDetails": {
+        "type": "object",
+        "description": "The details of an electrical device (a light, socket or other consumer).",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "parentCircuitId": {
+                "$ref": "#/ElementId",
+                "description": "The circuit the device is connected to. Missing when the device is not connected to a circuit."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the element."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation"
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The base rotation of the element in radians."
+            },
+            "isReflected": {
+                "type": "boolean",
+                "description": "The element is mirrored."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part of the element."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the element along its local x axis."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the element along its local y axis."
+            },
+            "apparentPower": {
+                "type": "number",
+                "description": "The apparent power of the device in VA."
+            },
+            "isApparentPowerEnabled": {
+                "type": "boolean"
+            },
+            "loadClassificationName": {
+                "type": "string",
+                "description": "The name of the load classification, as defined in the electrical project settings."
+            },
+            "demandLoad": {
+                "type": "number"
+            },
+            "connectedElements": {
+                "$ref": "#/Elements",
+                "description": "The MEP elements directly connected to the device."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "anchorPoint",
+            "orientation",
+            "rotation",
+            "isReflected",
+            "libraryPartId",
+            "xSize",
+            "ySize",
+            "apparentPower",
+            "isApparentPowerEnabled",
+            "loadClassificationName",
+            "demandLoad",
+            "connectedElements"
+        ]
+    },
+    "ElectricalDeviceDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical device or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalDeviceDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
             }
         ]
     }

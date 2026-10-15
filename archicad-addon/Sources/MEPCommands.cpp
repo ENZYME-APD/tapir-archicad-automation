@@ -28,6 +28,13 @@
 using namespace ACAPI::MEP;
 #endif
 
+#ifdef ServerMainVers_3000
+#include "ACAPI/MEPElectricalPanel.hpp"
+#include "ACAPI/MEPElectricalCircuit.hpp"
+#include "ACAPI/MEPElectricalDevice.hpp"
+#include "ACAPI/MEPElectricalProjectSettings.hpp"
+#endif
+
 #ifdef ServerMainVers_2800
 
 static API_Guid MEPUniqueIDToAPIGuid (const ACAPI::MEP::UniqueID& id)
@@ -129,6 +136,14 @@ static GS::UniString GetMEPElementTypeName (const API_Guid& classId)
     if (IsTakeOff (classId)) {
         return "TakeOff";
     }
+#ifdef ServerMainVers_3000
+    if (IsElectricalPanel (classId)) {
+        return "ElectricalPanel";
+    }
+    if (IsElectricalDevice (classId)) {
+        return "ElectricalDevice";
+    }
+#endif
     return "";
 }
 
@@ -218,6 +233,18 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
 
     GS::Array<API_Guid> elemList;
     ACAPI_Element_GetElemList (API_ExternalElemID, &elemList);
+#ifdef ServerMainVers_3000
+    // Electrical elements are only listed when asked for by their classID.
+    for (const API_Guid& classId : { ElectricalPanelID, ElectricalDeviceID }) {
+        GS::Array<API_Guid> electricalElemList;
+        ACAPI_Element_GetElemList (API_ElemType (classId), &electricalElemList);
+        for (const API_Guid& elemGuid : electricalElemList) {
+            if (!elemList.Contains (elemGuid)) {
+                elemList.Push (elemGuid);
+            }
+        }
+    }
+#endif
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
@@ -1329,3 +1356,470 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 }
 #endif
+
+#ifdef ServerMainVers_3000
+
+static GS::ObjectState CreateMEPElementIdObjectState (const ACAPI::MEP::UniqueID& id)
+{
+    return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (id));
+}
+
+static GS::ObjectState CreateMEPOrientationObjectState (const Orientation& orientation)
+{
+    GS::ObjectState orientationOs;
+    orientationOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
+    orientationOs.Add ("rotation", Create3DCoordinateObjectState (API_Coord3D { orientation.rotation.x, orientation.rotation.y, orientation.rotation.z }));
+    return orientationOs;
+}
+
+static void AddElectricalPlacement (GS::ObjectState& os, const ACAPI::MEP::ElementBase& element)
+{
+    os.Add ("anchorPoint", Create3DCoordinateObjectState (element.GetAnchorPoint ()));
+    os.Add ("orientation", CreateMEPOrientationObjectState (element.GetOrientation ()));
+    os.Add ("rotation", element.GetBaseRotation ());
+    os.Add ("isReflected", element.GetReflected ());
+    os.Add ("libraryPartId", CreateGuidObjectState (element.GetObjectId ()));
+    os.Add ("xSize", element.GetObjectXSize ());
+    os.Add ("ySize", element.GetObjectYSize ());
+}
+
+static GS::ObjectState CreateElectricalLoadsObjectState (double total, double phaseA, double phaseB, double phaseC)
+{
+    GS::ObjectState loadsOs;
+    loadsOs.Add ("total", total);
+    loadsOs.Add ("phaseA", phaseA);
+    loadsOs.Add ("phaseB", phaseB);
+    loadsOs.Add ("phaseC", phaseC);
+    return loadsOs;
+}
+
+// Electrical elements are not listed by GetElemList (API_ExternalElemID), they have to be asked for by their classID.
+static GS::Array<API_Guid> CollectElementsOfClass (const API_Guid& classId)
+{
+    GS::Array<API_Guid> elemList;
+    ACAPI_Element_GetElemList (API_ElemType (classId), &elemList);
+    return elemList;
+}
+
+// The guids of the given elements parameter, or every element accepted by isType when it is not given.
+static GS::Array<API_Guid> GetRequestedOrAllElements (const GS::ObjectState& parameters, const char* parameterName, const API_Guid& classId)
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get (parameterName, elements)) {
+        return CollectElementsOfClass (classId);
+    }
+    GS::Array<API_Guid> result;
+    for (const GS::ObjectState& element : elements) {
+        result.Push (GetGuidFromElementsArrayItem (element));
+    }
+    return result;
+}
+
+static GS::ObjectState GetElectricalCircuitDetails (const ACAPI::MEP::UniqueID& circuitId)
+{
+    ACAPI::Result<ElectricalCircuit> circuit = ElectricalCircuit::Get (circuitId);
+    if (circuit.IsErr ()) {
+        return CreateErrorResponse (circuit.UnwrapErr ().kind, "Failed to get the electrical circuit.");
+    }
+
+    GS::ObjectState circuitOs;
+    circuitOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (circuitId)));
+    circuitOs.Add ("name", circuit->GetCircuitNameWithPrefix ());
+    circuitOs.Add ("description", circuit->GetCircuitDescription ());
+    circuitOs.Add ("ownerPanelId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (circuit->GetOwnerPanelId ())));
+
+    const auto& childDevices = circuitOs.AddList<GS::ObjectState> ("childDevices");
+    for (const ACAPI::MEP::UniqueID& deviceId : circuit->GetChildDeviceIds ()) {
+        childDevices (CreateMEPElementIdObjectState (deviceId));
+    }
+    const auto& childPanels = circuitOs.AddList<GS::ObjectState> ("childPanels");
+    for (const ACAPI::MEP::UniqueID& panelId : circuit->GetChildPanelIds ()) {
+        childPanels (CreateMEPElementIdObjectState (panelId));
+    }
+
+    circuitOs.Add ("voltage", circuit->GetVoltage ());
+    circuitOs.Add ("phases", circuit->GetPhaseString ());
+    circuitOs.Add ("isPhaseAUsed", circuit->IsPhaseAUsed ());
+    circuitOs.Add ("isPhaseBUsed", circuit->IsPhaseBUsed ());
+    circuitOs.Add ("isPhaseCUsed", circuit->IsPhaseCUsed ());
+    circuitOs.Add ("wiringTypeName", circuit->GetWiringTypeName ());
+    circuitOs.Add ("connectedLoad", CreateElectricalLoadsObjectState (circuit->GetConnectedLoad (),
+        circuit->GetConnectedLoadPhaseA (), circuit->GetConnectedLoadPhaseB (), circuit->GetConnectedLoadPhaseC ()));
+    circuitOs.Add ("demandLoad", CreateElectricalLoadsObjectState (circuit->GetDemandLoad (),
+        circuit->GetDemandLoadPhaseA (), circuit->GetDemandLoadPhaseB (), circuit->GetDemandLoadPhaseC ()));
+    circuitOs.Add ("voltageDrop", circuit->GetVoltageDrop ());
+    circuitOs.Add ("estimatedCableLength", circuit->GetEstimatedCableLength ());
+    return circuitOs;
+}
+
+#else
+
+// Only the pre-Archicad 30 branches use it; on Archicad 30 it would be an unused variable.
+static const char* ElectricalRequiresArchicad30 = "This command requires Archicad 30 or newer.";
+
+#endif
+
+// GetElectricalPanels
+
+GetElectricalPanelsCommand::GetElectricalPanelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalPanelsCommand::GetName () const
+{
+    return "GetElectricalPanels";
+}
+
+GS::Optional<GS::UniString> GetElectricalPanelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical panels. Every electrical panel of the project is returned when it is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElectricalPanelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalPanels": {
+                "type": "array",
+                "description": "The electrical panels, in the order of the given elements.",
+                "items": {
+                    "$ref": "#/ElectricalPanelDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalPanels"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::ObjectState response;
+    const auto& electricalPanels = response.AddList<GS::ObjectState> ("electricalPanels");
+
+    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", ElectricalPanelID)) {
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (elemGuid));
+        if (panel.IsErr ()) {
+            electricalPanels (CreateErrorResponse (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
+            continue;
+        }
+
+        GS::ObjectState panelOs;
+        panelOs.Add ("elementId", CreateGuidObjectState (elemGuid));
+        panelOs.Add ("panelName", panel->GetPanelName ());
+        panelOs.Add ("circuitNamePrefix", panel->GetCircuitNamePrefix ());
+        panelOs.Add ("circuitIdStyle", static_cast<Int32> (panel->GetCircuitIdStyle ()));
+
+        const auto& circuits = panelOs.AddList<GS::ObjectState> ("circuits");
+        for (const ACAPI::MEP::UniqueID& circuitId : panel->GetCircuitIds ()) {
+            circuits (CreateMEPElementIdObjectState (circuitId));
+        }
+        const std::optional<ACAPI::MEP::UniqueID> parentCircuitId = panel->GetParentCircuitId ();
+        if (parentCircuitId.has_value ()) {
+            panelOs.Add ("parentCircuitId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (*parentCircuitId)));
+        }
+
+        AddElectricalPlacement (panelOs, *panel);
+        panelOs.Add ("connectedLoad", CreateElectricalLoadsObjectState (panel->GetConnectedLoad (),
+            panel->GetConnectedLoadPhaseA (), panel->GetConnectedLoadPhaseB (), panel->GetConnectedLoadPhaseC ()));
+        panelOs.Add ("demandLoad", CreateElectricalLoadsObjectState (panel->GetDemandLoad (),
+            panel->GetDemandLoadPhaseA (), panel->GetDemandLoadPhaseB (), panel->GetDemandLoadPhaseC ()));
+        electricalPanels (panelOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+// GetElectricalCircuits
+
+GetElectricalCircuitsCommand::GetElectricalCircuitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalCircuitsCommand::GetName () const
+{
+    return "GetElectricalCircuits";
+}
+
+GS::Optional<GS::UniString> GetElectricalCircuitsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical circuits."
+            },
+            "electricalPanels": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical panels whose circuits are returned. When neither elements nor electricalPanels is given, every circuit of every electrical panel of the project is returned."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElectricalCircuitsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalCircuits": {
+                "type": "array",
+                "description": "The given circuits first, in their order, then the circuits of the given panels, in the order of the panels.",
+                "items": {
+                    "$ref": "#/ElectricalCircuitDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalCircuits"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::Array<GS::ObjectState> elements;
+    const bool hasElements = parameters.Get ("elements", elements);
+    GS::Array<GS::ObjectState> panels;
+    const bool hasPanels = parameters.Get ("electricalPanels", panels);
+
+    GS::Array<API_Guid> panelGuids;
+    if (hasPanels) {
+        for (const GS::ObjectState& panel : panels) {
+            panelGuids.Push (GetGuidFromElementsArrayItem (panel));
+        }
+    } else if (!hasElements) {
+        panelGuids = CollectElementsOfClass (ElectricalPanelID);
+    }
+
+    GS::ObjectState response;
+    const auto& electricalCircuits = response.AddList<GS::ObjectState> ("electricalCircuits");
+
+    for (const GS::ObjectState& element : elements) {
+        electricalCircuits (GetElectricalCircuitDetails (Adapter::UniqueID (GetGuidFromElementsArrayItem (element))));
+    }
+    for (const API_Guid& panelGuid : panelGuids) {
+        ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (panelGuid));
+        if (panel.IsErr ()) {
+            electricalCircuits (CreateErrorResponse (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
+            continue;
+        }
+        for (const ACAPI::MEP::UniqueID& circuitId : panel->GetCircuitIds ()) {
+            electricalCircuits (GetElectricalCircuitDetails (circuitId));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+// GetElectricalDevices
+
+GetElectricalDevicesCommand::GetElectricalDevicesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalDevicesCommand::GetName () const
+{
+    return "GetElectricalDevices";
+}
+
+GS::Optional<GS::UniString> GetElectricalDevicesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of electrical devices. Every electrical device of the project is returned when it is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElectricalDevicesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "electricalDevices": {
+                "type": "array",
+                "description": "The electrical devices, in the order of the given elements.",
+                "items": {
+                    "$ref": "#/ElectricalDeviceDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "electricalDevices"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    GS::ObjectState response;
+    const auto& electricalDevices = response.AddList<GS::ObjectState> ("electricalDevices");
+
+    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", ElectricalDeviceID)) {
+        ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (Adapter::UniqueID (elemGuid));
+        if (device.IsErr ()) {
+            electricalDevices (CreateErrorResponse (device.UnwrapErr ().kind, "Failed to get the electrical device."));
+            continue;
+        }
+
+        GS::ObjectState deviceOs;
+        deviceOs.Add ("elementId", CreateGuidObjectState (elemGuid));
+        const std::optional<ACAPI::MEP::UniqueID> parentCircuitId = device->GetParentCircuitId ();
+        if (parentCircuitId.has_value ()) {
+            deviceOs.Add ("parentCircuitId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (*parentCircuitId)));
+        }
+        AddElectricalPlacement (deviceOs, *device);
+        deviceOs.Add ("apparentPower", static_cast<double> (device->GetApparentPower ()));
+        deviceOs.Add ("isApparentPowerEnabled", device->GetApparentPowerEnabled ());
+        deviceOs.Add ("loadClassificationName", device->GetLoadClassificationName ());
+        deviceOs.Add ("demandLoad", device->GetDemandLoad ());
+
+        const auto& connectedElements = deviceOs.AddList<GS::ObjectState> ("connectedElements");
+        for (const ACAPI::MEP::UniqueID& connectedId : device->GetDirectConnectedMEPElementIds ()) {
+            connectedElements (CreateMEPElementIdObjectState (connectedId));
+        }
+        electricalDevices (deviceOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+// GetElectricalProjectSettings
+
+GetElectricalProjectSettingsCommand::GetElectricalProjectSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElectricalProjectSettingsCommand::GetName () const
+{
+    return "GetElectricalProjectSettings";
+}
+
+GS::Optional<GS::UniString> GetElectricalProjectSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "voltage": {
+                "type": "number",
+                "description": "The default voltage of the project."
+            },
+            "wiringTypes": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "crossSectionalArea": {
+                            "type": "number",
+                            "description": "The cross-sectional area of the wire in square millimeters."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "crossSectionalArea"
+                    ]
+                }
+            },
+            "loadClassifications": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "demandFactor": {
+                            "type": "number",
+                            "description": "The demand factor, between 0 and 1."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "demandFactor"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "voltage",
+            "wiringTypes",
+            "loadClassifications"
+        ]
+    })";
+}
+
+GS::ObjectState GetElectricalProjectSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
+    if (settings.IsErr ()) {
+        return CreateErrorResponse (settings.UnwrapErr ().kind, "Failed to get the electrical project settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("voltage", settings->GetVoltage ());
+
+    const auto& wiringTypes = response.AddList<GS::ObjectState> ("wiringTypes");
+    for (const GS::UniString& name : settings->GetWiringTypeNames ()) {
+        wiringTypes (GS::ObjectState ("name", name, "crossSectionalArea", settings->GetWiringTypeCrossSectionalArea (name)));
+    }
+    const auto& loadClassifications = response.AddList<GS::ObjectState> ("loadClassifications");
+    for (const GS::UniString& name : settings->GetLoadClassificationNames ()) {
+        loadClassifications (GS::ObjectState ("name", name, "demandFactor", settings->GetLoadClassificationDemandFactor (name)));
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}

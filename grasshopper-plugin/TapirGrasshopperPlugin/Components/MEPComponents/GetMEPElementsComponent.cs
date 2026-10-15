@@ -27,7 +27,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             InTexts(
                 "TypeFilter",
                 "Optional filter for the MEP element types: RoutingElement, RigidSegment, Elbow, Transition, " +
-                "Branch, Terminal, Accessory, Equipment, Fitting, FlexibleSegment or TakeOff.");
+                "Branch, Terminal, Accessory, Equipment, Fitting, FlexibleSegment, TakeOff, " +
+                "ElectricalPanel or ElectricalDevice (the electrical types need Archicad 30 or newer).");
 
             InTexts(
                 "DomainFilter",
