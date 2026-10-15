@@ -410,11 +410,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<MoveElementsCommand> (
             elementCommands, "1.0.2",
-            "Moves elements with a given vector."
+            "Moves elements with a given vector. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
         err |= RegisterCommand<RotateElementsCommand> (
             elementCommands, "1.5.3",
-            "Rotates elements around a reference point."
+            "Rotates elements around a reference point. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
