@@ -2744,5 +2744,109 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap GetElectricalPanels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalDevices
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalDevices", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalProjectSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalProjectSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElectricalPanels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElectricalDevices
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElectricalDevices", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalPanels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalDevices
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalDevices", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ConnectToElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ConnectToElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalProjectSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalProjectSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
