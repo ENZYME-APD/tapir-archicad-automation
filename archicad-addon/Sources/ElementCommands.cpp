@@ -5075,3 +5075,407 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     return GS::ObjectState ("roomImage", str);
 }
 
+
+// GetQuantitiesOfElements
+
+GetQuantitiesOfElementsCommand::GetQuantitiesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetQuantitiesOfElementsCommand::GetName () const
+{
+    return "GetQuantitiesOfElements";
+}
+
+GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "minOpeningSize": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted when the conditional values (for example volumeConditional of a Wall) are calculated. Archicad only uses it for walls. Default value is 0, so every opening is subtracted."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "quantitiesOfElements": {
+                "type": "array",
+                "description": "The quantities of the elements, in the order of the given elements. Lengths are in meters, areas in square meters and volumes in cubic meters.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "quantities": {
+                                    "$ref": "#/ElementQuantities"
+                                },
+                                "composites": {
+                                    "type": "array",
+                                    "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "buildingMaterialId": {
+                                                "$ref": "#/AttributeIdArrayItem"
+                                            },
+                                            "volume": {
+                                                "type": "number",
+                                                "description": "Net volume of the skin."
+                                            },
+                                            "projectedArea": {
+                                                "type": "number",
+                                                "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
+                                            },
+                                            "isCore": {
+                                                "type": "boolean",
+                                                "description": "The skin is marked as core."
+                                            },
+                                            "isFinish": {
+                                                "type": "boolean",
+                                                "description": "The skin is marked as finish."
+                                            },
+                                            "subElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "buildingMaterialId",
+                                            "volume",
+                                            "projectedArea",
+                                            "isCore",
+                                            "isFinish"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "type",
+                                "quantities",
+                                "composites"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "quantitiesOfElements"
+        ]
+    })";
+}
+
+static bool AreQuantitiesSupported (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_MorphID:
+        case API_ZoneID:
+        case API_ColumnSegmentID:
+        case API_BeamSegmentID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static void AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQuantity& elementQuantity, GS::ObjectState& quantities)
+{
+    switch (typeID) {
+        case API_WallID: {
+            const auto& q = elementQuantity.wall;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("volumeConditional", q.volume_cond);
+            quantities.Add ("grossVolume", q.grossVolume);
+            quantities.Add ("referenceSideSurface", q.surface1);
+            quantities.Add ("oppositeSideSurface", q.surface2);
+            quantities.Add ("edgeSurface", q.surface3);
+            quantities.Add ("referenceSideSurfaceConditional", q.surface1_cond);
+            quantities.Add ("oppositeSideSurfaceConditional", q.surface2_cond);
+            quantities.Add ("grossReferenceSideSurface", q.grossSurf1);
+            quantities.Add ("grossOppositeSideSurface", q.grossSurf2);
+            quantities.Add ("length", q.length);
+            quantities.Add ("referenceSideLength", q.length12);
+            quantities.Add ("oppositeSideLength", q.length34);
+            quantities.Add ("centerLength", q.centerLength);
+            quantities.Add ("referenceLineLength", q.refLineLength);
+            quantities.Add ("minHeight", q.minHeight);
+            quantities.Add ("maxHeight", q.maxHeight);
+            quantities.Add ("area", q.area);
+            quantities.Add ("perimeter", q.perimeter);
+            quantities.Add ("windowsSurface", q.windowsSurf);
+            quantities.Add ("doorsSurface", q.doorsSurf);
+            quantities.Add ("emptyOpeningsSurface", q.emptyholesSurf);
+            quantities.Add ("emptyOpeningsVolume", q.emptyHolesVolume);
+            break;
+        }
+        case API_ColumnID: {
+            const auto& q = elementQuantity.column;
+            quantities.Add ("coreVolume", q.coreVolume);
+            quantities.Add ("veneerVolume", q.veneVolume);
+            quantities.Add ("coreGrossVolume", q.coreGrossVolume);
+            quantities.Add ("veneerGrossVolume", q.veneGrossVolume);
+            quantities.Add ("coreSurface", q.coreSurface);
+            quantities.Add ("veneerSurface", q.veneSurface);
+            quantities.Add ("coreGrossSurface", q.coreGrossSurf);
+            quantities.Add ("veneerGrossSurface", q.veneGrossSurf);
+            quantities.Add ("area", q.area);
+            quantities.Add ("perimeter", q.perimeter);
+            quantities.Add ("minHeight", q.minHeight);
+            quantities.Add ("maxHeight", q.maxHeight);
+            quantities.Add ("crossSectionAreaCutBegin", q.crossSectionAreaCutBegin);
+            quantities.Add ("crossSectionAreaCutEnd", q.crossSectionAreaCutEnd);
+            break;
+        }
+        case API_BeamID: {
+            const auto& q = elementQuantity.beam;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("volumeConditional", q.volume_cond);
+            quantities.Add ("holesVolume", q.holesVolume);
+            quantities.Add ("area", q.area);
+            quantities.Add ("leftLength", q.leftLength);
+            quantities.Add ("rightLength", q.rightLength);
+            quantities.Add ("topSurface", q.topSurface);
+            quantities.Add ("bottomSurface", q.bottomSurface);
+            quantities.Add ("leftSurface", q.edgeSurfaceLeft);
+            quantities.Add ("rightSurface", q.edgeSurfaceRight);
+            quantities.Add ("endSurface", q.edgeSurface);
+            quantities.Add ("holesSurface", q.holesSurface);
+            quantities.Add ("holesEdgeSurface", q.holesEdgeSurface);
+            quantities.Add ("holesNumber", static_cast<Int32> (q.holesNumber));
+            quantities.Add ("crossSectionAreaCutBegin", q.crossSectionAreaCutBegin);
+            quantities.Add ("crossSectionAreaCutEnd", q.crossSectionAreaCutEnd);
+            break;
+        }
+        case API_SlabID: {
+            const auto& q = elementQuantity.slab;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("volumeConditional", q.volume_cond);
+            quantities.Add ("grossVolume", q.grossVolume);
+            quantities.Add ("topSurface", q.topSurface);
+            quantities.Add ("bottomSurface", q.bottomSurface);
+            quantities.Add ("edgeSurface", q.edgeSurface);
+            quantities.Add ("topSurfaceConditional", q.topSurface_cond);
+            quantities.Add ("bottomSurfaceConditional", q.bottomSurface_cond);
+            quantities.Add ("grossTopSurface", q.grossTopSurf);
+            quantities.Add ("grossBottomSurface", q.grossBotSurf);
+            quantities.Add ("grossEdgeSurface", q.grossEdgeSurf);
+            quantities.Add ("perimeter", q.perimeter);
+            quantities.Add ("holesSurface", q.holesSurf);
+            quantities.Add ("holesPerimeter", q.holesPrm);
+            break;
+        }
+        case API_RoofID: {
+            const auto& q = elementQuantity.roof;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("volumeConditional", q.volume_cond);
+            quantities.Add ("grossVolume", q.grossVolume);
+            quantities.Add ("topSurface", q.topSurface);
+            quantities.Add ("bottomSurface", q.bottomSurface);
+            quantities.Add ("edgeSurface", q.edgeSurface);
+            quantities.Add ("topSurfaceConditional", q.topSurface_cond);
+            quantities.Add ("bottomSurfaceConditional", q.bottomSurface_cond);
+            quantities.Add ("grossTopSurface", q.grossTopSurf);
+            quantities.Add ("grossBottomSurface", q.grossBotSurf);
+            quantities.Add ("grossEdgeSurface", q.grossEdgeSurf);
+            quantities.Add ("contourArea", q.contourArea);
+            quantities.Add ("perimeter", q.perimeter);
+            quantities.Add ("holesSurface", q.holesSurf);
+            quantities.Add ("holesPerimeter", q.holesPrm);
+            quantities.Add ("openingsSurface", q.openingSurf);
+            quantities.Add ("ridgesLength", q.ridgesLength);
+            quantities.Add ("valleysLength", q.valleysLength);
+            quantities.Add ("hipsLength", q.hipsLength);
+            quantities.Add ("gablesLength", q.gablesLength);
+            quantities.Add ("eavesLength", q.eavesLength);
+            quantities.Add ("peaksLength", q.peaksLength);
+            break;
+        }
+        case API_ShellID: {
+            const auto& q = elementQuantity.shell;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("volumeConditional", q.volume_cond);
+            quantities.Add ("grossVolume", q.grossVolume);
+            quantities.Add ("referenceSurface", q.referenceSurface);
+            quantities.Add ("oppositeSurface", q.oppositeSurface);
+            quantities.Add ("edgeSurface", q.edgeSurface);
+            quantities.Add ("referenceSurfaceConditional", q.referenceSurface_cond);
+            quantities.Add ("oppositeSurfaceConditional", q.oppositeSurface_cond);
+            quantities.Add ("grossReferenceSurface", q.grossReferenceSurf);
+            quantities.Add ("grossOppositeSurface", q.grossOppositeSurf);
+            quantities.Add ("grossEdgeSurface", q.grossEdgeSurf);
+            quantities.Add ("perimeter", q.perimeter);
+            quantities.Add ("holesSurface", q.holesSurf);
+            quantities.Add ("holesPerimeter", q.holesPrm);
+            quantities.Add ("floorPlanArea", q.floorplanArea);
+            break;
+        }
+        case API_MorphID: {
+            const auto& q = elementQuantity.morph;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("surface", q.surface);
+            quantities.Add ("floorPlanArea", q.floorPlanArea);
+            quantities.Add ("floorPlanPerimeter", q.floorPlanPerimeter);
+            quantities.Add ("height", q.wholeHeight);
+            break;
+        }
+        case API_ZoneID: {
+            const auto& q = elementQuantity.zone;
+            quantities.Add ("area", q.area);
+            quantities.Add ("netArea", q.netarea);
+            quantities.Add ("calculatedArea", q.calcArea);
+            quantities.Add ("perimeter", q.perimeter);
+            quantities.Add ("netPerimeter", q.netperimeter);
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("height", q.height);
+            quantities.Add ("wallsPerimeter", q.wallsPrm);
+            quantities.Add ("wallsSurface", q.wallsSurf);
+            quantities.Add ("doorsSurface", q.doorsSurf);
+            quantities.Add ("windowsSurface", q.windowsSurf);
+            break;
+        }
+        case API_ColumnSegmentID: {
+            const auto& q = elementQuantity.columnSegment;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("grossVolume", q.grossVolume);
+            quantities.Add ("coreVolume", q.coreVolume);
+            quantities.Add ("coreGrossVolume", q.coreGrossVolume);
+            quantities.Add ("veneerVolume", q.veneerNetVolume);
+            quantities.Add ("veneerGrossVolume", q.veneerGrossVolume);
+            quantities.Add ("coreSurface", q.coreNetSurface);
+            quantities.Add ("veneerSideSurface", q.veneerSideSurface);
+            quantities.Add ("length", q.length);
+            quantities.Add ("area", q.area);
+            quantities.Add ("height", q.height);
+            quantities.Add ("minHeight", q.minHeight);
+            quantities.Add ("maxHeight", q.maxHeight);
+            break;
+        }
+        case API_BeamSegmentID: {
+            const auto& q = elementQuantity.beamSegment;
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("holesVolume", q.holesVolume);
+            quantities.Add ("length", q.length);
+            quantities.Add ("leftLength", q.leftLength);
+            quantities.Add ("rightLength", q.rightLength);
+            quantities.Add ("topSurface", q.topSurface);
+            quantities.Add ("bottomSurface", q.bottomSurface);
+            quantities.Add ("leftSurface", q.leftSurface);
+            quantities.Add ("rightSurface", q.rightSurface);
+            quantities.Add ("endSurface", q.endSurface);
+            quantities.Add ("holesSurface", q.holesSurface);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_QuantityPar quantityParams = {};
+    quantityParams.minOpeningSize = 0.0;
+    parameters.Get ("minOpeningSize", quantityParams.minOpeningSize);
+
+    GS::ObjectState response;
+    const auto& quantitiesOfElements = response.AddList<GS::ObjectState> ("quantitiesOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            quantitiesOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            quantitiesOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // Reject unsupported types before Archicad calculates their quantities.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (!AreQuantitiesSupported (typeID)) {
+            quantitiesOfElements (CreateErrorResponse (APIERR_BADELEMENTTYPE,
+                GS::UniString ("Quantities are not supported for this element type: ") + GetElementTypeNonLocalizedName (typeID)));
+            continue;
+        }
+
+        // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
+        API_ElementQuantity elementQuantity = {};
+        GS::Array<API_CompositeQuantity> composites;
+        API_Quantities quantities = {};
+        quantities.elements = &elementQuantity;
+        quantities.composites = &composites;
+
+        API_QuantitiesMask mask;
+        ACAPI_ELEMENT_QUANTITIES_MASK_SETFULL (mask);
+
+        err = ACAPI_Element_GetQuantities (elemHead.guid, &quantityParams, &quantities, &mask);
+        if (err != NoError) {
+            quantitiesOfElements (CreateErrorResponse (err, "Failed to get the quantities of the element"));
+            continue;
+        }
+
+        GS::ObjectState typeSpecificQuantities;
+        AddTypeSpecificQuantities (typeID, elementQuantity, typeSpecificQuantities);
+
+        GS::ObjectState quantitiesOfElement;
+        quantitiesOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
+        quantitiesOfElement.Add ("quantities", typeSpecificQuantities);
+
+        const auto& compositesList = quantitiesOfElement.AddList<GS::ObjectState> ("composites");
+        for (const API_CompositeQuantity& composite : composites) {
+            GS::ObjectState compositeOs;
+            compositeOs.Add ("buildingMaterialId", CreateAttributeIdObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, composite.buildMatIndices)));
+            compositeOs.Add ("volume", composite.volumes);
+            compositeOs.Add ("projectedArea", composite.projectedArea);
+            compositeOs.Add ("isCore", (composite.flags & APICWallComp_Core) != 0);
+            compositeOs.Add ("isFinish", (composite.flags & APICWallComp_Finish) != 0);
+            if (composite.compositeId.subElementGuid != APINULLGuid) {
+                compositeOs.Add ("subElementId", CreateGuidObjectState (composite.compositeId.subElementGuid));
+            }
+            compositesList (compositeOs);
+        }
+
+        quantitiesOfElements (quantitiesOfElement);
+    }
+
+    return response;
+}
