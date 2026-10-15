@@ -1,9 +1,13 @@
+import sys
 import aclib
 
-# Requires Archicad 30 or newer.
+# Requires Archicad 30 or newer; on older versions the first command fails and the example stops.
 
 # The voltage, wiring types and load classifications set in the electrical project settings.
 settings = aclib.RunTapirCommand ('GetElectricalProjectSettings')
+if settings is None or 'error' in settings:
+    print ('Could not get the electrical project settings, this example needs Archicad 30 or newer.')
+    sys.exit ()
 print (f"Project voltage: {settings['voltage']}")
 for wiringType in settings['wiringTypes']:
     print (f"  Wiring type {wiringType['name']}: cross section {wiringType['crossSectionalArea']}")
