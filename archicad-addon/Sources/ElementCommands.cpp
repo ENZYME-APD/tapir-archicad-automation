@@ -3743,7 +3743,7 @@ static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (cons
             return CreateFailedExecutionResult (APIERR_LOCKEDLAY, GS::UniString::Printf ("The element was not %s, because its layer is locked.", operation));
         }
         if ((layerAttr.header.flags & APILay_Hidden) != 0) {
-            return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
+            return CreateFailedExecutionResult (APIERR_HIDDENLAY, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
         }
     }
 
