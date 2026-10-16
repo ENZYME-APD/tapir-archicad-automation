@@ -77,7 +77,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             InGenericTree(
                 "RenameEnumValueGuids",
-                "Identifiers of the enum options to rename (see PossibleEnumValueGuids of AllProperties). Optional.");
+                "Identifiers of the enum options to rename (see EnumValueGuids of AllProperties). Optional.");
 
             inManager.AddTextParameter(
                 "RenameEnumValueTexts",

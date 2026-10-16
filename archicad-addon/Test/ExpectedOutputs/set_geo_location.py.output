@@ -19,3 +19,24 @@ Map conversion after SetGeoLocation:
     "xAxisOrdinate": 0.6,
     "scale": 0.5
 }
+Command: SetGeoLocation
+Parameters:
+{
+    "surveyPoint": {
+        "positionInProject": {
+            "x": 12.5,
+            "y": -7.25,
+            "z": 1.5
+        }
+    }
+}
+Response:
+{
+    "success": true
+}
+Survey point position in the project after SetGeoLocation:
+{
+    "x": 12.5,
+    "y": -7.25,
+    "z": 1.5
+}

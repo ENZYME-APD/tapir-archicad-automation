@@ -17,8 +17,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         public CreatePropertyDefinitionsComponent()
             : base(
                 "CreatePropertyDefinitions",
-                "Create Custom Property Definitions. The default value and the possible enum values " +
-                "can be given through the DefaultValues input as JSON.",
+                "Create Custom Property Definitions. The default value can be given through the " +
+                "DefaultValues input as JSON, the options of enumeration properties through the EnumValues input.",
                 GroupNames.Properties)
         {
         }
@@ -57,7 +57,17 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "{\"basicDefaultValue\":{\"type\":\"string\",\"status\":\"normal\",\"value\":\"...\"}}. " +
                 "Input only 1 to use the same value for all definitions. Optional.");
 
-            SetOptionality(new[] { 2, 4, 5, 6 });
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            inManager.AddTextParameter(
+                "EnumValues",
+                "EnumValues",
+                "Display texts of the options of each singleEnum or multiEnum property (one branch per definition, " +
+                "or 1 branch to use the same options for all). A default value refers to an option by its display " +
+                "text, e.g. {\"basicDefaultValue\":{\"type\":\"singleEnum\",\"status\":\"normal\"," +
+                "\"value\":{\"type\":\"displayValue\",\"displayValue\":\"...\"}}}. Optional.",
+                GH_ParamAccess.tree);
+
+            SetOptionality(new[] { 2, 4, 5, 6, 7 });
         }
 
         protected override void AddOutputs()
@@ -108,6 +118,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.TryGetList(6, out List<string> defaultValues);
             defaultValues = defaultValues ?? new List<string>();
 
+            da.TryGetTree(
+                7,
+                out GH_Structure<GH_String> enumValues);
+            var enumValuesBranchCount = enumValues?.Branches.Count ?? 0;
+
             foreach (var pair in new (string Name, int Count, bool Optional)[]
                      {
                          ("Types", types.Count, false),
@@ -115,7 +130,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                          ("GroupNames", groupNames.Count, false),
                          ("IsEditable", isEditable.Count, true),
                          ("AvailabilityGuids", availabilityBranchCount, true),
-                         ("DefaultValues", defaultValues.Count, true)
+                         ("DefaultValues", defaultValues.Count, true),
+                         ("EnumValues", enumValuesBranchCount, true)
                      })
             {
                 var validEmpty = pair.Optional && pair.Count == 0;
@@ -178,6 +194,28 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                         this.AddError(
                             $"Invalid JSON in the DefaultValues input: {ex.Message}");
                         return;
+                    }
+                }
+
+                if (enumValuesBranchCount > 0)
+                {
+                    var possibleEnumValues = new JArray();
+                    var branch = enumValues.Branches[enumValuesBranchCount == 1 ? 0 : i];
+                    foreach (var text in branch)
+                    {
+                        if (text == null || string.IsNullOrEmpty(text.Value))
+                        {
+                            continue;
+                        }
+                        possibleEnumValues.Add(
+                            new JObject
+                            {
+                                ["enumValue"] = new JObject { ["displayValue"] = text.Value }
+                            });
+                    }
+                    if (possibleEnumValues.Count > 0)
+                    {
+                        definition["possibleEnumValues"] = possibleEnumValues;
                     }
                 }
 
