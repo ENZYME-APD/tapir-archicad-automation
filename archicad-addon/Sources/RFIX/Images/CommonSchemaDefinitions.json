@@ -12732,7 +12732,7 @@
             },
             "fillTypeAppliesTo": {
                 "$ref": "#/GraphicOverrideFillTypes",
-                "description": "The fills the fill type override applies to."
+                "description": "The fills the fill type override applies to. Left out: all fills."
             },
             "fillForegroundPen": {
                 "type": "integer",
@@ -12740,7 +12740,7 @@
             },
             "fillForegroundPenAppliesTo": {
                 "$ref": "#/GraphicOverrideFillTypes",
-                "description": "The fills the foreground pen override applies to."
+                "description": "The fills the foreground pen override applies to. Left out: all fills."
             },
             "fillBackgroundPen": {
                 "type": "integer",
@@ -12752,7 +12752,7 @@
             },
             "fillBackgroundPenAppliesTo": {
                 "$ref": "#/GraphicOverrideFillTypes",
-                "description": "The fills the background pen override applies to."
+                "description": "The fills the background pen override applies to. Left out: all fills."
             },
             "surface": {
                 "$ref": "#/AttributeId",
@@ -12764,7 +12764,7 @@
             },
             "surfaceAppliesTo": {
                 "$ref": "#/GraphicOverrideSurfaceTypes",
-                "description": "The surfaces the surface override applies to."
+                "description": "The surfaces the surface override applies to. Left out: all surfaces."
             },
             "showSkinSeparators": {
                 "type": "boolean",

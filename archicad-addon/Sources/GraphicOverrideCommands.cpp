@@ -23,6 +23,16 @@ API_OverriddenFillType GetFillTypesFromObjectState (const GS::ObjectState& os)
     return fillType;
 }
 
+// An override given without its ...AppliesTo object applies to every fill.
+API_OverriddenFillType GetAllFillTypes ()
+{
+    API_OverriddenFillType fillType = {};
+    fillType.overrideCutFill = true;
+    fillType.overrideCoverFill = true;
+    fillType.overrideDraftingFill = true;
+    return fillType;
+}
+
 GS::ObjectState CreateSurfaceTypesObjectState (const API_OverriddenSurfaceType& surfaceType)
 {
     return GS::ObjectState ("cutSurface", surfaceType.overrideCutSurface, "uncutSurface", surfaceType.overrideUncutSurface);
@@ -36,6 +46,15 @@ API_OverriddenSurfaceType GetSurfaceTypesFromObjectState (const GS::ObjectState&
     return surfaceType;
 }
 
+// An override given without its ...AppliesTo object applies to every surface.
+API_OverriddenSurfaceType GetAllSurfaceTypes ()
+{
+    API_OverriddenSurfaceType surfaceType = {};
+    surfaceType.overrideCutSurface = true;
+    surfaceType.overrideUncutSurface = true;
+    return surfaceType;
+}
+
 void AddAttributeIfOverridden (GS::ObjectState& os, const char* fieldName, API_AttrTypeID typeID, const API_OverriddenAttribute& attribute)
 {
     if (attribute.hasValue) {
@@ -46,6 +65,10 @@ void AddAttributeIfOverridden (GS::ObjectState& os, const char* fieldName, API_A
 GSErrCode GetAttributeFromField (const GS::ObjectState& os, const char* fieldName, API_AttrTypeID typeID, API_AttributeIndex& index, GS::UniString& errorMessage)
 {
     const GS::ObjectState* attributeId = os.Get (fieldName);
+    if (attributeId == nullptr) {
+        errorMessage = GS::UniString::Printf ("The attribute in '%s' is not an attribute identifier.", fieldName);
+        return APIERR_BADPARS;
+    }
     const API_Guid guid = GetGuidFromObjectState (*attributeId);
     index = GetAttributeIndexFromGuid (typeID, guid);
     if (guid == APINULLGuid || GetAttributeGuidFromIndex (typeID, index) != guid) {
@@ -120,12 +143,16 @@ GSErrCode GetStyleFromObjectState (const GS::ObjectState& os, API_OverrideRuleSt
     }
     if ((fieldOs = os.Get ("fillTypeAppliesTo")) != nullptr) {
         style.fillType = GetFillTypesFromObjectState (*fieldOs);
+    } else if (style.fillOverride.hasValue) {
+        style.fillType = GetAllFillTypes ();
     }
     if (os.Get ("fillForegroundPen", pen)) {
         style.fillForegroundPenOverride = static_cast<API_PenIndex> (pen);
     }
     if ((fieldOs = os.Get ("fillForegroundPenAppliesTo")) != nullptr) {
         style.fillTypeForegroundPen = GetFillTypesFromObjectState (*fieldOs);
+    } else if (style.fillForegroundPenOverride.hasValue) {
+        style.fillTypeForegroundPen = GetAllFillTypes ();
     }
     if (os.Contains ("fillBackgroundPen") && os.Contains ("fillBackgroundColor")) {
         errorMessage = "Give either 'fillBackgroundPen' or 'fillBackgroundColor', not both.";
@@ -142,6 +169,8 @@ GSErrCode GetStyleFromObjectState (const GS::ObjectState& os, API_OverrideRuleSt
     }
     if ((fieldOs = os.Get ("fillBackgroundPenAppliesTo")) != nullptr) {
         style.fillTypeBackgroundPen = GetFillTypesFromObjectState (*fieldOs);
+    } else if (style.fillBackgroundPenOverride.hasValue) {
+        style.fillTypeBackgroundPen = GetAllFillTypes ();
     }
     if (os.Contains ("surface") && os.Contains ("surfaceColor")) {
         errorMessage = "Give either 'surface' or 'surfaceColor', not both.";
@@ -162,6 +191,8 @@ GSErrCode GetStyleFromObjectState (const GS::ObjectState& os, API_OverrideRuleSt
     }
     if ((fieldOs = os.Get ("surfaceAppliesTo")) != nullptr) {
         style.surfaceType = GetSurfaceTypesFromObjectState (*fieldOs);
+    } else if (style.surfaceOverride.hasValue) {
+        style.surfaceType = GetAllSurfaceTypes ();
     }
     os.Get ("showSkinSeparators", style.showSkinSeparators);
     os.Get ("overridePenColorAndThickness", style.overridePenColorAndThickness);
