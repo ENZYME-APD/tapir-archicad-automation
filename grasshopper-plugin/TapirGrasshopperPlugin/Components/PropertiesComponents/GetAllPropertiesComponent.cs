@@ -76,6 +76,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             OutBooleans(
                 "GroupIsCustom",
                 "True for every custom property group, false for the built-in ones.");
+
+            OutBooleans(
+                "IsExpressionBased",
+                "True for each property whose value is computed from an expression.");
+
+            OutTextTree(
+                "Expressions",
+                "Expression strings of each expression-based property (one branch per property).");
         }
 
         protected override void Solve(
@@ -192,6 +200,27 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataList(
                 14,
                 groups.Select(x => x.IsCustom));
+
+            da.SetDataList(
+                15,
+                response.Properties.Select(x => x.IsExpressionBased));
+
+            var expressionTree = new GH_Structure<GH_String>();
+            for (var i = 0; i < response.Properties.Count; i++)
+            {
+                var path = new GH_Path(i);
+                expressionTree.EnsurePath(path);
+                foreach (var expression in response.Properties[i].Expressions ?? new List<string>())
+                {
+                    expressionTree.Append(
+                        new GH_String(expression),
+                        path);
+                }
+            }
+
+            da.SetDataTree(
+                16,
+                expressionTree);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -146,6 +146,12 @@ API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_Name
 // root cause not fully understood, kept as two separate translation units instead.
 void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
+// Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
+GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
+bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);
+GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
+bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
+
 struct Story {
     Story (short _index, double _level)
         : index (_index)
@@ -174,6 +180,14 @@ short ParseAnchorPointString (const GS::UniString& anchorPoint);
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
 API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid);
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid);
+
+// Text and Label fields reference fonts by index (from 1), which is what the commands carry as
+// fontIndex. These map that index to and from the font's name (the name the Text tool's font list
+// shows), through the Font API from Archicad 27 and the Font attributes (API_FontID) before. The
+// lookup by name is exact first, then case-insensitive; NoValue when no loaded font has the name,
+// or the index none.
+GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName);
+GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex);
 
 class DatabaseIdResolver {
 public:
