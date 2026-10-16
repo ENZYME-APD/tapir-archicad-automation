@@ -420,7 +420,9 @@ r = aclib.RunTapirCommand('CreateMEPSystems', {'mepSystemDataArray': [{
     'fillBackgroundPen': 0,
     'centerLinePen': 15,
     'fillId': {'attributeId': fills[0]['attributeId']},
-    'centerLineTypeId': line_attrid
+    'centerLineTypeId': line_attrid,
+    'materialId': {'attributeId': surfaces[0]['attributeId']},
+    'insulationMaterialId': {'attributeId': surfaces[-1]['attributeId']}
 }]}, debug=False)
 check("MEPSystem create succeeded", 'attributeId' in r['attributeIds'][0], str(r))
 mep_id = r['attributeIds'][0]['attributeId']
@@ -438,6 +440,8 @@ check("MEPSystem fillPen matches", g.get('fillPen') == 10, str(g))
 check("MEPSystem centerLinePen matches", g.get('centerLinePen') == 15, str(g))
 check("MEPSystem fillId matches", g.get('fillId', {}).get('attributeId') == fills[0]['attributeId'], str(g))
 check("MEPSystem centerLineTypeId matches", g.get('centerLineTypeId', {}).get('attributeId') == lines[0]['attributeId'], str(g))
+check("MEPSystem materialId matches", g.get('materialId', {}).get('attributeId') == surfaces[0]['attributeId'], str(g))
+check("MEPSystem insulationMaterialId matches", g.get('insulationMaterialId', {}).get('attributeId') == surfaces[-1]['attributeId'], str(g))
 
 # partial modify: only contourPen, verify domain/fillPen survive
 aclib.RunTapirCommand('CreateMEPSystems', {'overwriteExisting': True, 'mepSystemDataArray': [

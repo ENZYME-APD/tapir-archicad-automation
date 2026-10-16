@@ -178,8 +178,16 @@ result = None
 while result is None:
     time.sleep (0.3)
     resp = aclib.RunTapirCommand ('GetScriptUIResult', {}, debug=False)
-    if resp is not None and resp.get ('hasResult'):
+    if resp is None:
+        continue
+    if resp.get ('hasResult'):
         result = json.loads (resp['result'])
+    elif not resp.get ('isOpen', True):
+        # The user closed the palette with its close box without submitting.
+        break
 
-print ('Selected layers:')
-print (json.dumps (result, indent=4))
+if result is None:
+    print ('The palette was closed without a selection.')
+else:
+    print ('Selected layers:')
+    print (json.dumps (result, indent=4))

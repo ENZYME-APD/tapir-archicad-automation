@@ -51,8 +51,7 @@ var gSchemaDefinitions = {
                             "$ref": "#/ElementId"
                         },
                         "trimType": {
-                            "type": "string",
-                            "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ]
+                            "$ref": "#/TrimType"
                         }
                     },
                     "additionalProperties": false,
@@ -94,6 +93,14 @@ var gSchemaDefinitions = {
             },
             "crossSectionShape": {
                 "type": "string"
+            },
+            "crossSectionReferenceId": {
+                "type": "integer",
+                "description": "The cross section reference id of the segment in its preference table (meaningful for circular cross sections)."
+            },
+            "preferenceTableId": {
+                "$ref": "#/Guid",
+                "description": "The guid of the segment preference table used by the segment (see GetMEPPreferenceTables)."
             }
         },
         "additionalProperties": false,
@@ -126,7 +133,7 @@ var gSchemaDefinitions = {
         "description": "The details of an MEP routing element.",
         "properties": {
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
@@ -204,7 +211,7 @@ var gSchemaDefinitions = {
                 "type": "number"
             },
             "domain": {
-                "type": "string"
+                "$ref": "#/MEPDomainOrUnknown"
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
@@ -861,10 +868,12 @@ var gSchemaDefinitions = {
         "type": "object",
         "properties": {
             "dash": {
-                "type": "number"
+                "type": "number",
+                "description": "Length of the visible part of the item."
             },
             "gap": {
-                "type": "number"
+                "type": "number",
+                "description": "Length of the invisible part of the item."
             }
         },
         "additionalProperties": false,
@@ -927,8 +936,7 @@ var gSchemaDefinitions = {
                 "type": "string"
             },
             "subType": {
-                "type": "string",
-                "enum": ["Vector", "Solid", "Empty", "Symbol", "LinearGradient", "RadialGradient"]
+                "$ref": "#/FillSubType"
             },
             "scaleWithPlan": {
                 "type": "boolean"
@@ -1014,22 +1022,27 @@ var gSchemaDefinitions = {
         "type": "object",
         "properties": {
             "frequency": {
-                "type": "number"
+                "type": "number",
+                "description": "The distance between two instances of this item."
             },
             "direction": {
-                "type": "number"
+                "type": "number",
+                "description": "The angle of the item, measured CCW from the horizontal axis, in radians."
             },
             "offsetLine": {
-                "type": "number"
+                "type": "number",
+                "description": "The parallel offset of the item, measured from the (rotated) horizontal axis."
             },
             "offset": {
-                "$ref": "#/Coordinate2D"
+                "$ref": "#/Coordinate2D",
+                "description": "The offset of the item."
             },
             "lineLengths": {
                 "type": "array",
                 "items": {
                     "type": "number"
-                }
+                },
+                "description": "Dash-gap length pairs describing this line item. Must contain an even number of items."
             }
         },
         "additionalProperties": false,
@@ -1066,7 +1079,8 @@ var gSchemaDefinitions = {
                 "$ref": "#/Coordinate2D"
             },
             "angle": {
-                "type": "number"
+                "type": "number",
+                "description": "Arc angle in radians, measured CCW."
             }
         },
         "additionalProperties": false,
@@ -1141,8 +1155,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "The domain(s) this system belongs to. Archicad 29+ allows only one; earlier versions may report several.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                    "$ref": "#/MEPDomain"
                 }
             },
             "contourPen": {
@@ -1162,6 +1175,14 @@ var gSchemaDefinitions = {
             },
             "centerLineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
+            },
+            "materialId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The surface (material) attribute applied to the 3D model of the elements of the system."
+            },
+            "insulationMaterialId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The surface (material) attribute applied to the insulation of the elements of the system."
             }
         },
         "additionalProperties": false,
@@ -1283,8 +1304,7 @@ var gSchemaDefinitions = {
             "useWith": {
                 "type": "array",
                 "items": {
-                    "type": "string",
-                    "enum": ["Wall", "Beam", "Column", "Handrail", "Other"]
+                    "$ref": "#/ProfileUseWith"
                 }
             },
             "width": {
@@ -1511,8 +1531,7 @@ var gSchemaDefinitions = {
         "type": "object",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": ["Core", "Finish", "Other"]
+                "$ref": "#/CompositeSkinType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeIdArrayItem"
@@ -1774,9 +1793,7 @@ var gSchemaDefinitions = {
                 "description": "The display name of the hotlink node."
             },
             "type": {
-                "type": "string",
-                "description": "Module or XRef.",
-                "enum": ["Module", "XRef"]
+                "$ref": "#/HotlinkType"
             },
             "children": {
                 "$ref": "#/Hotlinks",
@@ -1803,7 +1820,7 @@ var gSchemaDefinitions = {
     },
     "HotlinkOrigin": {
         "type": "object",
-        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional: CreateHotlinkInstances places at 0 when it is omitted, ChangeHotlinkInstances keeps the instance's current z.",
+        "description": "Where a hotlink instance's origin lands, in the project's coordinates.",
         "properties": {
             "x": {
                 "type": "number"
@@ -1826,8 +1843,7 @@ var gSchemaDefinitions = {
         "description": "Details of a placed hotlink instance: which node it comes from and where it sits.",
         "properties": {
             "hotlinkType": {
-                "type": "string",
-                "enum": ["Module", "XRef"]
+                "$ref": "#/HotlinkType"
             },
             "hotlinkNodeId": {
                 "$ref": "#/HotlinkNodeId"
@@ -2112,6 +2128,328 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "MorphPolygonHole": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ]
+    },
+    "BeamHoleType": {
+        "type": "string",
+        "enum": [
+            "Rectangular",
+            "Circular"
+        ]
+    },
+    "MorphPolygon": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "description": "Counterclockwise outer-loop vertex indices for this face.",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            },
+            "filled": {
+                "type": "boolean",
+                "description": "Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to."
+            },
+            "holes": {
+                "type": "array",
+                "description": "Optional hole loops cut out of this face, each a clockwise list of vertex indices.",
+                "items": {
+                    "$ref": "#/MorphPolygonHole"
+                }
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "Optional per-face surface (render material) override. Uses the Morph's default surface when omitted. Ignored during creation in Archicad 25."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ]
+    },
+    "MeshSubline": {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the leveling subline of the mesh.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
+    "BeamHole": {
+        "type": "object",
+        "properties": {
+            "holeId": {
+                "type": "number"
+            },
+            "type": {
+                "$ref": "#/BeamHoleType"
+            },
+            "showContour": {
+                "type": "boolean"
+            },
+            "centerX": {
+                "type": "number"
+            },
+            "centerZ": {
+                "type": "number"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "holeId",
+            "type",
+            "centerX",
+            "centerZ",
+            "width"
+        ]
+    },
+    "LinkToSettings": {
+        "type": "object",
+        "description": "Mode of linking an element to its home story.",
+        "properties": {
+            "homeStoryDifference": {
+                "type": "integer",
+                "description": "Difference of the home story from the current story."
+            },
+            "newCreationMode": {
+                "type": "boolean",
+                "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
+            }
+        },
+        "additionalProperties": false
+    },
+    "CoverFillOrientation": {
+        "type": "object",
+        "description": "Orientation/distortion of the floor plan cover fill.",
+        "properties": {
+            "type": {
+                "$ref": "#/HatchOrientationType"
+            },
+            "origo": {
+                "$ref": "#/Coordinate2D",
+                "description": "Origin of the fill relative to the project origin."
+            },
+            "matrix00": {
+                "type": "number",
+                "description": "X component of the primary distortion (direction) vector - the cosine of the fill angle, if not distorted."
+            },
+            "matrix10": {
+                "type": "number",
+                "description": "Y component of the primary distortion (direction) vector - the sine of the fill angle, if not distorted."
+            },
+            "matrix01": {
+                "type": "number",
+                "description": "X component of the secondary distortion vector - the cosine of the normal vector's angle, if not distorted."
+            },
+            "matrix11": {
+                "type": "number",
+                "description": "Y component of the secondary distortion vector - the sine of the normal vector's angle, if not distorted."
+            },
+            "innerRadius": {
+                "type": "number",
+                "description": "Radius for circular fill distortion (type Centered only)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileEdgeOverride": {
+        "type": "object",
+        "properties": {
+            "edgeIndex": {
+                "type": "integer"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "isVisibleLine": {
+                "type": "boolean"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "edgeIndex"
+        ]
+    },
+    "ProfileSkinContour": {
+        "type": "object",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 2D coordinates of this contour.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "LineSymbolItemData": {
+        "type": "object",
+        "properties": {
+            "itemType": {
+                "type": "string",
+                "description": "Separator, CenterDot, CenterLine, Dot, RightAngle, Parallel, Line, Circle, or Arc."
+            },
+            "centerOffset": {
+                "type": "number",
+                "description": "Vertical distance from the origin. Used for Separator, CenterDot, and CenterLine item types."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the item. Used for CenterLine, RightAngle, and Parallel item types."
+            },
+            "begPos": {
+                "description": "Beginning position. Used for Dot, RightAngle, Parallel, Line, Circle, and Arc item types.",
+                "$ref": "#/Coordinate2D"
+            },
+            "endPos": {
+                "description": "End position. Used for Line item type only.",
+                "$ref": "#/Coordinate2D"
+            },
+            "radius": {
+                "type": "number",
+                "description": "Radius. Used for Circle and Arc item types."
+            },
+            "beginAngle": {
+                "type": "number",
+                "description": "Beginning angle in radians, measured from the vertical axis. Used for Arc item type only."
+            },
+            "endAngle": {
+                "type": "number",
+                "description": "End angle in radians, measured from the vertical axis. Used for Arc item type only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "itemType"
+        ]
+    },
+    "PenData": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "Index of the pen [1..255]."
+            },
+            "color": {
+                "$ref": "#/ColorRGB"
+            },
+            "width": {
+                "type": "number",
+                "description": "Thickness of the pen defined in paper millimeters."
+            },
+            "description": {
+                "type": "string",
+                "description": "Textual description of the pen."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index"
+        ]
+    },
+    "ProfileSkinData": {
+        "type": "object",
+        "description": "One new skin (hatch). Its shape is one or more closed polygon contours: the first is the outer boundary, any further ones are holes cut out of it - the same polygon+holes convention as e.g. CreateSlabs' polygonCoordinates/polygonArcs/holes, just expressed as a list of contours instead of a separate holes array.",
+        "properties": {
+            "contours": {
+                "type": "array",
+                "description": "Closed polygon contours forming this skin's cross-section, in the Profile's local coordinate system. Each contour is closed automatically - do not repeat its first vertex at the end.",
+                "items": {
+                    "$ref": "#/ProfileSkinContour"
+                },
+                "minItems": 1
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "fillId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "contourPen": {
+                "type": "integer"
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "isCore": {
+                "type": "boolean"
+            },
+            "isFinish": {
+                "type": "boolean"
+            },
+            "visibleCutEndLines": {
+                "type": "boolean"
+            },
+            "cutEndLinePen": {
+                "type": "integer"
+            },
+            "cutEndLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "edgeOverrides": {
+                "type": "array",
+                "description": "Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.",
+                "items": {
+                    "$ref": "#/ProfileEdgeOverride"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "contours"
+        ]
+    },
     "PolyArc": {
         "type": "object",
         "description": "Representation of an arc segment of a two dimensional polygon/polyline.",
@@ -2345,8 +2683,7 @@ var gSchemaDefinitions = {
                 "enum": [ false ]
             },
             "error": {
-                "$ref": "#/Error",
-                "description": "The details of an execution failure."
+                "$ref": "#/Error"
             }
         },
         "additionalProperties": false,
@@ -2506,25 +2843,572 @@ var gSchemaDefinitions = {
                 "$ref": "#/NavigatorItemIdArrayItem"
             },
             {
-                "type": "object",
-                "properties": {
-                    "windowType": {
-                        "$ref": "#/WindowType"
-                    },
-                    "databaseId": {
-                        "$ref": "#/DatabaseId"
-                    },
-                    "storyIndex": {
-                        "type": "integer",
-                        "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "windowType"
-                ]
+                "$ref": "#/DatabaseIdAndWindowType"
             }
         ]
+    },
+    "FillAttributeField": {
+        "type": "string",
+        "enum": [
+            "subType",
+            "scaleWithPlan",
+            "useForWalls",
+            "useForDraft",
+            "useForCover",
+            "horizontalSpacing",
+            "verticalSpacing",
+            "angle",
+            "bitPattern",
+            "gradientStart",
+            "gradientEnd",
+            "percent",
+            "texture",
+            "lineItems",
+            "symbolLines",
+            "symbolArcs",
+            "symbolHotspots"
+        ]
+    },
+    "ZoneCategoryAttributeField": {
+        "type": "string",
+        "enum": [
+            "categoryCode",
+            "color",
+            "stampName",
+            "stampMainGuid",
+            "stampRevGuid"
+        ]
+    },
+    "MEPSystemAttributeField": {
+        "type": "string",
+        "enum": [
+            "domain",
+            "contourPen",
+            "fillPen",
+            "fillBackgroundPen",
+            "centerLinePen",
+            "fillId",
+            "centerLineTypeId",
+            "materialId",
+            "insulationMaterialId"
+        ]
+    },
+    "PenTableAttributeField": {
+        "type": "string",
+        "enum": [
+            "isActiveForModel",
+            "isActiveForLayout",
+            "pens"
+        ]
+    },
+    "ProfileAttributeField": {
+        "type": "string",
+        "enum": [
+            "wallType",
+            "beamType",
+            "coluType",
+            "handrailType",
+            "otherGDLObjectType",
+            "useWith",
+            "width",
+            "height",
+            "minimumWidth",
+            "minimumHeight",
+            "widthStretchable",
+            "heightStretchable",
+            "hasCoreSkin",
+            "profileModifiers",
+            "skins",
+            "skinOutlines"
+        ]
+    },
+    "CompositeAttributeField": {
+        "type": "string",
+        "enum": [
+            "useWith",
+            "skins",
+            "separators"
+        ]
+    },
+    "CompositeSkinType": {
+        "type": "string",
+        "enum": [
+            "Core",
+            "Finish",
+            "Other"
+        ]
+    },
+    "SurfaceAttributeField": {
+        "type": "string",
+        "enum": [
+            "materialType",
+            "ambientReflection",
+            "diffuseReflection",
+            "specularReflection",
+            "transparency",
+            "shine",
+            "transparencyAttenuation",
+            "emissionAttenuation",
+            "surfaceColor",
+            "specularColor",
+            "emissionColor",
+            "fillId",
+            "texture"
+        ]
+    },
+    "LayerAttributeField": {
+        "type": "string",
+        "enum": [
+            "isHidden",
+            "isLocked",
+            "isWireframe",
+            "intersectionGroupNr"
+        ]
+    },
+    "BuildingMaterialAttributeField": {
+        "type": "string",
+        "enum": [
+            "id",
+            "manufacturer",
+            "description",
+            "connPriority",
+            "cutFillIndex",
+            "cutFillPen",
+            "cutFillBackgroundPen",
+            "cutSurfaceIndex",
+            "cutFillOrientation",
+            "thermalConductivity",
+            "density",
+            "heatCapacity",
+            "embodiedEnergy",
+            "embodiedCarbon",
+            "showUncutLines",
+            "collisionDetection"
+        ]
+    },
+    "LineAttributeField": {
+        "type": "string",
+        "enum": [
+            "scaleWithPlan",
+            "defineScale",
+            "lineType",
+            "period",
+            "height",
+            "dashItems",
+            "lineItems"
+        ]
+    },
+    "FillSubType": {
+        "type": "string",
+        "enum": [
+            "Vector",
+            "Solid",
+            "Empty",
+            "Symbol",
+            "LinearGradient",
+            "RadialGradient"
+        ]
+    },
+    "ProfileUseWith": {
+        "type": "string",
+        "enum": [
+            "Wall",
+            "Beam",
+            "Column",
+            "Handrail",
+            "Other"
+        ]
+    },
+    "WallStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite",
+            "Profile"
+        ]
+    },
+    "SlabStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
+    "RoofStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite"
+        ]
+    },
+    "DisplayOption": {
+        "type": "string",
+        "description": "Floor plan display option.",
+        "enum": [
+            "Standard",
+            "StandardWithAbstract",
+            "CutOnly",
+            "OutLinesOnly",
+            "AbstractAll",
+            "CutAll"
+        ]
+    },
+    "ViewDepthLimitation": {
+        "type": "string",
+        "description": "Floor plan view depth limitation.",
+        "enum": [
+            "ToFloorPlanRange",
+            "ToAbsoluteLimit",
+            "EntireElement"
+        ]
+    },
+    "TextureProjectionType": {
+        "type": "string",
+        "description": "Projection type of the 3D texture.",
+        "enum": [
+            "Invalid",
+            "Planar",
+            "Default",
+            "Cylindric",
+            "Spheric",
+            "Box"
+        ]
+    },
+    "MeshRidges": {
+        "type": "string",
+        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
+        "enum": [
+            "AllSharp",
+            "AllSmooth",
+            "UserDefined"
+        ]
+    },
+    "BeamAnchorPoint": {
+        "type": "string",
+        "description": "Anchor point of the beam cross section on a 3x3 grid.",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "ColumnCoreAnchor": {
+        "type": "string",
+        "description": "Anchor point of the column core on a 3x3 grid.",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "SlabReferencePlaneLocation": {
+        "type": "string",
+        "description": "Location of the slab reference plane.",
+        "enum": [
+            "Top",
+            "CoreTop",
+            "CoreBottom",
+            "Bottom"
+        ]
+    },
+    "WallReferenceLineLocation": {
+        "type": "string",
+        "enum": [
+            "Outside",
+            "Center",
+            "Inside",
+            "CoreOutside",
+            "CoreCenter",
+            "CoreInside"
+        ],
+        "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
+    },
+    "WallZoneRelation": {
+        "type": "string",
+        "enum": [
+            "Boundary",
+            "ReduceArea",
+            "None",
+            "SubtractFromZone"
+        ]
+    },
+    "WallGeometryType": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Trapezoid",
+            "Polygonal"
+        ]
+    },
+    "WallModificationGeometryType": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Trapezoid"
+        ],
+        "description": "The wall's plan outline shape, distinct from its cross section shape."
+    },
+    "WallProfileType": {
+        "type": "string",
+        "enum": [
+            "Normal",
+            "Slanted",
+            "Trapez",
+            "Poly"
+        ],
+        "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline)."
+    },
+    "WallModificationProfileType": {
+        "type": "string",
+        "enum": [
+            "Normal",
+            "Slanted",
+            "Trapez"
+        ],
+        "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline)."
+    },
+    "IFCElementsToExport": {
+        "type": "string",
+        "description": "Which elements to export.",
+        "enum": [
+            "EntireProject",
+            "VisibleElementsOnAllStories",
+            "AllElementsOnCurrentStory",
+            "VisibleElementsOnCurrentStory",
+            "SelectedElementsOnly"
+        ]
+    },
+    "ClassificationSystemConflictPolicy": {
+        "type": "string",
+        "enum": [
+            "merge",
+            "replace",
+            "skip"
+        ],
+        "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one."
+    },
+    "ClassificationItemConflictPolicy": {
+        "type": "string",
+        "enum": [
+            "replace",
+            "skip"
+        ],
+        "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one."
+    },
+    "PropertyImportConflictPolicy": {
+        "type": "string",
+        "enum": [
+            "append",
+            "replace",
+            "skip"
+        ],
+        "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one."
+    },
+    "DesignOptionLinkType": {
+        "type": "string",
+        "description": "The type of the associated design option.",
+        "enum": [
+            "NotExistingElement",
+            "MissingDesignOption",
+            "NotLinkedToAnyDesignOption",
+            "LinkedToDesignOption"
+        ]
+    },
+    "MEPDomain": {
+        "type": "string",
+        "description": "The MEP domain.",
+        "enum": [
+            "Ventilation",
+            "Piping",
+            "CableCarrier"
+        ]
+    },
+    "MEPDomainOrUnknown": {
+        "type": "string",
+        "description": "The reported MEP domain. Unknown indicates that the domain could not be determined.",
+        "enum": [
+            "Ventilation",
+            "Piping",
+            "CableCarrier",
+            "Unknown"
+        ]
+    },
+    "MEPElementType": {
+        "type": "string",
+        "enum": [
+            "RoutingElement",
+            "RigidSegment",
+            "Elbow",
+            "Transition",
+            "Branch",
+            "Terminal",
+            "Accessory",
+            "Equipment",
+            "Fitting",
+            "FlexibleSegment",
+            "TakeOff"
+        ]
+    },
+    "DrawingNameType": {
+        "type": "string",
+        "enum": [
+            "ViewOrSourceFileName",
+            "ViewIdAndName",
+            "CustomName"
+        ],
+        "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+    },
+    "DrawingNumberingType": {
+        "type": "string",
+        "enum": [
+            "ByLayout",
+            "ByViewId",
+            "CustomNumber"
+        ],
+        "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+    },
+    "MEPCrossSectionShape": {
+        "type": "string",
+        "description": "Shape of an MEP routing segment's cross section.",
+        "enum": [
+            "Rectangular",
+            "Circular",
+            "Oval",
+            "UShape"
+        ]
+    },
+    "MEPPreferenceTableDomain": {
+        "type": "string",
+        "description": "The MEP domain of the segment preference tables.",
+        "enum": [
+            "Piping",
+            "Ventilation"
+        ]
+    },
+    "MEPComponentType": {
+        "type": "string",
+        "enum": [
+            "Terminal",
+            "Accessory",
+            "Equipment",
+            "Fitting"
+        ]
+    },
+    "TrimType": {
+        "type": "string",
+        "description": "Which side of the trimming element the elements keep.",
+        "enum": [
+            "KeepInside",
+            "KeepOutside",
+            "KeepAll",
+            "No"
+        ]
+    },
+    "HotlinkType": {
+        "type": "string",
+        "description": "Module or XRef.",
+        "enum": [
+            "Module",
+            "XRef"
+        ]
+    },
+    "NavigatorItemType": {
+        "type": "string",
+        "description": "The type of the navigator item.",
+        "enum": [
+            "UndefinedItem",
+            "ProjectItem",
+            "StoryItem",
+            "SectionItem",
+            "DetailDrawingItem",
+            "PerspectiveItem",
+            "AxonometryItem",
+            "ListItem",
+            "ScheduleItem",
+            "TocItem",
+            "CameraItem",
+            "CameraSetItem",
+            "InfoItem",
+            "HelpItem",
+            "LayoutItem",
+            "MasterLayoutItem",
+            "BookItem",
+            "MasterFolderItem",
+            "SubSetItem",
+            "TextListItem",
+            "ElevationItem",
+            "InteriorElevationItem",
+            "WorksheetDrawingItem",
+            "DocumentFrom3DItem",
+            "FolderItem",
+            "DrawingItem",
+            "UnknownItem"
+        ]
+    },
+    "Justification": {
+        "type": "string",
+        "description": "Text justification.",
+        "enum": [
+            "Left",
+            "Center",
+            "Right",
+            "Full"
+        ]
+    },
+    "LabelClass": {
+        "type": "string",
+        "enum": [
+            "Text",
+            "Symbol"
+        ],
+        "description": "Whether this is a textual or a symbol label."
+    },
+    "TextBoxAnchor": {
+        "type": "string",
+        "enum": [
+            "LeftTop",
+            "MiddleTop",
+            "RightTop",
+            "LeftMiddle",
+            "MiddleMiddle",
+            "RightMiddle",
+            "LeftBottom",
+            "MiddleBottom",
+            "RightBottom"
+        ],
+        "description": "Anchor point of the text box."
+    },
+    "LabelLeaderLineAnchorPoint": {
+        "type": "string",
+        "enum": [
+            "Middle",
+            "Top",
+            "Bottom",
+            "Underlined"
+        ],
+        "description": "How the leader line connects to the label text."
+    },
+    "SymbolLabelTextDirection": {
+        "type": "string",
+        "enum": [
+            "Parallel",
+            "Horizontal",
+            "Vertical",
+            "General"
+        ],
+        "description": "Direction of the symbol label's text."
     },
     "LengthType": {
         "type": "string",
@@ -2639,6 +3523,709 @@ var gSchemaDefinitions = {
             "Warning",
             "Info",
             "Unknown"
+        ]
+    },
+    "AssociativeWitnessPoint": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "line": {
+                "type": "boolean"
+            },
+            "inIndex": {
+                "type": "integer"
+            },
+            "special": {
+                "type": "integer"
+            },
+            "nodeType": {
+                "type": "integer"
+            },
+            "nodeStatus": {
+                "type": "integer"
+            },
+            "nodeId": {
+                "type": "number",
+                "minimum": 0.0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "IFCExportTranslator": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the translator, as the IFC Translators dialog shows it."
+            },
+            "preview": {
+                "type": "boolean",
+                "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "preview"
+        ]
+    },
+    "CoordinateWitnessPoint": {
+        "type": "object",
+        "properties": {
+            "coordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "coordinate3D": {
+                "$ref": "#/Coordinate3D"
+            },
+            "dimensionPosition": {
+                "$ref": "#/Coordinate2D"
+            },
+            "dimensionValue": {
+                "type": "number"
+            },
+            "witnessForm": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Small",
+                    "Large",
+                    "Fix",
+                    "Unknown"
+                ]
+            },
+            "witnessVal": {
+                "type": "number"
+            },
+            "baseElementId": {
+                "$ref": "#/ElementId"
+            },
+            "line": {
+                "type": "boolean",
+                "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
+            },
+            "inIndex": {
+                "type": "integer",
+                "description": "Subindex of the base element's node (API_Neig inIndex)."
+            },
+            "special": {
+                "type": "integer",
+                "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
+            },
+            "nodeType": {
+                "type": "integer",
+                "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
+            },
+            "nodeStatus": {
+                "type": "integer",
+                "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
+            },
+            "nodeId": {
+                "type": "number",
+                "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
+            }
+        }
+    },
+    "FavoriteRename": {
+        "type": "object",
+        "properties": {
+            "oldName": {
+                "type": "string"
+            },
+            "newName": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "oldName",
+            "newName"
+        ]
+    },
+    "FavoritesFromElementUpdate": {
+        "type": "object",
+        "description": "The identifier of the element and the name of the existing Favorite to update from it.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "favorite": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "favorite"
+        ]
+    },
+    "SolidLinkReference": {
+        "type": "object",
+        "properties": {
+            "targetId": {
+                "$ref": "#/ElementId"
+            },
+            "operatorId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targetId",
+            "operatorId"
+        ]
+    },
+    "SolidLinksOfElement": {
+        "type": "object",
+        "properties": {
+            "solidLinksWithTheGivenTarget": {
+                "type": "array",
+                "description": "Links where the given element is the target (being cut or modified).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "operatorId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "operation": {
+                            "$ref": "#/SolidOperationType"
+                        },
+                        "linkFlags": {
+                            "$ref": "#/SolidLinkFlags"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "operatorId",
+                        "operation",
+                        "linkFlags"
+                    ]
+                }
+            },
+            "solidLinksWithTheGivenOperator": {
+                "type": "array",
+                "description": "Links where the given element is the operator (performing the cut).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "targetId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "operation": {
+                            "$ref": "#/SolidOperationType"
+                        },
+                        "linkFlags": {
+                            "$ref": "#/SolidLinkFlags"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "targetId",
+                        "operation",
+                        "linkFlags"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "solidLinksWithTheGivenTarget",
+            "solidLinksWithTheGivenOperator"
+        ]
+    },
+    "ProjectInfoFieldData": {
+        "type": "object",
+        "properties": {
+            "projectInfoName": {
+                "type": "string",
+                "description": "Display name of the project info field.",
+                "minLength": 1
+            },
+            "projectInfoValue": {
+                "type": "string",
+                "description": "Initial value of the project info field."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoName"
+        ]
+    },
+    "SolidLinkData": {
+        "type": "object",
+        "properties": {
+            "targetId": {
+                "$ref": "#/ElementId",
+                "description": "The element to be cut or modified."
+            },
+            "operatorId": {
+                "$ref": "#/ElementId",
+                "description": "The element performing the operation."
+            },
+            "operation": {
+                "$ref": "#/SolidOperationType"
+            },
+            "linkFlags": {
+                "$ref": "#/SolidLinkFlags"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targetId",
+            "operatorId",
+            "operation"
+        ]
+    },
+    "InteriorElevationData": {
+        "type": "object",
+        "properties": {
+            "nodeCoordinates": {
+                "type": "array",
+                "description": "The corner points of the connected segment chain. Each consecutive pair of points becomes one segment, so a room with four walls needs five points to be closed, or four to be left open.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 2
+            },
+            "depth": {
+                "type": "number",
+                "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
+                "exclusiveMinimum": 0.0
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the interior elevation. Each segment is named after it."
+            },
+            "id": {
+                "type": "string",
+                "description": "ID string of the interior elevation."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "The story to place the interior elevation on. Defaults to the current story."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "nodeCoordinates"
+        ]
+    },
+    "HotlinkInstanceChange": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "If z is omitted, the instance's current z is kept."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Rotation about the origin, counter-clockwise, in radians."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Reflect the module's local X axis before the rotation."
+            },
+            "floorDifference": {
+                "type": "integer"
+            },
+            "skipNested": {
+                "type": "boolean"
+            },
+            "suspendFixAngle": {
+                "type": "boolean"
+            },
+            "ignoreTopFloorLinks": {
+                "type": "boolean"
+            },
+            "relinkWallOpenings": {
+                "type": "boolean"
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean"
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Move the instance to this layer."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "HotlinkInstanceCreation": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId",
+                "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "If z is omitted, the instance is placed at 0."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional story the instance is placed on. Defaults to the current story."
+            },
+            "floorDifference": {
+                "type": "integer",
+                "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
+            },
+            "skipNested": {
+                "type": "boolean",
+                "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
+            },
+            "suspendFixAngle": {
+                "type": "boolean",
+                "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
+            },
+            "ignoreTopFloorLinks": {
+                "type": "boolean",
+                "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
+            },
+            "relinkWallOpenings": {
+                "type": "boolean",
+                "description": "Optional. Defaults to the hotlink tool's current default."
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean",
+                "description": "Optional. Defaults to the hotlink tool's current default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId",
+            "origin"
+        ]
+    },
+    "Library": {
+        "type": "object",
+        "description": "Details of a project library.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Library name."
+            },
+            "path": {
+                "type": "string",
+                "description": "A filesystem path to library location."
+            },
+            "type": {
+                "type": "string",
+                "description": "Library type."
+            },
+            "available": {
+                "type": "boolean",
+                "description": "Is library not missing."
+            },
+            "readOnly": {
+                "type": "boolean",
+                "description": "Is library not writable."
+            },
+            "twServerUrl": {
+                "type": "string",
+                "description": "URL address of the TeamWork server hosting the library."
+            },
+            "urlWebLibrary": {
+                "type": "string",
+                "description": "URL of the downloaded Internet library."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "type",
+            "path"
+        ]
+    },
+    "LibraryLocation": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "path"
+        ]
+    },
+    "AutoTextKeyValue": {
+        "type": "string",
+        "minLength": 1
+    },
+    "PropertyEnumValueRename": {
+        "type": "object",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/GuidId"
+            },
+            "displayValue": {
+                "type": "string"
+            },
+            "nonLocalizedValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enumValueId",
+            "displayValue"
+        ]
+    },
+    "PropertyEnumValueRemoval": {
+        "type": "object",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/GuidId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enumValueId"
+        ]
+    },
+    "PropertyAvailabilityUpdate": {
+        "type": "object",
+        "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
+        "properties": {
+            "set": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "add": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "remove": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "ClassificationItemUpdate": {
+        "type": "object",
+        "properties": {
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId"
+            },
+            "id": {
+                "type": "string",
+                "description": "The new code of the item, e.g. 21.10."
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemId"
+        ]
+    },
+    "ClassificationSystemUpdate": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "source": {
+                "type": "string"
+            },
+            "version": {
+                "type": "string"
+            },
+            "date": {
+                "$ref": "#/Date"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId"
+        ]
+    },
+    "PropertyGroupUpdate": {
+        "type": "object",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId"
+        ]
+    },
+    "PropertyGroupDetails": {
+        "type": "object",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "isCustom": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId",
+            "name",
+            "isCustom"
+        ]
+    },
+    "PropertyDefinitionUpdate": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "name": {
+                "type": "string",
+                "description": "New name of the property."
+            },
+            "description": {
+                "type": "string",
+                "description": "New description of the property."
+            },
+            "groupId": {
+                "$ref": "#/PropertyGroupId",
+                "description": "Move the property into this custom property group."
+            },
+            "defaultValue": {
+                "$ref": "#/PropertyDefaultValue",
+                "description": "New default value: a basic value or expressions. Switching between the two is allowed."
+            },
+            "expressions": {
+                "type": "array",
+                "description": "The new expression strings for the property. Only for expression-based properties.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            },
+            "availability": {
+                "$ref": "#/PropertyAvailabilityUpdate"
+            },
+            "possibleEnumValues": {
+                "$ref": "#/EnumValuesToAdd",
+                "description": "Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
+            },
+            "renameEnumValues": {
+                "type": "array",
+                "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
+                "items": {
+                    "$ref": "#/PropertyEnumValueRename"
+                }
+            },
+            "removeEnumValues": {
+                "type": "array",
+                "description": "Enum options to remove. Elements holding a removed option lose that value.",
+                "items": {
+                    "$ref": "#/PropertyEnumValueRemoval"
+                }
+            },
+            "enumOrder": {
+                "type": "array",
+                "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId"
+        ]
+    },
+    "EnumValue": {
+        "type": "object",
+        "description": "An enumeration value.",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/EnumValueId"
+            },
+            "guid": {
+                "$ref": "#/Guid",
+                "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+            },
+            "displayValue": {
+                "type": "string",
+                "description": "Displayed value of the enumeration."
+            },
+            "nonLocalizedValue": {
+                "type": "string",
+                "description": "Nonlocalized value of the enumeration if there is one."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "displayValue"
+        ]
+    },
+    "EnumValueToAdd": {
+        "type": "object",
+        "description": "Text values for an enumeration option to add.",
+        "properties": {
+            "displayValue": {
+                "type": "string",
+                "description": "Displayed value of the enumeration."
+            },
+            "nonLocalizedValue": {
+                "type": "string",
+                "description": "Nonlocalized value of the enumeration if there is one."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "displayValue"
         ]
     },
     "PropertyGroupId": {
@@ -2791,16 +4378,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": {
-                            "$ref": "#/Guid"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "guid"
-                    ]
+                    "$ref": "#/GuidId"
                 }
             }
         },
@@ -4157,6 +5735,200 @@ var gSchemaDefinitions = {
             "ownUnID"
         ]
     },
+    "MEPPreferenceRow": {
+        "type": "object",
+        "properties": {
+            "referenceId": {
+                "type": "integer"
+            },
+            "diameter": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "referenceId",
+            "diameter"
+        ],
+        "additionalProperties": false
+    },
+    "MEPElement": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "type": {
+                "$ref": "#/MEPElementType",
+                "description": "The type of the MEP element."
+            },
+            "domain": {
+                "type": "string",
+                "description": "The MEP domain of the element. Empty for domain-independent elements (e.g. Equipment)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "type",
+            "domain"
+        ]
+    },
+    "MEPDistributionSystem": {
+        "type": "object",
+        "properties": {
+            "domain": {
+                "$ref": "#/MEPDomainOrUnknown"
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId"
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "domain",
+            "elements"
+        ]
+    },
+    "MEPPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPreferenceRow"
+                }
+            }
+        },
+        "required": [
+            "guid",
+            "rows"
+        ],
+        "additionalProperties": false
+    },
+    "DatabaseIdAndWindowType": {
+        "type": "object",
+        "properties": {
+            "windowType": {
+                "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId"
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "windowType"
+        ]
+    },
+    "WallRelations": {
+        "type": "object",
+        "description": "Relations of a wall.",
+        "properties": {
+            "wallConnections": {
+                "$ref": "#/EndpointConnections"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "wallConnections"
+        ]
+    },
+    "BeamRelations": {
+        "type": "object",
+        "description": "Relations of a beam.",
+        "properties": {
+            "beamConnections": {
+                "$ref": "#/EndpointConnections"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "beamConnections"
+        ]
+    },
+    "BeamSegmentRelations": {
+        "type": "object",
+        "description": "Relations of a beam segment.",
+        "properties": {
+            "beamSegmentConnections": {
+                "$ref": "#/EndpointConnections"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "beamSegmentConnections"
+        ]
+    },
+    "ZoneRelationsOfElement": {
+        "type": "object",
+        "description": "Relations of a zone.",
+        "properties": {
+            "zoneRelations": {
+                "$ref": "#/ZoneRelations"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneRelations"
+        ]
+    },
+    "OpeningRelationsOfElement": {
+        "type": "object",
+        "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
+        "properties": {
+            "openingRelations": {
+                "type": "object",
+                "properties": {
+                    "fromRoom": {
+                        "$ref": "#/ElementId"
+                    },
+                    "toRoom": {
+                        "$ref": "#/ElementId"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "openingRelations"
+        ]
+    },
+    "RoofOrShellRelationsOfElement": {
+        "type": "object",
+        "description": "Relations of a roof or shell: the connected zones.",
+        "properties": {
+            "roofOrShellRelations": {
+                "type": "object",
+                "properties": {
+                    "connectedRooms": {
+                        "$ref": "#/Elements"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "connectedRooms"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofOrShellRelations"
+        ]
+    },
     "NavigatorItemIds": {
         "type": "array",
         "description": "A list of navigator item identifiers.",
@@ -4209,37 +5981,7 @@ var gSchemaDefinitions = {
                 "$ref": "#/NavigatorItemId"
             },
             "type": {
-                "type": "string",
-                "description": "The type of the navigator item.",
-                "enum": [
-                    "UndefinedItem",
-                    "ProjectItem",
-                    "StoryItem",
-                    "SectionItem",
-                    "DetailDrawingItem",
-                    "PerspectiveItem",
-                    "AxonometryItem",
-                    "ListItem",
-                    "ScheduleItem",
-                    "TocItem",
-                    "CameraItem",
-                    "CameraSetItem",
-                    "InfoItem",
-                    "HelpItem",
-                    "LayoutItem",
-                    "MasterLayoutItem",
-                    "BookItem",
-                    "MasterFolderItem",
-                    "SubSetItem",
-                    "TextListItem",
-                    "ElevationItem",
-                    "InteriorElevationItem",
-                    "WorksheetDrawingItem",
-                    "DocumentFrom3DItem",
-                    "FolderItem",
-                    "DrawingItem",
-                    "UnknownItem"
-                ]
+                "$ref": "#/NavigatorItemType"
             },
             "name": {
                 "type": "string",
@@ -4370,29 +6112,8 @@ var gSchemaDefinitions = {
                 "description": "Whether changing to the view should ignore its stored zoom."
             },
             "zoom": {
-                "type": "object",
-                "description": "Stored zoom box in model coordinates. Used only when saveZoom is true.",
-                "properties": {
-                    "xMin": {
-                        "type": "number"
-                    },
-                    "yMin": {
-                        "type": "number"
-                    },
-                    "xMax": {
-                        "type": "number"
-                    },
-                    "yMax": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "xMin",
-                    "yMin",
-                    "xMax",
-                    "yMax"
-                ]
+                "$ref": "#/Zoom",
+                "description": "Stored zoom box. Used only when saveZoom is true."
             },
             "rotation": {
                 "type": "number",
@@ -4438,33 +6159,8 @@ var gSchemaDefinitions = {
         "type": "object",
         "properties": {
             "zoom": {
-                "type": "object",
-                "description": "The actual zoom parameters, rectangular region of the model.",
-                "properties": {
-                    "xMin": {
-                        "type": "number",
-                        "description": "The minimum X value of the zoom box."
-                    },
-                    "yMin": {
-                        "type": "number",
-                        "description": "The minimum Y value of the zoom box."
-                    },
-                    "xMax": {
-                        "type": "number",
-                        "description": "The maximum X value of the zoom box."
-                    },
-                    "yMax": {
-                        "type": "number",
-                        "description": "The maximum Y value of the zoom box."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "xMin",
-                    "yMin",
-                    "xMax",
-                    "yMax"
-                ]
+                "$ref": "#/Zoom",
+                "description": "The current zoom parameters."
             },
             "rotation": {
                 "type": "number",
@@ -4573,12 +6269,7 @@ var gSchemaDefinitions = {
         "type": "object",
         "properties": {
             "geometryType": {
-                "type": "string",
-                "enum": [
-                    "Straight",
-                    "Trapezoid",
-                    "Polygonal"
-                ]
+                "$ref": "#/WallGeometryType"
             },
             "begCoordinate": {
                 "$ref": "#/Coordinate2D"
@@ -4631,12 +6322,7 @@ var gSchemaDefinitions = {
                 }
             },
             "structureType": {
-                "type": "string",
-                "enum": [
-                    "Basic",
-                    "Composite",
-                    "Profile"
-                ]
+                "$ref": "#/WallStructureType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -4648,26 +6334,11 @@ var gSchemaDefinitions = {
                 "$ref": "#/AttributeId"
             },
             "referenceLineLocation": {
-                "type": "string",
-                "enum": [
-                    "Outside",
-                    "Center",
-                    "Inside",
-                    "CoreOutside",
-                    "CoreCenter",
-                    "CoreInside"
-                ],
-                "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
+                "$ref": "#/WallReferenceLineLocation"
             },
             "profileType": {
-                "type": "string",
-                "enum": [
-                    "Normal",
-                    "Slanted",
-                    "Trapez",
-                    "Poly"
-                ],
-                "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
+                "$ref": "#/WallProfileType",
+                "description": "Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
             },
             "slantAlpha": {
                 "type": "number",
@@ -4686,13 +6357,7 @@ var gSchemaDefinitions = {
                 "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' via ModifyWalls in the same call."
             },
             "zoneRel": {
-                "type": "string",
-                "enum": [
-                    "Boundary",
-                    "ReduceArea",
-                    "None",
-                    "SubtractFromZone"
-                ]
+                "$ref": "#/WallZoneRelation"
             },
             "visibility": {
                 "$ref": "#/StoryVisibility"
@@ -4715,6 +6380,99 @@ var gSchemaDefinitions = {
             },
             "cutFillBackgroundPen": {
                 "$ref": "#/OverriddenPen"
+            },
+            "contourPen": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen inherited from the building material/composite/profile. Unlike cutFillPen this is not inheritable/overridable, it is the wall's own pen index directly, the same field used regardless of structureType (Basic, Composite or Profile)."
+            },
+            "contourPen3D": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Pen of the wall's contour in 3D views (API_WallType::contPen3D)."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the wall's own contour (API_WallType::contLtype) - pairs with contourPen, which only sets the pen, not the line type."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup (API_WallType::belowViewLineType). Corresponds to the \"Uncut Lines\" value in the Wall Settings dialog."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the Wall Settings dialog."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation",
+                "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+            },
+            "connectionPriority": {
+                "type": "integer",
+                "description": "Priority of the wall in a junction with other elements (API_WallType::wallConnPriority - higher wins the cut/cover at the junction). Archicad ignores writes to this field; read-only in practice."
+            },
+            "useCompositePriority": {
+                "type": "boolean",
+                "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
+            },
+            "junctionSequence": {
+                "type": "integer",
+                "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
+            },
+            "linkToSettings": {
+                "type": "object",
+                "description": "Mode of linking the wall to its home story.",
+                "properties": {
+                    "homeStoryDifference": {
+                        "type": "integer",
+                        "description": "Difference of the home story from the current story."
+                    },
+                    "newCreationMode": {
+                        "type": "boolean",
+                        "description": "A one-shot instruction for Create, not a persisted property: when true, header.floorInd (floorIndex/zCoordinate) is ignored and homeStoryDifference is used to place the wall instead (API_LinkToSettings remarks). Reading it back afterward is expected to show false regardless, since Archicad resolves it to an absolute floor index immediately rather than storing the mode itself."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "inheritEndSurface": {
+                "type": "boolean",
+                "description": "The end surface of the wall is inherited from the adjoining wall."
+            },
+            "alignTexture": {
+                "type": "boolean",
+                "description": "Align texture mapping to the wall's edges."
+            },
+            "offsetFromOutside": {
+                "type": "number",
+                "description": "Distance between the reference line and the outside face of the wall. Output only - not settable via ModifyWalls."
+            },
+            "polyCanChange": {
+                "type": "boolean",
+                "description": "The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType)."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained."
+            },
+            "logHeight": {
+                "type": "number",
+                "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
+            },
+            "hasWindow": {
+                "type": "boolean",
+                "description": "Whether the wall has at least one Window. Output only."
+            },
+            "hasDoor": {
+                "type": "boolean",
+                "description": "Whether the wall has at least one Door. Output only."
             }
         },
         "additionalProperties": false,
@@ -4778,18 +6536,7 @@ var gSchemaDefinitions = {
                 "type": "number"
             },
             "anchorPoint": {
-                "type": "string",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/BeamAnchorPoint"
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -4803,42 +6550,7 @@ var gSchemaDefinitions = {
             "holes": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "holeId": {
-                            "type": "number"
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "Rectangular",
-                                "Circular"
-                            ]
-                        },
-                        "showContour": {
-                            "type": "boolean"
-                        },
-                        "centerX": {
-                            "type": "number"
-                        },
-                        "centerZ": {
-                            "type": "number"
-                        },
-                        "width": {
-                            "type": "number"
-                        },
-                        "height": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "holeId",
-                        "type",
-                        "centerX",
-                        "centerZ",
-                        "width"
-                    ]
+                    "$ref": "#/BeamHole"
                 }
             },
             "width": {
@@ -4886,8 +6598,7 @@ var gSchemaDefinitions = {
                 "enum": [ "SinglePlane", "MultiPlane" ]
             },
             "structureType": {
-                "type": "string",
-                "enum": [ "Basic", "Composite" ]
+                "$ref": "#/RoofStructureType"
             },
             "thickness": {
                 "type": "number"
@@ -4910,18 +6621,8 @@ var gSchemaDefinitions = {
                 "description": "Single-plane: the slope in radians."
             },
             "pivotLine": {
-                "type": "object",
-                "description": "Single-plane: the pivot line the plane rotates about.",
-                "properties": {
-                    "begin": {
-                        "$ref": "#/Coordinate2D"
-                    },
-                    "end": {
-                        "$ref": "#/Coordinate2D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "begin", "end" ]
+                "$ref": "#/RoofDetailsPivotLine",
+                "description": "For single-plane roofs."
             },
             "eavesOverhang": {
                 "type": "number",
@@ -4931,17 +6632,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "height": {
-                            "type": "number"
-                        },
-                        "angle": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "height", "angle" ]
+                    "$ref": "#/RoofDetailsLevel"
                 }
             },
             "pivotPolygonOutline": {
@@ -5014,11 +6705,7 @@ var gSchemaDefinitions = {
                 "$ref": "#/Holes2D"
             },
             "structureType": {
-                "type": "string",
-                "enum": [
-                    "Basic",
-                    "Composite"
-                ]
+                "$ref": "#/SlabStructureType"
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -5027,13 +6714,7 @@ var gSchemaDefinitions = {
                 "$ref": "#/AttributeId"
             },
             "referencePlaneLocation": {
-                "type": "string",
-                "enum": [
-                    "Top",
-                    "CoreTop",
-                    "CoreBottom",
-                    "Bottom"
-                ]
+                "$ref": "#/SlabReferencePlaneLocation"
             },
             "topMaterial": {
                 "$ref": "#/OverriddenMaterial"
@@ -5085,18 +6766,7 @@ var gSchemaDefinitions = {
                 "type": "number"
             },
             "coreAnchor": {
-                "type": "string",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/ColumnCoreAnchor"
             },
             "isSlanted": {
                 "type": "boolean"
@@ -5345,39 +7015,10 @@ var gSchemaDefinitions = {
                 "description": "Lamp only."
             },
             "visibility": {
-                "type": "object",
-                "description": "Per-story visibility settings.",
-                "properties": {
-                    "showOnHome": {
-                        "type": "boolean"
-                    },
-                    "showAllAbove": {
-                        "type": "boolean"
-                    },
-                    "showAllBelow": {
-                        "type": "boolean"
-                    },
-                    "showRelAbove": {
-                        "type": "integer"
-                    },
-                    "showRelBelow": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/StoryVisibility"
             },
             "linkToSettings": {
-                "type": "object",
-                "description": "Mode of linking to the home story.",
-                "properties": {
-                    "homeStoryDifference": {
-                        "type": "integer"
-                    },
-                    "newCreationMode": {
-                        "type": "boolean"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LinkToSettings"
             }
         },
         "additionalProperties": false,
@@ -5639,6 +7280,14 @@ var gSchemaDefinitions = {
             },
             "fillBackgroundPenIndex": {
                 "type": "integer"
+            },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill foreground. Only present when it overrides fillPenIndex."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill background. Only present when it overrides fillBackgroundPenIndex."
             },
             "fillId": {
                 "$ref": "#/AttributeId",
@@ -5947,9 +7596,7 @@ var gSchemaDefinitions = {
                 "description": "The height of the skirt."
             },
             "ridges": {
-                "type": "string",
-                "description": "How ridges between mesh facets are displayed in 3D.",
-                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                "$ref": "#/MeshRidges"
             },
             "showLines": {
                 "type": "boolean",
@@ -5989,20 +7636,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "The leveling sublines inside the polygon of the mesh.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "coordinates": {
-                            "type": "array",
-                            "description": "The 3D coordinates of the leveling subline of the mesh.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "coordinates"
-                    ]
+                    "$ref": "#/MeshSubline"
                 },
                 "minItems": 1
             }
@@ -6057,7 +7691,7 @@ var gSchemaDefinitions = {
             },
             "edgeDefault": {
                 "type": "string",
-                "description": "Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get; on Create/Modify this is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).",
+                "description": "Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get. On Create/Modify it takes effect from Archicad 29 on, where it is applied to every edge of the element with ACAPI_Element_ChangeMorphEdgeType right after the element is created or changed (e.g. 'HardHidden' hides all edges of a triangulated body). On Archicad 28 and earlier it is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).",
                 "enum": ["HardVisible", "HardHidden", "SoftHidden"]
             },
             "vertices": {
@@ -6072,49 +7706,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "One entry per face loop (into `vertices`), counterclockwise as seen from outside the body. Optional - a body made entirely of wireEdges (see below) needs none. Set \"filled\": false on an entry to create only that loop's edges (e.g. the outline of a pyramid's side faces) without an actual filled face.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "vertexIds": {
-                            "type": "array",
-                            "description": "Counterclockwise outer-loop vertex indices for this face.",
-                            "items": {
-                                "type": "integer"
-                            },
-                            "minItems": 3
-                        },
-                        "filled": {
-                            "type": "boolean",
-                            "description": "Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to."
-                        },
-                        "holes": {
-                            "type": "array",
-                            "description": "Optional hole loops cut out of this face, each a clockwise list of vertex indices.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "vertexIds": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        },
-                                        "minItems": 3
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "vertexIds"
-                                ]
-                            }
-                        },
-                        "surfaceId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Optional per-face Surface (render material) override. Falls back to the Morph's own default surface when omitted. Named surfaceId, not buildingMaterialId - confirmed live that Archicad's per-face body override is a Surface index, not a building material (a Morph's building material is always a single whole-volume property, element.morph.buildingMaterial, exposed as the sibling 'buildingMaterialId' field on MorphDetails/CreateMorphs/ModifyMorphs - never per-face). Version-dependent write bug, isolated live: silently lost on Create on Archicad 25 (presumably 26 too - same pre-2700 API_OverriddenAttribute shape, though Archicad 26 itself could not be installed to confirm live), confirmed fixed and working correctly from Archicad 27 onward (27 and 29 both verified). No SDK/build available locally to check Archicad 28."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "vertexIds"
-                    ]
+                    "$ref": "#/MorphPolygon"
                 }
             },
             "wireEdges": {
@@ -6140,7 +7732,7 @@ var gSchemaDefinitions = {
             },
             "edgeOverrides": {
                 "type": "array",
-                "description": "READ-ONLY in practice: reported accurately by GetDetailsOfElements (reflecting whatever Archicad itself currently has), but CreateMorphs/ModifyMorphs silently ignore this field on input - per-edge display status cannot be set by an add-on due to a confirmed, still-unresolved Archicad SDK bug (element.morph.edgeType/bodyType are silently discarded by ACAPI_Element_Create/Change; see the GRAPHISOFT community forum thread 'Help with setting morph's hidden edges in the API'). Sparse when present - only edges whose display status differs from edgeDefault get an entry. Identifies an edge by the (unordered) pair of vertex indices it connects.",
+                "description": "READ-ONLY in practice: reported accurately by GetDetailsOfElements (reflecting whatever Archicad itself currently has), but CreateMorphs/ModifyMorphs silently ignore this field on input - per-edge display status cannot be set by an add-on due to a confirmed, still-unresolved Archicad SDK bug (element.morph.edgeType/bodyType are silently discarded by ACAPI_Element_Create/Change; see the GRAPHISOFT community forum thread 'Help with setting morph's hidden edges in the API'). To hide or smooth ALL edges of a Morph use edgeDefault, which does take effect from Archicad 29 on. Sparse when present - only edges whose display status differs from edgeDefault get an entry. Identifies an edge by the (unordered) pair of vertex indices it connects.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -6228,29 +7820,13 @@ var gSchemaDefinitions = {
                 "description": "Which stories display this Morph's floor plan fill. Same write-reliability caveat as showContour."
             },
             "linkToSettings": {
-                "type": "object",
-                "description": "Mode of linking the Morph to its home story.",
-                "properties": {
-                    "homeStoryDifference": {
-                        "type": "integer",
-                        "description": "Difference of the home story from the current story."
-                    },
-                    "newCreationMode": {
-                        "type": "boolean",
-                        "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LinkToSettings"
             },
             "displayOption": {
-                "type": "string",
-                "description": "Floor plan display option.",
-                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                "$ref": "#/DisplayOption"
             },
             "viewDepthLimitation": {
-                "type": "string",
-                "description": "Floor plan view depth limitation.",
-                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                "$ref": "#/ViewDepthLimitation"
             },
             "cutFillPen": {
                 "type": "integer",
@@ -6309,48 +7885,14 @@ var gSchemaDefinitions = {
                 "description": "Derive the floor plan fill from the 3D material instead of coverFillType."
             },
             "coverFillOrientation": {
-                "type": "object",
-                "description": "Orientation/distortion of the floor plan cover fill.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": ["Global", "Rotated", "Distorted", "Centered"]
-                    },
-                    "origo": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "Origin of the fill relative to the project origin."
-                    },
-                    "matrix00": {
-                        "type": "number",
-                        "description": "X component of the primary distortion (direction) vector - the cosine of the fill angle, if not distorted."
-                    },
-                    "matrix10": {
-                        "type": "number",
-                        "description": "Y component of the primary distortion (direction) vector - the sine of the fill angle, if not distorted."
-                    },
-                    "matrix01": {
-                        "type": "number",
-                        "description": "X component of the secondary distortion vector - the cosine of the normal vector's angle, if not distorted."
-                    },
-                    "matrix11": {
-                        "type": "number",
-                        "description": "Y component of the secondary distortion vector - the sine of the normal vector's angle, if not distorted."
-                    },
-                    "innerRadius": {
-                        "type": "number",
-                        "description": "Radius for circular fill distortion (type Centered only)."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/CoverFillOrientation"
             },
             "useDistortedCoverFill": {
                 "type": "boolean",
                 "description": "Show the floor plan hatching as if projected onto a plane."
             },
             "textureProjectionType": {
-                "type": "string",
-                "description": "Projection type of the 3D texture.",
-                "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                "$ref": "#/TextureProjectionType"
             },
             "textureProjectionCoords": {
                 "type": "array",
@@ -6400,16 +7942,8 @@ var gSchemaDefinitions = {
                 "description": "Whether the drawing is clipped by a custom polygon (see clipPolygon) instead of showing the full auto-fit extent."
             },
             "bounds": {
-                "type": "object",
-                "description": "Bounding box of the drawing on the layout.",
-                "properties": {
-                    "xMin": { "type": "number" },
-                    "yMin": { "type": "number" },
-                    "xMax": { "type": "number" },
-                    "yMax": { "type": "number" }
-                },
-                "additionalProperties": false,
-                "required": ["xMin", "yMin", "xMax", "yMax"]
+                "$ref": "#/BoundingBox2D",
+                "description": "Bounds of the drawing on the layout."
             },
             "clipPolygon": {
                 "type": "array",
@@ -6424,18 +7958,14 @@ var gSchemaDefinitions = {
                 "description": "The identifier of the navigator item (view/layout) this Drawing was created from. Read-only: Archicad only lets this be set at creation time (see CreateDrawings) - it cannot be changed afterwards to relink the Drawing to a different source."
             },
             "nameType": {
-                "type": "string",
-                "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
-                "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNameType"
             },
             "customName": {
                 "type": "string",
                 "description": "The drawing's custom title name. Present only when nameType is CustomName."
             },
             "numberingType": {
-                "type": "string",
-                "enum": ["ByLayout", "ByViewId", "CustomNumber"],
-                "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNumberingType"
             },
             "customNumber": {
                 "type": "string",
@@ -6495,8 +8025,7 @@ var gSchemaDefinitions = {
             "type": "boolean"
           },
           "labelClass": {
-            "type": "string",
-            "enum": ["Text", "Symbol"]
+              "$ref": "#/LabelClass"
           },
           "leaderLine": {
             "$ref": "#/LabelLeaderLineDetails"
@@ -6557,8 +8086,7 @@ var gSchemaDefinitions = {
                 "description": "The pen attribute index (same as style.penIndex)."
             },
             "justification": {
-                "type": "string",
-                "enum": ["Left", "Center", "Right", "Full"],
+                "$ref": "#/Justification",
                 "description": "Same as style.justification."
             },
             "zCoordinate": {
@@ -6567,7 +8095,7 @@ var gSchemaDefinitions = {
             },
             "style": {
                 "$ref": "#/TextStyleDetails",
-                "description": "The full style state; the flat fields above are the subset SetDetailsOfElements takes back."
+                "description": "The flat fields above are the subset SetDetailsOfElements takes back."
             },
             "paragraphCount": {
                 "type": "integer",
@@ -6843,6 +8371,460 @@ var gSchemaDefinitions = {
             "isArchived"
         ]
     },
+    "LayoutCustomData": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "type": "string"
+            },
+            "customSchemeName": {
+                "type": "string"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "customSchemeKey",
+            "customSchemeValue"
+        ],
+        "additionalProperties": false
+    },
+    "LayoutCustomDataToSet": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "type": "string"
+            },
+            "customSchemeName": {
+                "type": "string"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "customSchemeValue"
+        ],
+        "additionalProperties": false
+    },
+    "RoofLevel": {
+        "type": "object",
+        "properties": {
+            "levelHeight": {
+                "type": "number"
+            },
+            "levelAngle": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "levelHeight",
+            "levelAngle"
+        ]
+    },
+    "RoofPivotLine": {
+        "type": "object",
+        "description": "A directed pivot line defined by its beginning and end coordinates. The roof plane rises on the left side of the line direction (begCoordinate towards endCoordinate); reverse the direction to tilt towards the other side.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate"
+        ]
+    },
+    "DesignOptionData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the design option."
+            },
+            "id": {
+                "type": "string",
+                "description": "The string id of the design option."
+            },
+            "ownerSetName": {
+                "type": "string",
+                "description": "The name of the owner design option set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "id",
+            "ownerSetName"
+        ]
+    },
+    "DesignOptionCombinationDetails": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/GuidId",
+                "description": "The guid identifier of the design option combination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the design option combination."
+            },
+            "activeDesignOptions": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DesignOptionIdArrayItem"
+                },
+                "description": "The list of active design options in the combination. Available from Archicad 29."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId",
+            "name"
+        ]
+    },
+    "DesignOptionCombinationData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the design option combination."
+            },
+            "activeDesignOptions": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DesignOptionIdArrayItem"
+                },
+                "description": "The list of active design options in the combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "activeDesignOptions"
+        ]
+    },
+    "RoofDetailsLevel": {
+        "type": "object",
+        "properties": {
+            "height": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "height",
+            "angle"
+        ]
+    },
+    "Zoom": {
+        "type": "object",
+        "description": "A rectangular zoom box in model coordinates.",
+        "properties": {
+            "xMin": {
+                "type": "number",
+                "description": "The minimum X value of the zoom box."
+            },
+            "yMin": {
+                "type": "number",
+                "description": "The minimum Y value of the zoom box."
+            },
+            "xMax": {
+                "type": "number",
+                "description": "The maximum X value of the zoom box."
+            },
+            "yMax": {
+                "type": "number",
+                "description": "The maximum Y value of the zoom box."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xMin",
+            "yMin",
+            "xMax",
+            "yMax"
+        ]
+    },
+    "BoundingBox2D": {
+        "type": "object",
+        "description": "A two-dimensional bounding box defined by its minimum and maximum coordinates.",
+        "properties": {
+            "xMin": {
+                "type": "number"
+            },
+            "yMin": {
+                "type": "number"
+            },
+            "xMax": {
+                "type": "number"
+            },
+            "yMax": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xMin",
+            "yMin",
+            "xMax",
+            "yMax"
+        ]
+    },
+    "RoofDetailsPivotLine": {
+        "type": "object",
+        "description": "The pivot line about which a roof plane rotates.",
+        "properties": {
+            "begin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "end": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begin",
+            "end"
+        ]
+    },
+    "SurveyPointPosition": {
+        "type": "object",
+        "properties": {
+            "eastings": {
+                "type": "number",
+                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+            },
+            "northings": {
+                "type": "number",
+                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "Orthogonal height relative to the vertical datum specified."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "eastings",
+            "northings",
+            "elevation"
+        ]
+    },
+    "GeoReferencingParameters": {
+        "type": "object",
+        "properties": {
+            "crsName": {
+                "type": "string",
+                "description": "Name by which the coordinate reference system is identified."
+            },
+            "description": {
+                "type": "string",
+                "description": "Informal description of this coordinate reference system."
+            },
+            "geodeticDatum": {
+                "type": "string",
+                "description": "Name by which this datum is identified."
+            },
+            "verticalDatum": {
+                "type": "string",
+                "description": "Name by which the vertical datum is identified."
+            },
+            "mapProjection": {
+                "type": "string",
+                "description": "Name by which the map projection is identified."
+            },
+            "mapZone": {
+                "type": "string",
+                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+            },
+            "xAxisAbscissa": {
+                "type": "number",
+                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+            },
+            "xAxisOrdinate": {
+                "type": "number",
+                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "crsName",
+            "description",
+            "geodeticDatum",
+            "verticalDatum",
+            "mapProjection",
+            "mapZone",
+            "xAxisAbscissa",
+            "xAxisOrdinate",
+            "scale"
+        ]
+    },
+    "SurveyPointPositionUpdate": {
+        "type": "object",
+        "properties": {
+            "eastings": {
+                "type": "number",
+                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+            },
+            "northings": {
+                "type": "number",
+                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "Orthogonal height relative to the vertical datum specified."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "GeoReferencingParametersUpdate": {
+        "type": "object",
+        "properties": {
+            "crsName": {
+                "type": "string",
+                "description": "Name by which the coordinate reference system is identified."
+            },
+            "description": {
+                "type": "string",
+                "description": "Informal description of this coordinate reference system."
+            },
+            "geodeticDatum": {
+                "type": "string",
+                "description": "Name by which this datum is identified."
+            },
+            "verticalDatum": {
+                "type": "string",
+                "description": "Name by which the vertical datum is identified."
+            },
+            "mapProjection": {
+                "type": "string",
+                "description": "Name by which the map projection is identified."
+            },
+            "mapZone": {
+                "type": "string",
+                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+            },
+            "xAxisAbscissa": {
+                "type": "number",
+                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
+            },
+            "xAxisOrdinate": {
+                "type": "number",
+                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ProjectLocation": {
+        "type": "object",
+        "properties": {
+            "longitude": {
+                "type": "number",
+                "description": "longitude in degrees"
+            },
+            "latitude": {
+                "type": "number",
+                "description": "latitude in degrees"
+            },
+            "altitude": {
+                "type": "number",
+                "description": "altitude in meters"
+            },
+            "north": {
+                "type": "number",
+                "description": "north direction in radians"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "longitude",
+            "latitude",
+            "altitude",
+            "north"
+        ]
+    },
+    "SurveyPoint": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/SurveyPointPosition"
+            },
+            "positionInProject": {
+                "$ref": "#/Coordinate3D",
+                "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
+            },
+            "geoReferencingParameters": {
+                "$ref": "#/GeoReferencingParameters"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "positionInProject",
+            "geoReferencingParameters"
+        ]
+    },
+    "ProjectLocationUpdate": {
+        "type": "object",
+        "properties": {
+            "longitude": {
+                "type": "number",
+                "description": "longitude in degrees"
+            },
+            "latitude": {
+                "type": "number",
+                "description": "latitude in degrees"
+            },
+            "altitude": {
+                "type": "number",
+                "description": "altitude in meters"
+            },
+            "north": {
+                "type": "number",
+                "description": "north direction in radians"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SurveyPointUpdate": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/SurveyPointPositionUpdate"
+            },
+            "positionInProject": {
+                "$ref": "#/Coordinate3D",
+                "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
+            },
+            "geoReferencingParameters": {
+                "$ref": "#/GeoReferencingParametersUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "LayoutInfo": {
         "type": "object",
         "properties": {
@@ -6996,6 +8978,10 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string",
                 "description": "The name of the story."
+            },
+            "ifcId": {
+                "type": "string",
+                "description": "The IFC GlobalId of the story, i.e. of the IfcBuildingStorey it is exported as (the same identifier the IFC Project Manager shows). Available from Archicad 28; older versions omit it."
             }
         },
         "additionalProperties": false,
@@ -7307,10 +9293,20 @@ var gSchemaDefinitions = {
                 "type": "integer"
             },
             "fillPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the foregroundColor override, so the pen shows."
             },
             "fillBackgroundPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the backgroundColor override, so the pen shows."
+            },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
             },
             "fillId": {
                 "$ref": "#/AttributeId"
@@ -7365,18 +9361,14 @@ var gSchemaDefinitions = {
                 "minItems": 3
             },
             "nameType": {
-                "type": "string",
-                "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
-                "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNameType"
             },
             "customName": {
                 "type": "string",
                 "description": "The drawing's custom title name. Only used when nameType is CustomName."
             },
             "numberingType": {
-                "type": "string",
-                "enum": ["ByLayout", "ByViewId", "CustomNumber"],
-                "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+                "$ref": "#/DrawingNumberingType"
             },
             "customNumber": {
                 "type": "string",
@@ -7414,9 +9406,8 @@ var gSchemaDefinitions = {
                 "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
-                "type": "string",
-                "enum": ["Left", "Center", "Right", "Full"],
-                "description": "The text justification. Only applied to Text elements."
+                "$ref": "#/Justification",
+                "description": "Only applied to Text elements."
             }
         },
         "additionalProperties": false,
@@ -7494,29 +9485,7 @@ var gSchemaDefinitions = {
             "type": "object",
             "properties": {
                 "enumValue": {
-                    "type": "object",
-                    "description": "The description of an enumeration value.",
-                    "properties": {
-                        "enumValueId": {
-                            "$ref": "#/EnumValueId"
-                        },
-                "guid": {
-                    "$ref": "#/Guid",
-                    "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
-                },
-                        "displayValue": {
-                            "type": "string",
-                            "description": "Displayed value of the enumeration."
-                        },
-                        "nonLocalizedValue": {
-                            "type": "string",
-                            "description": "Nonlocalized value of the enumeration if there is one."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "displayValue"
-                    ]
+                    "$ref": "#/EnumValue"
                 }
             },
             "additionalProperties": false,
@@ -7524,7 +9493,7 @@ var gSchemaDefinitions = {
                 "enumValue"
             ]
         }
-            },
+    },
     "PropertyDefinition": {
         "type": "object",
         "properties": {
@@ -7586,22 +9555,7 @@ var gSchemaDefinitions = {
             "type": "object",
             "properties": {
                 "enumValue": {
-                    "type": "object",
-                    "description": "The description of an enumeration value.",
-                    "properties": {
-                        "displayValue": {
-                            "type": "string",
-                            "description": "Displayed value of the enumeration."
-                        },
-                        "nonLocalizedValue": {
-                            "type": "string",
-                            "description": "Nonlocalized value of the enumeration if there is one."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "displayValue"
-                    ]
+                    "$ref": "#/EnumValueToAdd"
                 }
             },
             "additionalProperties": false,
@@ -7809,7 +9763,7 @@ var gSchemaDefinitions = {
                 "description": "The relative path to the new file inside embedded library."
             },
             "type": {
-                "description": "The type of the library part. By default 'Pict'.",
+                "description": "By default 'Pict'.",
                 "$ref": "#/LibraryPartType"
             }
         },
@@ -8134,55 +10088,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "coordinate": {
-                            "$ref": "#/Coordinate2D"
-                        },
-                        "coordinate3D": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "dimensionPosition": {
-                            "$ref": "#/Coordinate2D"
-                        },
-                        "dimensionValue": {
-                            "type": "number"
-                        },
-                        "witnessForm": {
-                            "type": "string",
-                            "enum": ["None", "Small", "Large", "Fix", "Unknown"]
-                        },
-                        "witnessVal": {
-                            "type": "number"
-                        },
-                        "baseElementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "line": {
-                            "type": "boolean",
-                            "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
-                        },
-                        "inIndex": {
-                            "type": "integer",
-                            "description": "Subindex of the base element's node (API_Neig inIndex)."
-                        },
-                        "special": {
-                            "type": "integer",
-                            "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
-                        },
-                        "nodeType": {
-                            "type": "integer",
-                            "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
-                        },
-                        "nodeStatus": {
-                            "type": "integer",
-                            "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
-                        },
-                        "nodeId": {
-                            "type": "number",
-                            "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
-                        }
-                    }
+                    "$ref": "#/CoordinateWitnessPoint"
                 }
             }
         }
@@ -8478,100 +10384,22 @@ var gSchemaDefinitions = {
         "description": "The type-specific relations of an element or an error. The variant depends on the type of the input element.",
         "oneOf": [
             {
-                "type": "object",
-                "description": "Relations of a wall.",
-                "properties": {
-                    "wallConnections": {
-                        "$ref": "#/EndpointConnections"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "wallConnections"
-                ]
+                "$ref": "#/WallRelations"
             },
             {
-                "type": "object",
-                "description": "Relations of a beam.",
-                "properties": {
-                    "beamConnections": {
-                        "$ref": "#/EndpointConnections"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "beamConnections"
-                ]
+                "$ref": "#/BeamRelations"
             },
             {
-                "type": "object",
-                "description": "Relations of a beam segment.",
-                "properties": {
-                    "beamSegmentConnections": {
-                        "$ref": "#/EndpointConnections"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "beamSegmentConnections"
-                ]
+                "$ref": "#/BeamSegmentRelations"
             },
             {
-                "type": "object",
-                "description": "Relations of a zone.",
-                "properties": {
-                    "zoneRelations": {
-                        "$ref": "#/ZoneRelations"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "zoneRelations"
-                ]
+                "$ref": "#/ZoneRelationsOfElement"
             },
             {
-                "type": "object",
-                "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
-                "properties": {
-                    "openingRelations": {
-                        "type": "object",
-                        "properties": {
-                            "fromRoom": {
-                                "$ref": "#/ElementId"
-                            },
-                            "toRoom": {
-                                "$ref": "#/ElementId"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "openingRelations"
-                ]
+                "$ref": "#/OpeningRelationsOfElement"
             },
             {
-                "type": "object",
-                "description": "Relations of a roof or shell: the connected zones.",
-                "properties": {
-                    "roofOrShellRelations": {
-                        "type": "object",
-                        "properties": {
-                            "connectedRooms": {
-                                "$ref": "#/Elements"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "connectedRooms"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "roofOrShellRelations"
-                ]
+                "$ref": "#/RoofOrShellRelationsOfElement"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -8678,18 +10506,21 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false
     },
+    "HatchOrientationType": {
+        "type": "string",
+        "enum": [
+            "Global",
+            "Rotated",
+            "Distorted",
+            "Centered"
+        ]
+    },
     "HatchOrientation": {
         "type": "object",
         "description": "Orientation and distortion parameters of a fill. When modifying an element, omitted properties keep their current values.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [
-                    "Global",
-                    "Rotated",
-                    "Distorted",
-                    "Centered"
-                ]
+                "$ref": "#/HatchOrientationType"
             },
             "origin": {
                 "$ref": "#/Coordinate2D",
@@ -8780,7 +10611,7 @@ var gSchemaDefinitions = {
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
-            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "justification": { "$ref": "#/Justification" },
             "height": { "type": "number", "description": "Character height in mm." },
             "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
             "angle": { "type": "number", "description": "Rotation angle in radians." },
@@ -8795,7 +10626,7 @@ var gSchemaDefinitions = {
             "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
             "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
             "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
-            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "anchor": { "$ref": "#/TextBoxAnchor" },
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
@@ -8815,7 +10646,7 @@ var gSchemaDefinitions = {
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
-            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "justification": { "$ref": "#/Justification" },
             "height": { "type": "number", "description": "Character height in mm." },
             "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
             "angle": { "type": "number", "description": "Rotation angle in radians." },
@@ -8830,7 +10661,7 @@ var gSchemaDefinitions = {
             "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
             "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
             "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
-            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "anchor": { "$ref": "#/TextBoxAnchor" },
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
@@ -8846,14 +10677,14 @@ var gSchemaDefinitions = {
     },
     "LabelLeaderLineSettableDetails": {
         "type": "object",
-        "description": "Every user-configurable leader-line/frame setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
+        "description": "Every user-configurable leader-line/frame/arrow setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
             "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
             "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
             "framed": { "type": "boolean", "description": "Put a frame around the content." },
             "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
-            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "anchorPoint": { "$ref": "#/LabelLeaderLineAnchorPoint", "description": "Only applies to text-class labels." },
             "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
             "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
             "arrowType": { "$ref": "#/LabelArrowType" },
@@ -8873,7 +10704,7 @@ var gSchemaDefinitions = {
             "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
             "framed": { "type": "boolean", "description": "Put a frame around the content." },
             "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
-            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "anchorPoint": { "$ref": "#/LabelLeaderLineAnchorPoint", "description": "Only applies to text-class labels." },
             "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
             "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
             "arrowType": { "$ref": "#/LabelArrowType" },
@@ -8907,7 +10738,7 @@ var gSchemaDefinitions = {
         "type": "object",
         "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
         "properties": {
-            "textWay": { "type": "string", "enum": ["Parallel", "Horizontal", "Vertical", "General"], "description": "Direction of the symbol label's text." },
+            "textWay": { "$ref": "#/SymbolLabelTextDirection" },
             "fontIndex": { "type": "integer" },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
