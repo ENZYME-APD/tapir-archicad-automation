@@ -1377,8 +1377,8 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     }
 
     if (hasNewItemId) {
-        GS::ucsncpy (navItem.uiId, newId.ToUStr (), GS::ArraySize (navItem.uiId));
-        navItem.uiId[GS::ArraySize (navItem.uiId) - 1] = 0;
+        // uiId is a char array (unlike uName), so it is copied like customLayoutNumber below.
+        CHTruncate (newId.ToCStr ().Get (), navItem.uiId, GS::ArraySize (navItem.uiId));
         navItem.customUiId = true;
     }
 
