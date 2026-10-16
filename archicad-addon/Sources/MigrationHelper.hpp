@@ -38,6 +38,12 @@
 #define ACAPI_Teamwork_ReserveElements ACAPI_TeamworkControl_ReserveElements
 #define ACAPI_Teamwork_ReleaseElements ACAPI_TeamworkControl_ReleaseElements
 #define ACAPI_Teamwork_GetUsernameFromId ACAPI_TeamworkControl_GetUsernameFromId
+#define ACAPI_Teamwork_FindLockableObjectSet ACAPI_TeamworkControl_FindLockableObjectSet
+#define ACAPI_Teamwork_ReserveLockable ACAPI_TeamworkControl_ReserveLockable
+#define ACAPI_Teamwork_ReleaseLockable ACAPI_TeamworkControl_ReleaseLockable
+#define ACAPI_Teamwork_GetLockableStatus ACAPI_TeamworkControl_GetLockableStatus
+#define ACAPI_Teamwork_ReserveHotlinkCacheManagement ACAPI_TeamworkControl_ReserveHotlinkCacheManagement
+#define ACAPI_Teamwork_ReleaseHotlinkCacheManagement ACAPI_TeamworkControl_ReleaseHotlinkCacheManagement
 
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
@@ -85,6 +91,8 @@
 
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
+#define ACAPI_View_Get3DProjectionSets(par1) ACAPI_Environment (APIEnv_Get3DProjectionSetsID, par1)
+#define ACAPI_View_Change3DProjectionSets(par1, par2) ACAPI_Environment (APIEnv_Change3DProjectionSetsID, (void*) par1, (void*) par2)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 // APIDo_ChangeWindowID brings the window to the front; APIDb_ChangeCurrentDatabaseID only
 // switches the database the API works on and leaves the front window as it is, which is
@@ -161,6 +169,11 @@ inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePa
 }
 
 inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Archive* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Picture* formatPars)
 {
     return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
 }
@@ -244,6 +257,20 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, G
     (void) enableUnplaced;
     return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList);
 #endif
+}
+
+inline GSErrCode ACAPI_Hotlink_ModifyHotlinkNode (API_HotlinkNode* hotlinkNode)
+{
+    return ACAPI_Database (APIDb_ModifyHotlinkNodeID, hotlinkNode);
+}
+
+// APIDb_UpdateHotlinkCacheID takes the node guid as par1 and an optional
+// API_HotlinkCacheGenerator as par2 (APIdefs_Database.h). The add-on never
+// generates content, so par2 is left out here and the cache is re-read from
+// the source file; AC27's ACAPI_Hotlink_UpdateHotlinkCache defaults it the same way.
+inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGuid)
+{
+    return ACAPI_Database (APIDb_UpdateHotlinkCacheID, (void*) hotlinkNodeGuid);
 }
 
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)

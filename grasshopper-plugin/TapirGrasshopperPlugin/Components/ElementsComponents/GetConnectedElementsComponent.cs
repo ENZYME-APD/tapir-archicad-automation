@@ -23,18 +23,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements ids of hierarchical elements to get subelements of.");
+                "Identifiers of the owner elements, for example the Walls to get the openings of.");
 
             InText(
                 "ConnectedElementType",
-                "Type of connected elements.");
+                "Type of the connected elements: Window or Door for the openings of a Wall, " +
+                "Label for the labels of an element, or a subelement type of a Curtain Wall, Stair or Railing.");
         }
 
         protected override void AddOutputs()
         {
             OutGenericTree(
                 "ConnectedElementGuids",
-                "Connected Elements with the given type.");
+                "Connected elements of the given type, one branch per owner element.");
         }
 
         public override void AddedToDocument(
@@ -42,7 +43,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             base.AddedToDocument(document);
 
-            new ElementTypeValueList(ElementTypeValueListType.SubElementsOnly)
+            // Window and Door are the most common connected types (the openings
+            // of a Wall), so the list offers the main element types too and
+            // starts on Window.
+            new ElementTypeValueList(
+                    ElementTypeValueListType.AllElements,
+                    MainElementType.Window.ToString())
                 .AddAsSource(
                     this,
                     1);
