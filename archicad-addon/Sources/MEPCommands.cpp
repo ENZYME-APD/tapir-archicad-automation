@@ -23,6 +23,26 @@
 #include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeElbowPreferenceTable.hpp"
+#include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeBranchPreferenceTable.hpp"
+#include "ACAPI/MEPPipeBranchPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctElbowPreferenceTable.hpp"
+#include "ACAPI/MEPDuctElbowPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctBranchPreferenceTable.hpp"
+#include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeReferenceSet.hpp"
+#include "ACAPI/MEPDuctReferenceSet.hpp"
+#ifdef ServerMainVers_2900
+#include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
+#include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctTransitionPreferenceTable.hpp"
+#include "ACAPI/MEPDuctTransitionPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeAngleSet.hpp"
+#include "ACAPI/MEPDuctAngleSet.hpp"
+#include "ACAPI/MEPSystemGroup.hpp"
+#include "ACAPI/MEPPhysicalSystem.hpp"
+#endif
 
 #include <optional>
 
@@ -1263,6 +1283,10 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "properties": {
             "domain": {
                 "$ref": "#/MEPPreferenceTableDomain"
+            },
+            "includeFittingTables": {
+                "type": "boolean",
+                "description": "Also return the elbow, branch and transition preference tables. Defaults to false."
             }
         },
         "additionalProperties": false,
@@ -1281,10 +1305,38 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
                 "items": {
                     "$ref": "#/MEPPreferenceTable"
                 }
+            },
+            "referenceSet": {
+                "$ref": "#/MEPReferenceSet"
+            },
+            "angleSet": {
+                "$ref": "#/MEPAngleSet",
+                "description": "Available from Archicad 29."
+            },
+            "elbowTables": {
+                "type": "array",
+                "description": "The elbow preference tables of the domain. Only when includeFittingTables is true.",
+                "items": {
+                    "$ref": "#/MEPElbowPreferenceTable"
+                }
+            },
+            "branchTables": {
+                "type": "array",
+                "description": "The branch preference tables of the domain. Only when includeFittingTables is true.",
+                "items": {
+                    "$ref": "#/MEPBranchPreferenceTable"
+                }
+            },
+            "transitionTables": {
+                "type": "array",
+                "description": "The transition preference tables of the domain. Only when includeFittingTables is true, available from Archicad 29.",
+                "items": {
+                    "$ref": "#/MEPTransitionPreferenceTable"
+                }
             }
         },
         "additionalProperties": false,
-        "required": ["tables"]
+        "required": ["tables", "referenceSet"]
     })";
 }
 
@@ -1314,6 +1366,166 @@ static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid&
     return tableOS;
 }
 
+static void AddRowDescription (GS::ObjectState& rowOS, const ACAPI::Result<GS::UniString>& description)
+{
+    if (description.IsOk ()) {
+        rowOS.Add ("description", *description);
+    }
+}
+
+template <typename TableT>
+static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    tableOS.Add ("name", table.GetName ());
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    for (uint32_t i = 0; i < table.GetSize (); ++i) {
+        auto referenceId = table.GetReferenceId (i);
+        auto diameter = table.GetDiameter (i);
+        auto radius = table.GetRadius (i);
+        if (referenceId.IsErr () || diameter.IsErr () || radius.IsErr ()) {
+            continue;
+        }
+        GS::ObjectState rowOS;
+        rowOS.Add ("referenceId", static_cast<Int32> (*referenceId));
+#ifdef ServerMainVers_2900
+        auto angle = table.GetAngle (i);
+        if (angle.IsOk ()) {
+            rowOS.Add ("angle", *angle);
+        }
+#endif
+        rowOS.Add ("diameter", *diameter);
+        rowOS.Add ("radius", *radius);
+        AddRowDescription (rowOS, table.GetDescription (i));
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+template <typename TableT>
+static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    tableOS.Add ("name", table.GetName ());
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    for (uint32_t i = 0; i < table.GetSize (); ++i) {
+        auto mainAxisReferenceId = table.GetMainAxisReferenceId (i);
+        auto branchAxisReferenceId = table.GetBranchAxisReferenceId (i);
+        auto mainAxisDiameter = table.GetMainAxisDiameter (i);
+        auto branchAxisDiameter = table.GetBranchAxisDiameter (i);
+        auto length = table.GetLength (i);
+        auto branchOffset = table.GetBranchOffset (i);
+        auto connectionLength = table.GetConnectionLength (i);
+        if (mainAxisReferenceId.IsErr () || branchAxisReferenceId.IsErr () || mainAxisDiameter.IsErr () || branchAxisDiameter.IsErr () ||
+            length.IsErr () || branchOffset.IsErr () || connectionLength.IsErr ()) {
+            continue;
+        }
+        GS::ObjectState rowOS;
+        rowOS.Add ("mainAxisReferenceId", static_cast<Int32> (*mainAxisReferenceId));
+        rowOS.Add ("branchAxisReferenceId", static_cast<Int32> (*branchAxisReferenceId));
+#ifdef ServerMainVers_2900
+        auto branchAxisAngle = table.GetBranchAxisAngle (i);
+        if (branchAxisAngle.IsOk ()) {
+            rowOS.Add ("branchAxisAngle", *branchAxisAngle);
+        }
+#endif
+        rowOS.Add ("mainAxisDiameter", *mainAxisDiameter);
+        rowOS.Add ("branchAxisDiameter", *branchAxisDiameter);
+        rowOS.Add ("length", *length);
+        rowOS.Add ("branchOffset", *branchOffset);
+        rowOS.Add ("connectionLength", *connectionLength);
+        AddRowDescription (rowOS, table.GetDescription (i));
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+#ifdef ServerMainVers_2900
+template <typename TableT>
+static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    tableOS.Add ("name", table.GetName ());
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    for (uint32_t i = 0; i < table.GetSize (); ++i) {
+        auto beginReferenceId = table.GetBeginReferenceId (i);
+        auto endReferenceId = table.GetEndReferenceId (i);
+        auto beginDiameter = table.GetBeginDiameter (i);
+        auto endDiameter = table.GetEndDiameter (i);
+        if (beginReferenceId.IsErr () || endReferenceId.IsErr () || beginDiameter.IsErr () || endDiameter.IsErr ()) {
+            continue;
+        }
+        GS::ObjectState rowOS;
+        rowOS.Add ("beginReferenceId", static_cast<Int32> (*beginReferenceId));
+        rowOS.Add ("endReferenceId", static_cast<Int32> (*endReferenceId));
+        rowOS.Add ("beginDiameter", *beginDiameter);
+        rowOS.Add ("endDiameter", *endDiameter);
+        // Pipe transitions are defined by their length, duct transitions by their angle.
+        if constexpr (std::is_same_v<TableT, PipeTransitionPreferenceTable>) {
+            auto length = table.GetLength (i);
+            if (length.IsOk ()) {
+                rowOS.Add ("length", *length);
+            }
+        } else {
+            auto angle = table.GetAngle (i);
+            if (angle.IsOk ()) {
+                rowOS.Add ("angle", *angle);
+            }
+        }
+        AddRowDescription (rowOS, table.GetDescription (i));
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+static GS::ObjectState DumpAngleSet (const AngleSetBase& angleSet)
+{
+    GS::ObjectState angleSetOS;
+    angleSetOS.Add ("name", angleSet.GetName ());
+    const auto& angles = angleSetOS.AddList<double> ("angles");
+    for (uint32_t i = 0; i < angleSet.GetSize (); ++i) {
+        auto angle = angleSet.GetAngle (i);
+        if (angle.IsOk ()) {
+            angles (*angle);
+        }
+    }
+    return angleSetOS;
+}
+#endif
+
+static GS::ObjectState DumpReferenceSet (const ReferenceSetBase& referenceSet)
+{
+    GS::ObjectState referenceSetOS;
+    referenceSetOS.Add ("name", referenceSet.GetName ());
+    const auto& referenceIds = referenceSetOS.AddList<Int32> ("referenceIds");
+    for (uint32_t i = 0; i < referenceSet.GetSize (); ++i) {
+        auto referenceId = referenceSet.GetReferenceId (i);
+        if (referenceId.IsOk ()) {
+            referenceIds (static_cast<Int32> (*referenceId));
+        }
+    }
+    return referenceSetOS;
+}
+
+// Adds the tables of a preference table container as a list. TableT::Get gives the table of an id.
+template <typename TableT, typename ContainerResultT, typename DumpFunc>
+static void AddPreferenceTables (GS::ObjectState& response, const char* listName, const ContainerResultT& container, const DumpFunc& dump)
+{
+    const auto& tables = response.AddList<GS::ObjectState> (listName);
+    if (container.IsErr ()) {
+        return;
+    }
+    for (const auto& id : container->GetPreferenceTables ()) {
+        auto table = TableT::Get (id);
+        if (table.IsOk ()) {
+            tables (dump (*table, id.GetGuid ()));
+        }
+    }
+}
+
 GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString domainStr;
@@ -1322,9 +1534,17 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
     if (!domain.has_value () || *domain == Domain::CableCarrier) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
     }
+    bool includeFittingTables = false;
+    parameters.Get ("includeFittingTables", includeFittingTables);
 
     GS::ObjectState response;
     const auto& tables = response.AddList<GS::ObjectState> ("tables");
+
+    const auto dumpElbow = [] (const auto& table, const GS::Guid& guid) { return DumpElbowPreferenceTable (table, guid); };
+    const auto dumpBranch = [] (const auto& table, const GS::Guid& guid) { return DumpBranchPreferenceTable (table, guid); };
+#ifdef ServerMainVers_2900
+    const auto dumpTransition = [] (const auto& table, const GS::Guid& guid) { return DumpTransitionPreferenceTable (table, guid); };
+#endif
 
     if (*domain == Domain::Piping) {
         auto container = GetPipeSegmentPreferenceTableContainer ();
@@ -1337,6 +1557,22 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
             }
         }
+
+        auto referenceSet = GetPipeReferenceSet ();
+        response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
+#ifdef ServerMainVers_2900
+        auto angleSet = GetPipeAngleSet ();
+        if (angleSet.IsOk ()) {
+            response.Add ("angleSet", DumpAngleSet (*angleSet));
+        }
+#endif
+        if (includeFittingTables) {
+            AddPreferenceTables<PipeElbowPreferenceTable> (response, "elbowTables", GetPipeElbowPreferenceTableContainer (), dumpElbow);
+            AddPreferenceTables<PipeBranchPreferenceTable> (response, "branchTables", GetPipeBranchPreferenceTableContainer (), dumpBranch);
+#ifdef ServerMainVers_2900
+            AddPreferenceTables<PipeTransitionPreferenceTable> (response, "transitionTables", GetPipeTransitionPreferenceTableContainer (), dumpTransition);
+#endif
+        }
     } else {
         auto container = GetDuctSegmentPreferenceTableContainer ();
         if (container.IsErr ()) {
@@ -1347,6 +1583,22 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
             if (table.IsOk ()) {
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
             }
+        }
+
+        auto referenceSet = GetDuctReferenceSet ();
+        response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
+#ifdef ServerMainVers_2900
+        auto angleSet = GetDuctAngleSet ();
+        if (angleSet.IsOk ()) {
+            response.Add ("angleSet", DumpAngleSet (*angleSet));
+        }
+#endif
+        if (includeFittingTables) {
+            AddPreferenceTables<DuctElbowPreferenceTable> (response, "elbowTables", GetDuctElbowPreferenceTableContainer (), dumpElbow);
+            AddPreferenceTables<DuctBranchPreferenceTable> (response, "branchTables", GetDuctBranchPreferenceTableContainer (), dumpBranch);
+#ifdef ServerMainVers_2900
+            AddPreferenceTables<DuctTransitionPreferenceTable> (response, "transitionTables", GetDuctTransitionPreferenceTableContainer (), dumpTransition);
+#endif
         }
     }
 
@@ -3344,5 +3596,375 @@ GS::ObjectState ModifyElectricalProjectSettingsCommand::Execute (const GS::Objec
 #else
     UNUSED_PARAMETER (parameters);
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, ElectricalRequiresArchicad30);
+#endif
+}
+
+#ifdef ServerMainVers_2900
+
+static GS::ObjectState CreateMEPIdObjectState (const char* idFieldName, const ACAPI::MEP::UniqueID& id)
+{
+    return CreateIdObjectState (idFieldName, MEPUniqueIDToAPIGuid (id));
+}
+
+static GS::ObjectState CreatePhysicalSystemDetails (const ACAPI::MEP::UniqueID& systemId)
+{
+    ACAPI::Result<PhysicalSystem> system = PhysicalSystem::Get (systemId);
+    if (system.IsErr ()) {
+        return CreateErrorResponse (system.UnwrapErr ().kind, "Failed to get the physical system.");
+    }
+    GS::ObjectState systemOs;
+    systemOs.Add ("physicalSystemId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (systemId)));
+    systemOs.Add ("name", system->GetName ());
+    const std::optional<ACAPI::MEP::UniqueID> rootElementId = system->GetRootElementId ();
+    if (rootElementId.has_value ()) {
+        systemOs.Add ("rootElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (rootElementId.value ())));
+    }
+    const API_Guid systemCategoryGuid = GetAttributeGuidFromIndex (API_MEPSystemID, system->GetSystemCategory ());
+    if (systemCategoryGuid != APINULLGuid) {
+        systemOs.Add ("mepSystemId", CreateGuidObjectState (systemCategoryGuid));
+    }
+    return systemOs;
+}
+
+static bool ContainsMEPId (const std::vector<ACAPI::MEP::UniqueID>& ids, const ACAPI::MEP::UniqueID& id)
+{
+    for (const ACAPI::MEP::UniqueID& other : ids) {
+        if (other.GetGuid () == id.GetGuid ()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+#else
+
+// Only the pre-Archicad 29 branches use it; on Archicad 29 it would be an unused variable.
+static const char* MEPSystemsRequireArchicad29 = "This command requires Archicad 29 or newer.";
+
+#endif
+
+GetMEPSystemGroupsCommand::GetMEPSystemGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMEPSystemGroupsCommand::GetName () const
+{
+    return "GetMEPSystemGroups";
+}
+
+GS::Optional<GS::UniString> GetMEPSystemGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "systemGroups": {
+                "type": "array",
+                "description": "The system groups of the project with their physical systems.",
+                "items": {
+                    "$ref": "#/MEPSystemGroupDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetMEPSystemGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> groupIds = GetSystemGroupIDs ();
+    if (groupIds.IsErr ()) {
+        return CreateErrorResponse (groupIds.UnwrapErr ().kind, "Failed to get the system groups.");
+    }
+
+    GS::ObjectState response;
+    const auto& systemGroups = response.AddList<GS::ObjectState> ("systemGroups");
+    for (const ACAPI::MEP::UniqueID& groupId : groupIds.Unwrap ()) {
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (groupId);
+        if (group.IsErr ()) {
+            systemGroups (CreateErrorResponse (group.UnwrapErr ().kind, "Failed to get the system group."));
+            continue;
+        }
+        GS::ObjectState groupOs;
+        groupOs.Add ("systemGroupId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (groupId)));
+        groupOs.Add ("name", group->GetName ());
+        const auto& physicalSystems = groupOs.AddList<GS::ObjectState> ("physicalSystems");
+        for (const ACAPI::MEP::UniqueID& systemId : group->GetSystemIDs ()) {
+            physicalSystems (CreatePhysicalSystemDetails (systemId));
+        }
+        systemGroups (groupOs);
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+CreateMEPSystemGroupsCommand::CreateMEPSystemGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateMEPSystemGroupsCommand::GetName () const
+{
+    return "CreateMEPSystemGroups";
+}
+
+GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "systemGroupsData": {
+                "type": "array",
+                "description": "Array of data to create system groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "systemGroups": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPSystemGroupIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroups"
+        ]
+    })";
+}
+
+GS::ObjectState CreateMEPSystemGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> systemGroupsData;
+    if (!parameters.Get ("systemGroupsData", systemGroupsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'systemGroupsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& systemGroups = response.AddList<GS::ObjectState> ("systemGroups");
+    for (const GS::ObjectState& groupData : systemGroupsData) {
+        GS::UniString name;
+        groupData.Get ("name", name);
+        // A system group does not tell its own id, so the new id is the one that was not there before.
+        ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> idsBefore = GetSystemGroupIDs ();
+        ACAPI::Result<SystemGroup> group = CreateSystemGroup (name, "Create MEP System Group");
+        if (group.IsErr ()) {
+            systemGroups (CreateErrorResponse (group.UnwrapErr ().kind, "Failed to create the system group."));
+            continue;
+        }
+        ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> idsAfter = GetSystemGroupIDs ();
+        std::optional<ACAPI::MEP::UniqueID> newGroupId;
+        if (idsBefore.IsOk () && idsAfter.IsOk ()) {
+            for (const ACAPI::MEP::UniqueID& id : idsAfter.Unwrap ()) {
+                if (!ContainsMEPId (idsBefore.Unwrap (), id)) {
+                    newGroupId = id;
+                }
+            }
+        }
+        if (!newGroupId.has_value ()) {
+            systemGroups (CreateErrorResponse (APIERR_GENERAL, "The system group was created, but its id could not be found."));
+            continue;
+        }
+        systemGroups (CreateMEPIdObjectState ("systemGroupId", newGroupId.value ()));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+CreateMEPPhysicalSystemsCommand::CreateMEPPhysicalSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateMEPPhysicalSystemsCommand::GetName () const
+{
+    return "CreateMEPPhysicalSystems";
+}
+
+GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystemsData": {
+                "type": "array",
+                "description": "Array of data to create physical systems.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "systemGroupId": {
+                            "$ref": "#/MEPSystemGroupId",
+                            "description": "The system group the new physical system belongs to."
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "rootElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
+                        },
+                        "mepSystemId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The MEP system attribute used as the category of the physical system."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "systemGroupId",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPhysicalSystemIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystems"
+        ]
+    })";
+}
+
+GS::ObjectState CreateMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> physicalSystemsData;
+    if (!parameters.Get ("physicalSystemsData", physicalSystemsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystemsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& physicalSystems = response.AddList<GS::ObjectState> ("physicalSystems");
+
+    {
+        for (const GS::ObjectState& systemData : physicalSystemsData) {
+            const GS::ObjectState* groupId = systemData.Get ("systemGroupId");
+            GS::UniString name;
+            systemData.Get ("name", name);
+            if (groupId == nullptr) {
+                physicalSystems (CreateErrorResponse (APIERR_BADPARS, "Missing 'systemGroupId' parameter."));
+                continue;
+            }
+            ACAPI::Result<SystemGroup> group = SystemGroup::Get (Adapter::UniqueID (GetGuidFromObjectState (*groupId)));
+            if (group.IsErr ()) {
+                physicalSystems (CreateErrorResponse (APIERR_BADID, "The 'systemGroupId' is not a system group."));
+                continue;
+            }
+
+            const GS::ObjectState* mepSystemId = systemData.Get ("mepSystemId");
+            const API_AttributeIndex systemCategory = mepSystemId != nullptr ? GetAttributeIndexFromGuid (API_MEPSystemID, GetGuidFromObjectState (*mepSystemId)) : ACAPI_CreateAttributeIndex (-1);
+            if (mepSystemId != nullptr && systemCategory == ACAPI_CreateAttributeIndex (-1)) {
+                physicalSystems (CreateErrorResponse (APIERR_BADID, "The 'mepSystemId' is not an MEP system attribute."));
+                continue;
+            }
+
+            // Adding through the group gives back the id of the new system.
+            std::optional<ACAPI::MEP::UniqueID> newSystemId;
+            std::optional<ACAPI::Error> addError;
+            ACAPI::Result<void> addResult = group->Modify ([&](SystemGroup::Modifier& modifier) {
+                ACAPI::Result<ACAPI::MEP::UniqueID> result = modifier.Add (name);
+                if (result.IsOk ()) {
+                    newSystemId = result.Unwrap ();
+                } else {
+                    addError = result.UnwrapErr ();
+                }
+            }, "Create MEP Physical System");
+            if (addError.has_value () || addResult.IsErr () || !newSystemId.has_value ()) {
+                const GSErrCode errorCode = addError.has_value () ? addError->kind : (addResult.IsErr () ? addResult.UnwrapErr ().kind : APIERR_GENERAL);
+                physicalSystems (CreateErrorResponse (errorCode, "Failed to create the physical system."));
+                continue;
+            }
+            ACAPI::Result<PhysicalSystem> system = PhysicalSystem::Get (newSystemId.value ());
+            if (system.IsErr ()) {
+                physicalSystems (CreateErrorResponse (system.UnwrapErr ().kind, "The physical system was created, but it could not be read back."));
+                continue;
+            }
+
+            const GS::ObjectState* rootElementId = systemData.Get ("rootElementId");
+            if (rootElementId != nullptr || mepSystemId != nullptr) {
+                std::optional<ACAPI::Error> setError;
+                ACAPI::Result<void> modifyResult = system->Modify ([&](PhysicalSystem::Modifier& modifier) {
+                    if (rootElementId != nullptr) {
+                        ACAPI::Result<void> result = modifier.SetRootElement (Adapter::UniqueID (GetGuidFromObjectState (*rootElementId)));
+                        if (result.IsErr () && !setError.has_value ()) {
+                            setError = result.UnwrapErr ();
+                        }
+                    }
+                    if (mepSystemId != nullptr) {
+                        ACAPI::Result<void> result = modifier.SetSystemCategory (systemCategory);
+                        if (result.IsErr () && !setError.has_value ()) {
+                            setError = result.UnwrapErr ();
+                        }
+                    }
+                }, "Set MEP Physical System Data");
+                if (setError.has_value () || modifyResult.IsErr ()) {
+                    // Do not leave a half set up system behind.
+                    static_cast<void> (group->Modify ([&](SystemGroup::Modifier& modifier) {
+                        static_cast<void> (modifier.Remove (newSystemId.value ()));
+                    }, "Remove MEP Physical System"));
+                    physicalSystems (CreateErrorResponse (setError.has_value () ? setError->kind : modifyResult.UnwrapErr ().kind,
+                        "The root element or the MEP system could not be set, so the physical system was not created."));
+                    continue;
+                }
+            }
+
+            physicalSystems (CreateMEPIdObjectState ("physicalSystemId", newSystemId.value ()));
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
 #endif
 }

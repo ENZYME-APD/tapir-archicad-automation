@@ -7,6 +7,10 @@
 // nonBreaking, width, height) for the given content.
 void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text);
 const char* JustificationToString (API_JustID just);
+// Shared with GetDetailsOfElementsCommand (ElementCommands.cpp): the origin a level dimension
+// measures from, as the "DimensionOrigin" schema names it.
+const char* DimensionOriginToString (API_DimOriginID origin);
+bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result);
 API_JustID ParseJustificationString (const GS::UniString& justification);
 
 class CreateElementsCommandBase : public CommandBase
@@ -149,6 +153,14 @@ class CreateTextsCommand : public CreateElementsCommandBase
 {
 public:
     CreateTextsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateLevelDimensionsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateLevelDimensionsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
