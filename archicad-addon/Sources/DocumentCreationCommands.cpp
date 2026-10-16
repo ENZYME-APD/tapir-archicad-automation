@@ -825,24 +825,32 @@ static GSErrCode ActivateLayoutDatabase (const API_Guid& layoutDatabaseGuid)
 }
 
 // The active window, captured so that a command which has to switch windows can switch back
-// afterwards. For the Floor Plan the typeID alone does not say which story is shown, so the
-// active story is kept as well (ChangeWindowCommand selects a story through the index field).
+// afterwards. The Floor Plan is one window for every story, so its active story is kept too.
 struct ActiveWindowState {
     bool            valid = false;
     API_WindowInfo  window = {};
+    bool            hasStory = false;
     short           actStory = 0;
 };
+
+static bool GetActiveStory (short& actStory)
+{
+    API_StoryInfo storyInfo = {};
+    const GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (err != NoError) {
+        return false;
+    }
+    actStory = storyInfo.actStory;
+    return true;
+}
 
 static ActiveWindowState GetActiveWindowState ()
 {
     ActiveWindowState state;
     state.valid = ACAPI_Window_GetCurrentWindow (&state.window) == NoError;
     if (state.valid && state.window.typeID == APIWind_FloorPlanID) {
-        API_StoryInfo storyInfo = {};
-        if (ACAPI_ProjectSetting_GetStorySettings (&storyInfo) == NoError) {
-            state.actStory = storyInfo.actStory;
-            BMKillHandle ((GSHandle*) &storyInfo.data);
-        }
+        state.hasStory = GetActiveStory (state.actStory);
     }
     return state;
 }
@@ -853,31 +861,20 @@ static void RestoreActiveWindow (const ActiveWindowState& state)
         return;
     }
     API_WindowInfo windowInfo = state.window;
-    if (windowInfo.typeID == APIWind_FloorPlanID) {
-        windowInfo.index = state.actStory;
+    if (ACAPI_Window_ChangeWindow (&windowInfo) != NoError) {
+        return;
     }
-    ACAPI_Window_ChangeWindow (&windowInfo);
+    // Putting the story into API_WindowInfo::index does not move the active story (#748):
+    // the story is changed with the story settings command instead, the same way
+    // ChangeWindowCommand does it, and only when the window switch left another story active.
+    short currentStory = 0;
+    if (state.hasStory && GetActiveStory (currentStory) && currentStory != state.actStory) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_GoTo;
+        storyCmd.index  = state.actStory;
+        ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+    }
 }
-
-#if defined (ServerMainVers_2700)
-// True when the window of the given navigator item (view or viewpoint) is the active one,
-// i.e. the same database and, for the Floor Plan, the same story.
-static bool IsNavigatorItemInActiveWindow (const API_Guid& navigatorItemGuid)
-{
-    API_NavigatorItem navigatorItem = {};
-    if (ACAPI_Navigator_GetNavigatorItem (&navigatorItemGuid, &navigatorItem) != NoError) {
-        return false;
-    }
-    const ActiveWindowState activeWindow = GetActiveWindowState ();
-    if (!activeWindow.valid || navigatorItem.db.typeID != activeWindow.window.typeID) {
-        return false;
-    }
-    if (activeWindow.window.typeID == APIWind_FloorPlanID) {
-        return navigatorItem.floorNum == activeWindow.actStory;
-    }
-    return navigatorItem.db.databaseUnId.elemSetId == activeWindow.window.databaseUnId.elemSetId;
-}
-#endif
 
 GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
@@ -1055,14 +1052,17 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             // Make the new source view current before creating the Drawing from it. A Drawing
             // created while its source view has never been made current inherits a stale 2D
             // transform instead of the one saved via SetViewSettings - ACAPI_View_GoToView
-            // resyncs it, the same way ChangeWindowCommand does. No switch is made when the
-            // source's window is already the active one, and the window that was active when
-            // the command started is restored at the end. Best effort: GoToView only works on
-            // views, and some placeable sources (schedules, lists, viewpoints from the project
-            // map) may reject it - that must not fail the whole relink.
+            // resyncs it, the same way ChangeWindowCommand does. The view is made current
+            // even when its window is already the active one: the stale transform is the
+            // view's, not the window's (two views of the same story with different settings
+            // is the case of #645), and GoToView switches no window then, it only applies
+            // the view's settings to the window in front. The window and story that were
+            // active when the command started are restored at the end. Best effort: GoToView
+            // only works on views, and some placeable sources (schedules, lists, viewpoints
+            // from the project map) may reject it - that must not fail the whole relink.
             {
                 const API_Guid newSourceGuid = GetGuidFromObjectState (*navigatorItemIdState);
-                if (newSourceGuid != APINULLGuid && !IsNavigatorItemInActiveWindow (newSourceGuid)) {
+                if (newSourceGuid != APINULLGuid) {
                     const GS::UniString newSourceGuidStr = APIGuidToString (newSourceGuid);
                     if (ACAPI_View_GoToView (newSourceGuidStr.ToCStr ().Get ()) == NoError) {
                         windowSwitched = true;
