@@ -352,9 +352,10 @@ def gen_execute (cmd, input_schema, output_schema, common):
 
     if batch_field:
         items_schema = object_items (input_schema['properties'][batch_field])
-        taken.update ({batch_field})
-        body.append (f'    GS::Array<GS::ObjectState> {batch_field};')
-        body.append (f'    if (!parameters.Get ("{batch_field}", {batch_field})) {{')
+        # the input array may share its name with the result list (e.g. "elements" in and out)
+        batch_var = var_name (batch_field, taken, reserved={result_list})
+        body.append (f'    GS::Array<GS::ObjectState> {batch_var};')
+        body.append (f'    if (!parameters.Get ("{batch_field}", {batch_var})) {{')
         body.append (f'        {top_fail (f"Invalid or missing {batch_field!r} parameter.")}')
         body.append ('    }')
         body.append ('')
@@ -387,7 +388,7 @@ def gen_execute (cmd, input_schema, output_schema, common):
         if created:
             inner.append (' ' * loop_indent + created)
         inner.append (' ' * loop_indent + success)
-        loop = [' ' * (loop_indent - 4) + f'for (const GS::ObjectState& item : {batch_field}) {{'] + inner + [' ' * (loop_indent - 4) + '}']
+        loop = [' ' * (loop_indent - 4) + f'for (const GS::ObjectState& item : {batch_var}) {{'] + inner + [' ' * (loop_indent - 4) + '}']
         if undoable:
             body.append (f'    ACAPI_CallUndoableCommand ("{cpp_string (words (name))}", [&] () -> GSErrCode {{')
             body += loop

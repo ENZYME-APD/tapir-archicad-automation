@@ -49,8 +49,9 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
 builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference)
-tools/                   Version bump scripts (update_version.py), package_info.json, command scaffolder (new_command.py),
-                         Add-On docs generator (generate_addon_docs.py)
+tools/                   Version bump scripts (update_version.py), package_info.json,
+                         Add-On docs generator (generate_addon_docs.py),
+                         command scaffolder (new_command.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
