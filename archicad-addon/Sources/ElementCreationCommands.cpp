@@ -2793,13 +2793,11 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     // left in the Mesh tool defaults would otherwise keep showing the old color.
     const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
     if (buildingMaterialIdOS != nullptr) {
-        API_Attribute attribute = {};
-        attribute.header.typeID = API_BuildingMaterialID;
-        attribute.header.guid = GetGuidFromObjectState (*buildingMaterialIdOS);
-        if (attribute.header.guid == APINULLGuid || ACAPI_Attribute_Get (&attribute) != NoError) {
+        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*buildingMaterialIdOS, API_BuildingMaterialID, buildingMaterialIndex)) {
             return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
         }
-        element.mesh.buildingMaterial = attribute.header.index;
+        element.mesh.buildingMaterial = buildingMaterialIndex;
         element.mesh.topMat = API_OverriddenAttribute ();
         element.mesh.sideMat = API_OverriddenAttribute ();
         element.mesh.botMat = API_OverriddenAttribute ();

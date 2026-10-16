@@ -1381,14 +1381,17 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
     })";
 }
 
-// Whether the location is the file of the open project (a solo project saved before).
+// Whether the location is the file of the open project (a solo project saved before). The paths
+// are compared as text without case, as for the hotlink sources below, so a path that differs from
+// the project's own only in case still counts as its own file.
 static bool IsFileOfOpenProject (const IO::Location& location)
 {
     API_ProjectInfo projectInfo = {};
     if (ACAPI_ProjectOperation_Project (&projectInfo) != NoError) {
         return false;
     }
-    return !projectInfo.untitled && projectInfo.location != nullptr && *projectInfo.location == location;
+    return !projectInfo.untitled && projectInfo.location != nullptr &&
+        projectInfo.location->ToDisplayText ().Compare (location.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal;
 }
 
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
