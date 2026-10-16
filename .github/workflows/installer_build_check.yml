@@ -1,14 +1,23 @@
 name: Tapir Installer Build Check
 
-# On every push and pull request, like the other build checks, so the
-# README badge shows the state of main after each merge - not of the last
-# commit that happened to touch the installer.
+# On every push to main and every pull request, like the other build
+# checks, so the README badge shows the state of main after each merge - not
+# of the last commit that happened to touch the installer.
 on:
+  # Pushes to main only: a pull request's branch is built by its
+  # pull_request run, and building it on push as well doubled every run.
   push:
+    branches: [main]
   pull_request:
   # Started by claude_bot_pr_steward.yml on the issue bot's branches, whose
   # GITHUB_TOKEN pushes start no push or pull_request run.
   workflow_dispatch:
+
+# A newer push to the same pull request or branch supersedes a run still
+# queued or building; main keeps every run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build_installer:
