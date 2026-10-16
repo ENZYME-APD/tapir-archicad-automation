@@ -406,7 +406,18 @@ jobs:
       REPO: ${{ github.repository }}
     steps:
       - name: Start the bot pull request steward
-        run: gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main
+        run: |
+          set -euo pipefail
+          # Only when no sweep is waiting yet: a queued sweep already sees
+          # this change, and every further start would only replace it, each
+          # replaced run showing as cancelled on main.
+          waiting=$(gh api "repos/$REPO/actions/workflows/claude_bot_pr_steward.yml/runs?event=workflow_dispatch&per_page=50" \
+            --jq '[.workflow_runs[] | select(.display_title == "Bot PR sweep" and (.status == "queued" or .status == "pending" or .status == "waiting" or .status == "requested"))] | length')
+          if [ "$waiting" -eq 0 ]; then
+            gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main
+          else
+            echo "A sweep is already waiting to run."
+          fi
 
   # ----------------------------------------------------------------- reply --
   # Runs on every new human comment on an issue, from anyone, with write access

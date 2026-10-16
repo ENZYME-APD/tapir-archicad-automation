@@ -43,13 +43,15 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GridElementCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
 {
     GS::Owner<CommandType> command = GS::NewOwned<CommandType> ();
+    const GS::String commandName = command->GetName ();
     group.commands.push_back (CommandInfo (
-        command->GetName (),
+        commandName,
         description,
         version,
         command->GetInputParametersSchema (),
@@ -58,6 +60,10 @@ GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, co
 
     GSErrCode err = ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (command.Pass ());
     if (err != NoError) {
+        // Initialize only ORs the results together, so without this line nothing tells which
+        // command failed. A failed registration can make Archicad crash later, at the first
+        // command call through the JSON interface, far from its cause.
+        ACAPI_WriteReport ("Tapir: the %s command could not be registered (error %d).", false, commandName.ToCStr (), static_cast<int> (err));
         return err;
     }
     return NoError;
@@ -543,6 +549,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLampsCommand> (
             elementCommands, "1.5.7",
             "Creates Lamp elements based on the given parameters."
+        );
+        err |= RegisterCommand<GetGridElementDefaultsCommand> (
+            elementCommands, "1.7.2",
+            "Returns the Grid Tool defaults: library part, size and GDL parameters of a new grid element. Needs Archicad 26 or later."
+        );
+        err |= RegisterCommand<GetGridElementsCommand> (
+            elementCommands, "1.7.2",
+            "Lists the grid elements (placed with the Grid Tool or created by CreateGridElements) with their position, angle, size, library part and optionally GDL parameters. Needs Archicad 26 or later."
+        );
+        err |= RegisterCommand<CreateGridElementsCommand> (
+            elementCommands, "1.7.2",
+            "Creates grid elements, the elements the Grid Tool places, from begin and end coordinates, with optional story, layer and GDL parameters. Needs Archicad 26 or later."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
             elementCommands, "1.1.9",
@@ -1090,11 +1108,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CloneProjectMapItemToViewMapCommand> (
             navigatorCommands, "1.1.7",
-            "Clones Project Map viewpoints into the View Map, optionally into a specified folder."
+            "Clones Project Map viewpoints into a specified View Map folder."
         );
         err |= RegisterCommand<CreateViewsInViewMapCommand> (
             navigatorCommands, "1.1.7",
-            "Creates independent (non-clone) navigator views in the View Map by copying database and settings from source items."
+            "Creates independent (non-clone) navigator views in a specified View Map folder, by copying database and settings from source items."
         );
         err |= RegisterCommand<CreateViewMapFolderCommand> (
             navigatorCommands, "1.1.7",
@@ -1347,7 +1365,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id) and MEP system. Available from Archicad 28."
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions). Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPElementsCommand> (
             mepCommands, "1.5.6",

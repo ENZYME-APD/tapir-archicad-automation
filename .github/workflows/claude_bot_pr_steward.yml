@@ -220,11 +220,17 @@ jobs:
             fi
 
             # Only the build checks: other workflows (an earlier review run)
-            # attach check runs to the head too.
+            # attach check runs to the head too. Only the latest run of each
+            # counts, and a cancelled one (a later start of the same build
+            # replaced it) counts as not run, so it is started again.
             checks=$(gh api --paginate "repos/$REPO/commits/$head/check-runs?per_page=100" \
-              --jq '.check_runs[] | {name, status, conclusion}
-                    | select(.name == "build" or (.name | test("^(generate_docs|build_win|build_mac|build_installer)")))' | jq -s '.')
+              --jq '.check_runs[] | {id, name, status, conclusion}
+                    | select(.name == "build" or (.name | test("^(generate_docs|build_win|build_mac|build_installer)")))' \
+              | jq -s 'group_by(.name) | map(max_by(.id))')
+            cancelled=$(jq '[.[] | select(.conclusion == "cancelled")]' <<<"$checks")
+            checks=$(jq '[.[] | select(.conclusion != "cancelled")]' <<<"$checks")
             has() { jq -e --arg p "$1" 'any(.[]; .name | startswith($p))' <<<"$checks" >/dev/null; }
+            wasCancelled() { jq -e --arg p "$1" 'any(.[]; .name | test($p))' <<<"$cancelled" >/dev/null; }
 
             # 1. Builds that have not run on this head. A dispatch runs the
             # workflow as the branch has it; a branch older than the build
@@ -235,9 +241,9 @@ jobs:
             dispatch() {
               if gh workflow run "$1" --repo "$REPO" --ref "$branch"; then started=1; else dispatchFailed=1; fi
             }
-            if ! has generate_docs; then dispatch archicad_addon_build_check.yml; fi
-            if ! jq -e 'any(.[]; .name == "build")' <<<"$checks" >/dev/null; then dispatch grasshopper_plugin_build_check.yml; fi
-            if ! has build_installer; then dispatch installer_build_check.yml; fi
+            if ! has generate_docs || wasCancelled '^(generate_docs|build_win|build_mac)'; then dispatch archicad_addon_build_check.yml; fi
+            if ! jq -e 'any(.[]; .name == "build")' <<<"$checks" >/dev/null || wasCancelled '^build$'; then dispatch grasshopper_plugin_build_check.yml; fi
+            if ! has build_installer || wasCancelled '^build_installer'; then dispatch installer_build_check.yml; fi
             if [ "$dispatchFailed" -eq 1 ]; then
               handOver "$pr" "the build checks cannot be started on its branch, which predates their workflow_dispatch trigger - merge main into it (Update branch)"
               echo "::endgroup::"; continue
@@ -495,6 +501,18 @@ jobs:
       actions: write
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
     steps:
       - name: Start the sweep
-        run: gh workflow run claude_bot_pr_steward.yml --repo "${{ github.repository }}" --ref main
+        run: |
+          set -euo pipefail
+          # Only when no sweep is waiting yet: a queued sweep already sees
+          # this change, and every further start would only replace it, each
+          # replaced run showing as cancelled on main.
+          waiting=$(gh api "repos/$REPO/actions/workflows/claude_bot_pr_steward.yml/runs?event=workflow_dispatch&per_page=50" \
+            --jq '[.workflow_runs[] | select(.display_title == "Bot PR sweep" and (.status == "queued" or .status == "pending" or .status == "waiting" or .status == "requested"))] | length')
+          if [ "$waiting" -eq 0 ]; then
+            gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main
+          else
+            echo "A sweep is already waiting to run."
+          fi
