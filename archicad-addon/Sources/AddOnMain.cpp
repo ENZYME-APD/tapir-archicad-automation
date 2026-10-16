@@ -43,6 +43,7 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GraphicalOverrideCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -1139,6 +1140,23 @@ GSErrCode Initialize (void)
             "Returns the full navigator item tree for the specified map."
         );
         AddCommandGroup (navigatorCommands);
+    }
+
+    { // Graphic Override Commands
+        CommandGroup graphicOverrideCommands ("Graphic Override Commands");
+        err |= RegisterCommand<CreateGraphicalOverrideRuleCommand> (
+            graphicOverrideCommands, "1.7.2",
+            "Creates or overwrites a graphic override rule in a rule group: name, criterion XML, surface color and line pen. Needs Archicad 27 or later."
+        );
+        err |= RegisterCommand<GetGraphicalOverrideRulesCommand> (
+            graphicOverrideCommands, "1.7.2",
+            "Returns every graphic override rule with its criterion XML. Needs Archicad 27 or later."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideCombinationCommand> (
+            graphicOverrideCommands, "1.7.2",
+            "Creates a graphic override combination from rule names, or replaces the rules of an existing one. Needs Archicad 27 or later."
+        );
+        AddCommandGroup (graphicOverrideCommands);
     }
 
     { // Issue Management Commands
