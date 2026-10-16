@@ -65,6 +65,59 @@ static API_Guid MEPUniqueIDToAPIGuid (const ACAPI::MEP::UniqueID& id)
     return GSGuid2APIGuid (id.GetGuid ());
 }
 
+// Sets the layer of one element through the classic element API; the MEP API has no layer setter.
+static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_AttributeIndex& layerIndex)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+    element.header.layer = layerIndex;
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+// Sets the layer of a routing element and of all its parts: routing segments, rigid segments,
+// elbows (Archicad 29 and later) and transitions. Changing only the routing element did not
+// always move the parts that carry the geometry. Runs inside the caller's undoable command; a
+// part that cannot be changed is skipped.
+static void SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingElementId, const API_AttributeIndex& layerIndex)
+{
+    SetLayerOfElement (MEPUniqueIDToAPIGuid (routingElementId), layerIndex);
+    auto routingElement = RoutingElement::Get (routingElementId);
+    if (routingElement.IsErr ()) {
+        return;
+    }
+    for (const auto& segmentId : routingElement->GetRoutingSegmentIds ()) {
+        SetLayerOfElement (MEPUniqueIDToAPIGuid (segmentId), layerIndex);
+        auto segment = RoutingSegment::Get (segmentId);
+        if (segment.IsOk ()) {
+            for (const auto& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+                SetLayerOfElement (MEPUniqueIDToAPIGuid (rigidSegmentId), layerIndex);
+            }
+        }
+    }
+    for (const auto& nodeId : routingElement->GetRoutingNodeIds ()) {
+        SetLayerOfElement (MEPUniqueIDToAPIGuid (nodeId), layerIndex);
+        auto node = RoutingNode::Get (nodeId);
+        if (node.IsOk ()) {
+#ifdef ServerMainVers_2900
+            // RoutingNode::GetElbowIds () exists from Archicad 29; Archicad 28 has transitions only.
+            for (const auto& elbowId : node->GetElbowIds ()) {
+                SetLayerOfElement (MEPUniqueIDToAPIGuid (elbowId), layerIndex);
+            }
+#endif
+            for (const auto& transitionId : node->GetTransitionIds ()) {
+                SetLayerOfElement (MEPUniqueIDToAPIGuid (transitionId), layerIndex);
+            }
+        }
+    }
+}
+
 static GS::UniString DomainToString (Domain domain)
 {
     switch (domain) {
@@ -648,6 +701,10 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                         "mepSystemId": {
                             "$ref": "#/AttributeId",
                             "description": "Optional MEP system attribute."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used."
                         }
                     },
                     "additionalProperties": false,
@@ -771,8 +828,14 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                 elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the routing element."));
                 continue;
             }
+            const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
 
-            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (newElementId.Unwrap ())));
+            Int32 layerIndex = 0;
+            if (routingElementData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+                SetLayerOfRoutingElement (placedId, ACAPI_CreateAttributeIndex (layerIndex));
+            }
+
+            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
         }
         return NoError;
     });
