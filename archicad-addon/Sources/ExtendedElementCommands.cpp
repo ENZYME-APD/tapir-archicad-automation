@@ -4602,19 +4602,26 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             GS::Array<Point2D> polygonCorners { {0, 0}, {width, 0}, {width, height}, {0, height} };
             Geometry::Polygon2D polygon = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/).PopLargest ();
 
-            // PlacePolygonal hangs the base polygon BELOW the point it is given, so the point
-            // ends up on the opening's top edge rather than its bottom one - measured on AC29,
-            // the created opening's sill came back at exactly basePoint.z - height for every
-            // height tried (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Raising the placement point by the
-            // height puts the bottom edge on the requested Z, which is what basePoint means in
-            // every other creation command and what the pre-AC29 branch now produces (#533).
+            // On AC29 PlacePolygonal hangs the base polygon BELOW the point it is given, so the
+            // point ends up on the opening's top edge rather than its bottom one - measured on
+            // AC29, the created opening's sill came back at exactly basePoint.z - height for
+            // every height tried (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Raising the placement point by
+            // the height puts the bottom edge on the requested Z, which is what basePoint means
+            // in every other creation command and what the pre-AC29 branch now produces (#533).
             //
             // The correction is applied to the point rather than to the polygon because the
             // polygon's own offset is ignored: building the corners over -height..0 instead of
             // 0..height changed nothing at all, so PlacePolygonal evidently normalizes the
             // polygon and keeps only its extents.
+            //
+            // AC30 no longer needs it: there PlacePolygonal already puts the sill on the given
+            // Z, so the raised point lifted every opening by its own height - measured on AC30
+            // with collision probes, basePoint.z 2.0 / height 1.0 came back at 3.0..4.0 and
+            // basePoint.z 1.0 / height 0.6 at 1.6..2.2 (#848). So the correction is AC29 only.
             API_Coord3D placementPoint = basePoint;
+#ifndef ServerMainVers_3000
             placementPoint.z += height;
+#endif
 
             ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*data.Get ("ownerElementId"))), ACAPI_GetToken ());
             ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, placementPoint, polygon);
@@ -4655,7 +4662,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         },
                         "body": {
                             "$ref": "#/MorphBody",
-                            "description": "Builds arbitrary geometry (any number of faces, holes, per-face materials, edge display overrides) instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
+                            "description": "Builds arbitrary geometry instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "xAxis": { "$ref": "#/Coordinate3D" },

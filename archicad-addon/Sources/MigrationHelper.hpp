@@ -91,6 +91,8 @@
 
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
+#define ACAPI_View_Get3DProjectionSets(par1) ACAPI_Environment (APIEnv_Get3DProjectionSetsID, par1)
+#define ACAPI_View_Change3DProjectionSets(par1, par2) ACAPI_Environment (APIEnv_Change3DProjectionSetsID, (void*) par1, (void*) par2)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 // APIDo_ChangeWindowID brings the window to the front; APIDb_ChangeCurrentDatabaseID only
 // switches the database the API works on and leaves the front window as it is, which is
@@ -167,6 +169,11 @@ inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePa
 }
 
 inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Archive* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Picture* formatPars)
 {
     return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
 }
