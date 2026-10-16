@@ -249,8 +249,10 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
   review on each new head, links the built add-on in a comment asking the
-  issue's author to test it in Archicad, and starts a `fix` run on a failed build
-  or a blocking review, at most `BOT_PR_MAX_FIX_ROUNDS` (default 3) times. Then
+  issue's author to test it in Archicad, and starts a `fix` run on a failed build,
+  a blocking review or a conflict with `main` (which it merges in), at most
+  `BOT_PR_MAX_FIX_ROUNDS` (default 3) times, on at most `BOT_PR_SWEEP_BATCH`
+  (default 5) PRs per sweep. Then
   it labels the PR `needs-maintainer` and stops. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
