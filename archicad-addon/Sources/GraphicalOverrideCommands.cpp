@@ -128,12 +128,6 @@ GS::ObjectState CreateGraphicalOverrideRuleCommand::Execute (const GS::ObjectSta
     GS::UniString ruleGroupName = "Tapir";
     parameters.Get ("ruleGroupName", ruleGroupName);
 
-    API_Guid groupGuid = APINULLGuid;
-    GSErrCode err = FindOrCreateRuleGroup (ruleGroupName, groupGuid);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to find or create the override rule group.");
-    }
-
     API_OverrideRuleStyle style = {};
     style.lineMarkerTextPen = APINullValue;
 
@@ -163,14 +157,21 @@ GS::ObjectState CreateGraphicalOverrideRuleCommand::Execute (const GS::ObjectSta
     rule.name = name;
     rule.style = style;
     rule.criterionXML = criterionXML;
-    err = ACAPI_GraphicalOverride_CreateOverrideRule (rule, groupGuid);
-    if (err == APIERR_NAMEALREADYUSED) {
-        // The rule with this name can be in any rule group; it is overwritten where it is.
-        const GS::Optional<API_Guid> existingGuid = FindOverrideRuleByName (name);
-        if (existingGuid.HasValue ()) {
-            rule.guid = existingGuid.Get ();
-            err = ACAPI_GraphicalOverride_ChangeOverrideRule (rule);
+
+    // An existing rule with this name, in any rule group, is overwritten where it is; only a new
+    // rule needs its group, which is created when missing.
+    GSErrCode err = NoError;
+    const GS::Optional<API_Guid> existingGuid = FindOverrideRuleByName (name);
+    if (existingGuid.HasValue ()) {
+        rule.guid = existingGuid.Get ();
+        err = ACAPI_GraphicalOverride_ChangeOverrideRule (rule);
+    } else {
+        API_Guid groupGuid = APINULLGuid;
+        err = FindOrCreateRuleGroup (ruleGroupName, groupGuid);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to find or create the override rule group.");
         }
+        err = ACAPI_GraphicalOverride_CreateOverrideRule (rule, groupGuid);
     }
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create or change the override rule.");
@@ -346,17 +347,18 @@ GS::ObjectState CreateGraphicalOverrideCombinationCommand::Execute (const GS::Ob
     API_OverrideCombination combination = {};
     combination.guid = APINULLGuid;
     combination.name = name;
-    GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideCombination (combination, ruleGuids);
-    if (err == APIERR_NAMEALREADYUSED) {
-        // An APINULLGuid makes the lookup use the name.
-        API_OverrideCombination existing = {};
-        existing.guid = APINULLGuid;
-        existing.name = name;
-        err = ACAPI_GraphicalOverride_GetOverrideCombination (existing);
-        if (err == NoError) {
-            combination.guid = existing.guid;
-            err = ACAPI_GraphicalOverride_ChangeOverrideCombination (combination, &ruleGuids);
-        }
+
+    // An existing combination with this name gets the new rule list; otherwise it is created. With
+    // an APINULLGuid, GetOverrideCombination looks the combination up by its name.
+    GSErrCode err = NoError;
+    API_OverrideCombination existing = {};
+    existing.guid = APINULLGuid;
+    existing.name = name;
+    if (ACAPI_GraphicalOverride_GetOverrideCombination (existing) == NoError) {
+        combination.guid = existing.guid;
+        err = ACAPI_GraphicalOverride_ChangeOverrideCombination (combination, &ruleGuids);
+    } else {
+        err = ACAPI_GraphicalOverride_CreateOverrideCombination (combination, ruleGuids);
     }
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create or change the override combination.");
