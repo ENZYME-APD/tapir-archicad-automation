@@ -2863,7 +2863,7 @@ var gCommands = [{
                         },
                         "body": {
                             "$ref": "#/MorphBody",
-                            "description": "Builds arbitrary geometry (any number of faces, holes, per-face materials, edge display overrides) instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
+                            "description": "Builds arbitrary geometry instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "xAxis": { "$ref": "#/Coordinate3D" },
@@ -3668,6 +3668,14 @@ var gCommands = [{
                     "fillBackgroundPenIndex": {
                         "type": "integer"
                     },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
                     "fillId": {
                         "$ref": "#/AttributeId",
                         "description": "Optional fill attribute. By default the current fill is used."
@@ -4090,15 +4098,14 @@ var gCommands = [{
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Style settings for a text label (font, pen, size, frame, etc). Ignored for symbol labels."
+                        "description": "Ignored for symbol labels."
                     },
                     "symbolStyle": {
                         "$ref": "#/LabelSymbolStyleSettableDetails",
-                        "description": "Style settings specific to a symbol label. Ignored for text labels."
+                        "description": "Ignored for text labels."
                     },
                     "leaderLine": {
-                        "$ref": "#/LabelLeaderLineSettableDetails",
-                        "description": "Leader line, frame and arrow settings, shared by both label classes."
+                        "$ref": "#/LabelLeaderLineSettableDetails"
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -4191,7 +4198,7 @@ var gCommands = [{
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Full style settings (font, effects, frame, anchor, etc). height/pen/angle/justification above take precedence over the same fields here if both are given."
+                        "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -5776,7 +5783,7 @@ var gCommands = [{
         "properties": {
             "propertyValuesForElements": {
                 "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+                "description": "The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
             }
         },
         "additionalProperties": false,
@@ -5837,7 +5844,7 @@ var gCommands = [{
         "properties": {
             "propertyValuesForAttributes": {
                 "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
+                "description": "The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
             }
         },
         "additionalProperties": false,
@@ -6110,7 +6117,7 @@ var gCommands = [{
         "properties": {
             "elementClassifications": {
                 "$ref": "#/ElementClassificationsOrErrors",
-                "description": "The list of element classification item identifiers. Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
+                "description": "Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
             }
         },
         "additionalProperties": false,
@@ -6688,7 +6695,7 @@ var gCommands = [{
                             "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
                         },
                         "texture": {
-                            "description": "Texture parameters (Image and gradient fills). Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
+                            "description": "Used for Image and gradient fills. Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
                             "$ref": "#/Texture"
                         },
                         "lineItems": {
@@ -10165,8 +10172,7 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The identifier of the element."
+                            "$ref": "#/ElementId"
                         },
                         "type": {
                             "$ref": "#/DesignOptionLinkType"

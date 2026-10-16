@@ -1,6 +1,13 @@
 name: Grasshopper Plugin Build Check
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # Started by claude_bot_pr_steward.yml for the pull requests the issue bot
+  # opens: their pushes are made with GITHUB_TOKEN, which starts no push or
+  # pull_request run, but a workflow_dispatch it sends does run, on the bot's
+  # branch, and its checks show on the pull request.
+  workflow_dispatch:
 
 jobs:
   build:

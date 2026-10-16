@@ -378,7 +378,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetRawResponseSc
         "properties": {
             "propertyValuesForElements": {
                 "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+                "description": "The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
             }
         },
         "additionalProperties": false,
@@ -655,7 +655,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetRawResponse
         "properties": {
             "propertyValuesForAttributes": {
                 "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
+                "description": "The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
             }
         },
         "additionalProperties": false,
