@@ -10,7 +10,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public LabelElementsComponent()
             : base(
                 "LabelElements",
-                "Create Label elements for the given elements.",
+                "Create Label elements for the given elements. " +
+                "The text style, the symbol label settings, the leader line and multi-run content can be " +
+                "given through the AdditionalSettings input (style, symbolStyle, leaderLine, runs).",
                 GroupNames.ElementCreation)
         {
         }
@@ -31,6 +33,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
+
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("LabelClasses", "labelClass", FieldKind.Text, "Label class: Text or Symbol. When not given, the Label tool default decides, which can be either."),
+            new Field("FontNames", "style.fontName", FieldKind.Text, "Font of text labels, by name (e.g. Arial), as the Font attributes carry it. An element whose font name no loaded font has fails. Symbol labels take it in symbolStyle.fontName through AdditionalSettings."),
+            TrailingAdditionalSettingsField
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.LabelElements;
