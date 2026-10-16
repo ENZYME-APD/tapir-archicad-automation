@@ -1,6 +1,22 @@
 name: Grasshopper Plugin Build Check
 
-on: [push, pull_request]
+on:
+  # Pushes to main only: a pull request's branch is built by its
+  # pull_request run, and building it on push as well doubled every run.
+  push:
+    branches: [main]
+  pull_request:
+  # Started by claude_bot_pr_steward.yml for the pull requests the issue bot
+  # opens: their pushes are made with GITHUB_TOKEN, which starts no push or
+  # pull_request run, but a workflow_dispatch it sends does run, on the bot's
+  # branch, and its checks show on the pull request.
+  workflow_dispatch:
+
+# A newer push to the same pull request or branch supersedes a run still
+# queued or building; main keeps every run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:

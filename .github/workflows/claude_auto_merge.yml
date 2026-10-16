@@ -2,9 +2,32 @@ name: Auto Merge
 
 # Merges pull requests that clear three gates:
 #
-#   1. the author has write access to this repository
+#   1. the author has write access to this repository - or the pull request
+#      is the issue bot's own (see "Bot pull requests" below)
 #   2. every check has passed
 #   3. the diff touches none of the release critical paths
+#
+# Bot pull requests. The maintainer's decision: a pull request the issue bot
+# (claude_issue_triage.yml) opened from anyone's issue is merged without a
+# person, once
+#   - it is the Actions bot's, from a claude/ branch of this repository, ready
+#     (not a draft) and labelled neither `do-not-merge` nor `needs-maintainer`;
+#   - the Archicad, Grasshopper and installer build checks ran on its head
+#     commit and passed (claude_bot_pr_steward.yml starts them);
+#   - the commit status `claude-review` on that head is a success, and has been
+#     for BOT_AUTO_MERGE_DELAY_HOURS (repository variable, default 72) - the
+#     time people get to look. claude_pr_review.yml sets it from its verdict,
+#     in a job that runs no model; no other job holds statuses: write;
+#   - no review thread a person opened is unresolved, and no reviewer's latest
+#     review requests changes;
+#   - gates 2 and 3 hold, as for everyone: the release critical paths below
+#     are never merged without a person, whoever wrote the change.
+# The accepted risk: the issue text is written by anyone, and the review is a
+# model reading what another model wrote from it, so nothing but that review
+# and the waiting time stands between a crafted issue and the next weekly
+# release. Setting the repository variable BOT_AUTO_MERGE to `false` stops
+# these merges; a person stops one by adding `do-not-merge`, requesting
+# changes, or converting it to a draft.
 #
 # The gates are plain shell, not a model decision. Reviewing is a judgement
 # call and Claude does that in claude_pr_review.yml; merging is a rule, and a
@@ -19,7 +42,9 @@ name: Auto Merge
 # and what it touches - not whether anyone wanted it merged - so a pull request
 # left open to park work will merge itself at the next sweep. Mark such a pull
 # request as a draft, which is the opt-out. Note also that a green `review`
-# check means the review ran, not that it approved anything.
+# check means the review ran, not that it approved anything - for a human's
+# pull request. For the issue bot's, the `claude-review` status is the review's
+# verdict, and it is required.
 
 on:
   # Fires when a build check finishes. NOT check_suite: GitHub documents that
@@ -36,10 +61,11 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
-# One merge pass at a time, so two runs cannot race on the same PR.
-concurrency:
-  group: auto-merge
-  cancel-in-progress: false
+# No concurrency group: with one, every finished build queued a run that the
+# next one replaced, and each replaced run showed as cancelled on main. A run
+# instead steps aside for a newer one (first step). Two passes that still
+# overlap cannot double-merge: the merge is pinned to the head commit, and a
+# refused merge only skips that pull request.
 
 jobs:
   merge:
@@ -48,14 +74,32 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write          # close a split issue once its last part merged
       checks: read
       statuses: read
+      actions: read          # see whether a newer run is waiting
 
     steps:
-      - name: Merge everything that qualifies
+      - name: Leave the pass to a newer run
+        id: newer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          newer=$(gh api "repos/$REPO/actions/workflows/claude_auto_merge.yml/runs?per_page=50" \
+            --jq "[.workflow_runs[] | select(.id > $RUN_ID and .status != \"completed\")] | length")
+          echo "Newer runs waiting or running: $newer"
+          echo "count=$newer" >> "$GITHUB_OUTPUT"
+
+      - name: Merge everything that qualifies
+        if: steps.newer.outputs.count == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BOT_AUTO_MERGE: ${{ vars.BOT_AUTO_MERGE }}
+          BOT_DELAY_HOURS: ${{ vars.BOT_AUTO_MERGE_DELAY_HOURS || '72' }}
         run: |
           set -euo pipefail
 
@@ -88,7 +132,7 @@ jobs:
             echo "::group::PR #$pr"
 
             if ! info=$(gh pr view "$pr" --repo "$REPO" \
-              --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,isCrossRepository); then
+              --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,headRefName,isCrossRepository,labels); then
               echo "skip: could not read the pull request"
               echo "::endgroup::"; continue
             fi
@@ -112,26 +156,117 @@ jobs:
               echo "::endgroup::"; continue
             fi
 
-            # Gate 1: the author must have write access. A bot never qualifies,
-            # so this workflow cannot merge what the automation itself opened.
+            # Gate 1: the author must have write access - or it is the issue
+            # bot's own pull request and clears the bot gates (see the header).
+            # No other bot qualifies.
             if [ "$isBot" = "true" ]; then
-              echo "skip: opened by a bot ($author)"
-              echo "::endgroup::"; continue
-            fi
-            permission=$(gh api "repos/$REPO/collaborators/$author/permission" \
-              --jq '.permission' 2>/dev/null || echo "none")
-            case "$permission" in
-              admin|write|maintain) ;;
-              *)
-                echo "skip: author $author has '$permission' access, not write"
+              case "$author" in
+                app/github-actions|github-actions\[bot\]|github-actions) ;;
+                *)
+                  echo "skip: opened by a bot other than the issue bot ($author)"
+                  echo "::endgroup::"; continue
+                  ;;
+              esac
+              if [ "${BOT_AUTO_MERGE:-}" = "false" ]; then
+                echo "skip: bot pull requests are not merged (BOT_AUTO_MERGE is false)"
                 echo "::endgroup::"; continue
-                ;;
-            esac
+              fi
+              headName=$(printf '%s' "$info" | jq -r '.headRefName')
+              case "$headName" in
+                claude/*) ;;
+                *) echo "skip: the bot's branch '$headName' is not under claude/"; echo "::endgroup::"; continue ;;
+              esac
+              if [ "$fromFork" != "false" ]; then
+                echo "skip: a bot pull request from another repository"
+                echo "::endgroup::"; continue
+              fi
+              if printf '%s' "$info" | jq -e '[.labels[].name] | (index("do-not-merge") or index("needs-maintainer"))' >/dev/null; then
+                echo "skip: labelled do-not-merge or needs-maintainer"
+                echo "::endgroup::"; continue
+              fi
+
+              # The builds ran on this head commit (checks of a dispatch run
+              # attach to the commit, so gate 2 alone would pass a pull request
+              # whose builds were never started).
+              if ! names=$(gh api --paginate "repos/$REPO/commits/$headOid/check-runs?per_page=100" --jq '.check_runs[].name'); then
+                echo "skip: could not read the check runs"
+                echo "::endgroup::"; continue
+              fi
+              missing=""
+              for want in generate_docs build_win build_mac build_installer; do
+                printf '%s\n' "$names" | grep -q "^$want" || missing="$missing $want"
+              done
+              printf '%s\n' "$names" | grep -qx "build" || missing="$missing build(grasshopper)"
+              if [ -n "$missing" ]; then
+                echo "skip: build checks missing on $headOid:$missing"
+                echo "::endgroup::"; continue
+              fi
+
+              # The review: claude-review must be a success now, and must have
+              # been one since at least BOT_DELAY_HOURS ago (the start of the
+              # newest run of successes; statuses come newest first).
+              case "$BOT_DELAY_HOURS" in ''|*[!0-9]*) BOT_DELAY_HOURS=72 ;; esac
+              if ! statuses=$(gh api "repos/$REPO/commits/$headOid/statuses?per_page=100" \
+                   --jq '[.[] | select(.context == "claude-review") | {state, created_at}]'); then
+                echo "skip: could not read the commit statuses"
+                echo "::endgroup::"; continue
+              fi
+              latest=$(jq -r '.[0].state // ""' <<<"$statuses")
+              if [ "$latest" != "success" ]; then
+                echo "skip: claude-review is '${latest:-not set}' on $headOid"
+                echo "::endgroup::"; continue
+              fi
+              since=$(jq -r 'reduce .[] as $s ({stop: false, t: null};
+                               if .stop then . elif $s.state == "success" then .t = $s.created_at else .stop = true end) | .t' <<<"$statuses")
+              age=$(( $(date -u +%s) - $(date -u -d "$since" +%s) ))
+              if [ "$age" -lt $(( BOT_DELAY_HOURS * 3600 )) ]; then
+                echo "skip: the review passed $((age / 3600))h ago, waiting until ${BOT_DELAY_HOURS}h"
+                echo "::endgroup::"; continue
+              fi
+
+              # People: no unresolved thread a person opened, and no reviewer
+              # whose latest review requests changes.
+              if ! people=$(gh api graphql -F owner="${REPO%/*}" -F name="${REPO#*/}" -F number="$pr" -f query='
+                  query($owner: String!, $name: String!, $number: Int!) {
+                    repository(owner: $owner, name: $name) {
+                      pullRequest(number: $number) {
+                        reviewThreads(first: 100) { nodes { isResolved comments(first: 1) { nodes { author { login } } } } }
+                        reviews(last: 100) { nodes { state author { login } } }
+                      }
+                    }
+                  }' --jq '.data.repository.pullRequest'); then
+                echo "skip: could not read the reviews"
+                echo "::endgroup::"; continue
+              fi
+              openByPeople=$(jq '[.reviewThreads.nodes[] | select((.isResolved | not) and (.comments.nodes[0].author.login != "github-actions"))] | length' <<<"$people")
+              # As on GitHub: a reviewer's request stands until their approval
+              # or its dismissal - a later COMMENTED review does not clear it.
+              changesRequested=$(jq '[.reviews.nodes[] | select(.state != "COMMENTED" and .state != "PENDING")]
+                                     | group_by(.author.login) | map(last | select(.state == "CHANGES_REQUESTED")) | length' <<<"$people")
+              if [ "$openByPeople" -ne 0 ] || [ "$changesRequested" -ne 0 ]; then
+                echo "skip: $openByPeople unresolved thread(s) by people, $changesRequested change request(s)"
+                echo "::endgroup::"; continue
+              fi
+              permission="issue bot, review passed $((age / 3600))h ago"
+            else
+              permission=$(gh api "repos/$REPO/collaborators/$author/permission" \
+                --jq '.permission' 2>/dev/null || echo "none")
+              case "$permission" in
+                admin|write|maintain) ;;
+                *)
+                  echo "skip: author $author has '$permission' access, not write"
+                  echo "::endgroup::"; continue
+                  ;;
+              esac
+            fi
 
             # Gate 2: every check has to have passed. Pending, failing or
             # cancelled all stop the merge; skipped checks are fine, and a pull
             # request with no checks at all is not merged either.
-            checks=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket 2>/dev/null || echo '[]')
+            # The latest run of each check counts: a build started again
+            # replaces the run it superseded (cancelled) on the same commit.
+            raw=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket,workflow,startedAt 2>/dev/null || true)
+            checks=$(jq 'group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
             total=$(printf '%s' "$checks" | jq 'length')
             if [ "$total" -eq 0 ]; then
               echo "skip: no checks have reported yet"
@@ -170,7 +305,7 @@ jobs:
               delete=""
             fi
 
-            echo "merging: all three gates passed ($total checks green, author $author has $permission)"
+            echo "merging: all three gates passed ($total checks green, author $author: $permission)"
 
             # --match-head-commit pins the merge to the commit the gates were
             # evaluated against. Without it a push landing between the checks
@@ -187,5 +322,24 @@ jobs:
               echo "::endgroup::"; continue
             fi
             echo "merged at $headOid"
+
+            # A part of a split issue (claude_issue_triage.yml) says
+            # `Part k of N of #n` instead of `Fixes`, so the issue stays open
+            # until every part is in: close it once all N parts are merged.
+            if [ "$isBot" = "true" ]; then
+              part=$(gh pr view "$pr" --repo "$REPO" --json body --jq '.body' \
+                | grep -oE 'Part [0-9]+ of [0-9]+ of #[0-9]+' | head -n 1 || true)
+              if [ -n "$part" ]; then
+                parts=$(awk '{print $4}' <<<"$part"); issue=${part##*#}
+                merged=$(gh pr list --repo "$REPO" --state merged --limit 500 --json headRefName,author \
+                  --jq "[.[] | select(.author.login == \"app/github-actions\" or .author.login == \"github-actions[bot]\" or .author.login == \"github-actions\")
+                         | .headRefName | capture(\"^claude/issue-${issue}-part(?<k>[0-9]+)-\") | .k] | unique | length" || echo 0)
+                echo "split issue #$issue: $merged of $parts parts merged"
+                if [ "$merged" -ge "$parts" ]; then
+                  gh issue close "$issue" --repo "$REPO" --reason completed \
+                    --comment "All $parts parts are merged; closing." || echo "::warning::could not close #$issue"
+                fi
+              fi
+            fi
             echo "::endgroup::"
           done
