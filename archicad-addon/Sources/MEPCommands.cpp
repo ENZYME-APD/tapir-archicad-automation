@@ -130,7 +130,9 @@ static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingEl
         auto node = RoutingNode::Get (nodeId);
         if (node.IsOk ()) {
 #ifdef ServerMainVers_2900
-            // RoutingNode::GetElbowIds () exists from Archicad 29; Archicad 28 has transitions only.
+            // RoutingNode::GetElbowIds () exists from Archicad 29. Archicad 28 names these parts bends
+            // (IsBend); their accessor on RoutingNode could not be checked against the Archicad 28
+            // DevKit, so on Archicad 28 the bends are not set here.
             for (const auto& elbowId : node->GetElbowIds ()) {
                 setLayer (elbowId);
             }
@@ -729,7 +731,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                         },
                         "layerIndex": {
                             "type": "integer",
-                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
+                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions; on Archicad 28 the bends are not set). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed; when a part cannot be set to the layer, the route is removed again and the item reports an error."
                         }
                     },
                     "additionalProperties": false,
@@ -870,7 +872,10 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             if (hasLayerIndex) {
                 const GSErrCode layerErr = SetLayerOfRoutingElement (placedId, ACAPI_CreateAttributeIndex (layerIndex));
                 if (layerErr != NoError) {
-                    elements (CreateErrorResponse (layerErr, "The routing element was placed, but the layer of it or of some of its parts could not be set."));
+                    // Removed again, as the electrical panels below are when their size is not applied, so
+                    // the caller is not left with a route it gets no id of.
+                    ACAPI_Element_Delete ({ MEPUniqueIDToAPIGuid (placedId) });
+                    elements (CreateErrorResponse (layerErr, "The layer of the routing element or of some of its parts could not be set, so the routing element was removed again."));
                     continue;
                 }
             }
