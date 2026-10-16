@@ -9,6 +9,7 @@
 #include "DeveloperTools.hpp"
 
 #include "3DCutPlaneCommands.hpp"
+#include "3DProjectionCommands.hpp"
 
 
 
@@ -306,6 +307,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.6.0",
             "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
         );
+        err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
+            projectCommands, "1.7.1",
+            "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format."
+        );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
             "Gets the project calculation units."
@@ -363,6 +368,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.2",
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
         );
+        err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
+        );
+        err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values."
+        );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
@@ -397,11 +410,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<MoveElementsCommand> (
             elementCommands, "1.0.2",
-            "Moves elements with a given vector."
+            "Moves elements with a given vector. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
         err |= RegisterCommand<RotateElementsCommand> (
             elementCommands, "1.5.3",
-            "Rotates elements around a reference point."
+            "Rotates elements around a reference point. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
@@ -471,6 +484,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead."
         );
+        err |= RegisterCommand<CreateCurtainWallsCommand> (
+            elementCommands, "1.7.2",
+            "Creates Curtain Wall elements along a reference polyline with a column (primary) and row (secondary) pattern. The frame and panel classes come from the favorite or from the Curtain Wall tool defaults; the pattern cells can assign them to the grid."
+        );
         err |= RegisterCommand<CreateAssociativeDimensionsCommand> (
             elementCommands, "1.4.0",
             "Creates associative linear dimensions from explicit witness point references."
@@ -538,6 +555,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateTextsCommand> (
             elementCommands, "1.5.0",
             "Creates standalone Text elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateLevelDimensionsCommand> (
+            elementCommands, "1.7.2",
+            "Creates Level Dimension elements (the Level Dimension tool) based on the given parameters. With a parentElementId the dimension is associative: it shows the height of the parent element (Mesh, Slab, Roof ...) at its position and follows the element when it changes."
         );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",
@@ -1081,6 +1102,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
         );
+        err |= RegisterCommand<Get3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry."
+        );
+        err |= RegisterCommand<Set3DProjectionSettingsCommand> (
+            navigatorCommands, "1.7.1",
+            "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
+        );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
@@ -1099,7 +1128,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RenameNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
-            "Renames a navigator item or changes its ID."
+            "Renames a navigator item or changes its ID. Fails when Archicad does not apply the new name (e.g. on Project Map schedule items, which are named by their scheme). With customName false the item drops its custom name and follows its Project Map source again."
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
@@ -1228,6 +1257,30 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.5.1",
             "Moves the given design options to another sets. Available from Archicad 29."
         );
+        err |= RegisterCommand<RenameDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name and/or the string id of the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Changes the name of the given design option combinations. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.1",
+            "Deletes the given design option combinations. Available from Archicad 29."
+        );
         AddCommandGroup (designOptionsCommands);
     }
 
@@ -1308,7 +1361,71 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPPreferenceTablesCommand> (
             mepCommands, "1.5.7",
-            "Gets the circular cross section preference tables (referenceId, diameter, description) of the Piping or Ventilation domain. Available from Archicad 28."
+            "Gets the circular cross section preference tables (referenceId, diameter, description) and the reference set of the Piping or Ventilation domain, optionally with the elbow, branch and transition preference tables. The angle set and the transition tables are available from Archicad 29. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPSystemGroupsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the MEP system groups of the project with their physical systems: name, root element and MEP system. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateMEPSystemGroupsCommand> (
+            mepCommands, "1.7.2",
+            "Creates MEP system groups. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateMEPPhysicalSystemsCommand> (
+            mepCommands, "1.7.2",
+            "Creates physical systems in MEP system groups, optionally with a root element and an MEP system as their category. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetElectricalPanelsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the electrical panels (distribution boards) of the project or the given ones: name, circuit naming, circuits, parent circuit, placement and the connected and demand loads in total and per phase. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the given electrical circuits, the circuits of the given panels, or every circuit of the project: name, description, owner panel, connected devices and panels, voltage, phases, wiring type, loads, voltage drop and estimated cable length. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetElectricalDevicesCommand> (
+            mepCommands, "1.7.2",
+            "Gets the electrical devices (lights, sockets and other consumers) of the project or the given ones: parent circuit, placement, apparent power, load classification, demand load and directly connected MEP elements. Available from Archicad 30."
+        );
+        err |= RegisterCommand<GetElectricalProjectSettingsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the electrical project settings: the default voltage, the wiring types with their cross-sectional area and the load classifications with their demand factor. Available from Archicad 30."
+        );
+        err |= RegisterCommand<CreateElectricalPanelsCommand> (
+            mepCommands, "1.7.2",
+            "Places electrical panels with the default settings of the Electrical Panel tool, optionally with the given library part, size, rotation, mirroring, panel name and circuit naming. Available from Archicad 30."
+        );
+        err |= RegisterCommand<CreateElectricalDevicesCommand> (
+            mepCommands, "1.7.2",
+            "Places electrical devices with the default settings of the Electrical Device tool, optionally with the given library part, size, rotation, mirroring, apparent power and load classification, and connects them to a circuit. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalPanelsCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the name, circuit naming and placement (anchor point, orientation, rotation, mirroring, library part, size) of electrical panels. Available from Archicad 30."
+        );
+        err |= RegisterCommand<CreateElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Adds new circuits to electrical panels, optionally with the given description, voltage, wiring type and used phases. Available from Archicad 30."
+        );
+        err |= RegisterCommand<DeleteElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Removes electrical circuits from their panels. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the description, voltage, wiring type and used phases of electrical circuits. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalDevicesCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the apparent power, load classification and placement (anchor point, orientation, rotation, mirroring, library part, size) of electrical devices. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ConnectToElectricalCircuitsCommand> (
+            mepCommands, "1.7.2",
+            "Connects electrical devices, or panels as sub-panels, to electrical circuits. Available from Archicad 30."
+        );
+        err |= RegisterCommand<ModifyElectricalProjectSettingsCommand> (
+            mepCommands, "1.7.2",
+            "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30."
         );
         AddCommandGroup (mepCommands);
     }
