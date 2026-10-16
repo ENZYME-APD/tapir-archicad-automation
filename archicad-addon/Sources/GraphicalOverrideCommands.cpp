@@ -46,6 +46,23 @@ static GS::Optional<API_Guid> FindOverrideRuleByName (const GS::UniString& name)
     }
     return {};
 }
+
+// A combination is found by its name among all combinations, in the same way as a rule.
+static GS::Optional<API_Guid> FindOverrideCombinationByName (const GS::UniString& name)
+{
+    GS::Array<API_Guid> combinationIds;
+    if (ACAPI_GraphicalOverride_GetOverrideCombinationList (combinationIds) != NoError) {
+        return {};
+    }
+    for (const API_Guid& id : combinationIds) {
+        API_OverrideCombination combination = {};
+        combination.guid = id;
+        if (ACAPI_GraphicalOverride_GetOverrideCombination (combination) == NoError && combination.name == name) {
+            return id;
+        }
+    }
+    return {};
+}
 #endif
 
 CreateGraphicalOverrideRuleCommand::CreateGraphicalOverrideRuleCommand () :
@@ -348,14 +365,11 @@ GS::ObjectState CreateGraphicalOverrideCombinationCommand::Execute (const GS::Ob
     combination.guid = APINULLGuid;
     combination.name = name;
 
-    // An existing combination with this name gets the new rule list; otherwise it is created. With
-    // an APINULLGuid, GetOverrideCombination looks the combination up by its name.
+    // An existing combination with this name gets the new rule list; otherwise it is created.
     GSErrCode err = NoError;
-    API_OverrideCombination existing = {};
-    existing.guid = APINULLGuid;
-    existing.name = name;
-    if (ACAPI_GraphicalOverride_GetOverrideCombination (existing) == NoError) {
-        combination.guid = existing.guid;
+    const GS::Optional<API_Guid> existingGuid = FindOverrideCombinationByName (name);
+    if (existingGuid.HasValue ()) {
+        combination.guid = existingGuid.Get ();
         err = ACAPI_GraphicalOverride_ChangeOverrideCombination (combination, &ruleGuids);
     } else {
         err = ACAPI_GraphicalOverride_CreateOverrideCombination (combination, ruleGuids);
