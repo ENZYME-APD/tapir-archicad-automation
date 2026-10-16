@@ -10,6 +10,7 @@
 #include "IOBinProtocolXs.hpp"
 #include "IChannelX.hpp"
 #include "StringConversion.hpp"
+#include "MessageLoopExecutor.hpp"
 
 #include <map>
 #include <vector>
@@ -18,6 +19,10 @@
 #include <algorithm>
 
 static std::unique_ptr<VersionChecker> Intance;
+
+// Bounds how long the checker thread waits for GitHub. The lookup does not block Archicad, so the value only
+// limits how long the thread lives when GitHub accepts the connection but never answers (#798).
+static constexpr int VersionCheckTimeoutMs = 15 * 1000;
 
 // Splits "1.5.10" (or "v1.5.10") into its numeric components, so that
 // versions compare by number and not as strings ("1.5.10" > "1.5.9").
@@ -64,65 +69,164 @@ static bool IsVersionNotNewerThan (const std::string& version, const std::string
     return true;
 }
 
+// Runs the GitHub lookup on the checker thread, then hands the completion back to the message loop,
+// like the UIUpdaterThread of the palette does for the script output.
+class VersionChecker::CheckTask : public GS::Runnable {
+    GS::UInt16              acMainVersion;
+    std::shared_ptr<Result> result;
+    std::function<void ()>  onCompleted;
+
+    class CompletedTask : public GS::Runnable {
+        std::function<void ()> onCompleted;
+    public:
+        explicit CompletedTask (const std::function<void ()>& onCompletedIn) : onCompleted (onCompletedIn)
+        {
+        }
+        virtual void Run () override
+        {
+            onCompleted ();
+        }
+    };
+
+public:
+    CheckTask (GS::UInt16 acMainVersionIn, const std::shared_ptr<Result>& resultIn, const std::function<void ()>& onCompletedIn)
+        : acMainVersion (acMainVersionIn)
+        , result (resultIn)
+        , onCompleted (onCompletedIn)
+    {
+    }
+
+    virtual void Run () override
+    {
+        GetVersionFromGithub (acMainVersion, *result);
+        result->completed.store (true, std::memory_order_release);
+        if (onCompleted) {
+            GS::MessageLoopExecutor ().Execute (new CompletedTask (onCompleted));
+        }
+    }
+};
+
 void VersionChecker::CreateInstance (GS::UInt16 acMainVersion)
 {
     Intance.reset (new VersionChecker (acMainVersion));
 }
 
+void VersionChecker::StartCheck (const std::function<void ()>& onCompleted)
+{
+    if (!Intance || Intance->checkStarted) {
+        return;
+    }
+    Intance->checkStarted = true;
+
+    try {
+        Intance->checkerThread = GS::Thread (new CheckTask (Intance->acMainVersion, Intance->result, onCompleted), "TapirVersionCheck");
+        Intance->checkerThread.Start ();
+    } catch (...) {
+        // Without the thread there is no lookup: the empty result counts as "no newer version", like a failed query.
+        Intance->result->completed.store (true, std::memory_order_release);
+    }
+}
+
+const VersionChecker::Result* VersionChecker::GetCompletedResult ()
+{
+    if (!Intance || !Intance->result->completed.load (std::memory_order_acquire)) {
+        return nullptr;
+    }
+
+    return Intance->result.get ();
+}
+
+bool VersionChecker::IsCheckCompleted ()
+{
+    return GetCompletedResult () != nullptr;
+}
+
 bool VersionChecker::IsUsingLatestVersion ()
 {
-    if (!Intance) {
+    const Result* result = GetCompletedResult ();
+    if (result == nullptr) {
         return true;
     }
 
-    return IsVersionNotNewerThan (Intance->latestVersion.ToCStr ().Get (), ADDON_VERSION);
+    // Without an Add-On for this Archicad version in the latest release there is nothing to update to.
+    if (result->latestVersionDownloadUrl.IsEmpty ()) {
+        return true;
+    }
+
+    return IsVersionNotNewerThan (result->latestVersion.ToCStr ().Get (), ADDON_VERSION);
+}
+
+// True when the latest release is newer but has no Add-On for this Archicad version.
+bool VersionChecker::IsNewerVersionWithoutAddOn ()
+{
+    const Result* result = GetCompletedResult ();
+    if (result == nullptr || !result->latestVersionDownloadUrl.IsEmpty ()) {
+        return false;
+    }
+
+    return !IsVersionNotNewerThan (result->latestVersion.ToCStr ().Get (), ADDON_VERSION);
 }
 
 const GS::UniString& VersionChecker::LatestVersion ()
 {
-    if (!Intance) {
+    const Result* result = GetCompletedResult ();
+    if (result == nullptr) {
         return GS::EmptyUniString;
     }
 
-    return Intance->latestVersion;
+    return result->latestVersion;
 }
 
 const GS::UniString& VersionChecker::LatestVersionName ()
 {
-    if (!Intance) {
+    const Result* result = GetCompletedResult ();
+    if (result == nullptr) {
         return GS::EmptyUniString;
     }
 
-    return Intance->latestVersionName;
+    return result->latestVersionName;
 }
 
-const GS::UniString& VersionChecker::LatestVersionDownloadUrl ()
+const GS::UniString& VersionChecker::LatestInstallerDownloadUrl ()
 {
-    if (!Intance) {
+    const Result* result = GetCompletedResult ();
+    if (result == nullptr) {
         return GS::EmptyUniString;
     }
 
-    return Intance->latestVersionDownloadUrl;
+    return result->latestInstallerDownloadUrl;
+}
+
+GS::UInt16 VersionChecker::ArchicadMainVersion ()
+{
+    if (!Intance) {
+        return 0;
+    }
+
+    return Intance->acMainVersion;
 }
 
 VersionChecker::VersionChecker (GS::UInt16 acMainVersionIn)
     : acMainVersion (acMainVersionIn)
+    , result (std::make_shared<Result> ())
 {
-    GetVersionFromGithub ();
 }
 
-const GS::UniString& VersionChecker::GetVersionFromGithub ()
+void VersionChecker::GetVersionFromGithub (GS::UInt16 acMainVersion, Result& result)
 {
     GS::UniString namePostfix = "AC" + GS::ValueToUniString (acMainVersion);
 #if defined (WINDOWS)
     namePostfix += "_Win";
+    const GS::UniString installerName ("TapirInstaller_Win.exe");
 #else
     namePostfix += "_Mac";
+    const GS::UniString installerName ("TapirInstaller_Mac.zip");
 #endif
 
     try {
         IO::URI::URI connectionUrl ("https://api.github.com");
         HTTP::Client::ClientConnection clientConnection (connectionUrl);
+        clientConnection.SetTimeout (VersionCheckTimeoutMs);
         clientConnection.Connect ();
 
         HTTP::Client::Request request (HTTP::MessageHeader::Method::Get, "/repos/ENZYME-APD/tapir-archicad-automation/releases/latest");
@@ -137,7 +241,7 @@ const GS::UniString& VersionChecker::GetVersionFromGithub ()
         if (response.GetStatusCode () == HTTP::MessageHeader::StatusCode::OK) {
             JSON::ObjectValueRef outputObject = GS::DynamicCast<JSON::ObjectValue> (parsed);
             JSON::StringValueRef tagNameValue = GS::DynamicCast<JSON::StringValue> (outputObject->Get ("tag_name"));
-            latestVersion = tagNameValue->Get ();
+            result.latestVersion = tagNameValue->Get ();
 
             JSON::ArrayValueRef arrayValue;
             std::map<GS::UniString, GS::UniString> nameDownloadUrlMap;
@@ -148,10 +252,15 @@ const GS::UniString& VersionChecker::GetVersionFromGithub ()
                 JSON::StringValueRef nameValue = GS::DynamicCast<JSON::StringValue> (assetObject->Get ("name"));
 
                 GS::UniString name = nameValue->Get ();
-                if (name.Contains (namePostfix)) {
+                if (result.latestVersionDownloadUrl.IsEmpty () && name.Contains (namePostfix)) {
                     JSON::StringValueRef downloadUrlValue = GS::DynamicCast<JSON::StringValue> (assetObject->Get ("browser_download_url"));
-                    latestVersionDownloadUrl = downloadUrlValue->Get ();
-                    latestVersionName = name;
+                    result.latestVersionDownloadUrl = downloadUrlValue->Get ();
+                    result.latestVersionName = name;
+                } else if (result.latestInstallerDownloadUrl.IsEmpty () && name == installerName) {
+                    JSON::StringValueRef downloadUrlValue = GS::DynamicCast<JSON::StringValue> (assetObject->Get ("browser_download_url"));
+                    result.latestInstallerDownloadUrl = downloadUrlValue->Get ();
+                }
+                if (!result.latestVersionDownloadUrl.IsEmpty () && !result.latestInstallerDownloadUrl.IsEmpty ()) {
                     break;
                 }
             }
@@ -159,7 +268,6 @@ const GS::UniString& VersionChecker::GetVersionFromGithub ()
 
         clientConnection.Close (false);
     } catch (...) {
+        // A failed or timed out query leaves the result empty, which counts as "no newer version".
     }
-
-    return latestVersion;
 }
