@@ -44,7 +44,8 @@ struct ScriptUIOptions
 // interacts with it, and the page's JS hands data back via window.ACAPI.SubmitResult(...) (a
 // RegisterAsynchJSObject bridge, not HTTP/fetch - proven reliable in the original proof-of-concept
 // on branch experiment/native-browser-poc). The script itself retrieves that data by polling the
-// "GetScriptUIResult" Tapir command.
+// "GetScriptUIResult" Tapir command, which also tells it whether the palette is still open (see
+// IsOpen), so it can stop waiting when the user closes the palette instead.
 class ScriptUIPalette final : public DG::Palette,
     public DG::PanelObserver
 {
@@ -68,6 +69,15 @@ public:
     // since the last call - one-shot: the pending result is cleared once read.
     bool ConsumeResult (GS::UniString* outResult);
 
+    // Whether the palette is open from the script's point of view: false once the user closed it
+    // with its close box, the page called window.ACAPI.ClosePalette or Archicad closed it, but
+    // still true while Archicad only temporarily hides every palette (APIPalMsg_HidePalette_Begin,
+    // e.g. during a modal dialog), as that hide is undone by APIPalMsg_HidePalette_End. The page
+    // itself gets no event when the palette is hidden (no visibilitychange/pagehide/blur, and
+    // requestAnimationFrame keeps firing), so this is the only way a polling script can notice
+    // that the user closed the palette.
+    bool IsOpen ();
+
     static GSErrCode RegisterPaletteControlCallBack ();
 
 private:
@@ -80,6 +90,12 @@ private:
     // page was opened with options.autoHeight = true (and therefore has the auto-height observer
     // script injected - see InjectAutoHeightScript in ScriptUIPalette.cpp).
     bool autoHeightEnabled = false;
+
+    // Guards the NotifyPageLoaded JS bridge function: DG::Browser::DisableNavigation (true) blocks
+    // LoadHTML itself when it is already set at load time (the palette stays blank, see issue
+    // #768), so ShowWithHTML loads the page with navigation enabled and only disables it from the
+    // injected page-loaded script when the currently shown page asked for options.navigationDisabled.
+    bool navigationDisableRequested = false;
 
     // Set only when APIPalMsg_HidePalette_Begin itself hid a visible palette. Guards
     // APIPalMsg_HidePalette_End so it only restores visibility it took away - not a palette the
