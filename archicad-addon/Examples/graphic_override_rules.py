@@ -1,6 +1,7 @@
+import sys
 import aclib
 
-# Requires Archicad 27 or newer.
+# Requires Archicad 27 or newer; on older versions the first command fails and the example stops.
 
 # A rule that colors the surfaces of the elements it applies to light red. Without a criterion it
 # applies to all elements. To restrict it, pass the criterionXML of a rule made in the GUI (read it
@@ -10,6 +11,9 @@ rule = aclib.RunTapirCommand ('CreateGraphicalOverrideRule', {
         'ruleGroupName': 'Tapir examples',
         'surfaceRGB': {'red': 1.0, 'green': 0.7, 'blue': 0.7}
     })
+if rule is None or 'error' in rule:
+    print ('Could not create an override rule, this example needs Archicad 27 or newer.')
+    sys.exit ()
 print (f"Rule: {rule['ruleId']['guid']}")
 
 # Every rule of the project with the length of its criterion XML.

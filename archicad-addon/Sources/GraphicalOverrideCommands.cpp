@@ -123,13 +123,8 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRuleCommand::GetRawResponseSc
         "type": "object",
         "properties": {
             "ruleId": {
-                "type": "object",
-                "description": "The created or overwritten override rule.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/GuidId",
+                "description": "The created or overwritten override rule."
             }
         },
         "additionalProperties": false,
@@ -223,14 +218,7 @@ GS::Optional<GS::UniString> GetGraphicalOverrideRulesCommand::GetRawResponseSche
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ruleId": {
-                            "type": "object",
-                            "properties": {
-                                "guid": { "$ref": "#/Guid" }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
-                        },
+                        "ruleId": { "$ref": "#/GuidId" },
                         "name": { "type": "string" },
                         "ruleGroupName": { "type": "string", "description": "Name of the rule group the rule belongs to." },
                         "criterionXML": { "type": "string", "description": "The criterion in Archicad's own XML format. Change its values and pass it to CreateGraphicalOverrideRule to make similar rules." }
@@ -330,13 +318,8 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideCombinationCommand::GetRawRes
         "type": "object",
         "properties": {
             "combinationId": {
-                "type": "object",
-                "description": "The created or changed override combination.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/GuidId",
+                "description": "The created or changed override combination."
             }
         },
         "additionalProperties": false,
