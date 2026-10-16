@@ -37,6 +37,9 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             OutGenericTree(
                 "ElementGuids",
                 "Identifiers of the elements in each design option (one branch per design option).");
+
+            OutErrorMessages(
+                "Error message of each queried design option (empty when it succeeded).");
         }
 
         protected override void Solve(
@@ -65,7 +68,9 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             da.SetDataList(
                 0,
                 elementsOfDesignOptions.Select(
-                    e => new DesignOptionGuidWrapper { DesignOptionId = e.DesignOptionId }));
+                    e => e.DesignOptionId == null
+                        ? null
+                        : new DesignOptionGuidWrapper { DesignOptionId = e.DesignOptionId }));
 
             var tree = new GH_Structure<GH_ObjectWrapper>();
             for (var i = 0; i < elementsOfDesignOptions.Count; i++)
@@ -86,6 +91,13 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             da.SetDataTree(
                 1,
                 tree);
+
+            da.SetDataList(
+                2,
+                elementsOfDesignOptions.Select(
+                    e => e.Error == null
+                        ? ""
+                        : e.Error.Message ?? "Unknown error."));
         }
 
         protected override System.Drawing.Bitmap Icon =>
