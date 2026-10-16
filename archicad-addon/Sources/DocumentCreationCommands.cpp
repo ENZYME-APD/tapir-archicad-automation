@@ -103,8 +103,10 @@ GS::Optional<API_NavigatorItem> FindMasterLayoutNavigatorItem (const API_Databas
         return {};
     }
 
+    // The search is already filtered by the database, so the first master layout item it
+    // returns is the one asked for (the same way IsMasterLayoutDatabase has always worked).
     for (const auto& result : results) {
-        if (result.itemType == API_MasterLayoutNavItem && result.db.databaseUnId.elemSetId == masterLayoutUnId.elemSetId) {
+        if (result.itemType == API_MasterLayoutNavItem) {
             return result;
         }
     }
