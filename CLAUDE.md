@@ -109,8 +109,10 @@ sandbox/                 Experiments / scratch
 
 ### Adding or changing a command
 
-[tools/new_command.py](tools/new_command.py) writes steps 1–4 for new commands from a short
-spec (format in its docstring), leaving only the Archicad API calls in `Execute` to fill in.
+[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–4 for new
+commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
+the registration and a starter example. The Archicad API calls in `Execute` and any
+`Test/ExpectedOutputs/` are still written by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).

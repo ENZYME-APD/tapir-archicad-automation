@@ -231,6 +231,20 @@ def field_kind (sub, common):
     return 'object'
 
 
+def array_ctype (sub, common):
+    """C++ type that GS::ObjectState::Get reads an array property into: GS::Array<GS::UniString>,
+    GS::Array<double>, ... for scalar items, GS::Array<GS::ObjectState> for object items."""
+    if '$ref' in sub:
+        sub = common.get (sub['$ref'].split ('/')[-1], {})
+    items = sub.get ('items', {})
+    kind = field_kind (items, common)
+    if kind == 'array':
+        return f'GS::Array<{array_ctype (items, common)}>'
+    if kind in SCALAR_DECL:
+        return f'GS::Array<{SCALAR_DECL[kind][0]}>'
+    return 'GS::Array<GS::ObjectState>'
+
+
 def join_names (names):
     names = [repr (n) for n in names]
     return names[0] if len (names) == 1 else ', '.join (names[:-1]) + ' or ' + names[-1]
@@ -261,7 +275,7 @@ def gen_field_reads (schema, source, indent, fail, taken, common, reserved=()):
             pointers.append ((field, v, sub))
             continue
         if kind == 'array':
-            lines.append (f'{pad}GS::Array<GS::ObjectState> {v};')
+            lines.append (f'{pad}{array_ctype (sub, common)} {v};')
         else:
             ctype, init = SCALAR_DECL[kind]
             lines.append (f'{pad}{ctype} {init.format (v=v)};')
@@ -292,7 +306,7 @@ def gen_field_reads (schema, source, indent, fail, taken, common, reserved=()):
             lines.append (f'{pad}if ({v} != nullptr) {{')
         else:
             if kind == 'array':
-                lines.append (f'{pad}GS::Array<GS::ObjectState> {v};')
+                lines.append (f'{pad}{array_ctype (sub, common)} {v};')
             else:
                 ctype, init = SCALAR_DECL[kind]
                 lines.append (f'{pad}{ctype} {init.format (v=v)};')
@@ -406,8 +420,9 @@ def gen_execute (cmd, input_schema, output_schema, common):
         body.append ('    GS::ObjectState response;')
         for field, sub in out_props.items ():
             if sub.get ('type') == 'array':
-                body.append (f'    const auto& {field}List = response.AddList<GS::ObjectState> ("{field}");')
-                body.append (f'    (void) {field}List; // TODO: add one GS::ObjectState per item: {field}List (itemObjectState);')
+                item_type = array_ctype (sub, common)[len ('GS::Array<'):-1]
+                body.append (f'    const auto& {field}List = response.AddList<{item_type}> ("{field}");')
+                body.append (f'    (void) {field}List; // TODO: add one {item_type} per item: {field}List (item);')
             else:
                 body.append (f'    // TODO: response.Add ("{field}", ...);')
         body += unused_lines (used, 4)
@@ -573,6 +588,10 @@ def main ():
 
     try:
         commands = load_spec (args.spec)
+        names = [cmd.get ('name') for cmd in commands]
+        twice = sorted ({n for n in names if n and names.count (n) > 1})
+        if twice:
+            raise SpecError (f'the spec has {join_names (twice)} more than once')
         version = json.loads (read (PACKAGE_INFO))['version']
         common = json.loads (read (os.path.join (SOURCES, 'RFIX', 'Images', 'CommonSchemaDefinitions.json')))
         main_text = read (ADDON_MAIN)
