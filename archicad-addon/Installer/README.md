@@ -181,7 +181,9 @@ On Windows the release pipeline has `TapirInstaller_Win.exe` signed by
 [SignPath](https://about.signpath.io) with a certificate by
 [SignPath Foundation](https://signpath.org) (see the
 [code signing policy](../../README.md#code-signing-policy)). Every release
-signing needs a manual approval in SignPath. SignPath only signs the file when
+signing needs a manual approval in SignPath; when signing fails or is not
+approved in time, the release goes out with the unsigned installer instead of
+getting stuck. SignPath only signs the file when
 its version resource says ProductName `Tapir` and the release version, which
 [write_version_file.py](write_version_file.py) writes; nothing may change the
 file after it is signed. The build tools are pinned in

@@ -133,7 +133,10 @@ aclib.RunTapirCommand ('CreateMorphs', {
 })
 
 # A zone is either automatic - it finds the room around a point - or manual,
-# with the outline given. This is the manual form.
+# with the outline given. This is the manual form. The automatic form takes
+# 'geometry': { 'referencePosition': { 'x': ..., 'y': ... } } and looks for the
+# closed room around that point on the zone's floorIndex; the command activates
+# that story in the floor plan for the creation, so it need not be the one shown.
 aclib.RunTapirCommand ('CreateZones', {
     'zonesData': [
         {
