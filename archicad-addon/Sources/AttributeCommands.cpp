@@ -3516,7 +3516,7 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
                         },
                         "texture": {
-                            "description": "Texture parameters (Image and gradient fills). Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
+                            "description": "Used for Image and gradient fills. Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
                             "$ref": "#/Texture"
                         },
                         "lineItems": {

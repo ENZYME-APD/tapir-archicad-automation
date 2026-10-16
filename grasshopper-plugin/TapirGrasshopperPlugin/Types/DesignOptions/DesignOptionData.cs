@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Types.DesignOptions
@@ -55,8 +56,50 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
         }
     }
 
+    public class DesignOptionCombinationsObject
+        : GuidItemsObject<DesignOptionCombinationGuid, DesignOptionCombinationGuidWrapper, DesignOptionCombinationsObject>
+    {
+        [JsonProperty("designOptionCombinations")]
+        public List<DesignOptionCombinationGuidWrapper> DesignOptionCombinations;
+
+        [JsonIgnore]
+        public override List<DesignOptionCombinationGuidWrapper> GuidWrappers
+        {
+            get => DesignOptionCombinations;
+            set => DesignOptionCombinations = value;
+        }
+    }
+
     public class DesignOptionSetGuid : GuidObject<DesignOptionSetGuid>
     {
+    }
+
+    public class DesignOptionSetGuidWrapper
+        : GuidWrapper<DesignOptionSetGuid, DesignOptionSetGuidWrapper>
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        [JsonIgnore]
+        public override DesignOptionSetGuid Id
+        {
+            get => DesignOptionSetId;
+            set => DesignOptionSetId = value;
+        }
+    }
+
+    public class DesignOptionSetsObject
+        : GuidItemsObject<DesignOptionSetGuid, DesignOptionSetGuidWrapper, DesignOptionSetsObject>
+    {
+        [JsonProperty("designOptionSets")]
+        public List<DesignOptionSetGuidWrapper> DesignOptionSets;
+
+        [JsonIgnore]
+        public override List<DesignOptionSetGuidWrapper> GuidWrappers
+        {
+            get => DesignOptionSets;
+            set => DesignOptionSets = value;
+        }
     }
 
     public class DesignOptionDetails
@@ -123,6 +166,10 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("elements")]
         public List<ElementGuidWrapper> Elements;
+
+        // Set instead of the fields above when the design option was not found.
+        [JsonProperty("error")]
+        public Error Error;
     }
 
     public class GetElementsOfDesignOptionsResponse
@@ -233,5 +280,57 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptionAndSetPairs")]
         public List<DesignOptionAndSetPair> DesignOptionAndSetPairs;
+    }
+
+    public class RenameDesignOptionParameter
+    {
+        [JsonProperty("designOptionId")]
+        public DesignOptionGuid DesignOptionId;
+
+        [JsonProperty(
+            "name",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Name;
+
+        [JsonProperty(
+            "id",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Id;
+    }
+
+    public class RenameDesignOptionsParameters
+    {
+        [JsonProperty("designOptions")]
+        public List<RenameDesignOptionParameter> DesignOptions;
+    }
+
+    public class RenameDesignOptionSetParameter
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        [JsonProperty("name")]
+        public string Name;
+    }
+
+    public class RenameDesignOptionSetsParameters
+    {
+        [JsonProperty("designOptionSets")]
+        public List<RenameDesignOptionSetParameter> DesignOptionSets;
+    }
+
+    public class RenameDesignOptionCombinationParameter
+    {
+        [JsonProperty("designOptionCombinationId")]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        [JsonProperty("name")]
+        public string Name;
+    }
+
+    public class RenameDesignOptionCombinationsParameters
+    {
+        [JsonProperty("designOptionCombinations")]
+        public List<RenameDesignOptionCombinationParameter> DesignOptionCombinations;
     }
 }

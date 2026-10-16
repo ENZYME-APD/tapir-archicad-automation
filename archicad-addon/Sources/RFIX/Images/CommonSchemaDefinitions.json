@@ -714,6 +714,31 @@
             "designOptionCombinationId"
         ]
     },
+    "DesignOptionSetId": {
+        "type": "object",
+        "description": "The identifier of a design option set.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DesignOptionSetIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "designOptionSetId": {
+                "$ref": "#/DesignOptionSetId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSetId"
+        ]
+    },
     "LayersOfLayerCombination": {
         "type": "array",
         "description": "List of Layers included in the Layer Combination.",
@@ -1035,7 +1060,7 @@
             },
             "offset": {
                 "$ref": "#/Coordinate2D",
-                "description": "The offset of the item, given by its coordinates."
+                "description": "The offset of the item."
             },
             "lineLengths": {
                 "type": "array",
@@ -2199,6 +2224,88 @@
             "coordinates"
         ]
     },
+    "CurtainWallPattern": {
+        "type": "object",
+        "description": "The column (primary) or row (secondary) pattern of a curtain wall segment: the sizes of the columns/rows of one pattern unit and how the unit is repeated along the segment.",
+        "properties": {
+            "sizes": {
+                "type": "array",
+                "description": "The sizes (widths of the columns or heights of the rows) of the pattern unit in meters, in order from the start of the segment or from the bottom. The unit is repeated to fill the segment.",
+                "items": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "minItems": 1
+            },
+            "logic": {
+                "$ref": "#/CurtainWallPatternLogic"
+            },
+            "origin": {
+                "$ref": "#/CurtainWallPatternOrigin"
+            },
+            "flexibleIndices": {
+                "type": "array",
+                "description": "Zero-based indices of the columns/rows of the pattern unit that 'BestDivision' may stretch. When omitted, all of them are flexible. Ignored by 'FixedSizes'.",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sizes"
+        ]
+    },
+    "CurtainWallPatternCell": {
+        "type": "object",
+        "description": "The panel and frame classes of one cell of the pattern unit of a curtain wall segment. Panel classes are numbered as Archicad numbers them: 0 is no panel (the cell is left empty), 1 is the first panel class of the curtain wall (as listed in the Curtain Wall Settings, from the favorite or the tool defaults), 2 the second and so on. Frame classes: 0 is no frame (the cell is merged with its neighbour), 1 the Division frame, 2 the Corner frame, 3 the Boundary frame, 4 the first custom frame class of the curtain wall, 5 the second and so on. Fields not given keep the default assignment of the cell.",
+        "properties": {
+            "columnIndex": {
+                "type": "integer",
+                "description": "Zero-based column of the cell within the pattern unit, counted from the start of the segment.",
+                "minimum": 0
+            },
+            "rowIndex": {
+                "type": "integer",
+                "description": "Zero-based row of the cell within the pattern unit, counted from the bottom.",
+                "minimum": 0
+            },
+            "panelClassIndex": {
+                "type": "integer",
+                "description": "The panel class of the cell. 0 leaves the cell without a panel (Archicad keeps a hidden 'deleted panel' subelement there). With a crossing frame it is the class of the left (or lower) half; see rightPanelClassIndex for the other half.",
+                "minimum": 0
+            },
+            "rightPanelClassIndex": {
+                "type": "integer",
+                "description": "The panel class of the right (or upper) half of a cell with a crossing frame. Defaults to panelClassIndex.",
+                "minimum": 0
+            },
+            "leftFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the frame on the left edge of the cell (the grid line at the start of the column).",
+                "minimum": 0
+            },
+            "bottomFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the frame on the bottom edge of the cell (the grid line at the bottom of the row).",
+                "minimum": 0
+            },
+            "crossingFrameType": {
+                "$ref": "#/CurtainWallCrossingFrameType"
+            },
+            "crossingFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the diagonal frame of the cell. Only used when crossingFrameType is not 'None'.",
+                "minimum": 0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "columnIndex",
+            "rowIndex"
+        ]
+    },
     "BeamHole": {
         "type": "object",
         "properties": {
@@ -2517,6 +2624,50 @@
             "z"
         ]
     },
+    "PerspectiveProjectionParameters": {
+        "type": "object",
+        "description": "The parameters of a perspective projection of the 3D window.",
+        "properties": {
+            "cameraPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The position of the camera."
+            },
+            "targetPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The position of the target point the camera looks at."
+            },
+            "distance": {
+                "type": "number",
+                "description": "The distance between the camera and the target."
+            },
+            "azimuth": {
+                "type": "number",
+                "description": "The azimuth angle of the camera."
+            },
+            "viewCone": {
+                "type": "number",
+                "description": "The view cone angle of the camera."
+            },
+            "rollAngle": {
+                "type": "number",
+                "description": "The roll angle of the camera."
+            },
+            "isTwoPointPersp": {
+                "type": "boolean",
+                "description": "True for a two-point perspective (vertical edges stay vertical)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cameraPosition",
+            "targetPosition",
+            "distance",
+            "azimuth",
+            "viewCone",
+            "rollAngle",
+            "isTwoPointPersp"
+        ]
+    },
     "Dimensions3D": {
         "type": "object",
         "description": "Dimensions in 3D.",
@@ -2683,8 +2834,7 @@
                 "enum": [ false ]
             },
             "error": {
-                "$ref": "#/Error",
-                "description": "The details of an execution failure."
+                "$ref": "#/Error"
             }
         },
         "additionalProperties": false,
@@ -3084,6 +3234,33 @@
             "UserDefined"
         ]
     },
+    "CurtainWallPatternLogic": {
+        "type": "string",
+        "description": "How the pattern unit fills the segment: 'FixedSizes' keeps the given sizes and repeats the unit, which may leave a partial unit at the end (Archicad: Fixed Size); 'BestDivision' stretches the flexible columns/rows so that whole units fill the segment with the least stretching (Archicad: Best Division).",
+        "enum": [
+            "FixedSizes",
+            "BestDivision"
+        ]
+    },
+    "CurtainWallPatternOrigin": {
+        "type": "string",
+        "description": "Where the pattern unit is anchored on the segment: at its start, centered with a unit starting at the center, centered with a unit centered on the center, or at its end.",
+        "enum": [
+            "StartWithPattern",
+            "StartFromCenter",
+            "AlignToCenter",
+            "EndWithPattern"
+        ]
+    },
+    "CurtainWallCrossingFrameType": {
+        "type": "string",
+        "description": "The diagonal frame of a pattern cell: none, or from the bottom left to the top right corner, or from the top left to the bottom right corner.",
+        "enum": [
+            "None",
+            "FromBottomLeftToTopRight",
+            "FromTopLeftToBottomRight"
+        ]
+    },
     "BeamAnchorPoint": {
         "type": "string",
         "description": "Anchor point of the beam cross section on a 3x3 grid.",
@@ -3259,7 +3436,9 @@
             "Equipment",
             "Fitting",
             "FlexibleSegment",
-            "TakeOff"
+            "TakeOff",
+            "ElectricalPanel",
+            "ElectricalDevice"
         ]
     },
     "DrawingNameType": {
@@ -5705,6 +5884,69 @@
             "$ref": "#/BoundingBox3DOrError"
         }
     },
+    "Body3D": {
+        "type": "object",
+        "description": "One solid body of an element's 3D model: a flat vertex list in world coordinates and the planar faces referencing it. The faces are not triangulated: a face is a closed loop of vertex indices (counterclockwise seen from outside the body) plus the loops of its holes.",
+        "properties": {
+            "vertices": {
+                "type": "array",
+                "description": "The vertices of the body in world coordinates (meters, absolute Z).",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "polygons": {
+                "type": "array",
+                "description": "The faces of the body.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "description": "The outer contour of the face: 0-based indices into vertices.",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 3
+                        },
+                        "holes": {
+                            "type": "array",
+                            "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "vertexIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "minItems": 3
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "vertexIds"
+                                ]
+                            }
+                        },
+                        "surfaceId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertices",
+            "polygons"
+        ]
+    },
     "LibPartUnId": {
         "type": "object",
         "properties": {
@@ -6126,8 +6368,8 @@
                 "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
             },
             "renovationFilterGuid": {
-                "$ref": "#/Guid",
-                "description": "GUID of the renovation filter applied to the view."
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter applied to the view."
             },
             "d3styleName": {
                 "type": "string",
@@ -7282,6 +7524,14 @@
             "fillBackgroundPenIndex": {
                 "type": "integer"
             },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill foreground. Only present when it overrides fillPenIndex."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color of the fill background. Only present when it overrides fillBackgroundPenIndex."
+            },
             "fillId": {
                 "$ref": "#/AttributeId",
                 "description": "The fill attribute used, if the hatch's type is a plain fill hatch."
@@ -8060,6 +8310,84 @@
               "leaderLine"
           ]
     },
+    "DimensionOrigin": {
+        "type": "string",
+        "description": "The origin a level dimension measures from.",
+        "enum": [
+            "ProjectZero",
+            "ReferenceLevel1",
+            "ReferenceLevel2",
+            "StoredOrigin",
+            "Altitude"
+        ]
+    },
+    "LevelDimensionDetails": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The location of the marker."
+            },
+            "level": {
+                "type": "number",
+                "description": "The level the dimension shows in meters: the height of the owner element at the position for an associative level dimension, the floor level or the static value otherwise."
+            },
+            "staticLevel": {
+                "type": "boolean",
+                "description": "The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false."
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "Present only for an associative level dimension: the element it measures."
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType",
+                "description": "Present only for an associative level dimension."
+            },
+            "dimForm": {
+                "type": "integer",
+                "description": "Marker type 0-19."
+            },
+            "needPlus": {
+                "type": "boolean"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer"
+            },
+            "markerSize": {
+                "type": "number",
+                "description": "Size of the marker in millimeters."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the marker in radians."
+            },
+            "origin": {
+                "$ref": "#/DimensionOrigin"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "level",
+            "staticLevel",
+            "dimForm",
+            "needPlus",
+            "pen",
+            "textHeight",
+            "textPen",
+            "markerSize",
+            "angle",
+            "origin"
+        ]
+    },
     "TextDetails": {
         "type": "object",
         "properties": {
@@ -8093,7 +8421,7 @@
             },
             "style": {
                 "$ref": "#/TextStyleDetails",
-                "description": "The full style state; the flat fields above are the subset SetDetailsOfElements takes back."
+                "description": "The flat fields above are the subset SetDetailsOfElements takes back."
             },
             "paragraphCount": {
                 "type": "integer",
@@ -8196,6 +8524,9 @@
             },
             {
                 "$ref": "#/TextDetails"
+            },
+            {
+                "$ref": "#/LevelDimensionDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -9291,10 +9622,20 @@
                 "type": "integer"
             },
             "fillPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the foregroundColor override, so the pen shows."
             },
             "fillBackgroundPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Setting a pen removes the backgroundColor override, so the pen shows."
+            },
+            "foregroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
             },
             "fillId": {
                 "$ref": "#/AttributeId"
@@ -9755,7 +10096,7 @@
                 "description": "The relative path to the new file inside embedded library."
             },
             "type": {
-                "description": "The type of the library part. By default 'Pict'.",
+                "description": "By default 'Pict'.",
                 "$ref": "#/LibraryPartType"
             }
         },
@@ -10599,6 +10940,7 @@
             "text": { "type": "string", "description": "The run's text content. Windows-style CRLF (and bare CR) line endings are normalized to LF." },
             "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
             "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
+            "fontName": { "type": "string", "description": "Name of the font for this run only, resolved like the style's fontName (and taking precedence over the run's fontIndex). Optional; defaults to the style's font. Read back as the name of the font the run's fontIndex refers to, absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10617,6 +10959,7 @@
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it and GetDetailsOfElements reports it in fontName, e.g. 'Arial'. Resolved to the font's index (exact match first, then case-insensitive); the command fails when no loaded font has the name. Takes precedence over fontIndex if both are given." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10652,6 +10995,7 @@
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "fontName": { "type": "string", "description": "The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10686,7 +11030,7 @@
     },
     "LabelLeaderLineSettableDetails": {
         "type": "object",
-        "description": "Every user-configurable leader-line/frame setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
+        "description": "Every user-configurable leader-line/frame/arrow setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
             "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
@@ -10748,7 +11092,8 @@
         "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
         "properties": {
             "textWay": { "$ref": "#/SymbolLabelTextDirection" },
-            "fontIndex": { "type": "integer" },
+            "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10763,5 +11108,1502 @@
             "effectProtected": { "type": "boolean" }
         },
         "additionalProperties": false
+    },
+    "WallQuantities": {
+        "type": "object",
+        "description": "Quantities of a Wall element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the wall."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the wall (openings smaller than minOpeningSize are not subtracted)."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the wall (openings not subtracted)."
+            },
+            "referenceSideSurface": {
+                "type": "number",
+                "description": "Net surface on the reference line side."
+            },
+            "oppositeSideSurface": {
+                "type": "number",
+                "description": "Net surface on the side opposite to the reference line."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Surface of the edges of the wall."
+            },
+            "referenceSideSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional surface on the reference line side."
+            },
+            "oppositeSideSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional surface on the side opposite to the reference line."
+            },
+            "grossReferenceSideSurface": {
+                "type": "number",
+                "description": "Gross surface on the reference line side."
+            },
+            "grossOppositeSideSurface": {
+                "type": "number",
+                "description": "Gross surface on the side opposite to the reference line."
+            },
+            "length": {
+                "type": "number",
+                "description": "Average of the lengths on the two sides of the wall."
+            },
+            "referenceSideLength": {
+                "type": "number",
+                "description": "Length on the reference line side."
+            },
+            "oppositeSideLength": {
+                "type": "number",
+                "description": "Length on the side opposite to the reference line."
+            },
+            "centerLength": {
+                "type": "number",
+                "description": "Length of the wall at its center."
+            },
+            "referenceLineLength": {
+                "type": "number",
+                "description": "Length of the reference line."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the wall."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the wall."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the wall."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Floor plan perimeter of the wall."
+            },
+            "windowsSurface": {
+                "type": "number",
+                "description": "Surface of the windows in the wall."
+            },
+            "doorsSurface": {
+                "type": "number",
+                "description": "Surface of the doors in the wall."
+            },
+            "emptyOpeningsSurface": {
+                "type": "number",
+                "description": "Surface of the empty openings in the wall."
+            },
+            "emptyOpeningsVolume": {
+                "type": "number",
+                "description": "Volume of the empty openings in the wall."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "referenceSideSurface",
+            "oppositeSideSurface",
+            "edgeSurface",
+            "referenceSideSurfaceConditional",
+            "oppositeSideSurfaceConditional",
+            "grossReferenceSideSurface",
+            "grossOppositeSideSurface",
+            "length",
+            "referenceSideLength",
+            "oppositeSideLength",
+            "centerLength",
+            "referenceLineLength",
+            "minHeight",
+            "maxHeight",
+            "area",
+            "perimeter",
+            "windowsSurface",
+            "doorsSurface",
+            "emptyOpeningsSurface",
+            "emptyOpeningsVolume"
+        ]
+    },
+    "ColumnQuantities": {
+        "type": "object",
+        "description": "Quantities of a Column element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "coreVolume": {
+                "type": "number",
+                "description": "Net volume of the column core."
+            },
+            "veneerVolume": {
+                "type": "number",
+                "description": "Net volume of the column veneer."
+            },
+            "coreGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column core."
+            },
+            "veneerGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column veneer."
+            },
+            "coreSurface": {
+                "type": "number",
+                "description": "Net side surface of the column core."
+            },
+            "veneerSurface": {
+                "type": "number",
+                "description": "Net side surface of the column veneer."
+            },
+            "coreGrossSurface": {
+                "type": "number",
+                "description": "Gross side surface of the column core."
+            },
+            "veneerGrossSurface": {
+                "type": "number",
+                "description": "Gross side surface of the column veneer."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the column."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Floor plan perimeter of the column."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the column."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the column."
+            },
+            "crossSectionAreaCutBegin": {
+                "type": "number",
+                "description": "Area of the cross section at the beginning of the column."
+            },
+            "crossSectionAreaCutEnd": {
+                "type": "number",
+                "description": "Area of the cross section at the end of the column."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coreVolume",
+            "veneerVolume",
+            "coreGrossVolume",
+            "veneerGrossVolume",
+            "coreSurface",
+            "veneerSurface",
+            "coreGrossSurface",
+            "veneerGrossSurface",
+            "area",
+            "perimeter",
+            "minHeight",
+            "maxHeight",
+            "crossSectionAreaCutBegin",
+            "crossSectionAreaCutEnd"
+        ]
+    },
+    "BeamQuantities": {
+        "type": "object",
+        "description": "Quantities of a Beam element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the beam."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the beam."
+            },
+            "holesVolume": {
+                "type": "number",
+                "description": "Total volume of the holes in the beam."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the beam."
+            },
+            "leftLength": {
+                "type": "number",
+                "description": "Length on the left side of the reference line."
+            },
+            "rightLength": {
+                "type": "number",
+                "description": "Length on the right side of the reference line."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Surface of the top of the beam."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Surface of the bottom of the beam."
+            },
+            "leftSurface": {
+                "type": "number",
+                "description": "Side surface on the left side of the reference line."
+            },
+            "rightSurface": {
+                "type": "number",
+                "description": "Side surface on the right side of the reference line."
+            },
+            "endSurface": {
+                "type": "number",
+                "description": "Surface of both ends of the beam."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total surface of the holes in the beam."
+            },
+            "holesEdgeSurface": {
+                "type": "number",
+                "description": "Total surface of the hole edges in the beam."
+            },
+            "holesNumber": {
+                "type": "integer",
+                "description": "Number of holes in the beam."
+            },
+            "crossSectionAreaCutBegin": {
+                "type": "number",
+                "description": "Area of the cross section at the beginning of the beam."
+            },
+            "crossSectionAreaCutEnd": {
+                "type": "number",
+                "description": "Area of the cross section at the end of the beam."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "holesVolume",
+            "area",
+            "leftLength",
+            "rightLength",
+            "topSurface",
+            "bottomSurface",
+            "leftSurface",
+            "rightSurface",
+            "endSurface",
+            "holesSurface",
+            "holesEdgeSurface",
+            "holesNumber",
+            "crossSectionAreaCutBegin",
+            "crossSectionAreaCutEnd"
+        ]
+    },
+    "SlabQuantities": {
+        "type": "object",
+        "description": "Quantities of a Slab element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the slab."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the slab."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the slab."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Net top surface of the slab."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Net bottom surface of the slab."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Net surface of the edges of the slab."
+            },
+            "topSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional top surface of the slab."
+            },
+            "bottomSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional bottom surface of the slab."
+            },
+            "grossTopSurface": {
+                "type": "number",
+                "description": "Gross top surface of the slab."
+            },
+            "grossBottomSurface": {
+                "type": "number",
+                "description": "Gross bottom surface of the slab."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross surface of the edges of the slab."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the slab."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes in the slab."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes in the slab."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "topSurface",
+            "bottomSurface",
+            "edgeSurface",
+            "topSurfaceConditional",
+            "bottomSurfaceConditional",
+            "grossTopSurface",
+            "grossBottomSurface",
+            "grossEdgeSurface",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter"
+        ]
+    },
+    "RoofQuantities": {
+        "type": "object",
+        "description": "Quantities of a Roof element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the roof."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the roof."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the roof."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Net top surface of the roof."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Net bottom surface of the roof."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Net surface of the edges of the roof."
+            },
+            "topSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional top surface of the roof."
+            },
+            "bottomSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional bottom surface of the roof."
+            },
+            "grossTopSurface": {
+                "type": "number",
+                "description": "Gross top surface of the roof."
+            },
+            "grossBottomSurface": {
+                "type": "number",
+                "description": "Gross bottom surface of the roof."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross surface of the edges of the roof."
+            },
+            "contourArea": {
+                "type": "number",
+                "description": "Area of the roof contour polygon."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the roof."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes in the roof."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes in the roof."
+            },
+            "openingsSurface": {
+                "type": "number",
+                "description": "Total surface of the roof openings."
+            },
+            "ridgesLength": {
+                "type": "number",
+                "description": "Length of the ridge edges (divided by 2, as Archicad reports it)."
+            },
+            "valleysLength": {
+                "type": "number",
+                "description": "Length of the valley edges (divided by 2, as Archicad reports it)."
+            },
+            "hipsLength": {
+                "type": "number",
+                "description": "Length of the hip edges (divided by 2, as Archicad reports it)."
+            },
+            "gablesLength": {
+                "type": "number",
+                "description": "Length of the gable edges."
+            },
+            "eavesLength": {
+                "type": "number",
+                "description": "Length of the eave edges."
+            },
+            "peaksLength": {
+                "type": "number",
+                "description": "Length of the peak edges."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "topSurface",
+            "bottomSurface",
+            "edgeSurface",
+            "topSurfaceConditional",
+            "bottomSurfaceConditional",
+            "grossTopSurface",
+            "grossBottomSurface",
+            "grossEdgeSurface",
+            "contourArea",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter",
+            "openingsSurface",
+            "ridgesLength",
+            "valleysLength",
+            "hipsLength",
+            "gablesLength",
+            "eavesLength",
+            "peaksLength"
+        ]
+    },
+    "ShellQuantities": {
+        "type": "object",
+        "description": "Quantities of a Shell element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the shell."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the shell."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the shell."
+            },
+            "referenceSurface": {
+                "type": "number",
+                "description": "Net area of the reference surface."
+            },
+            "oppositeSurface": {
+                "type": "number",
+                "description": "Net area of the surface opposite to the reference."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Total area of the edges."
+            },
+            "referenceSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional area of the reference surface."
+            },
+            "oppositeSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional area of the opposite surface."
+            },
+            "grossReferenceSurface": {
+                "type": "number",
+                "description": "Gross area of the reference surface."
+            },
+            "grossOppositeSurface": {
+                "type": "number",
+                "description": "Gross area of the opposite surface."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross area of the edges."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the contour polygon."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes."
+            },
+            "floorPlanArea": {
+                "type": "number",
+                "description": "Projected floor plan area of the contour polygon."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "referenceSurface",
+            "oppositeSurface",
+            "edgeSurface",
+            "referenceSurfaceConditional",
+            "oppositeSurfaceConditional",
+            "grossReferenceSurface",
+            "grossOppositeSurface",
+            "grossEdgeSurface",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter",
+            "floorPlanArea"
+        ]
+    },
+    "MorphQuantities": {
+        "type": "object",
+        "description": "Quantities of a Morph element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the body."
+            },
+            "surface": {
+                "type": "number",
+                "description": "Net area of the body surface."
+            },
+            "floorPlanArea": {
+                "type": "number",
+                "description": "Net area of the floor plan projection."
+            },
+            "floorPlanPerimeter": {
+                "type": "number",
+                "description": "Perimeter of the floor plan projection."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the morph."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "surface",
+            "floorPlanArea",
+            "floorPlanPerimeter",
+            "height"
+        ]
+    },
+    "ZoneQuantities": {
+        "type": "object",
+        "description": "Quantities of a Zone element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "area": {
+                "type": "number",
+                "description": "Measured area of the zone."
+            },
+            "netArea": {
+                "type": "number",
+                "description": "Net area of the zone."
+            },
+            "calculatedArea": {
+                "type": "number",
+                "description": "Calculated area of the zone (after reductions)."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the zone."
+            },
+            "netPerimeter": {
+                "type": "number",
+                "description": "Net perimeter of the zone."
+            },
+            "volume": {
+                "type": "number",
+                "description": "Volume of the zone."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the zone."
+            },
+            "wallsPerimeter": {
+                "type": "number",
+                "description": "Length of the perimeter walls."
+            },
+            "wallsSurface": {
+                "type": "number",
+                "description": "Surface of the perimeter walls."
+            },
+            "doorsSurface": {
+                "type": "number",
+                "description": "Surface of the doors in the zone."
+            },
+            "windowsSurface": {
+                "type": "number",
+                "description": "Surface of the windows in the zone."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "area",
+            "netArea",
+            "calculatedArea",
+            "perimeter",
+            "netPerimeter",
+            "volume",
+            "height",
+            "wallsPerimeter",
+            "wallsSurface",
+            "doorsSurface",
+            "windowsSurface"
+        ]
+    },
+    "ColumnSegmentQuantities": {
+        "type": "object",
+        "description": "Quantities of a ColumnSegment element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the column segment."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column segment."
+            },
+            "coreVolume": {
+                "type": "number",
+                "description": "Net volume of the segment core."
+            },
+            "coreGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the segment core."
+            },
+            "veneerVolume": {
+                "type": "number",
+                "description": "Net volume of the segment veneer."
+            },
+            "veneerGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the segment veneer."
+            },
+            "coreSurface": {
+                "type": "number",
+                "description": "Net surface of the segment core."
+            },
+            "veneerSideSurface": {
+                "type": "number",
+                "description": "Side surface of the segment veneer."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the column segment."
+            },
+            "area": {
+                "type": "number",
+                "description": "Area of the column segment."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the column segment."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the column segment."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the column segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "grossVolume",
+            "coreVolume",
+            "coreGrossVolume",
+            "veneerVolume",
+            "veneerGrossVolume",
+            "coreSurface",
+            "veneerSideSurface",
+            "length",
+            "area",
+            "height",
+            "minHeight",
+            "maxHeight"
+        ]
+    },
+    "BeamSegmentQuantities": {
+        "type": "object",
+        "description": "Quantities of a BeamSegment element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the beam segment."
+            },
+            "holesVolume": {
+                "type": "number",
+                "description": "Total volume of the holes in the beam segment."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the beam segment."
+            },
+            "leftLength": {
+                "type": "number",
+                "description": "Length on the left side."
+            },
+            "rightLength": {
+                "type": "number",
+                "description": "Length on the right side."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Surface of the top of the beam segment."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Surface of the bottom of the beam segment."
+            },
+            "leftSurface": {
+                "type": "number",
+                "description": "Surface of the left side of the beam segment."
+            },
+            "rightSurface": {
+                "type": "number",
+                "description": "Surface of the right side of the beam segment."
+            },
+            "endSurface": {
+                "type": "number",
+                "description": "Surface of the ends of the beam segment."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total surface of the holes in the beam segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "holesVolume",
+            "length",
+            "leftLength",
+            "rightLength",
+            "topSurface",
+            "bottomSurface",
+            "leftSurface",
+            "rightSurface",
+            "endSurface",
+            "holesSurface"
+        ]
+    },
+    "ElementQuantities": {
+        "description": "The type-specific quantities of an element. The fields depend on the type of the element.",
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallQuantities"
+            },
+            {
+                "$ref": "#/ColumnQuantities"
+            },
+            {
+                "$ref": "#/BeamQuantities"
+            },
+            {
+                "$ref": "#/SlabQuantities"
+            },
+            {
+                "$ref": "#/RoofQuantities"
+            },
+            {
+                "$ref": "#/ShellQuantities"
+            },
+            {
+                "$ref": "#/MorphQuantities"
+            },
+            {
+                "$ref": "#/ZoneQuantities"
+            },
+            {
+                "$ref": "#/ColumnSegmentQuantities"
+            },
+            {
+                "$ref": "#/BeamSegmentQuantities"
+            }
+        ]
+    },
+    "MEPOrientation": {
+        "type": "object",
+        "description": "The orientation of an MEP element, given by a direction and a rotation vector.",
+        "properties": {
+            "direction": {
+                "$ref": "#/Coordinate3D",
+                "description": "The direction vector."
+            },
+            "rotation": {
+                "$ref": "#/Coordinate3D",
+                "description": "The rotation vector."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "direction",
+            "rotation"
+        ]
+    },
+    "ElectricalLoads": {
+        "type": "object",
+        "description": "An electrical load in total and per phase, as Archicad calculates it.",
+        "properties": {
+            "total": {
+                "type": "number"
+            },
+            "phaseA": {
+                "type": "number"
+            },
+            "phaseB": {
+                "type": "number"
+            },
+            "phaseC": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "total",
+            "phaseA",
+            "phaseB",
+            "phaseC"
+        ]
+    },
+    "ElectricalPanelDetails": {
+        "type": "object",
+        "description": "The details of an electrical panel (distribution board).",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "panelName": {
+                "type": "string"
+            },
+            "circuitNamePrefix": {
+                "type": "string",
+                "description": "The prefix of the names of the circuits of the panel."
+            },
+            "circuitIdStyle": {
+                "type": "integer",
+                "description": "The index of the style of the circuit ids."
+            },
+            "circuits": {
+                "$ref": "#/Elements",
+                "description": "The circuits owned by the panel."
+            },
+            "parentCircuitId": {
+                "$ref": "#/ElementId",
+                "description": "The circuit the panel is connected to. Missing when the panel is not connected to a circuit."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the element."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation"
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The base rotation of the element in radians."
+            },
+            "isReflected": {
+                "type": "boolean",
+                "description": "The element is mirrored."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part of the element."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the element along its local x axis."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the element along its local y axis."
+            },
+            "connectedLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "demandLoad": {
+                "$ref": "#/ElectricalLoads"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "panelName",
+            "circuitNamePrefix",
+            "circuitIdStyle",
+            "circuits",
+            "anchorPoint",
+            "orientation",
+            "rotation",
+            "isReflected",
+            "libraryPartId",
+            "xSize",
+            "ySize",
+            "connectedLoad",
+            "demandLoad"
+        ]
+    },
+    "ElectricalPanelDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical panel or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalPanelDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElectricalCircuitDetails": {
+        "type": "object",
+        "description": "The details of an electrical circuit.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the circuit, including the circuit name prefix of its panel."
+            },
+            "description": {
+                "type": "string"
+            },
+            "ownerPanelId": {
+                "$ref": "#/ElementId",
+                "description": "The panel that owns the circuit."
+            },
+            "childDevices": {
+                "$ref": "#/Elements",
+                "description": "The electrical devices connected to the circuit."
+            },
+            "childPanels": {
+                "$ref": "#/Elements",
+                "description": "The electrical panels connected to the circuit."
+            },
+            "voltage": {
+                "type": "number"
+            },
+            "phases": {
+                "type": "string",
+                "description": "The used phases, as Archicad displays them."
+            },
+            "isPhaseAUsed": {
+                "type": "boolean"
+            },
+            "isPhaseBUsed": {
+                "type": "boolean"
+            },
+            "isPhaseCUsed": {
+                "type": "boolean"
+            },
+            "wiringTypeName": {
+                "type": "string",
+                "description": "The name of the wiring type, as defined in the electrical project settings."
+            },
+            "connectedLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "demandLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "voltageDrop": {
+                "type": "number"
+            },
+            "estimatedCableLength": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "name",
+            "description",
+            "ownerPanelId",
+            "childDevices",
+            "childPanels",
+            "voltage",
+            "phases",
+            "isPhaseAUsed",
+            "isPhaseBUsed",
+            "isPhaseCUsed",
+            "wiringTypeName",
+            "connectedLoad",
+            "demandLoad",
+            "voltageDrop",
+            "estimatedCableLength"
+        ]
+    },
+    "ElectricalCircuitDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical circuit or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalCircuitDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElectricalDeviceDetails": {
+        "type": "object",
+        "description": "The details of an electrical device (a light, socket or other consumer).",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "parentCircuitId": {
+                "$ref": "#/ElementId",
+                "description": "The circuit the device is connected to. Missing when the device is not connected to a circuit."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the element."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation"
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The base rotation of the element in radians."
+            },
+            "isReflected": {
+                "type": "boolean",
+                "description": "The element is mirrored."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part of the element."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the element along its local x axis."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the element along its local y axis."
+            },
+            "apparentPower": {
+                "type": "number",
+                "description": "The apparent power of the device in VA."
+            },
+            "isApparentPowerEnabled": {
+                "type": "boolean"
+            },
+            "loadClassificationName": {
+                "type": "string",
+                "description": "The name of the load classification, as defined in the electrical project settings."
+            },
+            "demandLoad": {
+                "type": "number"
+            },
+            "connectedElements": {
+                "$ref": "#/Elements",
+                "description": "The MEP elements directly connected to the device."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "anchorPoint",
+            "orientation",
+            "rotation",
+            "isReflected",
+            "libraryPartId",
+            "xSize",
+            "ySize",
+            "apparentPower",
+            "isApparentPowerEnabled",
+            "loadClassificationName",
+            "demandLoad",
+            "connectedElements"
+        ]
+    },
+    "ElectricalDeviceDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical device or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalDeviceDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPReferenceSet": {
+        "type": "object",
+        "description": "The reference ids (nominal sizes) that the preference tables of a domain can use.",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "referenceIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "referenceIds"
+        ]
+    },
+    "MEPAngleSet": {
+        "type": "object",
+        "description": "The angles (in degrees) that the elbow and branch preference tables of a domain can use.",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "angles": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "angles"
+        ]
+    },
+    "MEPElbowPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "referenceId": {
+                            "type": "integer"
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "In degrees. Available from Archicad 29."
+                        },
+                        "diameter": {
+                            "type": "number"
+                        },
+                        "radius": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "referenceId",
+                        "diameter",
+                        "radius"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPBranchPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "mainAxisReferenceId": {
+                            "type": "integer"
+                        },
+                        "branchAxisReferenceId": {
+                            "type": "integer"
+                        },
+                        "branchAxisAngle": {
+                            "type": "number",
+                            "description": "In degrees. Available from Archicad 29."
+                        },
+                        "mainAxisDiameter": {
+                            "type": "number"
+                        },
+                        "branchAxisDiameter": {
+                            "type": "number"
+                        },
+                        "length": {
+                            "type": "number"
+                        },
+                        "branchOffset": {
+                            "type": "number"
+                        },
+                        "connectionLength": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "mainAxisReferenceId",
+                        "branchAxisReferenceId",
+                        "mainAxisDiameter",
+                        "branchAxisDiameter",
+                        "length",
+                        "branchOffset",
+                        "connectionLength"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPTransitionPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "beginReferenceId": {
+                            "type": "integer"
+                        },
+                        "endReferenceId": {
+                            "type": "integer"
+                        },
+                        "beginDiameter": {
+                            "type": "number"
+                        },
+                        "endDiameter": {
+                            "type": "number"
+                        },
+                        "length": {
+                            "type": "number",
+                            "description": "Piping only."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "In degrees. Ventilation only."
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "beginReferenceId",
+                        "endReferenceId",
+                        "beginDiameter",
+                        "endDiameter"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPSystemGroupId": {
+        "type": "object",
+        "description": "The identifier of an MEP system group.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPPhysicalSystemId": {
+        "type": "object",
+        "description": "The identifier of an MEP physical system.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPPhysicalSystemDetails": {
+        "type": "object",
+        "properties": {
+            "physicalSystemId": {
+                "$ref": "#/MEPPhysicalSystemId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rootElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the system starts from. Missing when not set, or when Archicad cleared it because the element is not part of an MEP network."
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId",
+                "description": "The MEP system attribute used as the category of the system. Missing when not set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemId",
+            "name"
+        ]
+    },
+    "MEPPhysicalSystemDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/MEPPhysicalSystemDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemGroupDetails": {
+        "type": "object",
+        "properties": {
+            "systemGroupId": {
+                "$ref": "#/MEPSystemGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "physicalSystems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPhysicalSystemDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupId",
+            "name",
+            "physicalSystems"
+        ]
+    },
+    "MEPSystemGroupDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/MEPSystemGroupDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemGroupIdOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "systemGroupId": {
+                        "$ref": "#/MEPSystemGroupId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "systemGroupId"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPPhysicalSystemIdOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "physicalSystemId": {
+                        "$ref": "#/MEPPhysicalSystemId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "physicalSystemId"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }

@@ -17,10 +17,12 @@
 #include "MigrationHelper.hpp"
 
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <functional>
 #include <map>
 #include <regex>
+#include <string>
 #include <vector>
 
 #if defined (WINDOWS)
@@ -52,6 +54,60 @@ static UShort GetConnectionPort ()
     UShort portNumber;
     ACAPI_Command_GetHttpConnectionPort (&portNumber);
     return portNumber;
+}
+
+// Builds a UniString from the raw bytes of a script's output, replacing invalid UTF-8
+// sequences with '?'. GSRoot's UTF-8 assert (Unicode.cpp:343) must never fire: its report
+// path converts the same bad string again and can recurse into a stack overflow that kills
+// Archicad (WER 0xc00000fd in GSRoot.dll). Script output is not always valid UTF-8: Python
+// writes to a pipe in the system code page (for example cp932 tracebacks on Japanese
+// Windows), and a multi-byte character can be split at a read-chunk boundary.
+static GS::UniString SafeUTF8String (const char* bytes, GS::USize size)
+{
+    std::string clean;
+    clean.reserve (size);
+    GS::USize i = 0;
+    while (i < size) {
+        const unsigned char c = static_cast<unsigned char> (bytes[i]);
+        // Well-formed sequences as in Table 3-7 of the Unicode Standard: the lead byte gives
+        // the length, and the range of the second byte also excludes overlong encodings,
+        // UTF-16 surrogates and code points above U+10FFFF.
+        GS::USize seqLen = 0;
+        unsigned char secondMin = 0x80;
+        unsigned char secondMax = 0xBF;
+        if (c < 0x80) {
+            seqLen = 1;
+        } else if (c >= 0xC2 && c <= 0xDF) {
+            seqLen = 2;
+        } else if (c >= 0xE0 && c <= 0xEF) {
+            seqLen = 3;
+            if (c == 0xE0) {
+                secondMin = 0xA0;
+            } else if (c == 0xED) {
+                secondMax = 0x9F;
+            }
+        } else if (c >= 0xF0 && c <= 0xF4) {
+            seqLen = 4;
+            if (c == 0xF0) {
+                secondMin = 0x90;
+            } else if (c == 0xF4) {
+                secondMax = 0x8F;
+            }
+        }
+        bool valid = seqLen > 0 && i + seqLen <= size;
+        for (GS::USize j = 1; valid && j < seqLen; ++j) {
+            const unsigned char next = static_cast<unsigned char> (bytes[i + j]);
+            valid = (j == 1) ? (next >= secondMin && next <= secondMax) : ((next & 0xC0) == 0x80);
+        }
+        if (valid) {
+            clean.append (bytes + i, seqLen);
+            i += seqLen;
+        } else {
+            clean.push_back ('?');
+            ++i;
+        }
+    }
+    return GS::UniString (clean.c_str (), static_cast<GS::USize> (clean.size ()), CC_UTF8);
 }
 
 static IO::Location GetTapirTemporaryFolder ()
@@ -987,11 +1043,10 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             }
 
             const GS::USize uSize = static_cast<GS::USize> (channel.GetAvailable ());
-            std::unique_ptr<char> buffer;
-            buffer.reset (new char[uSize + 1]);
+            std::unique_ptr<char[]> buffer (new char[uSize + 1]);
 
             GS::IBinaryChannelUtilities::ReadFully (channel, buffer.get (), uSize);
-            return GS::UniString (buffer.get (), uSize, CC_UTF8);
+            return SafeUTF8String (buffer.get (), uSize);
         }
         void ReadFromChannels ()
         {
@@ -1801,7 +1856,9 @@ void TapirPalette::SaveScriptsToPreferences ()
         preferencesStr += '\n' + labelStr;
     }
     auto cStr = preferencesStr.ToCStr ();
-    ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
+    // +1 keeps the terminating null in the stored blob; older builds stored strlen bytes
+    // only, which made the load side read past its buffer (see AddScriptsFromPreferences).
+    ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()) + 1, cStr.Get());
 }
 
 bool TapirPalette::IsValidLocation (const IO::Location& location)
@@ -1835,10 +1892,16 @@ short TapirPalette::AddScriptsFromPreferences ()
         return DG::PopUp::TopItem;
     }
 
-    std::unique_ptr<char> data(new char[nBytes]);
+    std::unique_ptr<char[]> data (new char[nBytes + 1]);
     ACAPI_GetPreferences (&version, &nBytes, data.get ());
+    // Blobs stored by older builds have no terminating null (they stored strlen bytes),
+    // so the length must come from nBytes, never from scanning for a null. strnlen still
+    // trims the terminator that current builds do store. The code page stays the one
+    // SaveScriptsToPreferences writes with (ToCStr's default), so older blobs read as before.
+    data.get ()[nBytes] = '\0';
+    const GS::USize textLen = static_cast<GS::USize> (strnlen (data.get (), static_cast<size_t> (nBytes)));
     GS::Array<GS::UniString> scriptPathArray;
-    GS::UniString (data.get ()).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
+    GS::UniString (data.get (), textLen).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
 
     if (version == PREFERENCES_VERSION && scriptPathArray.GetSize () >= 2 * ScriptShortcutSlotCount) {
         // Labels were appended last, so they must be popped first.
