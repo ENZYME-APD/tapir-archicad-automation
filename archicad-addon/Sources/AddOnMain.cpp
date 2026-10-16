@@ -43,6 +43,7 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GraphicOverrideCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -898,6 +899,30 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetBuildingMaterialsCommand> (
             attributeCommands, "1.5.4",
             "Returns the details of the given Building Material attributes."
+        );
+        err |= RegisterCommand<GetGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Creates graphic override rules. The rule group is created when no rule group has the given name. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ModifyGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Modifies the name, criterion or style of graphic override rules. A given style replaces the whole style of the rule. Available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Deletes graphic override rules. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.2",
+            "Gets all graphic override combinations of the project with the rules they contain. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.2",
+            "Creates graphic override combinations from existing rules. Available from Archicad 27."
         );
         AddCommandGroup (attributeCommands);
     }
