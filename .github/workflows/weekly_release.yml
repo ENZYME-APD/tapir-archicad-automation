@@ -26,6 +26,20 @@ name: Weekly Release
 #      Grasshopper build + yak deploy) on that tag and wait for them.
 #      They must be dispatched explicitly because a tag pushed with the
 #      workflow's own GITHUB_TOKEN does not trigger on-push workflows.
+#      The Add-On pipeline has the Windows installer signed by SignPath
+#      (certificate by SignPath Foundation), which needs a manual approval
+#      in SignPath for every release: approve from SignPath's e-mail within
+#      3 hours of the request. Scheduled runs start hours after 06:00 UTC,
+#      so act on the e-mail, not at a fixed time, or release by dispatching
+#      this workflow while an approver is available. Signing never blocks
+#      the release: when it fails (the SignPath certificate is not usable,
+#      the request is denied or not approved in time, or the signature check
+#      fails), the release goes out with the unsigned Windows installer, a
+#      warning in the run and a note in the release notes. Deny a stale
+#      request in SignPath. Do not use GitHub's "Re-run" buttons, on this
+#      run or on the Add-On pipeline: a re-run reuses the original commit,
+#      which misses the version and docs commits this workflow pushed, and
+#      SignPath evaluates only a limited number of re-runs.
 #   6. When all artifacts are built, publish the draft release with
 #      auto-generated notes.
 #   7. Announce the published release in the project's Discord channel.
@@ -95,7 +109,11 @@ jobs:
     # on tags).
     if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    # Covers the Add-On pipeline's wait for the SignPath approval of the
+    # Windows installer (up to 3 h, see archicad_addon.yml), the builds and
+    # the Grasshopper pipeline. GitHub-hosted jobs stop at 6 h regardless,
+    # so nothing can be added beyond this.
+    timeout-minutes: 350
     permissions:
       contents: write   # push the tag and the version bump commit
       actions: write    # dispatch the two release pipelines
@@ -544,6 +562,35 @@ jobs:
           fi
           NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
             -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          # The Add-On pipeline releases the unsigned Windows installer when
+          # signing fails (see archicad_addon.yml); its run on this commit
+          # keeps the signed file as an artifact only when signing worked.
+          # An unanswered lookup counts as unsigned: the footer must not claim
+          # a signature that may not be there.
+          SIGNED=0
+          ADDON_RUN=$(gh run list --workflow archicad_addon.yml --branch "$VERSION" --status success \
+            --limit 10 --json databaseId,headSha \
+            --jq "[.[] | select(.headSha == \"$(git rev-parse HEAD)\")] | .[0].databaseId // empty" || true)
+          if [ -n "$ADDON_RUN" ]; then
+            SIGNED=$(gh api "repos/${{ github.repository }}/actions/runs/$ADDON_RUN/artifacts" \
+              --jq '[.artifacts[] | select(.name == "Tapir Installer Win Signed (release-signing)")] | length' || echo 0)
+          fi
+          if [ "$SIGNED" -gt 0 ]; then
+            # The SignPath Foundation terms want the code signing policy
+            # named on every release page with a signed file. A release
+            # published by hand needs this footer added by hand, too.
+            NOTES="$NOTES
+
+          ---
+          Windows installer: [Code signing policy](https://github.com/${{ github.repository }}#code-signing-policy) - free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org)."
+          else
+            echo "::warning::The Windows installer of $VERSION is not code signed."
+            echo "The Windows installer of **$VERSION** is released **unsigned**." >> "$GITHUB_STEP_SUMMARY"
+            NOTES="$NOTES
+
+          ---
+          The Windows installer of this release is not code signed."
+          fi
           # make_latest is a string enum in the REST API, draft a real boolean.
           gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
             -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null

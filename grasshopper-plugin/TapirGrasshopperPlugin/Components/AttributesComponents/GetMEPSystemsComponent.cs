@@ -66,6 +66,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             OutTexts(
                 "ErrorMessages",
                 "Error message for each queried attribute (empty when successful).");
+
+            OutGenerics(
+                "MaterialGuids",
+                "Identifier of the surface (material) attribute applied to the 3D model of the elements of each MEP system.");
+
+            OutGenerics(
+                "InsulationMaterialGuids",
+                "Identifier of the surface (material) attribute applied to the insulation of the elements of each MEP system.");
         }
 
         protected override void SetOutputs(
@@ -83,6 +91,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var fillGuids = new List<object>();
             var centerLineTypeGuids = new List<object>();
             var errors = new List<string>();
+            var materialGuids = new List<object>();
+            var insulationMaterialGuids = new List<object>();
 
             for (var i = 0; i < items.Count; i++)
             {
@@ -102,6 +112,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     centerLinePens.Add(null);
                     fillGuids.Add(null);
                     centerLineTypeGuids.Add(null);
+                    materialGuids.Add(null);
+                    insulationMaterialGuids.Add(null);
                     continue;
                 }
 
@@ -115,6 +127,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 centerLinePens.Add(JsonOutputHelp.Scalar(item, "centerLinePen"));
                 fillGuids.Add(WrappedAttributeIdOf(item["fillId"]));
                 centerLineTypeGuids.Add(WrappedAttributeIdOf(item["centerLineTypeId"]));
+                materialGuids.Add(WrappedAttributeIdOf(item["materialId"]));
+                insulationMaterialGuids.Add(WrappedAttributeIdOf(item["insulationMaterialId"]));
 
                 if (item["domain"] is JArray domainArray)
                 {
@@ -138,6 +152,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(8, fillGuids);
             da.SetDataList(9, centerLineTypeGuids);
             da.SetDataList(10, errors);
+            da.SetDataList(11, materialGuids);
+            da.SetDataList(12, insulationMaterialGuids);
         }
 
         protected override System.Drawing.Bitmap Icon =>
