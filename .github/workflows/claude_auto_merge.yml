@@ -73,6 +73,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write          # close a split issue once its last part merged
       checks: read
       statuses: read
 
@@ -302,5 +303,24 @@ jobs:
               echo "::endgroup::"; continue
             fi
             echo "merged at $headOid"
+
+            # A part of a split issue (claude_issue_triage.yml) says
+            # `Part k of N of #n` instead of `Fixes`, so the issue stays open
+            # until every part is in: close it once all N parts are merged.
+            if [ "$isBot" = "true" ]; then
+              part=$(gh pr view "$pr" --repo "$REPO" --json body --jq '.body' \
+                | grep -oE 'Part [0-9]+ of [0-9]+ of #[0-9]+' | head -n 1 || true)
+              if [ -n "$part" ]; then
+                parts=$(awk '{print $4}' <<<"$part"); issue=${part##*#}
+                merged=$(gh pr list --repo "$REPO" --state merged --limit 500 --json headRefName,author \
+                  --jq "[.[] | select(.author.login == \"app/github-actions\" or .author.login == \"github-actions[bot]\" or .author.login == \"github-actions\")
+                         | .headRefName | capture(\"^claude/issue-${issue}-part(?<k>[0-9]+)-\") | .k] | unique | length" || echo 0)
+                echo "split issue #$issue: $merged of $parts parts merged"
+                if [ "$merged" -ge "$parts" ]; then
+                  gh issue close "$issue" --repo "$REPO" --reason completed \
+                    --comment "All $parts parts are merged; closing." || echo "::warning::could not close #$issue"
+                fi
+              fi
+            fi
             echo "::endgroup::"
           done
