@@ -74,6 +74,19 @@ namespace TapirGrasshopperPlugin.Components
         // The typed detail fields of the command.
         protected abstract IReadOnlyList<Field> Fields { get; }
 
+        private static readonly IReadOnlyList<Field> NoFields = new List<Field>();
+
+        // Typed fields added after the component was released. Their inputs
+        // come after the AdditionalSettings input, so the inputs of saved
+        // definitions, which Grasshopper binds by index, keep their places.
+        // New ones are always appended at the end. No value list is attached
+        // to them: an attached list sends its value, so it would change the
+        // elements of a definition that left the new input unconnected.
+        protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
+
+        // + 2: the ElementGuids and AdditionalSettings inputs.
+        private int FirstTrailingFieldInputIndex => Fields.Count + 2;
+
         protected ModifyElementsComponentBase(
             string name,
             string description,
@@ -107,31 +120,7 @@ namespace TapirGrasshopperPlugin.Components
             var index = 1;
             foreach (var field in Fields)
             {
-                var description = field.Description +
-                    " Input only 1 to use the same value for all elements. Optional.";
-                switch (field.Kind)
-                {
-                    case FieldKind.Number:
-                        InNumbers(field.InputName, description);
-                        break;
-                    case FieldKind.Integer:
-                        InIntegers(field.InputName, description);
-                        break;
-                    case FieldKind.Boolean:
-                        InBooleans(field.InputName, description);
-                        break;
-                    case FieldKind.Text:
-                        InTexts(field.InputName, description);
-                        break;
-                    case FieldKind.Point2D:
-                    case FieldKind.Point3D:
-                        InPoints(field.InputName, description);
-                        break;
-                    case FieldKind.AttributeGuid:
-                        InGenerics(field.InputName, description);
-                        break;
-                }
-
+                AddFieldInput(field);
                 SetOptionality(index);
                 index++;
             }
@@ -141,6 +130,43 @@ namespace TapirGrasshopperPlugin.Components
                 "One JSON object per element with further optional settings matching the " +
                 "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
             SetOptionality(index);
+            index++;
+
+            foreach (var field in TrailingFields)
+            {
+                AddFieldInput(field);
+                SetOptionality(index);
+                index++;
+            }
+        }
+
+        private void AddFieldInput(
+            Field field)
+        {
+            var description = field.Description +
+                " Input only 1 to use the same value for all elements. Optional.";
+            switch (field.Kind)
+            {
+                case FieldKind.Number:
+                    InNumbers(field.InputName, description);
+                    break;
+                case FieldKind.Integer:
+                    InIntegers(field.InputName, description);
+                    break;
+                case FieldKind.Boolean:
+                    InBooleans(field.InputName, description);
+                    break;
+                case FieldKind.Text:
+                    InTexts(field.InputName, description);
+                    break;
+                case FieldKind.Point2D:
+                case FieldKind.Point3D:
+                    InPoints(field.InputName, description);
+                    break;
+                case FieldKind.AttributeGuid:
+                    InGenerics(field.InputName, description);
+                    break;
+            }
         }
 
         protected override void AddOutputs()
@@ -208,6 +234,41 @@ namespace TapirGrasshopperPlugin.Components
             container[path[path.Length - 1]] = token;
         }
 
+        private bool TryApplyField(
+            IGH_DataAccess da,
+            int inputIndex,
+            Field field,
+            IReadOnlyList<JObject> targets)
+        {
+            switch (field.Kind)
+            {
+                case FieldKind.Number:
+                    return TryApply<double>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Integer:
+                    return TryApply<int>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Boolean:
+                    return TryApply<bool>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Text:
+                    return TryApply<string>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Point2D:
+                    return TryApply<Point3d>(da, inputIndex, field, targets, v =>
+                        new JObject { ["x"] = v.X, ["y"] = v.Y });
+                case FieldKind.Point3D:
+                    return TryApply<Point3d>(da, inputIndex, field, targets, v =>
+                        new JObject { ["x"] = v.X, ["y"] = v.Y, ["z"] = v.Z });
+                case FieldKind.AttributeGuid:
+                    return TryApply<GH_ObjectWrapper>(da, inputIndex, field, targets, v =>
+                    {
+                        var id = GuidObject<AttributeGuidObject>.CreateFromWrapper(v);
+                        return id == null
+                            ? null
+                            : new JObject { ["guid"] = id.Guid };
+                    });
+                default:
+                    return true;
+            }
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -239,48 +300,22 @@ namespace TapirGrasshopperPlugin.Components
                 items.Add(item);
             }
 
+            var typedInputs = new List<(Field Field, int InputIndex)>();
             for (var fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
             {
-                var field = fields[fieldIndex];
-                var inputIndex = fieldIndex + 1;
-                bool ok;
-                switch (field.Kind)
-                {
-                    case FieldKind.Number:
-                        ok = TryApply<double>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Integer:
-                        ok = TryApply<int>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Boolean:
-                        ok = TryApply<bool>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Text:
-                        ok = TryApply<string>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Point2D:
-                        ok = TryApply<Point3d>(da, inputIndex, field, targets, v =>
-                            new JObject { ["x"] = v.X, ["y"] = v.Y });
-                        break;
-                    case FieldKind.Point3D:
-                        ok = TryApply<Point3d>(da, inputIndex, field, targets, v =>
-                            new JObject { ["x"] = v.X, ["y"] = v.Y, ["z"] = v.Z });
-                        break;
-                    case FieldKind.AttributeGuid:
-                        ok = TryApply<GH_ObjectWrapper>(da, inputIndex, field, targets, v =>
-                        {
-                            var id = GuidObject<AttributeGuidObject>.CreateFromWrapper(v);
-                            return id == null
-                                ? null
-                                : new JObject { ["guid"] = id.Guid };
-                        });
-                        break;
-                    default:
-                        ok = true;
-                        break;
-                }
+                // + 1: the ElementGuids input comes before the field inputs.
+                typedInputs.Add((fields[fieldIndex], fieldIndex + 1));
+            }
+            var trailingFields = TrailingFields;
+            for (var trailingIndex = 0; trailingIndex < trailingFields.Count; trailingIndex++)
+            {
+                typedInputs.Add(
+                    (trailingFields[trailingIndex], FirstTrailingFieldInputIndex + trailingIndex));
+            }
 
-                if (!ok)
+            foreach (var (field, inputIndex) in typedInputs)
+            {
+                if (!TryApplyField(da, inputIndex, field, targets))
                 {
                     return;
                 }
