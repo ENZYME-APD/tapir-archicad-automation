@@ -556,6 +556,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.0",
             "Creates standalone Text elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateLevelDimensionsCommand> (
+            elementCommands, "1.7.2",
+            "Creates Level Dimension elements (the Level Dimension tool) based on the given parameters. With a parentElementId the dimension is associative: it shows the height of the parent element (Mesh, Slab, Roof ...) at its position and follows the element when it changes."
+        );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",
             "Modifies Wall elements based on the given parameters."

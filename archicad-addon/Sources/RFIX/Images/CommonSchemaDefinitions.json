@@ -8305,6 +8305,84 @@
               "leaderLine"
           ]
     },
+    "DimensionOrigin": {
+        "type": "string",
+        "description": "The origin a level dimension measures from.",
+        "enum": [
+            "ProjectZero",
+            "ReferenceLevel1",
+            "ReferenceLevel2",
+            "StoredOrigin",
+            "Altitude"
+        ]
+    },
+    "LevelDimensionDetails": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The location of the marker."
+            },
+            "level": {
+                "type": "number",
+                "description": "The level the dimension shows in meters: the height of the owner element at the position for an associative level dimension, the floor level or the static value otherwise."
+            },
+            "staticLevel": {
+                "type": "boolean",
+                "description": "The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false."
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "Present only for an associative level dimension: the element it measures."
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType",
+                "description": "Present only for an associative level dimension."
+            },
+            "dimForm": {
+                "type": "integer",
+                "description": "Marker type 0-19."
+            },
+            "needPlus": {
+                "type": "boolean"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer"
+            },
+            "markerSize": {
+                "type": "number",
+                "description": "Size of the marker in millimeters."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the marker in radians."
+            },
+            "origin": {
+                "$ref": "#/DimensionOrigin"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "level",
+            "staticLevel",
+            "dimForm",
+            "needPlus",
+            "pen",
+            "textHeight",
+            "textPen",
+            "markerSize",
+            "angle",
+            "origin"
+        ]
+    },
     "TextDetails": {
         "type": "object",
         "properties": {
@@ -8441,6 +8519,9 @@
             },
             {
                 "$ref": "#/TextDetails"
+            },
+            {
+                "$ref": "#/LevelDimensionDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"

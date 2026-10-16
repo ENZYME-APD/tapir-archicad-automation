@@ -1244,6 +1244,28 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
             }
 
+            case API_LevelDimensionID: {
+                // "level" is the value the dimension shows: the parent's height at "position"
+                // for an associative one, the floor level or the static value otherwise.
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (elem.levelDimension.loc));
+                typeSpecificDetails.Add ("level", elem.levelDimension.level);
+                typeSpecificDetails.Add ("staticLevel", elem.levelDimension.staticLevel);
+                const API_ElemTypeID parentTypeId = GetElemTypeId (elem.levelDimension.parentType);
+                if (parentTypeId != API_ZombieElemID && elem.levelDimension.parentGuid != APINULLGuid) {
+                    typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (elem.levelDimension.parentGuid));
+                    typeSpecificDetails.Add ("ownerElementType", GetElementTypeNonLocalizedName (parentTypeId));
+                }
+                typeSpecificDetails.Add ("dimForm", (Int32) elem.levelDimension.dimForm);
+                typeSpecificDetails.Add ("needPlus", elem.levelDimension.needPlus);
+                typeSpecificDetails.Add ("pen", (Int32) elem.levelDimension.pen);
+                typeSpecificDetails.Add ("textHeight", elem.levelDimension.note1.noteSize);
+                typeSpecificDetails.Add ("textPen", (Int32) elem.levelDimension.note1.notePen);
+                typeSpecificDetails.Add ("markerSize", elem.levelDimension.markerSize);
+                typeSpecificDetails.Add ("angle", elem.levelDimension.angle);
+                typeSpecificDetails.Add ("origin", DimensionOriginToString (elem.levelDimension.origin));
+                break;
+            }
+
             case API_ObjectID:
             case API_LampID:
                 AddObjectLampDetails (typeSpecificDetails, elem, stories);
