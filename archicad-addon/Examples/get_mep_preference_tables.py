@@ -27,3 +27,17 @@ for table in ductTables:
     for row in table['rows']:
         description = row.get ('description', '')
         print (f"  referenceId={row['referenceId']} diameter={row['diameter']} {description}")
+
+# The fitting tables (elbows, branches and transitions) and the reference and angle sets.
+# Angles are in degrees, sizes in meters. The angle set and the transition tables need Archicad 29.
+pipeFittings = aclib.RunTapirCommand ('GetMEPPreferenceTables', {
+        'domain': 'Piping',
+        'includeFittingTables': True
+    })
+
+print (f"Pipe reference set {pipeFittings['referenceSet']['name']}: {pipeFittings['referenceSet']['referenceIds']}")
+if 'angleSet' in pipeFittings:
+    print (f"Pipe angle set {pipeFittings['angleSet']['name']}: {pipeFittings['angleSet']['angles']}")
+for tableKind in ('elbowTables', 'branchTables', 'transitionTables'):
+    for table in pipeFittings.get (tableKind, []):
+        print (f"{tableKind} {table['name']}: {len (table['rows'])} rows")

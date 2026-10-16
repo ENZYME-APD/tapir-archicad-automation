@@ -1361,7 +1361,19 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPPreferenceTablesCommand> (
             mepCommands, "1.5.7",
-            "Gets the circular cross section preference tables (referenceId, diameter, description) of the Piping or Ventilation domain. Available from Archicad 28."
+            "Gets the circular cross section preference tables (referenceId, diameter, description) and the reference set of the Piping or Ventilation domain, optionally with the elbow, branch and transition preference tables. The angle set and the transition tables are available from Archicad 29. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPSystemGroupsCommand> (
+            mepCommands, "1.7.2",
+            "Gets the MEP system groups of the project with their physical systems: name, root element and MEP system. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateMEPSystemGroupsCommand> (
+            mepCommands, "1.7.2",
+            "Creates MEP system groups. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateMEPPhysicalSystemsCommand> (
+            mepCommands, "1.7.2",
+            "Creates physical systems in MEP system groups, optionally with a root element and an MEP system as their category. Available from Archicad 29."
         );
         err |= RegisterCommand<GetElectricalPanelsCommand> (
             mepCommands, "1.7.2",

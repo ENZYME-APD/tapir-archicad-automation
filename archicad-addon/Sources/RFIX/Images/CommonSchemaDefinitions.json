@@ -12256,5 +12256,345 @@
                 "$ref": "#/ErrorItem"
             }
         ]
+    },
+    "MEPReferenceSet": {
+        "type": "object",
+        "description": "The reference ids (nominal sizes) that the preference tables of a domain can use.",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "referenceIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "referenceIds"
+        ]
+    },
+    "MEPAngleSet": {
+        "type": "object",
+        "description": "The angles (in degrees) that the elbow and branch preference tables of a domain can use.",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "angles": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "angles"
+        ]
+    },
+    "MEPElbowPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "referenceId": {
+                            "type": "integer"
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "In degrees. Available from Archicad 29."
+                        },
+                        "diameter": {
+                            "type": "number"
+                        },
+                        "radius": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "referenceId",
+                        "diameter",
+                        "radius"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPBranchPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "mainAxisReferenceId": {
+                            "type": "integer"
+                        },
+                        "branchAxisReferenceId": {
+                            "type": "integer"
+                        },
+                        "branchAxisAngle": {
+                            "type": "number",
+                            "description": "In degrees. Available from Archicad 29."
+                        },
+                        "mainAxisDiameter": {
+                            "type": "number"
+                        },
+                        "branchAxisDiameter": {
+                            "type": "number"
+                        },
+                        "length": {
+                            "type": "number"
+                        },
+                        "branchOffset": {
+                            "type": "number"
+                        },
+                        "connectionLength": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "mainAxisReferenceId",
+                        "branchAxisReferenceId",
+                        "mainAxisDiameter",
+                        "branchAxisDiameter",
+                        "length",
+                        "branchOffset",
+                        "connectionLength"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPTransitionPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "beginReferenceId": {
+                            "type": "integer"
+                        },
+                        "endReferenceId": {
+                            "type": "integer"
+                        },
+                        "beginDiameter": {
+                            "type": "number"
+                        },
+                        "endDiameter": {
+                            "type": "number"
+                        },
+                        "length": {
+                            "type": "number",
+                            "description": "Piping only."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "In degrees. Ventilation only."
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "beginReferenceId",
+                        "endReferenceId",
+                        "beginDiameter",
+                        "endDiameter"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPSystemGroupId": {
+        "type": "object",
+        "description": "The identifier of an MEP system group.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPPhysicalSystemId": {
+        "type": "object",
+        "description": "The identifier of an MEP physical system.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPPhysicalSystemDetails": {
+        "type": "object",
+        "properties": {
+            "physicalSystemId": {
+                "$ref": "#/MEPPhysicalSystemId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rootElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the system starts from. Missing when not set, or when Archicad cleared it because the element is not part of an MEP network."
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId",
+                "description": "The MEP system attribute used as the category of the system. Missing when not set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemId",
+            "name"
+        ]
+    },
+    "MEPPhysicalSystemDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/MEPPhysicalSystemDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemGroupDetails": {
+        "type": "object",
+        "properties": {
+            "systemGroupId": {
+                "$ref": "#/MEPSystemGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "physicalSystems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPhysicalSystemDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupId",
+            "name",
+            "physicalSystems"
+        ]
+    },
+    "MEPSystemGroupDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/MEPSystemGroupDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemGroupIdOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "systemGroupId": {
+                        "$ref": "#/MEPSystemGroupId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "systemGroupId"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPPhysicalSystemIdOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "physicalSystemId": {
+                        "$ref": "#/MEPPhysicalSystemId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "physicalSystemId"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }
