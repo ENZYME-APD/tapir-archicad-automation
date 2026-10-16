@@ -27,12 +27,15 @@ def FindItem (item, navigatorItemGuid):
             return found
     return None
 
+# The names of the subsets and layouts under the given item, in Layout Book
+# order. The Masters folder, which Archicad keeps last under the Layout Book
+# root, is left out: position "last" places a layout before it.
 def ChildNames (parentGuid):
     layoutBook = aclib.RunTapirCommand ('GetNavigatorItemTree', {
         'navigatorMapId': 'LayoutBook'
     }, debug = False)['navigatorItemTree']
     parent = layoutBook if parentGuid is None else FindItem (layoutBook, parentGuid)
-    return [child['navigatorItem']['name'] for child in parent.get ('children', [])]
+    return [child['navigatorItem']['name'] for child in parent.get ('children', []) if child['navigatorItem']['type'] != 'MasterFolderItem']
 
 allItems = CollectItems (layoutBook, [])
 masterLayout = next (item for item in allItems if item['type'] == 'MasterLayoutItem')
