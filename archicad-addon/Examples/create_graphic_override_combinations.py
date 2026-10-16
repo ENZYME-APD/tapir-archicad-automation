@@ -1,6 +1,7 @@
+import sys
 import aclib
 
-# Requires Archicad 27 or newer.
+# Requires Archicad 27 or newer; on older versions the first command fails and the example stops.
 # Creates a rule, then a combination that uses it.
 
 created = aclib.RunTapirCommand ('CreateGraphicOverrideRules', {
@@ -18,6 +19,9 @@ created = aclib.RunTapirCommand ('CreateGraphicOverrideRules', {
         }
     ]
 })
+if created is None or 'error' in created or 'error' in created['graphicOverrideRuleIds'][0]:
+    print ('Could not create the rule, this example needs Archicad 27 or newer and no rule named \'Tapir Example Rule\' in the project.')
+    sys.exit ()
 ruleId = created['graphicOverrideRuleIds'][0]['graphicOverrideRuleId']
 
 print (aclib.RunTapirCommand ('CreateGraphicOverrideCombinations', {

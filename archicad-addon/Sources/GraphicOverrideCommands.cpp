@@ -271,7 +271,7 @@ GS::Optional<GS::UniString> GetGraphicOverrideRulesCommand::GetRawResponseSchema
                         },
                         "criterionXML": {
                             "type": "string",
-                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in."
+                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
                         },
                         "style": {
                             "$ref": "#/GraphicOverrideStyle"
@@ -374,7 +374,7 @@ GS::Optional<GS::UniString> CreateGraphicOverrideRulesCommand::GetInputParameter
                         },
                         "criterionXML": {
                             "type": "string",
-                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Left out: Archicad's default criterion for new rules."
+                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Take it from GetGraphicOverrideRules and change its values: Archicad drops XML written from scratch without an error, and the rule then applies to all elements. Left out: Archicad's default criterion for new rules."
                         },
                         "style": {
                             "$ref": "#/GraphicOverrideStyle"
@@ -497,7 +497,7 @@ GS::Optional<GS::UniString> ModifyGraphicOverrideRulesCommand::GetInputParameter
                         },
                         "criterionXML": {
                             "type": "string",
-                            "description": "The new criterion of the rule, in the XML format Archicad saves override rules in."
+                            "description": "The new criterion of the rule, in the XML format Archicad saves override rules in. Take it from GetGraphicOverrideRules and change its values: Archicad drops XML written from scratch without an error, and the rule then applies to all elements."
                         },
                         "style": {
                             "$ref": "#/GraphicOverrideStyle"
