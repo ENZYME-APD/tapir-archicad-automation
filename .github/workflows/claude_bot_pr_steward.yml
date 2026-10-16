@@ -384,6 +384,7 @@ jobs:
           fetch-depth: 0
 
       - name: Fix the pull request
+        id: fix
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -462,6 +463,25 @@ jobs:
             --model best
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch origin:*),Bash(git merge origin/main),Bash(git merge --abort),Bash(git push origin ${{ steps.pr.outputs.branch }}),Bash(gh pr view ${{ inputs.pr_number }}:*),Bash(gh pr diff ${{ inputs.pr_number }}:*),Bash(gh pr comment ${{ inputs.pr_number }}:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./archicad-addon/Installer/**),Edit(./tools/**)"
+
+      # A run that pushed nothing leaves the head, the failures and the
+      # findings as they were, so another round would see the same inputs:
+      # hand the pull request over now instead of spending every round.
+      - name: Hand over if nothing was pushed
+        if: steps.fix.outcome == 'success'
+        env:
+          HEAD: ${{ steps.pr.outputs.head }}
+        run: |
+          set -euo pipefail
+          now=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
+          if [ "$now" != "$HEAD" ]; then
+            echo "pushed ${now:0:7}"
+            exit 0
+          fi
+          gh label create needs-maintainer --repo "$REPO" --color D93F0B \
+            --description "The automation stopped; a maintainer has to look" 2>/dev/null || true
+          gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label needs-maintainer
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "The automation stopped working on this pull request: its fix run pushed nothing (see its comment above for why). A maintainer has to take it from here (remove the \`needs-maintainer\` label to hand it back)."
 
   # --------------------------------------------------------------- restart --
   # Sweeps again after a fix run, which builds and reviews the new head (or,

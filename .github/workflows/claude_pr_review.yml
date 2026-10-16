@@ -93,20 +93,25 @@ jobs:
     # bot's automatic merge (see the header). Drafts are skipped (for
     # conversation comments and dispatches the payload does not say, so the
     # first step checks). Comments by bots never start a review, so the bot
-    # cannot re-review itself in a loop.
+    # cannot re-review itself in a loop. A person's comment on a bot pull
+    # request does - that is how a tester's report reaches the verdict.
+    # Pull requests of the Claude GitHub App (claude[bot]) stay excluded.
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request_target' &&
-       github.event.pull_request.draft == false) ||
+       github.event.pull_request.draft == false &&
+       github.event.pull_request.user.login != 'claude[bot]') ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        github.event.issue.state == 'open' &&
-       github.event.comment.user.type != 'Bot') ||
+       github.event.comment.user.type != 'Bot' &&
+       github.event.issue.user.login != 'claude[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
        github.event.pull_request.draft == false &&
        github.event.pull_request.state == 'open' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.comment.user.type != 'Bot')
+       github.event.comment.user.type != 'Bot' &&
+       github.event.pull_request.user.login != 'claude[bot]')
 
     # One review per pull request at a time. GitHub keeps only the newest
     # pending run per group, so a burst of pushes or comments collapses into
@@ -287,7 +292,10 @@ jobs:
             comment, written once when the review is finished. Do not post a
             comment when you start, do not post progress updates, and do not
             edit a comment you already posted - the pull request should receive
-            one finished review, not a running commentary.
+            one finished review, not a running commentary. If the inline
+            comment tool is not available to you (a dispatched run), put every
+            finding in the summary instead, one line each, starting with its
+            file:line.
 
             KEEP IT SHORT. A maintainer reads this between other work, and a
             review nobody finishes reading is a review that did not happen.
