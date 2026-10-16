@@ -7,7 +7,7 @@ defaults = aclib.RunTapirCommand ('GetGridElementDefaults', {})
 print (f"Grid Tool library part: {defaults['libraryPartName']}")
 print (f"Number of GDL parameters: {len (defaults['parameters'])}")
 
-# Two crossing grid lines, 20 m long. The length goes to the object's A size (xRatio).
+# Two crossing grid lines, 20 m long. The length goes to the grid marker's AC_Length parameter.
 newGrids = aclib.RunTapirCommand ('CreateGridElements', {
         'gridElements': [
             {
@@ -24,4 +24,4 @@ print (f"Created {len (newGrids['elements'])} grid elements, warnings: {newGrids
 
 # Every grid element of the project with its start point, direction and length.
 for grid in aclib.RunTapirCommand ('GetGridElements', {})['gridElements']:
-    print (f"Grid at ({grid['pos']['x']:.2f}, {grid['pos']['y']:.2f}), angle {grid['angle']:.4f} rad, length {grid['xRatio']:.2f} m")
+    print (f"Grid at ({grid['pos']['x']:.2f}, {grid['pos']['y']:.2f}), angle {grid['angle']:.4f} rad, length {grid['length']:.2f} m")

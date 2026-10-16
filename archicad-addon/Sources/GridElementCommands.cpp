@@ -90,6 +90,83 @@ GS::UniString LibraryPartName (Int32 libInd)
     return GS::UniString (libPart.docu_UName);
 }
 
+API_AddParType* FindParameter (API_AddParType** params, const char* name)
+{
+    if (params == nullptr) {
+        return nullptr;
+    }
+    const GSSize n = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
+    for (GSIndex ii = 0; ii < n; ++ii) {
+        API_AddParType& p = (*params)[ii];
+        if (p.typeMod != API_ParArray && IsNumericParam (p.typeID) && CHEqualCStrings (p.name, name)) {
+            return &p;
+        }
+    }
+    return nullptr;
+}
+
+bool GetNumericParameter (API_AddParType** params, const char* name, double& value)
+{
+    const API_AddParType* p = FindParameter (params, name);
+    if (p == nullptr) {
+        return false;
+    }
+    value = p->value.real;
+    return true;
+}
+
+bool SetNumericParameter (API_AddParType** params, const char* name, double value)
+{
+    API_AddParType* p = FindParameter (params, name);
+    if (p == nullptr) {
+        return false;
+    }
+    p->value.real = value;
+    return true;
+}
+
+// The library part's own A and B, as CreateObjects reads them; a and b stay as they are when it
+// has none to divide by.
+GSErrCode GetLibraryPartOwnSize (Int32 libInd, double& a, double& b)
+{
+    double libraryPartA = 0.0;
+    double libraryPartB = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    const GSErrCode err = ACAPI_LibraryPart_GetParams (libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
+    if (addPars != nullptr) {
+        ACAPI_DisposeAddParHdl (&addPars);
+    }
+    if (err != NoError) {
+        return err;
+    }
+    if (libraryPartA > 1e-6) {
+        a = libraryPartA;
+    }
+    if (libraryPartB > 1e-6) {
+        b = libraryPartB;
+    }
+    return NoError;
+}
+
+// The length of the grid line: the GDL parameter AC_Length of the Grid Tool's grid marker, or for
+// a library part without it the object's A size. As in CreateObjects, xRatio holds the size itself
+// only with useXYFixSize on, otherwise the size divided by the library part's own A.
+double GridLength (const API_Element& element, API_AddParType** params)
+{
+    double length = 0.0;
+    if (GetNumericParameter (params, "AC_Length", length)) {
+        return length;
+    }
+    if (element.object.useXYFixSize) {
+        return element.object.xRatio;
+    }
+    double libraryPartA = 1.0;
+    double libraryPartB = 1.0;
+    GetLibraryPartOwnSize ((Int32) element.object.libInd, libraryPartA, libraryPartB);
+    return element.object.xRatio * libraryPartA;
+}
+
 void AddParameters (GS::ObjectState& os, API_AddParType** params)
 {
     const auto& list = os.AddList<GS::ObjectState> ("parameters");
@@ -130,8 +207,10 @@ GS::ObjectState DescribeGridElement (const API_Element& element, API_AddParType*
     pos.Add ("y", element.object.pos.y);
     os.Add ("pos", pos);
     os.Add ("angle", element.object.angle);
+    os.Add ("length", GridLength (element, params));
     os.Add ("xRatio", element.object.xRatio);
     os.Add ("yRatio", element.object.yRatio);
+    os.Add ("useXYFixSize", element.object.useXYFixSize);
     os.Add ("level", element.object.level);
     os.Add ("libInd", (Int32) element.object.libInd);
     os.Add ("libraryPartName", LibraryPartName ((Int32) element.object.libInd));
@@ -199,8 +278,10 @@ const char* GridElementDetailsSchema = R"(
         "layerIndex": { "type": "integer", "description": "Layer attribute index." },
         "pos": { "$ref": "#/Coordinate2D", "description": "Insertion point: the start of the grid line." },
         "angle": { "type": "number", "description": "Direction of the grid line in radians." },
-        "xRatio": { "type": "number", "description": "Object A size. CreateGridElements sets it to the line length." },
-        "yRatio": { "type": "number", "description": "Object B size." },
+        "length": { "type": "number", "description": "Length of the grid line: the GDL parameter AC_Length of the Grid Tool's grid marker, or the object's A size for a library part without it." },
+        "xRatio": { "type": "number", "description": "The object's xRatio as stored: its A size with useXYFixSize on, otherwise the A size divided by the library part's own A." },
+        "yRatio": { "type": "number", "description": "The object's yRatio as stored, like xRatio for the B size." },
+        "useXYFixSize": { "type": "boolean", "description": "Whether xRatio and yRatio hold the sizes themselves." },
         "level": { "type": "number", "description": "Elevation of the object from its home story." },
         "libInd": { "type": "integer", "description": "Library part index." },
         "libraryPartName": { "type": "string", "description": "Localized name of the library part." },
@@ -252,7 +333,7 @@ GS::Optional<GS::UniString> GetGridElementDefaultsCommand::GetRawResponseSchema 
         "type": "object",
         "properties": {)") + GridElementDetailsSchema + R"(
         },
-        "required": ["variation", "floorIndex", "layerIndex", "pos", "angle", "xRatio", "yRatio", "level", "libInd", "libraryPartName", "parameters"]
+        "required": ["variation", "floorIndex", "layerIndex", "pos", "angle", "length", "xRatio", "yRatio", "useXYFixSize", "level", "libInd", "libraryPartName", "parameters"]
     })";
 }
 
@@ -312,7 +393,7 @@ GS::Optional<GS::UniString> GetGridElementsCommand::GetRawResponseSchema () cons
                     "type": "object",
                     "properties": {)") + GridElementDetailsSchema + R"(
                     },
-                    "required": ["elementId", "variation", "floorIndex", "layerIndex", "pos", "angle", "xRatio", "yRatio", "level", "libInd", "libraryPartName"]
+                    "required": ["elementId", "variation", "floorIndex", "layerIndex", "pos", "angle", "length", "xRatio", "yRatio", "useXYFixSize", "level", "libInd", "libraryPartName"]
                 }
             }
         },
@@ -349,11 +430,10 @@ GS::ObjectState GetGridElementsCommand::Execute (const GS::ObjectState& paramete
         if (ACAPI_Element_Get (&element) != NoError) {
             continue;
         }
+        // The parameters are read for every element, as the length comes from AC_Length.
         API_ElementMemo memo = {};
         const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-        if (includeParameters) {
-            ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AddPars);
-        }
+        ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AddPars);
         list (DescribeGridElement (element, memo.params, includeParameters));
     }
     return response;
@@ -388,10 +468,8 @@ GS::Optional<GS::UniString> CreateGridElementsCommand::GetInputParametersSchema 
                     "type": "object",
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D", "description": "Start point of the grid line (the object's insertion point)." },
-                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "End point of the grid line. Sets the object's angle, and its xRatio (length) unless lengthMode is 'none'." },
-                        "lengthMode": { "type": "string", "enum": ["xRatio", "none"], "description": "How the length is applied. xRatio (default): object A size = line length. none: keep the default size and set the length through 'parameters'." },
-                        "xRatio": { "type": "number", "description": "Object A size. Default: the line length (see lengthMode)." },
-                        "yRatio": { "type": "number", "description": "Object B size. Default: the tool default." },
+                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "End point of the grid line. Sets the direction and, unless lengthMode is 'none', the length." },
+                        "lengthMode": { "type": "string", "enum": ["length", "none"], "description": "How the line length is applied. length (default): to the GDL parameter AC_Length when the library part has it, as the Grid Tool's grid marker does; otherwise to the object's A size, converted to xRatio as CreateObjects does. none: the length is left to 'parameters'." },
                         "floorIndex": { "type": "integer", "description": "Home story index. Default: the tool default." },
                         "layerIndex": { "type": "integer", "description": "Layer attribute index. Only a positive index takes effect. Default: the tool default." },
                         "parameters": {
@@ -473,17 +551,13 @@ GS::ObjectState CreateGridElementsCommand::Execute (const GS::ObjectState& param
             element.object.pos = beg;
             element.object.angle = std::atan2 (dy, dx);
 
-            GS::UniString lengthMode = "xRatio";
+            // The Grid Tool's grid marker draws the length given in AC_Length. A library part without
+            // it gets the length as its A size, which xRatio is then converted from below.
+            bool sizeChanged = false;
+            GS::UniString lengthMode = "length";
             item.Get ("lengthMode", lengthMode);
-            if (lengthMode == "xRatio") {
-                element.object.xRatio = length;
-            }
-            double ratio = 0.0;
-            if (item.Get ("xRatio", ratio)) {
-                element.object.xRatio = ratio;
-            }
-            if (item.Get ("yRatio", ratio)) {
-                element.object.yRatio = ratio;
+            if (lengthMode == "length" && !SetNumericParameter (memo.params, "AC_Length", length)) {
+                sizeChanged = SetNumericParameter (memo.params, "A", length);
             }
 
             Int32 floorIndex = 0;
@@ -499,10 +573,37 @@ GS::ObjectState CreateGridElementsCommand::Execute (const GS::ObjectState& param
             if (item.Get ("parameters", params)) {
                 GS::Array<GS::UniString> itemWarnings;
                 for (const GS::ObjectState& p : params) {
-                    ApplyParameter (memo.params, p, itemWarnings);
+                    GS::UniString name;
+                    p.Get ("name", name);
+                    if (ApplyParameter (memo.params, p, itemWarnings) && (name == "A" || name == "B")) {
+                        sizeChanged = true;
+                    }
                 }
                 for (const GS::UniString& w : itemWarnings) {
                     warnings.Push (prefix + w);
+                }
+            }
+
+            // As in CreateObjects: xRatio/yRatio hold the size itself only with useXYFixSize on,
+            // otherwise the size divided by the library part's own A/B, and they have to agree
+            // with A and B in the memo, which Archicad reconciles them with on a later change.
+            if (sizeChanged) {
+                double libraryPartA = 1.0;
+                double libraryPartB = 1.0;
+                if (!element.object.useXYFixSize) {
+                    err = GetLibraryPartOwnSize ((Int32) element.object.libInd, libraryPartA, libraryPartB);
+                    if (err != NoError) {
+                        elements (CreateErrorResponse (err, prefix + "Failed to read the library part's own A and B."));
+                        continue;
+                    }
+                }
+                double a = 0.0;
+                double b = 0.0;
+                if (GetNumericParameter (memo.params, "A", a)) {
+                    element.object.xRatio = a / libraryPartA;
+                }
+                if (GetNumericParameter (memo.params, "B", b)) {
+                    element.object.yRatio = b / libraryPartB;
                 }
             }
 
