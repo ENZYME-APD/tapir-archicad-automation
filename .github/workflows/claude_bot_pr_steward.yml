@@ -33,10 +33,11 @@ name: Claude Bot PR Steward
 #   `needs-maintainer` label and the steward leaves it alone.
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
-# - A sweep starts work (builds, a review or a fix) on at most
+# - A sweep starts new work (builds, a review or a fix) on at most
 #   BOT_PR_SWEEP_BATCH pull requests (repository variable, default 5), so a
 #   backlog is worked through over several hourly sweeps instead of
-#   flooding the runners.
+#   flooding the runners. Work already running does not count: a pull
+#   request still building must not hold back one that only needs a fix.
 # - Setting the repository variable BOT_PR_STEWARD to `false` stops it.
 # - Only `fix` runs a model, with the same tool restrictions as the issue bot
 #   (claude_issue_triage.yml, whose header describes what they do and do not
@@ -197,11 +198,10 @@ jobs:
             fixActive=$(jq --arg t "$fixTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$stewardRuns")
             if [ "$fixActive" -ne 0 ]; then
               echo "a fix run is queued or running"
-              busy=$((busy + 1))
               echo "::endgroup::"; continue
             fi
             if [ "$busy" -ge "$BATCH" ]; then
-              echo "left for a later sweep ($BATCH pull requests in work)"
+              echo "left for a later sweep (this one started work on $BATCH already)"
               echo "::endgroup::"; continue
             fi
 
@@ -255,7 +255,6 @@ jobs:
             fi
             if jq -e 'any(.[]; .status != "completed")' <<<"$checks" >/dev/null; then
               echo "builds still running"
-              busy=$((busy + 1))
               echo "::endgroup::"; continue
             fi
             buildFailed=false
@@ -275,7 +274,6 @@ jobs:
               total=$(countRuns claude_pr_review.yml "$reviewTitle" "$created")
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
-                busy=$((busy + 1))
               elif [ "$total" -ge 10 ]; then
                 handOver "$pr" "ten reviews recorded no verdict"
               else
