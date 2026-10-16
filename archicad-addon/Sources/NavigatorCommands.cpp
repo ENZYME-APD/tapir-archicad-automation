@@ -1380,7 +1380,11 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
             "newName":         { "type": "string" },
-            "newId":           { "type": "string" }
+            "newId":           { "type": "string" },
+            "customName": {
+                "type": "boolean",
+                "description": "Set to false to drop the custom name of the item, so that it follows the name of its Project Map source again. Cannot be combined with newName."
+            }
         },
         "additionalProperties": false,
         "required": ["navigatorItemId"]
@@ -1410,15 +1414,44 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     }
 
     GS::UniString newName;
-    if (parameters.Get ("newName", newName) && !newName.IsEmpty ()) {
+    const bool hasNewName = parameters.Get ("newName", newName) && !newName.IsEmpty ();
+
+    bool customName = true;
+    const bool resetCustomName = parameters.Get ("customName", customName) && !customName;
+    if (hasNewName && resetCustomName) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "newName cannot be combined with customName false.");
+    }
+
+    if (hasNewName) {
         GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
         navItem.uName[GS::ArraySize (navItem.uName) - 1] = 0;
         navItem.customName = true;
+    } else if (resetCustomName) {
+        navItem.customName = false;
     }
 
     err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+    }
+
+    // ACAPI_Navigator_ChangeNavigatorItem returns NoError even when it leaves the name
+    // untouched (e.g. Project Map schedule items, which are named by their scheme),
+    // so read the item back and report a name that was not applied as an error.
+    if (hasNewName || resetCustomName) {
+        API_NavigatorItem changedItem = {};
+        err = ACAPI_Navigator_GetNavigatorItem (&guid, &changedItem);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read back the navigator item after the change.");
+        }
+        if (hasNewName && GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).");
+        }
+        if (resetCustomName && changedItem.customName) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                "Archicad did not drop the custom name of this navigator item.");
+        }
     }
 
     // For layouts: set custom layout number (ID) via ChangeLayoutSets

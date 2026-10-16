@@ -10,7 +10,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public CreateColumnsComponent()
             : base(
                 "CreateColumns",
-                "Create Column elements based on the given parameters.",
+                "Create Column elements based on the given parameters. " +
+                "Unlinked width and depth can be given through the AdditionalSettings input " +
+                "(isWidthAndHeightLinked).",
                 GroupNames.ElementCreation)
         {
         }
@@ -32,6 +34,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
+
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("CircleBased", "circleBased", FieldKind.Boolean, "True for a round column cross section, false for rectangular (applied to all segments)."),
+            new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute of the round or rectangular cross section (applied to all segments)."),
+            new Field("ProfileGuids", "profileId", FieldKind.AttributeGuid, "Profile attribute; switches the cross section to this custom profile (applied to all segments)."),
+            TrailingAdditionalSettingsField
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateColumns;

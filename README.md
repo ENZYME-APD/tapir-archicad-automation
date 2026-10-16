@@ -63,7 +63,7 @@ You can install the plugin from the Rhino Package Manager. The package is called
 
 Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
-This covers the Windows installer, `TapirInstaller_Win.exe`. It is built from this repository's sources by GitHub Actions on GitHub-hosted runners, and every release is signed only after a manual approval. The Windows Add-On files (`.apx`) are not code signed. The macOS installer and macOS Add-Ons are signed and notarized with the project's own Apple Developer ID.
+This covers the Windows installer, `TapirInstaller_Win.exe`. It is built from this repository's sources by GitHub Actions on GitHub-hosted runners, and it is signed only after a manual approval. When a release cannot be signed, its Windows installer is released unsigned and its release notes say so. The Windows Add-On files (`.apx`) are not code signed. The macOS installer and macOS Add-Ons are signed and notarized with the project's own Apple Developer ID.
 
 Team roles:
 - Committers and reviewers: the maintainers with write access to this repository. Pull requests from people without write access, and the draft pull requests the project's automation opens from issues, are reviewed by a committer before they are merged; they are never merged automatically. Changes to the installer and to the build and release definitions are never merged automatically either, whoever proposes them.

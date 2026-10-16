@@ -159,6 +159,44 @@ rename_res = run("RenameNavigatorItem", {
 assert rename_res.get("success"), f"RenameNavigatorItem failed: {rename_res}"
 print("PASS: RenameNavigatorItem -> 'TAPIR_LINKED_VIEW'")
 
+
+def find_view_map_item(nav_id):
+    # Tapir's GetNavigatorItemTree reports the customName flag, the official one does not
+    vm = run("GetNavigatorItemTree", {"navigatorMapId": "PublicViewMap"})
+    for it in collect_items(vm["navigatorItemTree"].get("children", [])):
+        if it["navigatorItemId"]["guid"] == nav_id["guid"]:
+            return it
+    return None
+
+
+renamed = find_view_map_item(clone_nav_id)
+assert renamed and renamed["name"] == "TAPIR_LINKED_VIEW" and renamed["customName"], \
+    f"Renamed view not found or name not applied: {renamed}"
+
+# 6b. RenameNavigatorItem with customName=False — drop the custom name again so the
+#     linked view follows the name of its Project Map source
+print("\n6b. RenameNavigatorItem (customName: false)...")
+reset_res = run("RenameNavigatorItem", {
+    "navigatorItemId": clone_nav_id,
+    "customName":      False,
+})
+assert reset_res.get("success"), f"RenameNavigatorItem (customName false) failed: {reset_res}"
+reset_item = find_view_map_item(clone_nav_id)
+assert reset_item and not reset_item["customName"], f"Custom name not dropped: {reset_item}"
+print(f"PASS: RenameNavigatorItem -> customName false, name is '{reset_item['name']}' again")
+
+# 6c. RenameNavigatorItem on a Project Map schedule item must fail instead of
+#     reporting success while the name stays unchanged (schedules are named by their scheme)
+schedule_items = [it for it in pm_items if it.get("type") == "ScheduleItem"]
+if schedule_items:
+    print("\n6c. RenameNavigatorItem (Project Map schedule item, expected to fail)...")
+    sched_res = run("RenameNavigatorItem", {
+        "navigatorItemId": schedule_items[0]["navigatorItemId"],
+        "newName":         "TAPIR_SCHEDULE_RENAME",
+    })
+    assert not sched_res.get("success"), f"Schedule rename unexpectedly succeeded: {sched_res}"
+    print(f"PASS: schedule rename refused: {sched_res['error']['message']}")
+
 # Visual check before cleanup
 print(
     f"\n  [VISUAL CHECK] In the View Map, folder '{FOLDER_NAME}' should contain:\n"
