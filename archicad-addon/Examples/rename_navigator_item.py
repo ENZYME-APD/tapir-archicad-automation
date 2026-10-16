@@ -2,10 +2,11 @@ import aclib
 
 # RenameNavigatorItem renames View Map views and Layout Book items directly. A
 # Project Map section, elevation, interior elevation, detail or worksheet has no
-# name of its own: the viewpoint shows the name of the element behind it, so the
-# command renames that element. Either way the new name is verified by reading
-# the item back, and the command fails instead of reporting a rename Archicad
-# silently dropped (see issue #755).
+# name of its own: the viewpoint shows the name of the element behind it (for an
+# interior elevation, of the segment the item stands for), so the command renames
+# that. Either way the new name is verified by reading the item back, and the
+# command fails instead of reporting a rename Archicad silently dropped (see
+# issue #755); a failed element rename is rolled back.
 
 def CollectItems (item, collectedItems):
     for child in item.get ('children', []):
