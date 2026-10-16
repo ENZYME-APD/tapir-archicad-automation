@@ -4190,8 +4190,11 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetRawResponseSchema () const
 // defaults BEFORE PrepareWindowOrDoorDefaults, so the cloned defaults and marker are consistent
 // (same reason as for ApplyWindowOrDoorFavoriteToDefaults). Without libraryPartName the tool
 // defaults are kept. This places parts that have no favorite, such as shutters or grilles.
-// The search matches any placeable part, so a part of another type (an object, a lamp, a
-// door for CreateWindows) is refused with APIERR_BADPARS before the tool defaults change.
+// The type of a library part is its place in the subtype hierarchy: the typeID that a search or
+// ACAPI_LibraryPart_Get returns does not tell a window from an object (Archicad 30 returns
+// APILib_ObjectID for windows and doors). Given to the search together with the name, the
+// window (or door) typeID limits it to that subtype, so a part of another type (an object, a
+// lamp, a door for CreateWindows) is not found and the tool defaults are left unchanged.
 static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& data, API_ElemTypeID typeId)
 {
     GS::UniString libName;
@@ -4199,15 +4202,12 @@ static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& 
         return NoError;
     }
     API_LibPart libPart = {};
+    libPart.typeID = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
     GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
     GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     if (err != NoError) {
         return err;
-    }
-    const API_LibTypeID expectedLibType = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
-    if (libPart.typeID != expectedLibType) {
-        return APIERR_BADPARS;
     }
 
     API_Element element = {};
