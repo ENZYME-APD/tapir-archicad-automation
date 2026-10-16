@@ -780,13 +780,15 @@ static bool MemoCarriesGeometry (const API_Elem_Head& header)
 // its memo match its size. Everything else in API_WindowType stays the target's without
 // being named here: its wall, its marker, the position along the wall, the sill height and
 // the sill/header anchor that gives it its meaning, the mirroring and side flags and any
-// placement field a DevKit adds. The three placement flags inside API_OpeningBaseType are
+// placement field a DevKit adds. The placement fields inside API_OpeningBaseType - the subfloor
+// thickness the sill height is measured from, and the three mirroring and side flags - are
 // put back from the target for the same reason. The Favorite's marker is not applied.
 static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_Favorite& favorite)
 {
     API_Element element = targetElement;
     element.window.openingBase = favorite.element.window.openingBase;
     element.window.openingBase.markGuid = targetElement.window.openingBase.markGuid;
+    element.window.openingBase.subFloorThickness = targetElement.window.openingBase.subFloorThickness;
     element.window.openingBase.reflected = targetElement.window.openingBase.reflected;
     element.window.openingBase.oSide = targetElement.window.openingBase.oSide;
     element.window.openingBase.refSide = targetElement.window.openingBase.refSide;
@@ -843,7 +845,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied, except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
