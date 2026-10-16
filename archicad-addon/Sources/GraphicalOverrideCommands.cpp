@@ -11,19 +11,40 @@ static GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& out
         return err;
     }
     for (const API_Guid& id : groupIds) {
-        API_OverrideRuleGroup group = {id, ""};
+        API_OverrideRuleGroup group = {};
+        group.guid = id;
         if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (group) == NoError && group.name == name) {
             outGuid = id;
             return NoError;
         }
     }
-    API_OverrideRuleGroup group = {APINULLGuid, name};
+    API_OverrideRuleGroup group = {};
+    group.guid = APINULLGuid;
+    group.name = name;
     err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (group);
     if (err != NoError) {
         return err;
     }
     outGuid = group.guid;
     return NoError;
+}
+
+// Rule names are unique in the whole project, so a rule is found by its name among all rules,
+// whatever its rule group.
+static GS::Optional<API_Guid> FindOverrideRuleByName (const GS::UniString& name)
+{
+    GS::Array<API_Guid> ruleIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleList (ruleIds) != NoError) {
+        return {};
+    }
+    for (const API_Guid& id : ruleIds) {
+        API_OverrideRule rule = {};
+        rule.guid = id;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) == NoError && rule.name == name) {
+            return id;
+        }
+    }
+    return {};
 }
 #endif
 
@@ -44,11 +65,11 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRuleCommand::GetInputParamete
         "properties": {
             "name": {
                 "type": "string",
-                "description": "Name of the override rule. A rule with the same name in the rule group is overwritten."
+                "description": "Name of the override rule. Rule names are unique in the project: an existing rule with this name is overwritten, in whichever rule group it is."
             },
             "ruleGroupName": {
                 "type": "string",
-                "description": "Name of the rule group. Created when it does not exist. Default: 'Tapir'."
+                "description": "Rule group of a new rule, created when it does not exist. Default: 'Tapir'. An overwritten rule stays in its own group."
             },
             "criterionXML": {
                 "type": "string",
@@ -137,13 +158,17 @@ GS::ObjectState CreateGraphicalOverrideRuleCommand::Execute (const GS::ObjectSta
     GS::UniString criterionXML;
     parameters.Get ("criterionXML", criterionXML);
 
-    API_OverrideRule rule = {APINULLGuid, name, style, criterionXML};
+    API_OverrideRule rule = {};
+    rule.guid = APINULLGuid;
+    rule.name = name;
+    rule.style = style;
+    rule.criterionXML = criterionXML;
     err = ACAPI_GraphicalOverride_CreateOverrideRule (rule, groupGuid);
     if (err == APIERR_NAMEALREADYUSED) {
-        API_OverrideRule existing = {APINULLGuid, name};
-        err = ACAPI_GraphicalOverride_GetOverrideRuleByName (existing, groupGuid);
-        if (err == NoError) {
-            rule.guid = existing.guid;
+        // The rule with this name can be in any rule group; it is overwritten where it is.
+        const GS::Optional<API_Guid> existingGuid = FindOverrideRuleByName (name);
+        if (existingGuid.HasValue ()) {
+            rule.guid = existingGuid.Get ();
             err = ACAPI_GraphicalOverride_ChangeOverrideRule (rule);
         }
     }
@@ -189,9 +214,10 @@ GS::Optional<GS::UniString> GetGraphicalOverrideRulesCommand::GetRawResponseSche
                             "required": ["guid"]
                         },
                         "name": { "type": "string" },
+                        "ruleGroupName": { "type": "string", "description": "Name of the rule group the rule belongs to." },
                         "criterionXML": { "type": "string", "description": "The criterion in Archicad's own XML format. Change its values and pass it to CreateGraphicalOverrideRule to make similar rules." }
                     },
-                    "required": ["ruleId", "name", "criterionXML"],
+                    "required": ["ruleId", "name", "ruleGroupName", "criterionXML"],
                     "additionalProperties": false
                 }
             }
@@ -212,14 +238,35 @@ GS::ObjectState GetGraphicalOverrideRulesCommand::Execute (const GS::ObjectState
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the override rule list.");
     }
+
+    // A rule does not name its group; the groups list their rules.
+    GS::HashTable<API_Guid, GS::UniString> groupNameOfRule;
+    GS::Array<API_Guid> groupIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (groupIds) == NoError) {
+        for (const API_Guid& groupId : groupIds) {
+            API_OverrideRuleGroup group = {};
+            group.guid = groupId;
+            GS::Array<API_Guid> groupRuleIds;
+            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (group, &groupRuleIds) == NoError) {
+                for (const API_Guid& ruleId : groupRuleIds) {
+                    groupNameOfRule.Put (ruleId, group.name);
+                }
+            }
+        }
+    }
+
     for (const API_Guid& id : ruleIds) {
-        API_OverrideRule rule = {id};
+        API_OverrideRule rule = {};
+        rule.guid = id;
         if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
             continue;
         }
+        GS::UniString ruleGroupName;
+        groupNameOfRule.Get (rule.guid, &ruleGroupName);
         GS::ObjectState ruleOS;
         ruleOS.Add ("ruleId", CreateGuidObjectState (rule.guid));
         ruleOS.Add ("name", rule.name);
+        ruleOS.Add ("ruleGroupName", ruleGroupName);
         ruleOS.Add ("criterionXML", rule.criterionXML);
         rules (ruleOS);
     }
@@ -250,7 +297,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideCombinationCommand::GetInputP
             },
             "ruleNames": {
                 "type": "array",
-                "description": "Names of the override rules in the combination, in order. Each name takes the first rule of that name in any rule group. An empty list makes a combination without rules.",
+                "description": "Names of the override rules in the combination, in order. Rule names are unique in the project, whatever the rule group. An empty list makes a combination without rules.",
                 "items": { "type": "string" }
             }
         },
@@ -287,32 +334,24 @@ GS::ObjectState CreateGraphicalOverrideCombinationCommand::Execute (const GS::Ob
     GS::Array<GS::UniString> ruleNames;
     parameters.Get ("ruleNames", ruleNames);
 
-    GS::Array<API_Guid> allRuleIds;
-    GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleList (allRuleIds);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get the override rule list.");
-    }
-
     GS::Array<API_Guid> ruleGuids;
     for (const GS::UniString& ruleName : ruleNames) {
-        bool found = false;
-        for (const API_Guid& id : allRuleIds) {
-            API_OverrideRule rule = {id};
-            if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) == NoError && rule.name == ruleName) {
-                ruleGuids.Push (id);
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
+        const GS::Optional<API_Guid> ruleGuid = FindOverrideRuleByName (ruleName);
+        if (!ruleGuid.HasValue ()) {
             return CreateErrorResponse (APIERR_BADPARS, "Override rule not found: " + ruleName);
         }
+        ruleGuids.Push (ruleGuid.Get ());
     }
 
-    API_OverrideCombination combination = {APINULLGuid, name};
-    err = ACAPI_GraphicalOverride_CreateOverrideCombination (combination, ruleGuids);
+    API_OverrideCombination combination = {};
+    combination.guid = APINULLGuid;
+    combination.name = name;
+    GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideCombination (combination, ruleGuids);
     if (err == APIERR_NAMEALREADYUSED) {
-        API_OverrideCombination existing = {APINULLGuid, name};
+        // An APINULLGuid makes the lookup use the name.
+        API_OverrideCombination existing = {};
+        existing.guid = APINULLGuid;
+        existing.name = name;
         err = ACAPI_GraphicalOverride_GetOverrideCombination (existing);
         if (err == NoError) {
             combination.guid = existing.guid;

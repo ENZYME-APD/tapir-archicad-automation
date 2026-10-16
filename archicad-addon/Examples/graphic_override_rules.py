@@ -14,7 +14,7 @@ print (f"Rule: {rule['ruleId']['guid']}")
 
 # Every rule of the project with the length of its criterion XML.
 for r in aclib.RunTapirCommand ('GetGraphicalOverrideRules', {})['rules']:
-    print (f"Rule '{r['name']}': criterion XML of {len (r['criterionXML'])} characters")
+    print (f"Rule '{r['name']}' in group '{r['ruleGroupName']}': criterion XML of {len (r['criterionXML'])} characters")
 
 # A combination with that rule. Running it again replaces the rules of the same combination.
 combination = aclib.RunTapirCommand ('CreateGraphicalOverrideCombination', {
