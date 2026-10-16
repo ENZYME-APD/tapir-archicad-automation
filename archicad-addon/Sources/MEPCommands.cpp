@@ -98,7 +98,7 @@ static GS::Optional<GS::ObjectState> GetErrorIfLayerNotUsable (Int32 layerIndex)
 }
 
 // Sets the layer of a routing element and of all its parts: routing segments, rigid segments,
-// elbows (Archicad 29 and later) and transitions. Changing only the routing element did not
+// elbows (bends in Archicad 28) and transitions. Changing only the routing element did not
 // always move the parts that carry the geometry. Runs inside the caller's undoable command. Every
 // part is tried; the first error is returned.
 static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingElementId, const API_AttributeIndex& layerIndex)
@@ -130,11 +130,13 @@ static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingEl
         auto node = RoutingNode::Get (nodeId);
         if (node.IsOk ()) {
 #ifdef ServerMainVers_2900
-            // RoutingNode::GetElbowIds () exists from Archicad 29. Archicad 28 names these parts bends
-            // (IsBend); their accessor on RoutingNode could not be checked against the Archicad 28
-            // DevKit, so on Archicad 28 the bends are not set here.
             for (const auto& elbowId : node->GetElbowIds ()) {
                 setLayer (elbowId);
+            }
+#else
+            // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
+            for (const auto& bendId : node->GetBendIds ()) {
+                setLayer (bendId);
             }
 #endif
             for (const auto& transitionId : node->GetTransitionIds ()) {
@@ -731,7 +733,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                         },
                         "layerIndex": {
                             "type": "integer",
-                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions; on Archicad 28 the bends are not set). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed; when a part cannot be set to the layer, the route is removed again and the item reports an error."
+                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
                         }
                     },
                     "additionalProperties": false,
@@ -872,10 +874,10 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             if (hasLayerIndex) {
                 const GSErrCode layerErr = SetLayerOfRoutingElement (placedId, ACAPI_CreateAttributeIndex (layerIndex));
                 if (layerErr != NoError) {
-                    // Removed again, as the electrical panels below are when their size is not applied, so
-                    // the caller is not left with a route it gets no id of.
-                    ACAPI_Element_Delete ({ MEPUniqueIDToAPIGuid (placedId) });
-                    elements (CreateErrorResponse (layerErr, "The layer of the routing element or of some of its parts could not be set, so the routing element was removed again."));
+                    // The route stays placed, so its guid is given in the message to let the caller find it.
+                    elements (CreateErrorResponse (layerErr, GS::UniString::Printf (
+                        "The routing element with guid %T was placed, but the layer of it or of some of its parts could not be set.",
+                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
                     continue;
                 }
             }
