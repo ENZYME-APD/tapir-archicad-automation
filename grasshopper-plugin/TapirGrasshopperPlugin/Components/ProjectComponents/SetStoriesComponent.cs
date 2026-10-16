@@ -23,6 +23,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             InTexts("StoryNames");
             InNumbers("StoryElevations");
             InBooleans("ShowOnSections");
+
+            inManager.AddIntegerParameter(
+                "FirstStoryIndex",
+                "FirstStoryIndex",
+                "Index of the first (lowest) story of the list, e.g. -1 to start with a basement. " +
+                "Optional; by default the stories are matched to the existing ones from the bottom up.",
+                GH_ParamAccess.item);
+
+            SetOptionality(3);
         }
 
         protected override void Solve(
@@ -62,6 +71,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
+            var firstStoryIndex = 0;
+            var hasFirstStoryIndex = da.GetData(
+                3,
+                ref firstStoryIndex);
+
             var input = new StoriesData { Stories = new List<StoryData>() };
 
             for (var i = 0; i < names.Count; ++i)
@@ -72,7 +86,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                         Name = names[i],
                         Level = elevations[i],
                         DispOnSections =
-                            showOnSections[i % showOnSections.Count]
+                            showOnSections[i % showOnSections.Count],
+                        Index = i == 0 && hasFirstStoryIndex
+                            ? firstStoryIndex
+                            : (int?)null
                     });
             }
 
