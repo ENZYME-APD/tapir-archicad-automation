@@ -325,7 +325,7 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
                         "masterNavigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "layoutName":            { "type": "string", "minLength": 1 },
                         "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
-                        "paperWidth":            { "type": "number", "description": "Optional paper width in mm, used together with paperHeight. Sets the size of the new layout and also of the master layout given by masterLayoutName, found or created here (a new master starts with the template's default size, which layoutParameters cannot change). Wins over layoutParameters.horizontalSize." },
+                        "paperWidth":            { "type": "number", "description": "Optional paper width in mm, used together with paperHeight. Sets the size of the new layout, and of the master layout when this command creates it from masterLayoutName: a new master starts with the template's default size, which layoutParameters cannot change. An existing master keeps its size. Wins over layoutParameters.horizontalSize." },
                         "paperHeight":           { "type": "number", "description": "Optional paper height in mm, used together with paperWidth. See paperWidth. Wins over layoutParameters.verticalSize." },
                         "layoutParameters": {
                             "type": "object",
@@ -401,14 +401,15 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
                     databases.Push (CreateErrorResponse (createMasterErr, "Failed to create master layout."));
                     continue;
                 }
-            }
 
-            // A master created here starts with the template's default size (A1 in the Japanese
-            // template). With paperWidth/paperHeight the master, found or created, gets that size.
-            double paperWidth = 0.0, paperHeight = 0.0;
-            if (item.Get ("paperWidth", paperWidth) && item.Get ("paperHeight", paperHeight) &&
-                    paperWidth > 0.0 && paperHeight > 0.0) {
-                SetMasterLayoutSize (masterLayoutDbInfo.databaseUnId, paperWidth, paperHeight);
+                // A master created here starts with the template's default size (A1 in the
+                // Japanese template); with paperWidth/paperHeight it gets that size instead. An
+                // existing master keeps its size, as the layouts already on it depend on it.
+                double paperWidth = 0.0, paperHeight = 0.0;
+                if (item.Get ("paperWidth", paperWidth) && item.Get ("paperHeight", paperHeight) &&
+                        paperWidth > 0.0 && paperHeight > 0.0) {
+                    SetMasterLayoutSize (masterLayoutDbInfo.databaseUnId, paperWidth, paperHeight);
+                }
             }
         }
 

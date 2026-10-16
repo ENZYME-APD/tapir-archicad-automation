@@ -393,10 +393,10 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
 // the caller clones element/memo/marker via PrepareWindowOrDoorDefaults.
 //
 // The parameter is a FAVORITE name (as returned by `GetFavoritesByType
-// (elementType=Door|Window)`), NOT a libpart `docu_UName`. Real
-// libpart-by-name lookup against AC29's Door/Window library is not
-// viable: the favorite name is the only stable identifier exposed to
-// API callers.
+// (elementType=Door|Window)`), NOT a libpart `docu_UName`. To place a
+// library part by its name instead, `libraryPartName` goes through
+// ApplyWindowOrDoorLibraryPartToDefaults; a favorite also carries the
+// settings saved with it.
 //
 // This is the workaround for `-2130313110 Failed to create door` /
 // `Failed to create window` on a fresh project where the user has
@@ -4155,7 +4155,7 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "oSide": { "type": "boolean" },
                         "libraryPartName": {
                             "type": "string",
-                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. Applied to the tool defaults before cloning."
+                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Applied to the tool defaults before cloning."
                         },
                         "favoriteName": {
                             "type": "string",
@@ -4190,6 +4190,8 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetRawResponseSchema () const
 // defaults BEFORE PrepareWindowOrDoorDefaults, so the cloned defaults and marker are consistent
 // (same reason as for ApplyWindowOrDoorFavoriteToDefaults). Without libraryPartName the tool
 // defaults are kept. This places parts that have no favorite, such as shutters or grilles.
+// The search matches any placeable part, so a part of another type (an object, a lamp, a
+// door for CreateWindows) is refused with APIERR_BADPARS before the tool defaults change.
 static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& data, API_ElemTypeID typeId)
 {
     GS::UniString libName;
@@ -4202,6 +4204,10 @@ static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& 
     delete libPart.location;
     if (err != NoError) {
         return err;
+    }
+    const API_LibTypeID expectedLibType = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
+    if (libPart.typeID != expectedLibType) {
+        return APIERR_BADPARS;
     }
 
     API_Element element = {};
@@ -4295,7 +4301,7 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             if (err == NoError) {
                 err = ApplyWindowOrDoorLibraryPartToDefaults (data, API_WindowID);
                 if (err != NoError) {
-                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName` for window."));
+                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no window library part with that name."));
                     continue;
                 }
             }
@@ -4386,7 +4392,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                         "oSide": { "type": "boolean" },
                         "libraryPartName": {
                             "type": "string",
-                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. Applied to the tool defaults before cloning."
+                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Applied to the tool defaults before cloning."
                         },
                         "favoriteName": {
                             "type": "string",
@@ -4476,7 +4482,7 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             if (err == NoError) {
                 err = ApplyWindowOrDoorLibraryPartToDefaults (data, API_DoorID);
                 if (err != NoError) {
-                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName` for door."));
+                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no door library part with that name."));
                     continue;
                 }
             }
@@ -4882,15 +4888,6 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 element.morph.buildingMaterial = buildingMaterialIndex;
             }
 
-            API_AttributeIndex surfaceIndex = APIInvalidAttributeIndex;
-            auto surfaceId = GetOptionalObjectState (data, "surfaceId");
-            if (surfaceId.HasValue ()) {
-                if (!ResolveAttributeIndex (surfaceId.Get (), API_MaterialID, surfaceIndex)) {
-                    elements.Push (CreateErrorResponse (APIERR_BADPARS, "Invalid morph surface."));
-                    continue;
-                }
-            }
-
             double* tmx = element.morph.tranmat.tmx;
             tmx[0] = 1.0;  tmx[4] = 0.0;  tmx[8] = 0.0;
             tmx[1] = 0.0;  tmx[5] = 1.0;  tmx[9] = 0.0;
@@ -4908,13 +4905,22 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
-            double topExpansion = 0.0;
-            if (data.Contains ("topExpansion")) {
-                data.Get ("topExpansion", topExpansion);
-                if (topExpansion < 0.0) {
-                    topExpansion = 0.0;
-                }
+            // ApplyMorphCosmeticDetails has put surfaceId into element.morph.material; the faces
+            // of a box morph get the same surface.
+            API_AttributeIndex surfaceIndex = APIInvalidAttributeIndex;
+#ifdef ServerMainVers_2700
+            if (element.morph.material.hasValue) {
+                surfaceIndex = element.morph.material.value;
             }
+#else
+            if (element.morph.material.overridden) {
+                surfaceIndex = element.morph.material.attributeIndex;
+            }
+#endif
+
+            // The schema keeps it non-negative.
+            double topExpansion = 0.0;
+            data.Get ("topExpansion", topExpansion);
 
             API_ElementMemo memo = {};
             const GS::OnExit cleanup ([&]() {
