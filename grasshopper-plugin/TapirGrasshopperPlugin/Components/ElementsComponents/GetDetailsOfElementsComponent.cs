@@ -230,6 +230,45 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutCurves(
                 "Lines",
                 "Lines or curves.");
+
+            // The outputs below are named like the inputs of CreateWalls and
+            // ModifyWalls, so a wall can be taken apart, changed and rebuilt
+            // without renaming anything.
+            OutNumberList(
+                "Thicknesses",
+                "Thickness of each wall (at its beginning for a trapezoid wall).");
+
+            OutNumberList(
+                "Offsets",
+                "Offset of each wall from its reference line.");
+
+            OutNumberList(
+                "BottomOffsets",
+                "Vertical offset of each wall's bottom from its home story level.");
+
+            OutTexts(
+                "ReferenceLineLocations",
+                "Reference line location of each wall: Outside, Center, Inside, CoreOutside, CoreCenter or CoreInside.");
+
+            OutTexts(
+                "StructureTypes",
+                "Structure type of each wall: Basic, Composite or Profile.");
+
+            OutGenerics(
+                "BuildingMaterialGuids",
+                "Building material attribute of each Basic wall (null for the others).");
+
+            OutGenerics(
+                "CompositeGuids",
+                "Composite attribute of each Composite wall (null for the others).");
+
+            OutGenerics(
+                "ProfileGuids",
+                "Profile attribute of each Profile wall (null for the others).");
+
+            OutIntegers(
+                "FloorIndices",
+                "Home story index of each wall.");
         }
 
         protected override void ManageResponse(
@@ -241,6 +280,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var heights = new List<double>();
             var arcAngles = new List<double>();
             var curves = new List<PolyCurve>();
+            var thicknesses = new List<double>();
+            var offsets = new List<double>();
+            var bottomOffsets = new List<double>();
+            var referenceLineLocations = new List<string>();
+            var structureTypes = new List<string>();
+            var buildingMaterialGuids = new List<AttributeGuidObject>();
+            var compositeGuids = new List<AttributeGuidObject>();
+            var profileGuids = new List<AttributeGuidObject>();
+            var floorIndices = new List<int>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -304,6 +352,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         },
                         arcs,
                         wallDetails.ZCoordinate));
+                thicknesses.Add(wallDetails.BegThickness);
+                offsets.Add(wallDetails.Offset);
+                bottomOffsets.Add(wallDetails.BottomOffset);
+                referenceLineLocations.Add(wallDetails.ReferenceLineLocation);
+                structureTypes.Add(wallDetails.StructureType);
+                buildingMaterialGuids.Add(wallDetails.BuildingMaterialId);
+                compositeGuids.Add(wallDetails.CompositeId);
+                profileGuids.Add(wallDetails.ProfileId);
+                floorIndices.Add(detailsOfElement.FloorIndex);
             }
 
             da.SetDataList(
@@ -324,6 +381,33 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 5,
                 curves);
+            da.SetDataList(
+                6,
+                thicknesses);
+            da.SetDataList(
+                7,
+                offsets);
+            da.SetDataList(
+                8,
+                bottomOffsets);
+            da.SetDataList(
+                9,
+                referenceLineLocations);
+            da.SetDataList(
+                10,
+                structureTypes);
+            da.SetDataList(
+                11,
+                buildingMaterialGuids);
+            da.SetDataList(
+                12,
+                compositeGuids);
+            da.SetDataList(
+                13,
+                profileGuids);
+            da.SetDataList(
+                14,
+                floorIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -372,6 +456,45 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutCurves(
                 "Lines",
                 "Lines or curves.");
+
+            // The outputs below are named like the inputs of CreateBeams and
+            // ModifyBeams, so a beam can be taken apart, changed and rebuilt
+            // without renaming anything.
+            OutNumberList(
+                "Widths",
+                "Width of each beam's section (null when the segments could not be read).");
+
+            OutNumberList(
+                "Heights",
+                "Height of each beam's section (null when the segments could not be read).");
+
+            OutNumberList(
+                "Offsets",
+                "Offset of each beam from its reference line.");
+
+            OutNumberList(
+                "Levels",
+                "Base height of each beam relative to its home story.");
+
+            OutTexts(
+                "AnchorPoints",
+                "Anchor point of each beam: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight.");
+
+            OutBooleans(
+                "CircleBased",
+                "True for a round, false for a rectangular section (null when the segments could not be read).");
+
+            OutGenerics(
+                "BuildingMaterialGuids",
+                "Building material attribute of each Basic beam (null for the others).");
+
+            OutGenerics(
+                "ProfileGuids",
+                "Profile attribute of each Profile beam (null for the others).");
+
+            OutIntegers(
+                "FloorIndices",
+                "Home story index of each beam.");
         }
 
         protected override void ManageResponse(
@@ -384,6 +507,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var arcAngles = new List<double>();
             var verticalCurveHeights = new List<double>();
             var curves = new List<PolyCurve>();
+            var widths = new List<double?>();
+            var heights = new List<double?>();
+            var offsets = new List<double>();
+            var levels = new List<double>();
+            var anchorPoints = new List<string>();
+            var circleBased = new List<bool?>();
+            var buildingMaterialGuids = new List<AttributeGuidObject>();
+            var profileGuids = new List<AttributeGuidObject>();
+            var floorIndices = new List<int>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -453,6 +585,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         beamDetails.ZCoordinate,
                         beamDetails.SlantAngle,
                         beamDetails.VerticalCurveHeight));
+                widths.Add(beamDetails.Width);
+                heights.Add(beamDetails.Height);
+                offsets.Add(beamDetails.Offset);
+                levels.Add(beamDetails.Level);
+                anchorPoints.Add(beamDetails.AnchorPoint);
+                circleBased.Add(beamDetails.CircleBased);
+                buildingMaterialGuids.Add(beamDetails.BuildingMaterialId);
+                profileGuids.Add(beamDetails.ProfileId);
+                floorIndices.Add(detailsOfElement.FloorIndex);
             }
 
             da.SetDataList(
@@ -476,6 +617,33 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 6,
                 curves);
+            da.SetDataList(
+                7,
+                widths);
+            da.SetDataList(
+                8,
+                heights);
+            da.SetDataList(
+                9,
+                offsets);
+            da.SetDataList(
+                10,
+                levels);
+            da.SetDataList(
+                11,
+                anchorPoints);
+            da.SetDataList(
+                12,
+                circleBased);
+            da.SetDataList(
+                13,
+                buildingMaterialGuids);
+            da.SetDataList(
+                14,
+                profileGuids);
+            da.SetDataList(
+                15,
+                floorIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -503,6 +671,49 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutPoints(
                 "OrigoCoordinates",
                 "Origo coordinates.");
+
+            // The outputs below are named like the inputs of CreateColumns
+            // and ModifyColumns, so a column can be taken apart, changed and
+            // rebuilt without renaming anything.
+            OutNumberList(
+                "Heights",
+                "Height of each column.");
+
+            OutNumberList(
+                "Widths",
+                "Width of each column's core (null when the segments could not be read).");
+
+            OutNumberList(
+                "Depths",
+                "Depth of each column's core (null when the segments could not be read).");
+
+            OutNumberList(
+                "AxisRotationAngles",
+                "Rotation angle of each column's axis in radians.");
+
+            OutNumberList(
+                "BottomOffsets",
+                "Vertical offset of each column's bottom from its home story level.");
+
+            OutTexts(
+                "CoreAnchors",
+                "Core anchor of each column: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight.");
+
+            OutBooleans(
+                "CircleBased",
+                "True for a round, false for a rectangular core (null when the segments could not be read).");
+
+            OutGenerics(
+                "BuildingMaterialGuids",
+                "Building material attribute of each Basic column (null for the others).");
+
+            OutGenerics(
+                "ProfileGuids",
+                "Profile attribute of each Profile column (null for the others).");
+
+            OutIntegers(
+                "FloorIndices",
+                "Home story index of each column.");
         }
 
         protected override void ManageResponse(
@@ -510,6 +721,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             var columns = new List<ElementGuidWrapper>();
             var origoCoords = new List<Point3d>();
+            var heights = new List<double>();
+            var widths = new List<double?>();
+            var depths = new List<double?>();
+            var axisRotationAngles = new List<double>();
+            var bottomOffsets = new List<double>();
+            var coreAnchors = new List<string>();
+            var circleBased = new List<bool?>();
+            var buildingMaterialGuids = new List<AttributeGuidObject>();
+            var profileGuids = new List<AttributeGuidObject>();
+            var floorIndices = new List<int>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -538,6 +759,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         columnDetails.OrigoCoordinate.X,
                         columnDetails.OrigoCoordinate.Y,
                         columnDetails.ZCoordinate));
+                heights.Add(columnDetails.Height);
+                widths.Add(columnDetails.Width);
+                depths.Add(columnDetails.Depth);
+                axisRotationAngles.Add(columnDetails.AxisRotationAngle);
+                bottomOffsets.Add(columnDetails.BottomOffset);
+                coreAnchors.Add(columnDetails.CoreAnchor);
+                circleBased.Add(columnDetails.CircleBased);
+                buildingMaterialGuids.Add(columnDetails.BuildingMaterialId);
+                profileGuids.Add(columnDetails.ProfileId);
+                floorIndices.Add(detailsOfElement.FloorIndex);
             }
 
             da.SetDataList(
@@ -546,6 +777,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 1,
                 origoCoords);
+            da.SetDataList(
+                2,
+                heights);
+            da.SetDataList(
+                3,
+                widths);
+            da.SetDataList(
+                4,
+                depths);
+            da.SetDataList(
+                5,
+                axisRotationAngles);
+            da.SetDataList(
+                6,
+                bottomOffsets);
+            da.SetDataList(
+                7,
+                coreAnchors);
+            da.SetDataList(
+                8,
+                circleBased);
+            da.SetDataList(
+                9,
+                buildingMaterialGuids);
+            da.SetDataList(
+                10,
+                profileGuids);
+            da.SetDataList(
+                11,
+                floorIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -577,6 +838,38 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutCurveTree(
                 "HolePolygons",
                 "The outline polygons of the holes in the slabs.");
+
+            // The outputs below are named like the inputs of CreateSlabs and
+            // ModifySlabs, so a slab can be taken apart, changed and rebuilt
+            // without renaming anything (Polygons and HolePolygons above are
+            // the Outlines and Holes inputs of CreateSlabs).
+            OutNumberList(
+                "Levels",
+                "The Z coordinate of the reference plane of each slab.");
+
+            OutNumberList(
+                "Thicknesses",
+                "Thickness of each slab.");
+
+            OutTexts(
+                "StructureTypes",
+                "Structure type of each slab: Basic or Composite.");
+
+            OutGenerics(
+                "BuildingMaterialGuids",
+                "Building material attribute of each Basic slab (null for the others).");
+
+            OutGenerics(
+                "CompositeGuids",
+                "Composite attribute of each Composite slab (null for the others).");
+
+            OutTexts(
+                "ReferencePlaneLocations",
+                "Reference plane location of each slab: Top, CoreTop, CoreBottom or Bottom.");
+
+            OutIntegers(
+                "FloorIndices",
+                "Home story index of each slab.");
         }
 
         protected override void ManageResponse(
@@ -585,6 +878,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var slabs = new List<ElementGuidWrapper>();
             var polygons = new List<PolyCurve>();
             var holePolygonsTree = new DataTree<PolyCurve>();
+            var levels = new List<double>();
+            var thicknesses = new List<double>();
+            var structureTypes = new List<string>();
+            var buildingMaterialGuids = new List<AttributeGuidObject>();
+            var compositeGuids = new List<AttributeGuidObject>();
+            var referencePlaneLocations = new List<string>();
+            var floorIndices = new List<int>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -625,6 +925,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 holePolygonsTree.AddRange(
                     holePolygons,
                     new GH_Path(slabs.Count));
+                levels.Add(slabDetails.ZCoordinate);
+                thicknesses.Add(slabDetails.Thickness);
+                structureTypes.Add(slabDetails.StructureType);
+                buildingMaterialGuids.Add(slabDetails.BuildingMaterialId);
+                compositeGuids.Add(slabDetails.CompositeId);
+                referencePlaneLocations.Add(slabDetails.ReferencePlaneLocation);
+                floorIndices.Add(detailsOfElement.FloorIndex);
             }
 
             da.SetDataList(
@@ -636,6 +943,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataTree(
                 2,
                 holePolygonsTree);
+            da.SetDataList(
+                3,
+                levels);
+            da.SetDataList(
+                4,
+                thicknesses);
+            da.SetDataList(
+                5,
+                structureTypes);
+            da.SetDataList(
+                6,
+                buildingMaterialGuids);
+            da.SetDataList(
+                7,
+                compositeGuids);
+            da.SetDataList(
+                8,
+                referencePlaneLocations);
+            da.SetDataList(
+                9,
+                floorIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -1059,6 +1387,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutIntegers(
                 "Pens",
                 "Pen indices of the texts.");
+
+            OutTexts(
+                "FontNames",
+                "Font name of each text (null when no loaded font has the text's font index).");
         }
 
         protected override void ManageResponse(
@@ -1071,6 +1403,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var heights = new List<double>();
             var justifications = new List<string>();
             var pens = new List<int>();
+            var fontNames = new List<string>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -1102,6 +1435,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 heights.Add(textDetails.Height);
                 justifications.Add(textDetails.Justification);
                 pens.Add(textDetails.Pen);
+                fontNames.Add(textDetails.Style?.FontName);
             }
 
             da.SetDataList(
@@ -1125,6 +1459,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 6,
                 pens);
+            da.SetDataList(
+                7,
+                fontNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -1153,6 +1490,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutTexts(
                 "Texts",
                 "Content of the text-type labels.");
+
+            OutTexts(
+                "FontNames",
+                "Font name of each text-type label (null when no loaded font has the label's font index).");
         }
 
         protected override void ManageResponse(
@@ -1160,6 +1501,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             var labels = new List<ElementGuidWrapper>();
             var contents = new List<string>();
+            var fontNames = new List<string>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -1182,6 +1524,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ElementId = inputs.Elements[i].ElementId
                     });
                 contents.Add(labelDetails.Text);
+                fontNames.Add(labelDetails.Style?.FontName);
             }
 
             da.SetDataList(
@@ -1190,6 +1533,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 1,
                 contents);
+            da.SetDataList(
+                2,
+                fontNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>

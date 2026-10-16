@@ -34,6 +34,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("ReferenceLineLocations", "referenceLineLocation", FieldKind.Text, "Reference line location: Outside, Center, Inside, CoreOutside, CoreCenter or CoreInside.")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ModifyWalls;
 
