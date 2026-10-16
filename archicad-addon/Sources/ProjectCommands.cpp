@@ -1,5 +1,6 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Location.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -1359,6 +1360,20 @@ GS::String SaveProjectCommand::GetName () const
     return "SaveProject";
 }
 
+GS::Optional<GS::UniString> SaveProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectPath": {
+                "type": "string",
+                "description": "Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten. When omitted, the project is saved to its own file."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
 GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -1366,8 +1381,21 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
     })";
 }
 
-GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    GS::UniString projectPath;
+    if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
+        IO::Location fileLoc (projectPath);
+        API_FileSavePars fsp = {};
+        fsp.fileTypeID = APIFType_PlanFile;
+        fsp.file = &fileLoc;
+        GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
+        }
+        return CreateSuccessfulExecutionResult ();
+    }
+
     // The parameterless save acts on the current window - "saves the content of
     // the current window", ACAPI_Automate.h - so from a 3D, section or other
     // non-plan window it tries to save that window's content, which has no file

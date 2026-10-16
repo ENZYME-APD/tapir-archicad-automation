@@ -237,6 +237,18 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "type": "number",
                             "description": "Optional column rotation angle in radians."
                         },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Optional slant angle in radians. A non-zero value also makes the column slanted, unless isSlanted is given explicitly."
+                        },
+                        "isSlanted": {
+                            "type": "boolean",
+                            "description": "Optional explicit slanted state. By default it is derived from slantAngle."
+                        },
+                        "slantDirectionAngle": {
+                            "type": "number",
+                            "description": "Optional rotation angle of the slanted column on the horizontal plane in radians."
+                        },
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the column. Applied to all segments.",
@@ -304,6 +316,22 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     GS::UniString coreAnchor;
     if (parameters.Get ("coreAnchor", coreAnchor)) {
         element.column.coreAnchor = ParseAnchorPointString (coreAnchor);
+    }
+
+    // Same rule as CreateBeams and SetDetailsOfElements: without isSlanted the column is created
+    // vertical and the angle is discarded.
+    double slantAngle = 0.0;
+    if (parameters.Get ("slantAngle", slantAngle)) {
+        element.column.slantAngle = slantAngle;
+        element.column.isSlanted = (slantAngle != 0.0);
+    }
+    bool isSlanted = false;
+    if (parameters.Get ("isSlanted", isSlanted)) {
+        element.column.isSlanted = isSlanted;
+    }
+    double slantDirectionAngle = 0.0;
+    if (parameters.Get ("slantDirectionAngle", slantDirectionAngle)) {
+        element.column.slantDirectionAngle = slantDirectionAngle;
     }
 
     double width = 0.0;
@@ -2634,6 +2662,10 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "number",
                         "description": "The height of the skirt."
                     },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material. Sets the mesh's building material and overrides its top/side/bottom surfaces to that material's surface (so the mesh is colored)."
+                    },
                     "ridges": {
                         "$ref": "#/MeshRidges"
                     },
@@ -2755,6 +2787,24 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     GS::Array<GS::ObjectState> sublines;
     parameters.Get ("sublines", sublines);
     BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
+
+    // Building material of the mesh. The top, side and bottom surfaces are also overridden with
+    // the material's own surface (cutMaterial): a surface override left in the Mesh tool defaults
+    // would otherwise keep showing the old color.
+    const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
+    if (buildingMaterialIdOS != nullptr) {
+        API_Attribute attribute = {};
+        attribute.header.typeID = API_BuildingMaterialID;
+        attribute.header.guid = GetGuidFromObjectState (*buildingMaterialIdOS);
+        if (attribute.header.guid == APINULLGuid || ACAPI_Attribute_Get (&attribute) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
+        }
+        element.mesh.buildingMaterial = attribute.header.index;
+        SetOverriddenAttribute (element.mesh.topMat, attribute.buildingMaterial.cutMaterial);
+        SetOverriddenAttribute (element.mesh.sideMat, attribute.buildingMaterial.cutMaterial);
+        SetOverriddenAttribute (element.mesh.botMat, attribute.buildingMaterial.cutMaterial);
+        element.mesh.materialsChained = false;
+    }
 
     return {};
 }
@@ -4397,6 +4447,10 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     "floorIndex": {
                         "type": "integer",
                         "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
                     }
                 },
                 "additionalProperties": false,
@@ -4431,6 +4485,11 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     } else {
         const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
         element.header.floorInd = floorIndexAndOffset.first;
+    }
+
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+        element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
     element.text.loc.x = apiCoordinate.x;
