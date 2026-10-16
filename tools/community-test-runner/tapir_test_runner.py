@@ -459,6 +459,21 @@ def test_pull(gh: GitHub, cfg: dict, pull: dict, ac: dict, login: str, post: boo
     return f"#{number}: {body.splitlines()[0]}"
 
 
+def trial(ac: dict, build: Path, checks: list[Path]) -> str:
+    """The full install-test-restore cycle for a local build, without GitHub."""
+    install = Installation(ac)
+    install.install(build)
+    try:
+        tapir = install.start()
+        try:
+            rows, version = run_checks(tapir, checks)
+        finally:
+            install.quit(tapir)
+    finally:
+        install.restore()
+    return report(rows, ac["version"], version, "local")
+
+
 def once(cfg: dict, post: bool) -> None:
     token = os.environ.get(cfg.get("tokenEnv", "TAPIR_RUNNER_TOKEN"), "")
     if not token:
@@ -489,6 +504,11 @@ def main(argv: list[str] | None = None) -> int:
         p = sub.add_parser(name)
         p.add_argument("--config", required=True)
         p.add_argument("--no-post", action="store_true", help="print the report instead of commenting")
+    tr = sub.add_parser("trial", help="install a local build, run checks, quit Archicad and restore - no GitHub")
+    tr.add_argument("--config", required=True)
+    tr.add_argument("--ac", required=True, help="Archicad version from the config, e.g. 26")
+    tr.add_argument("--build", required=True, help="the .apx to test")
+    tr.add_argument("files", nargs="+")
     args = parser.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # Windows consoles default to cp1252
@@ -501,6 +521,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if all(r["ok"] is not False for r in rows) else 1
 
     cfg = json.loads(Path(args.config).read_text(encoding="utf-8"))
+    if args.mode == "trial":
+        ac = next(a for a in cfg["archicads"] if str(a["version"]) == args.ac)
+        files = [Path(f) for pattern in args.files for f in sorted(glob.glob(pattern))]
+        body = trial(ac, Path(args.build), files)
+        print(body)
+        return 0 if " PASS " in body.splitlines()[0] else 1
     if args.mode == "once":
         once(cfg, not args.no_post)
         return 0
