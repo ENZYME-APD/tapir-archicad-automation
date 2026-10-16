@@ -49,7 +49,7 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
 builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference)
-tools/                   Version bump scripts (update_version.py), package_info.json,
+tools/                   Version bump scripts (update_version.py), package_info.json, command scaffolder (new_command.py),
                          Add-On docs generator (generate_addon_docs.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
@@ -107,6 +107,9 @@ sandbox/                 Experiments / scratch
   texts the same in both (test_update_mode.py checks they match).
 
 ### Adding or changing a command
+
+[tools/new_command.py](tools/new_command.py) writes steps 1–4 for new commands from a short
+spec (format in its docstring), leaving only the Archicad API calls in `Execute` to fill in.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
