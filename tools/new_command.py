@@ -47,6 +47,12 @@ Compact schema notation:
 Output shortcuts:
   "executionResults"  -> {"executionResults": #ExecutionResults}   (modify / connect / delete)
   "elements"          -> {"elements": #ElementIdsOrErrors}        (create)
+
+When the input is a single required array of objects (inline, or a #Ref such as
+#AttributeIdArrayItem) and the output is "executionResults", "elements" or one
+array of #...OrError items (e.g. {"attributeIds": ["#AttributeIdOrError"]}),
+Execute gets a loop with one result per input item. Fields that are #Refs to a
+{guid} id (ElementId, AttributeId, ...) are converted to API_Guid.
 """
 
 import argparse
@@ -161,6 +167,37 @@ REF_CONVERSIONS = {
     'Coordinate2D': ('const API_Coord {v}Coord = Get2DCoordinateFromObjectState (*{v});', '{v}Coord'),
     'Coordinate3D': ('const API_Coord3D {v}Coord = Get3DCoordinateFromObjectState (*{v});', '{v}Coord'),
 }
+GUID_CONVERSION = ('const API_Guid {v}Guid = GetGuidFromObjectState (*{v});', '{v}Guid')
+
+
+def is_guid_id (ref, common):
+    """True for an id definition such as AttributeId: an object holding only a required guid."""
+    target = common.get (ref, {})
+    return target.get ('type') == 'object' and list (target.get ('properties', {})) == ['guid'] and target.get ('required') == ['guid']
+
+
+def array_item_id (ref, common):
+    """For an ...ArrayItem definition wrapping a guid id (e.g. AttributeIdArrayItem -> 'attributeId'),
+    the name of its single field; otherwise None."""
+    target = common.get (ref, {})
+    props = target.get ('properties', {})
+    if len (props) == 1:
+        field, sub = next (iter (props.items ()))
+        if is_guid_id (sub.get ('$ref', '').split ('/')[-1], common):
+            return field
+    return None
+
+
+def or_error_id (ref, common):
+    """For an ...OrError definition (oneOf an id array item and ErrorItem), the id field of the
+    successful item, e.g. AttributeIdOrError -> 'attributeId'; otherwise None."""
+    for option in common.get (ref, {}).get ('oneOf', []):
+        field = array_item_id (option.get ('$ref', '').split ('/')[-1], common)
+        if field:
+            return field
+    return None
+
+
 SCALAR_DECL = {
     'string': ('GS::UniString', '{v}'),
     'number': ('double', '{v} = 0.0'),
@@ -239,8 +276,9 @@ def gen_field_reads (schema, source, indent, fail, taken, common, reserved=()):
         lines.append (f'{pad}}}')
         for field, v, sub in pointers:
             ref = sub.get ('$ref', '').split ('/')[-1]
-            if ref in REF_CONVERSIONS:
-                code, converted = REF_CONVERSIONS[ref]
+            conversion = REF_CONVERSIONS.get (ref) or (GUID_CONVERSION if is_guid_id (ref, common) else None)
+            if conversion:
+                code, converted = conversion
                 lines.append (pad + code.format (v=v))
                 taken.add (converted.format (v=v))
                 pending.append (converted.format (v=v))
@@ -281,16 +319,31 @@ def gen_execute (cmd, input_schema, output_schema, common):
 
     out_props = output_schema.get ('properties', {})
     result_list = None
+    result_id = None  # id field of the successful item of an ...OrError result list
     if set (out_props) == {'executionResults'}:
         result_list = 'executionResults'
     elif set (out_props) == {'elements'} and out_props['elements'].get ('$ref', '').endswith ('ElementIdsOrErrors'):
         result_list = 'elements'
+    elif len (out_props) == 1:
+        field, sub = next (iter (out_props.items ()))
+        item_ref = sub.get ('items', {}).get ('$ref', '').split ('/')[-1] if sub.get ('type') == 'array' else ''
+        if item_ref.endswith ('OrError'):
+            result_list = field
+            result_id = or_error_id (item_ref, common)
+
+    def object_items (array_schema):
+        """The object schema of the array's items, inline or a common definition; else None."""
+        items = array_schema.get ('items', {})
+        if items.get ('type') == 'object':
+            return items
+        target = common.get (items.get ('$ref', '').split ('/')[-1], {})
+        return target if target.get ('type') == 'object' and 'properties' in target else None
 
     # batch: one required array of objects in, one result per item out
     batch_field = None
     if input_schema and result_list:
         arrays = [f for f, s in input_schema['properties'].items ()
-                  if s.get ('type') == 'array' and s.get ('items', {}).get ('type') == 'object'
+                  if s.get ('type') == 'array' and object_items (s) is not None
                   and f in input_schema.get ('required', [])]
         if len (arrays) == 1 and len (input_schema['properties']) == 1:
             batch_field = arrays[0]
@@ -298,7 +351,7 @@ def gen_execute (cmd, input_schema, output_schema, common):
     top_fail = lambda msg: f'return CreateErrorResponse (APIERR_BADPARS, "{cpp_string (msg)}");'
 
     if batch_field:
-        items_schema = input_schema['properties'][batch_field]['items']
+        items_schema = object_items (input_schema['properties'][batch_field])
         taken.update ({batch_field})
         body.append (f'    GS::Array<GS::ObjectState> {batch_field};')
         body.append (f'    if (!parameters.Get ("{batch_field}", {batch_field})) {{')
@@ -311,18 +364,28 @@ def gen_execute (cmd, input_schema, output_schema, common):
         loop_indent = 12 if undoable else 8
         if result_list == 'executionResults':
             item_fail = lambda msg: f'executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "{cpp_string (msg)}"));\ncontinue;'
-            success = 'executionResults (CreateSuccessfulExecutionResult ());'
-        else:
+            on_failure = '// executionResults (CreateFailedExecutionResult (err, "...")); continue;'
+            created, success = None, 'executionResults (CreateSuccessfulExecutionResult ());'
+        elif result_list == 'elements':
             item_fail = lambda msg: f'elements (CreateErrorResponse (APIERR_BADPARS, "{cpp_string (msg)}"));\ncontinue;'
+            on_failure = '// elements (CreateErrorResponse (err, "...")); continue;'
+            created = 'const API_Guid newElementGuid = APINULLGuid; // TODO: the guid of the created element'
             success = 'elements (CreateElementIdObjectState (newElementGuid));'
+        else:
+            item_fail = lambda msg: f'{result_list} (CreateErrorResponse (APIERR_BADPARS, "{cpp_string (msg)}"));\ncontinue;'
+            on_failure = f'// {result_list} (CreateErrorResponse (err, "...")); continue;'
+            if result_id:
+                created = 'const API_Guid newGuid = APINULLGuid; // TODO: the guid of the created item'
+                success = f'{result_list} (GS::ObjectState ("{result_id}", CreateGuidObjectState (newGuid)));'
+            else:
+                created, success = None, f'{result_list} (GS::ObjectState ()); // TODO: the result of this item'
         reads, used = gen_field_reads (items_schema, 'item', loop_indent, item_fail, taken, common, reserved={result_list})
         inner = reads + [''] + unused_lines (used, loop_indent) + [
             ' ' * loop_indent + f'// TODO: call the Archicad API for this item. On failure report it with',
-            ' ' * loop_indent + (f'// executionResults (CreateFailedExecutionResult (err, "...")); continue;' if result_list == 'executionResults'
-                                 else f'// elements (CreateErrorResponse (err, "...")); continue;'),
+            ' ' * loop_indent + on_failure,
         ]
-        if result_list == 'elements':
-            inner.append (' ' * loop_indent + 'const API_Guid newElementGuid = APINULLGuid; // TODO: the guid of the created element')
+        if created:
+            inner.append (' ' * loop_indent + created)
         inner.append (' ' * loop_indent + success)
         loop = [' ' * (loop_indent - 4) + f'for (const GS::ObjectState& item : {batch_field}) {{'] + inner + [' ' * (loop_indent - 4) + '}']
         if undoable:
