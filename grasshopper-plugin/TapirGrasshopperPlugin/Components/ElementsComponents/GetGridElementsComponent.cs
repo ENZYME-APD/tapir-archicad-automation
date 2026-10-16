@@ -123,8 +123,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 floorIndices.Add(item.Value<int?>("floorIndex") ?? 0);
                 layerIndices.Add(item.Value<int?>("layerIndex") ?? 0);
                 libraryPartNames.Add(item.Value<string>("libraryPartName"));
-                parameters.Add(ParametersOf(item));
-                parameterSettings.Add(ParameterSettingsOf(item));
+                // Without IncludeParameters the two parameter outputs stay empty
+                // instead of holding one null per grid element.
+                if (includeParameters)
+                {
+                    parameters.Add(ParametersOf(item));
+                    parameterSettings.Add(ParameterSettingsOf(item));
+                }
             }
 
             da.SetDataList(0, elementGuids);
