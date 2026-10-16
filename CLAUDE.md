@@ -204,8 +204,9 @@ Grasshopper component.
 
 GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml`,
-  `installer_build_check.yml` — PR build checks for each component (also
-  `workflow_dispatch`, which the bot PR steward uses). The installer
+  `installer_build_check.yml` — PR build checks for each component, also run
+  on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
+  uses); a newer push to a pull request cancels its superseded runs. The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
