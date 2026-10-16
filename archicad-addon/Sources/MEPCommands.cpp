@@ -98,7 +98,7 @@ static GS::Optional<GS::ObjectState> GetErrorIfLayerNotUsable (Int32 layerIndex)
 }
 
 // Sets the layer of a routing element and of all its parts: routing segments, rigid segments,
-// elbows (Archicad 29 and later) and transitions. Changing only the routing element did not
+// elbows (bends in Archicad 28) and transitions. Changing only the routing element did not
 // always move the parts that carry the geometry. Runs inside the caller's undoable command. Every
 // part is tried; the first error is returned.
 static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingElementId, const API_AttributeIndex& layerIndex)
@@ -130,9 +130,13 @@ static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingEl
         auto node = RoutingNode::Get (nodeId);
         if (node.IsOk ()) {
 #ifdef ServerMainVers_2900
-            // RoutingNode::GetElbowIds () exists from Archicad 29; Archicad 28 has transitions only.
             for (const auto& elbowId : node->GetElbowIds ()) {
                 setLayer (elbowId);
+            }
+#else
+            // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
+            for (const auto& bendId : node->GetBendIds ()) {
+                setLayer (bendId);
             }
 #endif
             for (const auto& transitionId : node->GetTransitionIds ()) {
@@ -870,7 +874,10 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             if (hasLayerIndex) {
                 const GSErrCode layerErr = SetLayerOfRoutingElement (placedId, ACAPI_CreateAttributeIndex (layerIndex));
                 if (layerErr != NoError) {
-                    elements (CreateErrorResponse (layerErr, "The routing element was placed, but the layer of it or of some of its parts could not be set."));
+                    // The route stays placed, so its guid is given in the message to let the caller find it.
+                    elements (CreateErrorResponse (layerErr, GS::UniString::Printf (
+                        "The routing element with guid %T was placed, but the layer of it or of some of its parts could not be set.",
+                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
                     continue;
                 }
             }
