@@ -420,11 +420,12 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
-// Some autotext functions report NoError even when they have no effect: on AC29,
-// ACAPI_AutoText_CreateAnAutoText can return NoError without creating anything, and
-// ACAPI_AutoText_DeleteAnAutoText returns NoError for an id that matches nothing (#667).
-// The create/delete commands therefore verify their effect against the actual autotext
-// list instead of trusting the returned error code.
+// Some autotext functions may report NoError even when they have no effect: the report
+// in #667 suggests that ACAPI_AutoText_CreateAnAutoText can return NoError without
+// creating anything, and that ACAPI_AutoText_DeleteAnAutoText returns NoError for an id
+// that matches nothing (neither is verified against the DevKit). The create/delete
+// commands therefore verify their effect against the actual autotext list instead of
+// trusting the returned error code alone.
 #ifndef ServerMainVers_3000
 static GSErrCode GetAutoTextIds (GS::HashSet<GS::UniString>& autoTextIds)
 {
@@ -477,7 +478,8 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetRawResponseSchema
         "type": "object",
         "properties": {
             "fields": {
-                "$ref": "#/ProjectInfoFields"
+                "$ref": "#/ProjectInfoFieldsOrErrors",
+                "description": "The created project info fields, one item per requested field: the field with its id, or an error if it could not be created."
             }
         },
         "additionalProperties": false,
@@ -530,7 +532,7 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            // ACAPI_AutoText_CreateAnAutoText can report NoError without creating anything
+            // ACAPI_AutoText_CreateAnAutoText may report NoError without creating anything
             // (#667), and the id of the created field is not guaranteed to be "autotext-"
             // followed by the guid passed in, so the re-fetched autotext list is the only
             // reliable source for both the success of the call and the new field's id.
@@ -541,12 +543,25 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
+            // The new field is the one id that was not in the list before the call. The
+            // stored name is only used as a tie breaker, since Archicad is not guaranteed
+            // to keep it byte for byte (whitespace, case, length limits).
             GS::UniString projectInfoId;
+            GS::UniString firstNewId;
             for (const auto& autoText : autoTextsAfterCreate) {
-                if (autoText[0] == projectInfoName && !knownIds.Contains (autoText[1])) {
+                if (knownIds.Contains (autoText[1])) {
+                    continue;
+                }
+                if (firstNewId.IsEmpty ()) {
+                    firstNewId = autoText[1];
+                }
+                if (autoText[0] == projectInfoName) {
                     projectInfoId = autoText[1];
                     break;
                 }
+            }
+            if (projectInfoId.IsEmpty ()) {
+                projectInfoId = firstNewId;
             }
             if (projectInfoId.IsEmpty ()) {
                 fieldsAdder (CreateErrorResponse (APIERR_GENERAL, "ACAPI_AutoText_CreateAnAutoText reported success, but the new field did not appear in the autotext list."));
