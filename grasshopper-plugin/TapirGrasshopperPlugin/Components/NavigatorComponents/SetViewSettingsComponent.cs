@@ -54,6 +54,30 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "The name of the graphic override combination. " +
                 "If empty, the view has custom graphic override combination.");
 
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InText(
+                nameof(ViewSettings.StructureDisplay),
+                "Structure display mode: EntireStructure, CoreOnly, WithoutFinishes or StructureOnly. " +
+                "If empty, it is left unchanged.");
+
+            InText(
+                nameof(ViewSettings.RenovationFilterGuid),
+                "Identifier of the renovation filter to apply. If empty, it is left unchanged.");
+
+            InText(
+                nameof(ViewSettings.D3StyleName),
+                "The name of the 3D style. If empty, it is left unchanged.");
+
+            InText(
+                nameof(ViewSettings.RenderingSceneName),
+                "The name of the rendering scene. If empty, it is left unchanged.");
+
+            inManager.AddBooleanParameter(
+                nameof(ViewSettings.UsePhotoRendering),
+                nameof(ViewSettings.UsePhotoRendering),
+                "Use photo rendering for the view. If empty, it is left unchanged.",
+                GH_ParamAccess.item);
+
             SetOptionality(
                 new[]
                 {
@@ -61,7 +85,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     2,
                     3,
                     4,
-                    5
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10
                 });
         }
 
@@ -98,6 +127,34 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 5,
                 "");
 
+            var structureDisplay = da.GetOptional<string>(
+                6,
+                null);
+            var renovationFilterText = da.GetOptional<string>(
+                7,
+                null);
+            var d3StyleName = da.GetOptional<string>(
+                8,
+                null);
+            var renderingSceneName = da.GetOptional<string>(
+                9,
+                null);
+            var usePhotoRendering = false;
+            var hasUsePhotoRendering = da.GetData(
+                10,
+                ref usePhotoRendering);
+
+            RenovationFilterGuid renovationFilterGuid = null;
+            if (!string.IsNullOrEmpty(renovationFilterText))
+            {
+                renovationFilterGuid = RenovationFilterGuid.FromString(renovationFilterText);
+                if (renovationFilterGuid == null)
+                {
+                    this.AddError("Invalid identifier in the RenovationFilterGuid input.");
+                    return;
+                }
+            }
+
             var settings = new List<SetViewSettingsObject>();
 
             for (int i = 0; i < items.GuidWrappers.Count; i++)
@@ -112,7 +169,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                             LayerCombination = layer,
                             DimensionStyle = style,
                             PenSetName = pen,
-                            GraphicOverrideCombination = graphic
+                            GraphicOverrideCombination = graphic,
+                            StructureDisplay = string.IsNullOrEmpty(structureDisplay)
+                                ? null
+                                : structureDisplay,
+                            RenovationFilterGuid = renovationFilterGuid,
+                            D3StyleName = string.IsNullOrEmpty(d3StyleName)
+                                ? null
+                                : d3StyleName,
+                            RenderingSceneName = string.IsNullOrEmpty(renderingSceneName)
+                                ? null
+                                : renderingSceneName,
+                            UsePhotoRendering = hasUsePhotoRendering
+                                ? usePhotoRendering
+                                : (bool?)null
                         }
                     });
             }

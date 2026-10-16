@@ -1313,7 +1313,11 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
             "newName":         { "type": "string" },
-            "newId":           { "type": "string" }
+            "newId":           { "type": "string" },
+            "customName": {
+                "type": "boolean",
+                "description": "Set to false to drop the custom name of the item, so that it follows the name of its Project Map source again. Cannot be combined with newName."
+            }
         },
         "additionalProperties": false,
         "required": ["navigatorItemId"]
@@ -1428,6 +1432,13 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
 
     GS::UniString newName;
     const bool hasNewName = parameters.Get ("newName", newName) && !newName.IsEmpty ();
+
+    bool customName = true;
+    const bool resetCustomName = parameters.Get ("customName", customName) && !customName;
+    if (hasNewName && resetCustomName) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "newName cannot be combined with customName false.");
+    }
+
     GS::UniString newId;
     const bool hasNewId = parameters.Get ("newId", newId);
 
@@ -1438,16 +1449,20 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     const bool isProjectMapItem = navItem.mapId == API_ProjectMap ||
                                   (navItem.mapId == API_UndefinedMap && navItem.sourceGuid == APINULLGuid);
     API_DatabaseInfo dbInfo = navItem.db;
-    const bool hasLinkedElement = isProjectMapItem &&
-                                  ACAPI_Window_GetDatabaseInfo (&dbInfo) == NoError &&
-                                  dbInfo.linkedElement != APINULLGuid;
+    const bool renameLinkedElement = (hasNewName || hasNewId) &&
+                                     isProjectMapItem &&
+                                     ACAPI_Window_GetDatabaseInfo (&dbInfo) == NoError &&
+                                     dbInfo.linkedElement != APINULLGuid;
 
     if (hasNewName) {
-        CopyToFixedLengthString (navItem.uName, newName);
+        GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
+        navItem.uName[GS::ArraySize (navItem.uName) - 1] = 0;
         navItem.customName = true;
+    } else if (resetCustomName) {
+        navItem.customName = false;
     }
 
-    if (hasLinkedElement) {
+    if (renameLinkedElement) {
         ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
             err = RenameViewpointElement (dbInfo.linkedElement,
                                           hasNewName ? &newName : nullptr,
@@ -1465,31 +1480,41 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
         }
+    }
 
-        // For layouts: set custom layout number (ID) via ChangeLayoutSets
-        if (hasNewId) {
-            API_LayoutInfo layoutInfo = {};
-            BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
-            if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
-                CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
-                            GS::ArraySize (layoutInfo.customLayoutNumber));
-                layoutInfo.customLayoutNumbering = true;
-                ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
-                delete layoutInfo.customData;
-                layoutInfo.customData = nullptr;
-            }
+    // Archicad returns NoError even when it leaves the name untouched (e.g. a story,
+    // or Project Map schedule items, which are named by their scheme), so read the
+    // item back and report a name that was not applied as an error. navItem.uName
+    // holds the name truncated the way the item stores it, so a long name is not
+    // reported as a failed rename.
+    if (hasNewName || resetCustomName) {
+        API_NavigatorItem changedItem = {};
+        err = ACAPI_Navigator_GetNavigatorItem (&guid, &changedItem);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read back the navigator item after the change.");
+        }
+        if (hasNewName && GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).");
+        }
+        if (resetCustomName && changedItem.customName) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                "Archicad did not drop the custom name of this navigator item.");
         }
     }
 
-    // Archicad reports NoError for a rename it silently dropped (a story, or an item
-    // kind not handled above), so success is only reported once the item is seen
-    // carrying the new name. navItem.uName holds the name truncated the way the
-    // item stores it, so a long name is not reported as a failed rename.
-    if (hasNewName) {
-        API_NavigatorItem renamedItem = {};
-        if (ACAPI_Navigator_GetNavigatorItem (&guid, &renamedItem) == NoError &&
-            GS::UniString (renamedItem.uName) != GS::UniString (navItem.uName)) {
-            return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Archicad accepted the new name but the navigator item kept its old one; renaming this kind of navigator item is not supported.");
+    // For layouts: set custom layout number (ID) via ChangeLayoutSets. The ID of a
+    // Project Map viewpoint was already set on its element above.
+    if (hasNewId && !renameLinkedElement) {
+        API_LayoutInfo layoutInfo = {};
+        BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
+        if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
+            CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
+                        GS::ArraySize (layoutInfo.customLayoutNumber));
+            layoutInfo.customLayoutNumbering = true;
+            ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+            delete layoutInfo.customData;
+            layoutInfo.customData = nullptr;
         }
     }
 
