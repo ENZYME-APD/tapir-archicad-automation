@@ -75,6 +75,13 @@ Run checks against an Archicad you have open, before pushing them:
 python tapir_test_runner.py check checks/*.json --port 19723
 ```
 
+Try a build you downloaded by hand, with the whole install, start, check, quit and restore
+cycle (the configured Archicad must be closed):
+
+```
+python tapir_test_runner.py trial --config runner.json --ac 26 --build TapirAddOn_AC26_Win.apx checks/*.json
+```
+
 `checks/` holds examples taken from the October 2026 verification of #747-#753.
 
 ## Safety
@@ -87,10 +94,18 @@ The runner installs native code from a pull request. Hence:
   commands to an untitled, empty project and nothing else. Expressions allow `+ - * /` only;
 - use a separate Windows account for the runner if you can.
 
+## Verified so far (2026-10-16, Windows)
+
+- `check` on AC26 and AC28 (Tapir 1.7.0/1.7.1): all six example files run, clean up after
+  themselves and report exactly the issues still open in the release.
+- `trial` on AC26, the full cycle with the release build: install, start with a stock `.tpl`
+  (opens as an untitled project), 57 checks, `QuitArchicad` (quits in seconds even with a changed
+  untitled project, no save dialog), restore. About two minutes.
+- GitHub side of `once`: finding pull requests, reading their check files, downloading the
+  build check's artifact for the head commit.
+
 ## Not verified yet
 
-- Opening the blank `.tpl` from the command line as an untitled project.
-- Whether `QuitArchicad` asks to save the changed untitled project (a dialog would stop the
-  runner, as described above).
-- Bot pull requests get no build today; the build check has to be dispatched for them.
+- `once`/`poll` end to end: no pull request carries the `needs-test` label yet, and bot pull
+  requests get no build today; the build check has to be dispatched for them.
 - macOS.
