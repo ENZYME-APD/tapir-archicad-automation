@@ -413,8 +413,7 @@ GS::Optional<GS::UniString> GetLinesCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Line. If omitted, every field is returned. Requesting only the fields you need avoids fetching dashItems/lineItems, which can be large.",
                 "items": {
-                    "type": "string",
-                    "enum": ["scaleWithPlan", "defineScale", "lineType", "period", "height", "dashItems", "lineItems"]
+                    "$ref": "#/LineAttributeField"
                 }
             }
         },
@@ -584,8 +583,7 @@ GS::Optional<GS::UniString> GetFillsCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Fill. If omitted, every field is returned. Requesting only the fields you need avoids fetching lineItems/symbolLines/symbolArcs/symbolHotspots, which can be large.",
                 "items": {
-                    "type": "string",
-                    "enum": ["subType", "scaleWithPlan", "useForWalls", "useForDraft", "useForCover", "horizontalSpacing", "verticalSpacing", "angle", "bitPattern", "gradientStart", "gradientEnd", "percent", "texture", "lineItems", "symbolLines", "symbolArcs", "symbolHotspots"]
+                    "$ref": "#/FillAttributeField"
                 }
             }
         },
@@ -776,8 +774,7 @@ GS::Optional<GS::UniString> GetZoneCategoriesCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Names of the fields to return for each Zone Category. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["categoryCode", "color", "stampName", "stampMainGuid", "stampRevGuid"]
+                    "$ref": "#/ZoneCategoryAttributeField"
                 }
             }
         },
@@ -880,8 +877,7 @@ GS::Optional<GS::UniString> GetMEPSystemsCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Names of the fields to return for each MEP System. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["domain", "contourPen", "fillPen", "fillBackgroundPen", "centerLinePen", "fillId", "centerLineTypeId", "materialId", "insulationMaterialId"]
+                    "$ref": "#/MEPSystemAttributeField"
                 }
             }
         },
@@ -1025,8 +1021,7 @@ GS::Optional<GS::UniString> GetPenTablesCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "Names of the fields to return for each Pen Table. If omitted, every field is returned. Requesting only the fields you need avoids fetching the 255-element pens array.",
                 "items": {
-                    "type": "string",
-                    "enum": ["isActiveForModel", "isActiveForLayout", "pens"]
+                    "$ref": "#/PenTableAttributeField"
                 }
             }
         },
@@ -1191,8 +1186,7 @@ GS::Optional<GS::UniString> GetProfilesCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
                 "items": {
-                    "type": "string",
-                    "enum": ["wallType", "beamType", "coluType", "handrailType", "otherGDLObjectType", "useWith", "width", "height", "minimumWidth", "minimumHeight", "widthStretchable", "heightStretchable", "hasCoreSkin", "profileModifiers", "skins", "skinOutlines"]
+                    "$ref": "#/ProfileAttributeField"
                 }
             }
         },
@@ -2038,8 +2032,7 @@ GS::Optional<GS::UniString> GetCompositesCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Names of the fields to return for each Composite. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["useWith", "skins", "separators"]
+                    "$ref": "#/CompositeAttributeField"
                 }
             }
         },
@@ -2202,8 +2195,7 @@ GS::Optional<GS::UniString> GetSurfacesCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "description": "Names of the fields to return for each Surface. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["materialType", "ambientReflection", "diffuseReflection", "specularReflection", "transparency", "shine", "transparencyAttenuation", "emissionAttenuation", "surfaceColor", "specularColor", "emissionColor", "fillId", "texture"]
+                    "$ref": "#/SurfaceAttributeField"
                 }
             }
         },
@@ -2351,8 +2343,7 @@ GS::Optional<GS::UniString> GetLayersCommand::GetInputParametersSchema () const
                 "type": "array",
                 "description": "Names of the fields to return for each Layer. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["isHidden", "isLocked", "isWireframe", "intersectionGroupNr"]
+                    "$ref": "#/LayerAttributeField"
                 }
             }
         },
@@ -2461,8 +2452,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "Names of the fields to return for each Building Material. If omitted, every field is returned.",
                 "items": {
-                    "type": "string",
-                    "enum": ["id", "manufacturer", "description", "connPriority", "cutFillIndex", "cutFillPen", "cutFillBackgroundPen", "cutSurfaceIndex", "cutFillOrientation", "thermalConductivity", "density", "heatCapacity", "embodiedEnergy", "embodiedCarbon", "showUncutLines", "collisionDetection"]
+                    "$ref": "#/BuildingMaterialAttributeField"
                 }
             }
         },
@@ -3298,62 +3288,14 @@ GS::Optional<GS::UniString> CreateLinesCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Dash-gap pairs describing one period (Dashed line type only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "dash": {
-                                        "type": "number",
-                                        "description": "Length of the visible part of the item."
-                                    },
-                                    "gap": {
-                                        "type": "number",
-                                        "description": "Length of the invisible part of the item."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["dash", "gap"]
+                                "$ref": "#/LineDashItem"
                             }
                         },
                         "lineItems": {
                             "type": "array",
                             "description": "Symbol items describing one period (Symbol line type only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "itemType": {
-                                        "type": "string",
-                                        "description": "Separator, CenterDot, CenterLine, Dot, RightAngle, Parallel, Line, Circle, or Arc."
-                                    },
-                                    "centerOffset": {
-                                        "type": "number",
-                                        "description": "Vertical distance from the origin. Used for Separator, CenterDot, and CenterLine item types."
-                                    },
-                                    "length": {
-                                        "type": "number",
-                                        "description": "Length of the item. Used for CenterLine, RightAngle, and Parallel item types."
-                                    },
-                                    "begPos": {
-                                        "description": "Beginning position. Used for Dot, RightAngle, Parallel, Line, Circle, and Arc item types.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "endPos": {
-                                        "description": "End position. Used for Line item type only.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "radius": {
-                                        "type": "number",
-                                        "description": "Radius. Used for Circle and Arc item types."
-                                    },
-                                    "beginAngle": {
-                                        "type": "number",
-                                        "description": "Beginning angle in radians, measured from the vertical axis. Used for Arc item type only."
-                                    },
-                                    "endAngle": {
-                                        "type": "number",
-                                        "description": "End angle in radians, measured from the vertical axis. Used for Arc item type only."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["itemType"]
+                                "$ref": "#/LineSymbolItemData"
                             }
                         }
                     },
@@ -3574,71 +3516,28 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
                             "description": "Translucency percentage [0..1] (gradient and some Solid fills)."
                         },
                         "texture": {
-                            "description": "Texture parameters (Image and gradient fills). Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
+                            "description": "Used for Image and gradient fills. Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.",
                             "$ref": "#/Texture"
                         },
                         "lineItems": {
                             "type": "array",
                             "description": "Vectorial fill line items (Vector fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "frequency": {
-                                        "type": "number",
-                                        "description": "The distance between two instances of this item."
-                                    },
-                                    "direction": {
-                                        "type": "number",
-                                        "description": "The angle of the item, measured CCW from the horizontal axis, in radians."
-                                    },
-                                    "offsetLine": {
-                                        "type": "number",
-                                        "description": "The parallel offset of the item, measured from the (rotated) horizontal axis."
-                                    },
-                                    "offset": {
-                                        "description": "The offset of the item, given by its coordinates.",
-                                        "$ref": "#/Coordinate2D"
-                                    },
-                                    "lineLengths": {
-                                        "type": "array",
-                                        "description": "Dash-gap length pairs describing this line item. Must contain an even number of items.",
-                                        "items": {
-                                            "type": "number"
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["frequency", "direction", "offsetLine", "offset"]
+                                "$ref": "#/FillLineItem"
                             }
                         },
                         "symbolLines": {
                             "type": "array",
                             "description": "Line items of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "begin": { "$ref": "#/Coordinate2D" },
-                                    "end": { "$ref": "#/Coordinate2D" }
-                                },
-                                "additionalProperties": false,
-                                "required": ["begin", "end"]
+                                "$ref": "#/FillSymbolLine"
                             }
                         },
                         "symbolArcs": {
                             "type": "array",
                             "description": "Arc items of the fill's repeating symbol pattern (Symbol fills only).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "begin": { "$ref": "#/Coordinate2D" },
-                                    "origin": { "$ref": "#/Coordinate2D" },
-                                    "angle": {
-                                        "type": "number",
-                                        "description": "Arc angle in radians, measured CCW."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["begin", "origin", "angle"]
+                                "$ref": "#/FillSymbolArc"
                             }
                         },
                         "symbolHotspots": {
@@ -4113,8 +4012,8 @@ GS::Optional<GS::UniString> CreateMEPSystemsCommand::GetInputParametersSchema ()
                             "description": "Name. If overwriteExisting is true, then the existing MEP System with the given name will be overwritten."
                         },
                         "domain": {
-                            "type": "string",
-                            "description": "Ventilation, Piping, or CableCarrier. Only elements belonging to the same domain can use this system."
+                            "$ref": "#/MEPDomain",
+                            "description": "Only elements belonging to the same domain can use this system."
                         },
                         "contourPen": {
                             "type": "integer",
@@ -4508,26 +4407,7 @@ GS::Optional<GS::UniString> CreatePenTablesCommand::GetInputParametersSchema () 
                             "type": "array",
                             "description": "The pens to set in the Pen Table, on top of the 255 pens copied from sourceAttributeId (or the current Pen Table, or an arbitrary existing one - see sourceAttributeId). Only list the pens you actually want to change.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "description": "Index of the pen [1..255]."
-                                    },
-                                    "color": {
-                                        "$ref": "#/ColorRGB"
-                                    },
-                                    "width": {
-                                        "type": "number",
-                                        "description": "Thickness of the pen defined in paper millimeters."
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "description": "Textual description of the pen."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["index"]
+                                "$ref": "#/PenData"
                             }
                         }
                     },
@@ -4926,26 +4806,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                         "type": "array",
                                         "description": "Modifications to specific edges of this skin, targeted by their position (0-based) in GetProfiles' skins[].edges.",
                                         "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "edgeIndex": {
-                                                    "type": "integer"
-                                                },
-                                                "pen": {
-                                                    "type": "integer"
-                                                },
-                                                "isVisibleLine": {
-                                                    "type": "boolean"
-                                                },
-                                                "lineTypeId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                },
-                                                "buildingMaterialId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["edgeIndex"]
+                                            "$ref": "#/ProfileEdgeOverride"
                                         }
                                     }
                                 },
@@ -4957,95 +4818,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "AC27+ only. Adds brand-new skins built from caller-supplied polygon geometry, instead of (or in addition to) whatever was copied from sourceAttributeId. Combine with sourceAttributeId to add skins to a copied Profile, or omit sourceAttributeId to build a Profile's geometry entirely from newSkins.",
                             "items": {
-                                "type": "object",
-                                "description": "One new skin (hatch). Its shape is one or more closed polygon contours: the first is the outer boundary, any further ones are holes cut out of it - the same polygon+holes convention as e.g. CreateSlabs' polygonCoordinates/polygonArcs/holes, just expressed as a list of contours instead of a separate holes array.",
-                                "properties": {
-                                    "contours": {
-                                        "type": "array",
-                                        "description": "Closed polygon contours forming this skin's cross-section, in the Profile's local coordinate system. Each contour is closed automatically - do not repeat its first vertex at the end.",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "polygonCoordinates": {
-                                                    "type": "array",
-                                                    "description": "The 2D coordinates of this contour.",
-                                                    "items": {
-                                                        "$ref": "#/Coordinate2D"
-                                                    },
-                                                    "minItems": 3
-                                                },
-                                                "polygonArcs": {
-                                                    "type": "array",
-                                                    "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.",
-                                                    "items": {
-                                                        "$ref": "#/PolyArc"
-                                                    }
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["polygonCoordinates"]
-                                        },
-                                        "minItems": 1
-                                    },
-                                    "buildingMaterialId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "surfaceId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "fillId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "contourPen": {
-                                        "type": "integer"
-                                    },
-                                    "contourLineTypeId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "isCore": {
-                                        "type": "boolean"
-                                    },
-                                    "isFinish": {
-                                        "type": "boolean"
-                                    },
-                                    "visibleCutEndLines": {
-                                        "type": "boolean"
-                                    },
-                                    "cutEndLinePen": {
-                                        "type": "integer"
-                                    },
-                                    "cutEndLineTypeId": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    },
-                                    "edgeOverrides": {
-                                        "type": "array",
-                                        "description": "Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "edgeIndex": {
-                                                    "type": "integer"
-                                                },
-                                                "pen": {
-                                                    "type": "integer"
-                                                },
-                                                "isVisibleLine": {
-                                                    "type": "boolean"
-                                                },
-                                                "lineTypeId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                },
-                                                "buildingMaterialId": {
-                                                    "$ref": "#/AttributeIdArrayItem"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["edgeIndex"]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["contours"]
+                                "$ref": "#/ProfileSkinData"
                             }
                         },
                         "replaceSkins": {

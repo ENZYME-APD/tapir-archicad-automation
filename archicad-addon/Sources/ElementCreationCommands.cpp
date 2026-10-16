@@ -4,6 +4,9 @@
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 
+#include <algorithm>
+#include <vector>
+
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
@@ -100,8 +103,15 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 if (hasFavoriteName) {
                     const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, elemTypeID);
                     if (favoriteErr != NoError) {
+                        // Say which of the two usual causes it was: ApplyFavoriteToElementDefaults
+                        // answers APIERR_REFUSEDPAR for a favorite of another element type, and
+                        // passes on the ACAPI_Favorite_Get error when no favorite has this name
+                        // (a typo, trailing space or different case in the name is the usual reason).
+                        const GS::UniString reason = favoriteErr == APIERR_REFUSEDPAR
+                            ? GS::UniString ("it is not a " + elemTypeName + " favorite")
+                            : GS::UniString ("no favorite with this exact name was found");
                         elements (CreateErrorResponse (favoriteErr,
-                            "Failed to apply favoriteName '" + favoriteName + "' to the " + elemTypeName + " defaults."));
+                            "Failed to apply favoriteName '" + favoriteName + "' to the " + elemTypeName + " defaults: " + reason + "."));
                         continue;
                     }
                     favoriteApplied = true;
@@ -227,6 +237,18 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "type": "number",
                             "description": "Optional column rotation angle in radians."
                         },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Optional slant angle in radians. A non-zero value also makes the column slanted, unless isSlanted is given explicitly."
+                        },
+                        "isSlanted": {
+                            "type": "boolean",
+                            "description": "Optional explicit slanted state. By default it is derived from slantAngle."
+                        },
+                        "slantDirectionAngle": {
+                            "type": "number",
+                            "description": "Optional rotation angle of the slanted column on the horizontal plane in radians."
+                        },
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the column. Applied to all segments.",
@@ -238,9 +260,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "exclusiveMinimum": 0.0
                         },
                         "coreAnchor": {
-                            "type": "string",
-                            "description": "Optional anchor point of the column core on a 3x3 grid.",
-                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                            "$ref": "#/ColumnCoreAnchor"
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -296,6 +316,22 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     GS::UniString coreAnchor;
     if (parameters.Get ("coreAnchor", coreAnchor)) {
         element.column.coreAnchor = ParseAnchorPointString (coreAnchor);
+    }
+
+    // Same rule as CreateBeams and SetDetailsOfElements: without isSlanted the column is created
+    // vertical and the angle is discarded.
+    double slantAngle = 0.0;
+    if (parameters.Get ("slantAngle", slantAngle)) {
+        element.column.slantAngle = slantAngle;
+        element.column.isSlanted = (slantAngle != 0.0);
+    }
+    bool isSlanted = false;
+    if (parameters.Get ("isSlanted", isSlanted)) {
+        element.column.isSlanted = isSlanted;
+    }
+    double slantDirectionAngle = 0.0;
+    if (parameters.Get ("slantDirectionAngle", slantDirectionAngle)) {
+        element.column.slantDirectionAngle = slantDirectionAngle;
     }
 
     double width = 0.0;
@@ -367,13 +403,25 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "thickness": {
                         "type": "number",
-                        "description": "Optional slab thickness.",
+                        "description": "Optional slab thickness. Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. Without structureType, buildingMaterialId or compositeId the new slab keeps the structure of the slab tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply.",
                         "exclusiveMinimum": 0.0
                     },
-                    "referencePlaneLocation": {
+                    "structureType": {
                         "type": "string",
-                        "description": "Optional location of the slab reference plane. For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid.",
-                        "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
+                        "enum": ["Basic", "Composite"]
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Building material of a Basic slab. Cannot be combined with compositeId."
+                    },
+                    "compositeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Composite attribute of a Composite slab. Cannot be combined with buildingMaterialId."
+                    },
+                    "referencePlaneLocation": {
+                        "$ref": "#/SlabReferencePlaneLocation",
+                        "description": "For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid."
                     },
                     "polygonCoordinates": { 
                         "type": "array",
@@ -488,6 +536,12 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
 
+    bool structureChanged = false;
+    auto structureError = ApplySlabStructure (element, nullptr, parameters, structureChanged);
+    if (structureError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, structureError.Get ());
+    }
+
     GS::UniString referencePlaneLocation;
     if (parameters.Get ("referencePlaneLocation", referencePlaneLocation)) {
         if (referencePlaneLocation == "Top") {
@@ -521,6 +575,116 @@ CreateZonesCommand::CreateZonesCommand () :
 {
 }
 
+// An automatic zone - one placed by geometry.referencePosition - is found around its
+// reference point on the story that is ACTIVE in the floor plan, not on the story its
+// floorIndex names: with any other story active ACAPI_Element_Create answers APIERR_GENERAL
+// ("Failed to create new Zone"), and the very same call succeeds once that story is
+// activated with ChangeWindow (#853). A manual zone is created on its floorIndex from
+// any story.
+//
+// So the items whose automatic zone names a story other than the active one are created
+// with that story made active (APIStory_GoTo, which is what ChangeWindow and SetStories
+// use), and the previously active story is put back afterwards. The story is switched
+// outside the undoable command, as those two commands do, so the items are created in
+// groups of one story each - one undoable command per group - and the responses are put
+// back in the order of the request. A call with no such item runs exactly as before.
+GS::ObjectState CreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    GS::Array<GS::ObjectState> zonesData;
+    parameters.Get (arrayFieldName, zonesData);
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    // The story each item needs active: its floorIndex for an automatic zone, the active
+    // story for everything else (a manual zone, or an automatic one without floorIndex,
+    // which stays on the story of the Zone tool defaults).
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (zonesData.GetSize ());
+    for (const GS::ObjectState& data : zonesData) {
+        short story = originalActStory;
+        const GS::ObjectState* geometry = data.Get ("geometry");
+        if (geometry != nullptr && geometry->Get ("referencePosition") != nullptr) {
+            data.Get ("floorIndex", story);
+        }
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (zonesData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::ObjectState groupParameters;
+        const auto& groupItems = groupParameters.AddList<GS::ObjectState> ("zonesData");
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems (zonesData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                // Archicad would answer the create with the bare "Failed to create new Zone"
+                // of the issue; say what it actually needs instead.
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where an automatic zone is found around its referencePosition; "
+                    "see GetStories for the valid story indices, or activate the story with ChangeWindow first.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateElementsCommandBase::Execute (groupParameters, processControl);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create new Zone");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
+}
+
 GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () const
 {
     return R"({
@@ -538,7 +702,8 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
                     "floorIndex": {
-                        "type": "number"
+                        "type": "number",
+                        "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
                     },
                     "name": {
                         "type": "string",
@@ -1227,6 +1392,14 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "fillBackgroundPenIndex": {
                         "type": "integer"
                     },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
                     "fillId": {
                         "$ref": "#/AttributeId",
                         "description": "Optional fill attribute. By default the current fill is used."
@@ -1303,12 +1476,23 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         element.hatch.contPen.penIndex = contourPenIndex;
         element.hatch.contPen.colorOverridePenIndex = 0;
     }
+    // A given pen index clears the matching RGB override, which the tool defaults may carry,
+    // so the pen actually shows. A given color sets the override and wins over the pen.
     short fillPenIndex = 0;
     if (parameters.Get ("fillPenIndex", fillPenIndex)) {
         element.hatch.fillPen.penIndex = fillPenIndex;
         element.hatch.fillPen.colorOverridePenIndex = 0;
+        element.hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
     }
-    parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen);
+    if (parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen)) {
+        element.hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
+    }
+    if (GetColor (parameters, "foregroundColor", element.hatch.foregroundRGB)) {
+        element.hatch.hatchFlags |= APIHatch_HasFgRGBColor;
+    }
+    if (GetColor (parameters, "backgroundColor", element.hatch.backgroundRGB)) {
+        element.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
+    }
     const GS::ObjectState* fillId = parameters.Get ("fillId");
     if (fillId != nullptr) {
         element.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
@@ -1440,23 +1624,10 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
         "isAutoOnStoryVisibility": { "type": "boolean" },
         "visibility": {
-            "type": "object",
-            "properties": {
-                "showOnHome": { "type": "boolean" },
-                "showAllAbove": { "type": "boolean" },
-                "showAllBelow": { "type": "boolean" },
-                "showRelAbove": { "type": "integer" },
-                "showRelBelow": { "type": "integer" }
-            },
-            "additionalProperties": false
+            "$ref": "#/StoryVisibility"
         },
         "linkToSettings": {
-            "type": "object",
-            "properties": {
-                "homeStoryDifference": { "type": "integer" },
-                "newCreationMode": { "type": "boolean" }
-            },
-            "additionalProperties": false
+            "$ref": "#/LinkToSettings"
         })";
     if (isLamp) {
         fields += R"(,
@@ -2214,7 +2385,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // change of those is written into the runs by the content rebuild below. The
                 // element-level fields apply through their own masks without a rebuild, which
                 // keeps the content, and any autotext reference in it, as it is.
-                TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+                auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+                if (styleErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (*styleErr));
+                    continue;
+                }
             }
             const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
 
@@ -2393,7 +2568,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 if (styleOS != nullptr) {
                     // Same as ModifyTexts: applied before the content rebuild, which only the
                     // run-level fields need.
-                    TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                    auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                    if (styleErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*styleErr));
+                        continue;
+                    }
                 }
                 const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
                 // See ModifyTexts for why the value-returning overloads are required here (the
@@ -2431,7 +2610,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             } else {
                 const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
                 if (symbolStyleOS != nullptr) {
-                    TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                    auto symbolStyleErr = TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                    if (symbolStyleErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*symbolStyleErr));
+                        continue;
+                    }
                 }
             }
 
@@ -2479,10 +2662,12 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "number",
                         "description": "The height of the skirt."
                     },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface."
+                    },
                     "ridges": {
-                        "type": "string",
-                        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
-                        "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                        "$ref": "#/MeshRidges"
                     },
                     "showLines": {
                         "type": "boolean",
@@ -2522,20 +2707,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "array",
                         "description": "The leveling sublines inside the polygon of the mesh.",
                         "items": {
-                            "type": "object",
-                            "properties" : {
-                                "coordinates": { 
-                                    "type": "array",
-                                    "description": "The 3D coordinates of the leveling subline of the mesh.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "coordinates"
-                            ]
+                            "$ref": "#/MeshSubline"
                         },
                         "minItems": 1
                     }
@@ -2616,6 +2788,467 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("sublines", sublines);
     BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
 
+    // Building material of the mesh. Its top, side and bottom surface overrides are cleared, so the
+    // mesh shows the building material's own surface and follows later changes of it; an override
+    // left in the Mesh tool defaults would otherwise keep showing the old color.
+    const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
+    if (buildingMaterialIdOS != nullptr) {
+        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*buildingMaterialIdOS, API_BuildingMaterialID, buildingMaterialIndex)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
+        }
+        element.mesh.buildingMaterial = buildingMaterialIndex;
+        element.mesh.topMat = API_OverriddenAttribute ();
+        element.mesh.sideMat = API_OverriddenAttribute ();
+        element.mesh.botMat = API_OverriddenAttribute ();
+    }
+
+    return {};
+}
+
+CreateCurtainWallsCommand::CreateCurtainWallsCommand () :
+    CreateElementsCommandBase ("CreateCurtainWalls", API_CurtainWallID, "curtainWallsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "curtainWallsData": {
+            "type": "array",
+            "description": "Array of data to create Curtain Walls.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Curtain Wall. Everything not given here - the frame and panel classes, the surfaces, the boundary and corner frames, the pattern - comes from the favorite or from the Curtain Wall tool defaults of the open project.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates becomes one straight segment, so two coordinates give a single-segment curtain wall.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 2
+                    },
+                    "zCoordinate": {
+                        "type": "number",
+                        "description": "Optional Z coordinate (absolute elevation) of the bottom of the curtain wall. When omitted, the base level of the favorite (or of the Curtain Wall tool defaults) relative to the floor is kept."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index. When omitted, derived from zCoordinate if that is given, otherwise the current story."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Optional height of the curtain wall. When omitted, the height of the favorite (or of the Curtain Wall tool defaults) is kept.",
+                        "exclusiveMinimum": 0.0
+                    },
+                    "primaryPattern": {
+                        "$ref": "#/CurtainWallPattern",
+                        "description": "Optional column pattern: the sizes of the columns along the segment (the primary grid). When omitted, the pattern of the favorite (or of the tool defaults) is kept."
+                    },
+                    "secondaryPattern": {
+                        "$ref": "#/CurtainWallPattern",
+                        "description": "Optional row pattern: the sizes of the rows from the bottom up (the secondary grid). When omitted, the pattern of the favorite (or of the tool defaults) is kept."
+                    },
+                    "cells": {
+                        "type": "array",
+                        "description": "Optional assignment of panel and frame classes to the cells of the pattern unit. The unit repeats along and up the segment, so an assignment applies to every repetition of that cell. A cell not listed here keeps the assignment of the favorite (or of the tool defaults) when the pattern is unchanged, otherwise the assignment of the first default cell.",
+                        "items": {
+                            "$ref": "#/CurtainWallPatternCell"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "curtainWallsData"
+    ]
+})";
+}
+
+// A list of numbers read with ObjectState::Get<GS::Array<double>> does not convert integer items
+// (their bit pattern is taken as a double), so the items are collected one by one.
+class DoubleListCollector : public GS::ObjectState::Processor
+{
+public:
+    virtual void IntFound (const GS::String&, Int64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void UIntFound (const GS::String&, UInt64 value) override
+    {
+        values.Push (static_cast<double> (value));
+    }
+
+    virtual void RealFound (const GS::String&, double value) override
+    {
+        values.Push (value);
+    }
+
+    virtual void BoolFound (const GS::String&, bool) override
+    {
+        failed = true;
+    }
+
+    virtual void StringFound (const GS::String&, const GS::UniString&) override
+    {
+        failed = true;
+    }
+
+    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
+    {
+        failed = true;
+        return false;
+    }
+
+    virtual bool ListFound (const GS::String&) override
+    {
+        return !failed;
+    }
+
+    virtual void ListEntered (const GS::String&) override
+    {
+        if (++depth > 1) {
+            failed = true;
+        }
+    }
+
+    virtual void ListExited (const GS::String&) override
+    {
+        --depth;
+    }
+
+    bool Get (GS::Array<double>& outValues) const
+    {
+        if (failed) {
+            return false;
+        }
+        outValues = values;
+        return true;
+    }
+
+private:
+    GS::Array<double> values;
+    Int32 depth = 0;
+    bool failed = false;
+};
+
+static bool GetDoubleList (const GS::ObjectState& parameters, const char* fieldName, GS::Array<double>& outValues)
+{
+    if (!parameters.IsList (fieldName)) {
+        return false;
+    }
+    DoubleListCollector collector;
+    parameters.Enumerate (fieldName, collector);
+    return collector.Get (outValues);
+}
+
+template <typename T>
+static void ReplaceCWPatternArray (T*& array, const GS::Array<T>& values)
+{
+    if (array != nullptr) {
+        BMpKill (reinterpret_cast<GSPtr*> (&array));
+    }
+    array = reinterpret_cast<T*> (BMpAllClear (values.GetSize () * sizeof (T)));
+    for (UIndex i = 0; i < values.GetSize (); ++i) {
+        array[i] = values[i];
+    }
+}
+
+// Rewrites the column (primary) or row (secondary) pattern of the segment from the "sizes",
+// "logic", "origin" and "flexibleIndices" fields. Returns the reason when the fields are invalid.
+static GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern)
+{
+    GS::Array<double> sizes;
+    if (!GetDoubleList (patternOS, "sizes", sizes) || sizes.IsEmpty ()) {
+        return GS::UniString (fieldName) + ".sizes must be a non-empty list of numbers.";
+    }
+    for (double size : sizes) {
+        if (size <= 0.0) {
+            return GS::UniString (fieldName) + ".sizes must only contain positive numbers.";
+        }
+    }
+
+    GS::UniString logic;
+    if (patternOS.Get ("logic", logic)) {
+        if (logic == "FixedSizes") {
+            pattern.logic = APICWSePL_FixedSizes;
+        } else if (logic == "BestDivision") {
+            pattern.logic = APICWSePL_BestDivision;
+        } else {
+            return GS::UniString (fieldName) + ".logic must be 'FixedSizes' or 'BestDivision'.";
+        }
+    } else if (pattern.logic == APICWSePL_NumberOfDivisions) {
+        // The number-of-divisions logic of the favorite or the tool defaults has no meaning
+        // for an explicitly given list of sizes.
+        pattern.logic = APICWSePL_FixedSizes;
+    }
+
+    GS::UniString origin;
+    if (patternOS.Get ("origin", origin)) {
+        if (origin == "StartWithPattern") {
+            pattern.gridOriginType = APICWSeGridOrigin_StartWithPattern;
+        } else if (origin == "StartFromCenter") {
+            pattern.gridOriginType = APICWSeGridOrigin_StartFromCenter;
+        } else if (origin == "AlignToCenter") {
+            pattern.gridOriginType = APICWSeGridOrigin_AlignToCenter;
+        } else if (origin == "EndWithPattern") {
+            pattern.gridOriginType = APICWSeGridOrigin_EndWithPattern;
+        } else {
+            return GS::UniString (fieldName) + ".origin must be 'StartWithPattern', 'StartFromCenter', 'AlignToCenter' or 'EndWithPattern'.";
+        }
+    }
+
+    const UInt32 nPattern = sizes.GetSize ();
+
+    // Which columns/rows may be stretched by the best-division logic: the given ones, or all of
+    // them. Always rewritten, because the flexible indices of the defaults belong to the default
+    // pattern and may be out of range for the new one.
+    GS::Array<UInt32> flexibleIDs;
+    if (patternOS.Contains ("flexibleIndices")) {
+        GS::Array<double> flexibleIndices;
+        if (!GetDoubleList (patternOS, "flexibleIndices", flexibleIndices)) {
+            return GS::UniString (fieldName) + ".flexibleIndices must be a list of integers.";
+        }
+        for (double flexibleIndex : flexibleIndices) {
+            if (flexibleIndex < 0.0 || flexibleIndex >= static_cast<double> (nPattern) || flexibleIndex != static_cast<double> (static_cast<Int64> (flexibleIndex))) {
+                return GS::UniString (fieldName) + GS::UniString::Printf (".flexibleIndices must only contain indices from 0 to %u.", nPattern - 1);
+            }
+            const UInt32 id = static_cast<UInt32> (flexibleIndex);
+            if (!flexibleIDs.Contains (id)) {
+                flexibleIDs.Push (id);
+            }
+        }
+    } else {
+        for (UInt32 i = 0; i < nPattern; ++i) {
+            flexibleIDs.Push (i);
+        }
+    }
+
+    ReplaceCWPatternArray (pattern.pattern, sizes);
+    pattern.nPattern = nPattern;
+    pattern.endWithID = nPattern - 1;
+    ReplaceCWPatternArray (pattern.flexibleIDs, flexibleIDs);
+    pattern.nFlexibleIDs = flexibleIDs.GetSize ();
+    pattern.nDivisions = 1;
+
+    return {};
+}
+
+static GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged)
+{
+    const UInt32 nColumns = memo.cWSegPrimaryPattern.nPattern;
+    const UInt32 nRows = memo.cWSegSecondaryPattern.nPattern;
+    const UInt32 nCells = nColumns * nRows;
+    if (nCells == 0) {
+        return GS::UniString ("The curtain wall has no pattern cells.");
+    }
+    if (cells.IsEmpty () && !patternChanged) {
+        return {};
+    }
+
+    const UInt32 nDefaultCells = memo.cWSegPatternCells != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWSegPatternCells)) / sizeof (API_CWSegmentPatternCellData))
+        : 0;
+    const UInt32 nPanelClasses = memo.cWallPanelDefaults != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanelDefaults)) / sizeof (API_CWPanelType))
+        : element.curtainWall.nPanelDefaults;
+    const UInt32 nFrameClasses = memo.cWallFrameDefaults != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType))
+        : element.curtainWall.nFrameDefaults;
+
+    // Every cell starts from the matching default cell when the pattern is the default one,
+    // otherwise from the first default cell (or a plain cell when there is none).
+    API_CWSegmentPatternCellData templateCell = {};
+    templateCell.crossingFrameType = APICWCFT_NoCrossingFrame;
+    templateCell.leftPanelID = APICWPanelClass_FirstCustomClass;
+    templateCell.rightPanelID = APICWPanelClass_FirstCustomClass;
+    templateCell.leftFrameID = APICWFrameClass_Division;
+    templateCell.bottomFrameID = APICWFrameClass_Division;
+    templateCell.crossingFrameID = APICWFrameClass_Division;
+    if (nDefaultCells > 0) {
+        templateCell = memo.cWSegPatternCells[0];
+    }
+
+    auto newCells = reinterpret_cast<API_CWSegmentPatternCellData*> (BMpAllClear (nCells * sizeof (API_CWSegmentPatternCellData)));
+    for (UInt32 i = 0; i < nCells; ++i) {
+        newCells[i] = (nDefaultCells == nCells) ? memo.cWSegPatternCells[i] : templateCell;
+    }
+    const GS::OnExit newCellsGuard ([&newCells] () {
+        if (newCells != nullptr) {
+            BMpKill (reinterpret_cast<GSPtr*> (&newCells));
+        }
+    });
+
+    const auto isValidPanelClass = [&] (Int32 index) {
+        return index == APICWPanelClass_Deleted ||
+               (index >= APICWPanelClass_FirstCustomClass && static_cast<UInt32> (index - APICWPanelClass_FirstCustomClass) < nPanelClasses);
+    };
+    const auto isValidFrameClass = [&] (Int32 index) {
+        return index == APICWFrameClass_Merged || index == APICWFrameClass_Division || index == APICWFrameClass_Corner || index == APICWFrameClass_Boundary ||
+               (index >= APICWFrameClass_FirstCustomClass && static_cast<UInt32> (index - APICWFrameClass_FirstCustomClass) < nFrameClasses);
+    };
+
+    for (UIndex i = 0; i < cells.GetSize (); ++i) {
+        const GS::ObjectState& cellOS = cells[i];
+        Int32 columnIndex = -1;
+        Int32 rowIndex = -1;
+        cellOS.Get ("columnIndex", columnIndex);
+        cellOS.Get ("rowIndex", rowIndex);
+        if (columnIndex < 0 || static_cast<UInt32> (columnIndex) >= nColumns) {
+            return GS::UniString::Printf ("cells[%u].columnIndex must be between 0 and %u (the pattern has %u columns).", i, nColumns - 1, nColumns);
+        }
+        if (rowIndex < 0 || static_cast<UInt32> (rowIndex) >= nRows) {
+            return GS::UniString::Printf ("cells[%u].rowIndex must be between 0 and %u (the pattern has %u rows).", i, nRows - 1, nRows);
+        }
+        // Cells are stored row by row from the bottom row, each row from the start of the segment.
+        API_CWSegmentPatternCellData& cell = newCells[static_cast<UInt32> (rowIndex) * nColumns + static_cast<UInt32> (columnIndex)];
+
+        Int32 classIndex = 0;
+        if (cellOS.Get ("panelClassIndex", classIndex)) {
+            if (!isValidPanelClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].panelClassIndex %d is not a panel class of the curtain wall (0 or 1 to %u).", i, classIndex, nPanelClasses);
+            }
+            cell.leftPanelID = static_cast<UInt32> (classIndex);
+            cell.rightPanelID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("rightPanelClassIndex", classIndex)) {
+            if (!isValidPanelClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].rightPanelClassIndex %d is not a panel class of the curtain wall (0 or 1 to %u).", i, classIndex, nPanelClasses);
+            }
+            cell.rightPanelID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("leftFrameClassIndex", classIndex)) {
+            if (!isValidFrameClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].leftFrameClassIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", i, classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1);
+            }
+            cell.leftFrameID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("bottomFrameClassIndex", classIndex)) {
+            if (!isValidFrameClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].bottomFrameClassIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", i, classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1);
+            }
+            cell.bottomFrameID = static_cast<UInt32> (classIndex);
+        }
+        if (cellOS.Get ("crossingFrameClassIndex", classIndex)) {
+            if (!isValidFrameClass (classIndex)) {
+                return GS::UniString::Printf ("cells[%u].crossingFrameClassIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", i, classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1);
+            }
+            cell.crossingFrameID = static_cast<UInt32> (classIndex);
+        }
+        GS::UniString crossingFrameType;
+        if (cellOS.Get ("crossingFrameType", crossingFrameType)) {
+            if (crossingFrameType == "None") {
+                cell.crossingFrameType = APICWCFT_NoCrossingFrame;
+            } else if (crossingFrameType == "FromBottomLeftToTopRight") {
+                cell.crossingFrameType = APICWCFT_FromBottomLeftToTopRight;
+            } else if (crossingFrameType == "FromTopLeftToBottomRight") {
+                cell.crossingFrameType = APICWCFT_FromTopLeftToBottomRight;
+            } else {
+                return GS::UniString::Printf ("cells[%u].crossingFrameType must be 'None', 'FromBottomLeftToTopRight' or 'FromTopLeftToBottomRight'.", i);
+            }
+        }
+    }
+
+    if (memo.cWSegPatternCells != nullptr) {
+        BMpKill (reinterpret_cast<GSPtr*> (&memo.cWSegPatternCells));
+    }
+    memo.cWSegPatternCells = newCells;
+    newCells = nullptr;
+
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+    if (coordinates.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
+        }
+    }
+
+    // The bottom of the curtain wall. planeOffset is what ACAPI_Element_Create places the base
+    // surface by (storyRelLevel is read back, but not applied on creation - confirmed live).
+    // Without zCoordinate the base level of the favorite (or of the tool defaults) is kept,
+    // on the given floorIndex or on the current story.
+    double zCoordinate = 0.0;
+    short floorIndex = 0;
+    if (parameters.Get ("zCoordinate", zCoordinate)) {
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+        element.curtainWall.planeOffset = floorIndexAndOffset.second;
+        element.curtainWall.storyRelLevel = floorIndexAndOffset.second;
+    } else if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    }
+
+    // The element arrives filled from the Curtain Wall tool defaults, with the item's favorite
+    // (favoriteName) already applied to them by CreateElementsCommandBase: the frame and panel
+    // classes, surfaces, boundary and corner frames and the pattern all come from there. Only
+    // the fields the item names are written here.
+    double height = 0.0;
+    if (parameters.Get ("height", height)) {
+        element.curtainWall.height = height;
+    }
+
+    // The reference polyline: memo.coords holds the vertices from index 1 (index 0 is unused,
+    // as in every polygon memo), and every pair of consecutive vertices is one segment.
+    const UInt32 nCoords = coordinates.GetSize ();
+    if (memo.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    for (UIndex i = 0; i < nCoords; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+    }
+    element.curtainWall.nSegments = nCoords - 1;
+
+    bool patternChanged = false;
+    const GS::ObjectState* primaryPattern = parameters.Get ("primaryPattern");
+    if (primaryPattern != nullptr) {
+        const auto error = ApplyCurtainWallPattern (*primaryPattern, "primaryPattern", memo.cWSegPrimaryPattern);
+        if (error.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+        }
+        patternChanged = true;
+    }
+    const GS::ObjectState* secondaryPattern = parameters.Get ("secondaryPattern");
+    if (secondaryPattern != nullptr) {
+        const auto error = ApplyCurtainWallPattern (*secondaryPattern, "secondaryPattern", memo.cWSegSecondaryPattern);
+        if (error.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+        }
+        patternChanged = true;
+    }
+
+    GS::Array<GS::ObjectState> cells;
+    parameters.Get ("cells", cells);
+    const auto cellsError = ApplyCurtainWallPatternCells (cells, element, memo, patternChanged);
+    if (cellsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, cellsError.Get ());
+    }
+
     return {};
 }
 
@@ -2645,9 +3278,8 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "description" : "The parent element if the label is an associative label."
                     },
                     "labelClass": {
-                        "type": "string",
-                        "enum": ["Text", "Symbol"],
-                        "description": "Whether this is a textual or a symbol label. Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                        "$ref": "#/LabelClass",
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
                     },
                     "text": {
                         "type": "string",
@@ -2661,15 +3293,14 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Style settings for a text label (font, pen, size, frame, etc). Ignored for symbol labels."
+                        "description": "Ignored for symbol labels."
                     },
                     "symbolStyle": {
                         "$ref": "#/LabelSymbolStyleSettableDetails",
-                        "description": "Style settings specific to a symbol label. Ignored for text labels."
+                        "description": "Ignored for text labels."
                     },
                     "leaderLine": {
-                        "$ref": "#/LabelLeaderLineSettableDetails",
-                        "description": "Leader line, frame and arrow settings, shared by both label classes."
+                        "$ref": "#/LabelLeaderLineSettableDetails"
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -2971,10 +3602,40 @@ static API_ArrowID StringToArrowType (const GS::UniString& s)
 
 namespace TextLabelDetails {
 
+// The font a style or a run gives: fontName resolved to the index of the loaded font of that name,
+// otherwise fontIndex as given; fontName wins when both are present. A fontName no loaded font has
+// is an error rather than a silently kept default (issue #844). NoValue when neither is given.
+static GS::Optional<GS::ObjectState> GetFontIndexFromDetails (const GS::ObjectState& details, GS::Optional<short>& fontIndex)
+{
+    GS::UniString fontName;
+    if (details.Get ("fontName", fontName)) {
+        fontIndex = GetFontIndexFromName (fontName);
+        if (!fontIndex.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADNAME, GS::UniString::Printf ("No loaded font is named '%T'. fontName takes the name of a Font attribute, as GetDetailsOfElements reports it in fontName; use fontIndex to give the font by its index instead.", fontName.ToPrintf ()));
+        }
+        return {};
+    }
+
+    short index = 0;
+    if (details.Get ("fontIndex", index)) {
+        fontIndex = index;
+    }
+    return {};
+}
+
+static void AddFontName (GS::ObjectState& os, short fontIndex)
+{
+    const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (fontIndex);
+    if (fontName.HasValue ()) {
+        os.Add ("fontName", *fontName);
+    }
+}
+
 void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly)
 {
     os.Add ("penIndex", text.pen);
     os.Add ("fontIndex", text.font);
+    AddFontName (os, text.font);
     os.Add ("bold", (text.faceBits & APIFace_Bold) != 0);
     os.Add ("italic", (text.faceBits & APIFace_Italic) != 0);
     os.Add ("underline", (text.faceBits & APIFace_Underline) != 0);
@@ -3016,7 +3677,7 @@ void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool in
     }
 }
 
-void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
+GS::Optional<GS::ObjectState> ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
 {
     // Mask bits must target the real top-level union member (API_TextType for a standalone
     // Text element, API_LabelType::u.text for a text-class Label) - both share byte layout for
@@ -3029,7 +3690,17 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
     }
 
     if (details.Get ("penIndex", text.pen)) { TEXT_MASK_SET (pen) }
-    if (details.Get ("fontIndex", text.font)) { TEXT_MASK_SET (font) }
+    {
+        GS::Optional<short> fontIndex;
+        const auto fontErr = GetFontIndexFromDetails (details, fontIndex);
+        if (fontErr.HasValue ()) {
+            return fontErr;
+        }
+        if (fontIndex.HasValue ()) {
+            text.font = *fontIndex;
+            TEXT_MASK_SET (font)
+        }
+    }
 
     bool bold = (text.faceBits & APIFace_Bold) != 0;
     bool italic = (text.faceBits & APIFace_Italic) != 0;
@@ -3095,6 +3766,8 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
 #endif
 
 #undef TEXT_MASK_SET
+
+    return {};
 }
 
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters)
@@ -3121,8 +3794,12 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             runText = NormalizeLineBreaks (runText);
             short pen = textData.pen;
             runOS.Get ("penIndex", pen);
-            short font = textData.font;
-            runOS.Get ("fontIndex", font);
+            GS::Optional<short> runFont;
+            const auto fontErr = GetFontIndexFromDetails (runOS, runFont);
+            if (fontErr.HasValue ()) {
+                return fontErr;
+            }
+            const short font = runFont.HasValue () ? *runFont : textData.font;
             bool bold = (textData.faceBits & APIFace_Bold) != 0;
             bool italic = (textData.faceBits & APIFace_Italic) != 0;
             bool underline = (textData.faceBits & APIFace_Underline) != 0;
@@ -3304,6 +3981,7 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         runOS.Add ("text", GS::UniString (content.GetSubstring (start, end > start ? end - start : 0)));
         runOS.Add ("penIndex", run.pen);
         runOS.Add ("fontIndex", run.font);
+        AddFontName (runOS, run.font);
         runOS.Add ("bold", (run.faceBits & APIFace_Bold) != 0);
         runOS.Add ("italic", (run.faceBits & APIFace_Italic) != 0);
         runOS.Add ("underline", (run.faceBits & APIFace_Underline) != 0);
@@ -3320,7 +3998,7 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 
 bool StyleNeedsContentRebuild (const GS::ObjectState& style)
 {
-    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "bold", "italic", "underline", "height",
+    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "fontName", "bold", "italic", "underline", "height",
                                                   "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
     for (const char* field : runLevelFields) {
         if (style.Contains (GS::String (field))) {
@@ -3362,7 +4040,12 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
 
     // Every run keeps its own values except the ones the style names: those are set on all runs,
     // otherwise a style-only "bold": true would be overridden by the runs' read-back faces.
-    static const char* const shortFields[] = { "penIndex", "fontIndex" };
+    // The style's font comes as fontName or fontIndex; the runs get it as the index either way.
+    GS::Optional<short> styleFontIndex;
+    const auto fontErr = GetFontIndexFromDetails (style, styleFontIndex);
+    if (fontErr.HasValue ()) {
+        return fontErr;
+    }
     static const char* const boolFields[] = { "bold", "italic", "underline",
                                               "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
     const auto& runList = contentParams.AddList<GS::ObjectState> ("runs");
@@ -3371,11 +4054,15 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
         GS::UniString runText;
         run.Get ("text", runText);
         mergedRun.Add ("text", runText);
-        for (const char* field : shortFields) {
-            short value = 0;
-            if (style.Get (field, value) || run.Get (field, value)) {
-                mergedRun.Add (field, value);
-            }
+        short penIndex = 0;
+        if (style.Get ("penIndex", penIndex) || run.Get ("penIndex", penIndex)) {
+            mergedRun.Add ("penIndex", penIndex);
+        }
+        short fontIndex = 0;
+        if (styleFontIndex.HasValue ()) {
+            mergedRun.Add ("fontIndex", *styleFontIndex);
+        } else if (run.Get ("fontIndex", fontIndex)) {
+            mergedRun.Add ("fontIndex", fontIndex);
         }
         for (const char* field : boolFields) {
             bool value = false;
@@ -3507,6 +4194,7 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
 {
     os.Add ("textWay", LabelTextWayToString (label.textWay));
     os.Add ("fontIndex", label.font);
+    AddFontName (os, label.font);
     os.Add ("bold", (label.faceBits & APIFace_Bold) != 0);
     os.Add ("italic", (label.faceBits & APIFace_Italic) != 0);
     os.Add ("underline", (label.faceBits & APIFace_Underline) != 0);
@@ -3521,15 +4209,23 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
     os.Add ("effectProtected", (label.effectsBits & APIEffect_Protected) != 0);
 }
 
-void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
+GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
 {
     GS::UniString strVal;
     if (details.Get ("textWay", strVal)) {
         label.textWay = StringToLabelTextWay (strVal);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textWay);
     }
-    if (details.Get ("fontIndex", label.font)) {
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+    {
+        GS::Optional<short> fontIndex;
+        const auto fontErr = GetFontIndexFromDetails (details, fontIndex);
+        if (fontErr.HasValue ()) {
+            return fontErr;
+        }
+        if (fontIndex.HasValue ()) {
+            label.font = *fontIndex;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+        }
     }
     bool bold = (label.faceBits & APIFace_Bold) != 0;
     bool italic = (label.faceBits & APIFace_Italic) != 0;
@@ -3570,6 +4266,8 @@ void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_L
         label.effectsBits = (strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, effectsBits);
     }
+
+    return {};
 }
 
 } // namespace TextLabelDetails
@@ -3666,7 +4364,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         // element - only the run's own copies matter once paragraphs exist.
         const GS::ObjectState* styleOS = parameters.Get ("style");
         if (styleOS != nullptr) {
-            TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+            auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+            if (styleErr.HasValue ()) {
+                return styleErr;
+            }
         }
         auto err = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, parameters);
         if (err.HasValue ()) {
@@ -3675,7 +4376,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     } else {
         const GS::ObjectState* symbolStyleOS = parameters.Get ("symbolStyle");
         if (symbolStyleOS != nullptr) {
-            TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+            auto symbolStyleErr = TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+            if (symbolStyleErr.HasValue ()) {
+                return symbolStyleErr;
+            }
         }
     }
 
@@ -3730,17 +4434,20 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                         "description": "Optional rotation angle in radians. Equivalent to style.angle."
                     },
                     "justification": {
-                        "type": "string",
-                        "description": "Optional text justification. Equivalent to style.justification.",
-                        "enum": ["Left", "Center", "Right", "Full"]
+                        "$ref": "#/Justification",
+                        "description": "Optional; equivalent to style.justification."
                     },
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
-                        "description": "Full style settings (font, effects, frame, anchor, etc). height/pen/angle/justification above take precedence over the same fields here if both are given."
+                        "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
                     },
                     "floorIndex": {
                         "type": "integer",
                         "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
                     }
                 },
                 "additionalProperties": false,
@@ -3777,12 +4484,20 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
         element.header.floorInd = floorIndexAndOffset.first;
     }
 
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+        element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+    }
+
     element.text.loc.x = apiCoordinate.x;
     element.text.loc.y = apiCoordinate.y;
 
     const GS::ObjectState* styleOS = parameters.Get ("style");
     if (styleOS != nullptr) {
-        TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+        auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+        if (styleErr.HasValue ()) {
+            return styleErr;
+        }
     }
 
     // Top-level height/pen/angle/justification take precedence over 'style' for backward
@@ -3798,6 +4513,220 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     auto err = TextLabelDetails::ApplyTextContent (memo, element.text, parameters);
     if (err.HasValue ()) {
         return err;
+    }
+
+    return {};
+}
+
+const char* DimensionOriginToString (API_DimOriginID origin)
+{
+    switch (origin) {
+        case APIDimOrigin_RefLevel1:    return "ReferenceLevel1";
+        case APIDimOrigin_RefLevel2:    return "ReferenceLevel2";
+        case APIDimOrigin_StoredOrigin: return "StoredOrigin";
+        case APIDimOrigin_Altitude:     return "Altitude";
+        case APIDimOrigin_ProjectZero:
+        default:                        return "ProjectZero";
+    }
+}
+
+bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result)
+{
+    if (origin == "ProjectZero") {
+        result = APIDimOrigin_ProjectZero;
+    } else if (origin == "ReferenceLevel1") {
+        result = APIDimOrigin_RefLevel1;
+    } else if (origin == "ReferenceLevel2") {
+        result = APIDimOrigin_RefLevel2;
+    } else if (origin == "StoredOrigin") {
+        result = APIDimOrigin_StoredOrigin;
+    } else if (origin == "Altitude") {
+        result = APIDimOrigin_Altitude;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
+    CreateElementsCommandBase ("CreateLevelDimensions", API_LevelDimensionID, "levelDimensionsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "levelDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Level Dimensions (the Level Dimension tool of the floor plan).",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Level Dimension.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Level Dimension favorite to base the new element on. Its settings (marker, format, text style, layer, pen) are applied first, then the explicitly given fields override them."
+                    },
+                    "position": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The location of the marker on the floor plan. With a parentElementId it must lie on that element, the measured level is the parent's height at this point. Outside the parent's outline Archicad still creates the dimension, but without a height (GetDetailsOfElements reads a level of -110000000)."
+                    },
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional element the level dimension is associated with (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...). The dimension then shows the element's height at the position and follows the element when it changes. Without it the dimension measures the floor level, or the given static level."
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "Optional fixed level value in meters (absolute, from the project zero). Only used without parentElementId; the dimension then shows this value instead of the floor level."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "The index of the floor to place the dimension on. Optional parameter, by default the floor of the parent element, otherwise the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "Pen index of the marker. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    },
+                    "dimForm": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19,
+                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
+                    },
+                    "needPlus": {
+                        "type": "boolean",
+                        "description": "Show a plus sign for positive values. Optional parameter."
+                    },
+                    "markerSize": {
+                        "type": "number",
+                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Rotation angle of the marker in radians. Optional parameter."
+                    },
+                    "origin": {
+                        "$ref": "#/DimensionOrigin",
+                        "description": "The origin the level is measured from. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "position"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "levelDimensionsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
+{
+    const GS::ObjectState* positionOS = parameters.Get ("position");
+    if (positionOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'position' parameter");
+    }
+    element.levelDimension.loc = Get2DCoordinateFromObjectState (*positionOS);
+
+    // An associative level dimension refers to its parent by type and GUID; Archicad then
+    // measures the parent's height at loc itself and keeps the value up to date (the same
+    // way the Level Dimension tool does when clicked on a mesh or slab). Without a parent
+    // the dimension refers to the floor (API_ZombieElemID), or holds a static level.
+    const API_Guid parentGuid = GetGuidFromArrayItem ("parentElementId", parameters);
+    if (parentGuid != APINULLGuid) {
+        API_Elem_Head parentElemHead = {};
+        parentElemHead.guid = parentGuid;
+        if (ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
+        }
+#ifdef ServerMainVers_2600
+        element.levelDimension.parentType = parentElemHead.type;
+#else
+        element.levelDimension.parentType = parentElemHead.typeID;
+#endif
+        element.levelDimension.parentGuid = parentGuid;
+        element.levelDimension.staticLevel = false;
+        element.header.floorInd = parentElemHead.floorInd;
+    } else {
+        element.levelDimension.parentType = API_ZombieElemID;
+        element.levelDimension.parentGuid = APINULLGuid;
+        double level = 0.0;
+        if (parameters.Get ("level", level)) {
+            element.levelDimension.staticLevel = true;
+            element.levelDimension.level = level;
+        }
+    }
+
+    Int32 floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = static_cast<short> (floorIndex);
+    }
+
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+        element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen) && pen > 0) {
+        element.levelDimension.pen = static_cast<short> (pen);
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight) && textHeight > 0.0) {
+        element.levelDimension.note1.noteSize = textHeight;
+        element.levelDimension.note2.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen) && textPen > 0) {
+        element.levelDimension.note1.notePen = static_cast<short> (textPen);
+        element.levelDimension.note2.notePen = static_cast<short> (textPen);
+    }
+
+    Int32 dimForm = 0;
+    if (parameters.Get ("dimForm", dimForm)) {
+        // Archicad 29 knows the marker types 0-19 and silently replaces any other value by 0.
+        if (dimForm < 0 || dimForm > 19) {
+            return CreateErrorResponse (APIERR_BADPARS, "'dimForm' must be between 0 and 19");
+        }
+        element.levelDimension.dimForm = static_cast<short> (dimForm);
+    }
+
+    parameters.Get ("needPlus", element.levelDimension.needPlus);
+
+    double markerSize = 0.0;
+    if (parameters.Get ("markerSize", markerSize) && markerSize > 0.0) {
+        element.levelDimension.markerSize = markerSize;
+    }
+
+    parameters.Get ("angle", element.levelDimension.angle);
+
+    GS::UniString originStr;
+    if (parameters.Get ("origin", originStr)) {
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (originStr, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'origin' value: " + originStr);
+        }
+        element.levelDimension.origin = origin;
     }
 
     return {};

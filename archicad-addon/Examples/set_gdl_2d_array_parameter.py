@@ -2,10 +2,10 @@ import aclib
 
 # GetGDLParametersOfElements returns an array parameter's value as a flat list, row by row,
 # together with its dimensions (dimension1 rows of dimension2 items). The same flat list can be
-# written back with SetGDLParametersOfElements: for a two-dimensional array it is read row by row
-# with the array's current number of columns, so a Get -> Set round trip keeps the array's shape
-# (#812: before, the flat list turned a 4 x 2 array into an 8 x 1 one, which broke the object).
-# A flat list whose length is not a multiple of dimension2 is refused.
+# written back with SetGDLParametersOfElements: a flat list of exactly dimension1 x dimension2
+# items is taken row by row, so a Get -> Set round trip keeps the array's shape (#812: before, the
+# flat list turned a 4 x 2 array into an 8 x 1 one, which broke the object). An array parameter
+# cannot be resized: a list of any other length is refused and the parameter is left as it is.
 
 elements = aclib.RunCommand ('API.GetElementsByType', { 'elementType': 'Object' })['elements']
 
@@ -33,7 +33,7 @@ else:
         'gdlParameters': [{ 'name': parameter['name'], 'value': flatValues }]
     }] })
 
-    # One item too many for whole rows: refused, the parameter is left as it is.
+    # One item too many: refused, the parameter is left as it is.
     aclib.RunTapirCommand ('SetGDLParametersOfElements', { 'elementsWithGDLParameters': [{
         'elementId': element['elementId'],
         'gdlParameters': [{ 'name': parameter['name'], 'value': flatValues + [flatValues[0]] }]

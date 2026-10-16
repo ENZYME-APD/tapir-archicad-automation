@@ -1,5 +1,11 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Location.hpp"
+
+#ifdef ServerMainVers_2800
+#include "ACAPI/IFCObjectAccessor.hpp"
+#include "ACAPI/IFCObjectID.hpp"
+#endif
 
 #include <cmath>
 
@@ -319,8 +325,7 @@ GS::Optional<GS::UniString> GetAutoTextNameCommand::GetInputParametersSchema () 
                 "type": "array",
                 "description": "Autotext keys as returned by GetAutoTextKeys or GetProjectInfoFields (without the surrounding '<' and '>'), e.g. 'PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548' or 'PROJECTNAME'.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/AutoTextKeyValue"
                 },
                 "minItems": 1
             }
@@ -427,22 +432,7 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of custom project info fields to create.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "Display name of the project info field.",
-                            "minLength": 1
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "Initial value of the project info field."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoName"
-                    ]
+                    "$ref": "#/ProjectInfoFieldData"
                 }
             }
         },
@@ -768,6 +758,9 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     // there so that the height of the top story can be calculated). The record count
     // comes from the handle itself, so a level is never read past the array.
     const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+#ifdef ServerMainVers_2800
+    auto ifcAccessor = IFCAPI::GetObjectAccessor ();
+#endif
     for (short i = 0; i < storyCount; i++) {
         const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
@@ -781,6 +774,19 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
             storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
         }
         storyData.Add ("name", uName);
+
+#ifdef ServerMainVers_2800
+        // The IFC GlobalId of the IfcBuildingStorey the story is exported as. The IFC
+        // object accessor only exists from Archicad 28; older versions leave the field out.
+        auto storyObjectID = ifcAccessor.CreateIfcBuildingStoreyObjectID (story.index);
+        if (storyObjectID.IsOk ()) {
+            auto unWrappedStoryObjectID = storyObjectID.Unwrap ();
+            auto ifcId = ifcAccessor.GetGlobalId (unWrappedStoryObjectID);
+            if (ifcId.IsOk ()) {
+                storyData.Add ("ifcId", ifcId.Unwrap ());
+            }
+        }
+#endif
 
         listAdder (storyData);
     }
@@ -1354,6 +1360,20 @@ GS::String SaveProjectCommand::GetName () const
     return "SaveProject";
 }
 
+GS::Optional<GS::UniString> SaveProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectPath": {
+                "type": "string",
+                "description": "Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten. When omitted, or when it is the project's own file, the project is saved in place, which keeps the refusal of a project opened read-only."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
 GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -1361,8 +1381,38 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
     })";
 }
 
-GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+// Whether the location is the file of the open project (a solo project saved before). The paths
+// are compared as text without case, as for the hotlink sources below, so a path that differs from
+// the project's own only in case still counts as its own file.
+static bool IsFileOfOpenProject (const IO::Location& location)
 {
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) != NoError) {
+        return false;
+    }
+    return !projectInfo.untitled && projectInfo.location != nullptr &&
+        projectInfo.location->ToDisplayText ().Compare (location.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal;
+}
+
+GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString projectPath;
+    if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
+        IO::Location fileLoc (projectPath);
+        // The project's own file takes the plain save below: a Save As to its own location would
+        // also overwrite a project that Archicad opened read-only, which the plain save refuses.
+        if (!IsFileOfOpenProject (fileLoc)) {
+            API_FileSavePars fsp = {};
+            fsp.fileTypeID = APIFType_PlanFile;
+            fsp.file = &fileLoc;
+            GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
+            }
+            return CreateSuccessfulExecutionResult ();
+        }
+    }
+
     // The parameterless save acts on the current window - "saves the content of
     // the current window", ACAPI_Automate.h - so from a 3D, section or other
     // non-plan window it tries to save that window's content, which has no file
@@ -1557,6 +1607,213 @@ GS::ObjectState SaveProjectAsArchiveCommand::Execute (const GS::ObjectState& par
     return CreateSuccessfulExecutionResult ();
 }
 
+SaveCurrentWindowAsImageCommand::SaveCurrentWindowAsImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveCurrentWindowAsImageCommand::GetName () const
+{
+    return "SaveCurrentWindowAsImage";
+}
+
+GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "imageFilePath": {
+                "type": "string",
+                "description": "Absolute path of the image file to write. An existing file is overwritten."
+            },
+            "format": {
+                "type": "string",
+                "description": "Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).",
+                "enum": ["png", "jpg", "bmp", "tiff", "gif"]
+            },
+            "colorDepth": {
+                "type": "string",
+                "description": "Optional, trueColor by default. The color depth of the image, as in the Save as picture dialog.",
+                "enum": ["blackAndWhite", "16Colors", "256Colors", "16Grays", "256Grays", "trueColor", "trueColorWithAlpha"]
+            },
+            "dithered": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the image is dithered when its color depth drops colors."
+            },
+            "entireDrawing": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the image covers the entire drawing of a 2D window instead of its current zoom, as the Entire Drawing option of the Save as picture dialog does."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "imageFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "imageFilePath": {
+                "type": "string",
+                "description": "The path of the written image file."
+            },
+            "zoom": {
+                "$ref": "#/Zoom",
+                "description": "The zoom of the window the image shows, as GetView2DTransformations reports it. Absent for the 3D window."
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The orientation of the window in radian, as GetView2DTransformations reports it. Absent for the 3D window."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "imageFilePath"
+        ]
+    })";
+}
+
+static bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID)
+{
+    if (format == "png") {
+        fileTypeID = APIFType_PNGFile;
+    } else if (format == "jpg") {
+        fileTypeID = APIFType_JPEGFile;
+    } else if (format == "bmp") {
+        fileTypeID = APIFType_BMPFile;
+    } else if (format == "tiff") {
+        fileTypeID = APIFType_TIFFFile;
+    } else if (format == "gif") {
+        fileTypeID = APIFType_GIFFile;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID)
+{
+    const UIndex dotIndex = imageFilePath.FindLast (GS::UniChar ('.'));
+    if (dotIndex == MaxUIndex) {
+        return false;
+    }
+    GS::UniString extension (imageFilePath.GetSubstring (dotIndex + 1, imageFilePath.GetLength () - dotIndex - 1));
+    extension.SetToLowerCase ();
+    if (extension == "jpeg") {
+        extension = "jpg";
+    } else if (extension == "tif") {
+        extension = "tiff";
+    }
+    return ParseImageFileType (extension, fileTypeID);
+}
+
+// The true color depths are platform-specific enumerators of API_ColorDepthID.
+#if defined (macintosh)
+static const API_ColorDepthID TrueColorDepth = APIColorDepth_MiC;            // Millions of Colors
+static const API_ColorDepthID TrueColorWithAlphaDepth = APIColorDepth_MiCP;  // Millions of Colors+
+#else
+static const API_ColorDepthID TrueColorDepth = APIColorDepth_TC24;           // True Color - 24 bit
+static const API_ColorDepthID TrueColorWithAlphaDepth = APIColorDepth_TC32;  // True Color - 32 bit
+#endif
+
+static bool ParseColorDepth (const GS::UniString& colorDepth, API_ColorDepthID& colorDepthID)
+{
+    if (colorDepth == "blackAndWhite") {
+        colorDepthID = APIColorDepth_BW;
+    } else if (colorDepth == "16Colors") {
+        colorDepthID = APIColorDepth_16C;
+    } else if (colorDepth == "256Colors") {
+        colorDepthID = APIColorDepth_256C;
+    } else if (colorDepth == "16Grays") {
+        colorDepthID = APIColorDepth_16G;
+    } else if (colorDepth == "256Grays") {
+        colorDepthID = APIColorDepth_256G;
+    } else if (colorDepth == "trueColor") {
+        colorDepthID = TrueColorDepth;
+    } else if (colorDepth == "trueColorWithAlpha") {
+        colorDepthID = TrueColorWithAlphaDepth;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString imageFilePath;
+    if (!parameters.Get ("imageFilePath", imageFilePath) || imageFilePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "imageFilePath is missing.");
+    }
+    IO::Location location (imageFilePath);
+
+    API_FTypeID fileTypeID = APIFType_PNGFile;
+    GS::UniString format;
+    if (parameters.Get ("format", format)) {
+        if (!ParseImageFileType (format, fileTypeID)) {
+            return CreateErrorResponse (APIERR_BADPARS, "format must be one of png, jpg, bmp, tiff and gif.");
+        }
+    } else if (!ParseImageFileTypeFromExtension (imageFilePath, fileTypeID)) {
+        return CreateErrorResponse (APIERR_BADPARS, "format is missing and the extension of imageFilePath is not one of .png, .jpg, .jpeg, .bmp, .tif, .tiff and .gif.");
+    }
+
+    API_ColorDepthID colorDepthID = TrueColorDepth;
+    GS::UniString colorDepth;
+    if (parameters.Get ("colorDepth", colorDepth) && !ParseColorDepth (colorDepth, colorDepthID)) {
+        return CreateErrorResponse (APIERR_BADPARS, "colorDepth is not one of the allowed values.");
+    }
+
+    bool dithered = false;
+    bool entireDrawing = false;
+    parameters.Get ("dithered", dithered);
+    parameters.Get ("entireDrawing", entireDrawing);
+
+    // The picture save renders the front window: the 2D content of a model or
+    // layout window, or the 3D window. view2D tells the two apart.
+    API_WindowInfo currentWindow = {};
+    const GSErrCode windowErr = ACAPI_Window_GetCurrentWindow (&currentWindow);
+    if (windowErr != NoError) {
+        return CreateErrorResponse (windowErr, "Failed to get the current window.");
+    }
+    const bool view2D = currentWindow.typeID != APIWind_3DModelID;
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = fileTypeID;
+    fileSavePars.file = &location;
+
+    API_SavePars_Picture savePars = {};
+    savePars.colorDepth = colorDepthID;
+    savePars.dithered = dithered;
+    savePars.view2D = view2D;
+    // crop means "crop to the current zoom"; the Entire Drawing option is its opposite.
+    savePars.crop = !entireDrawing;
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to save the current window as an image: the current window cannot be saved as a picture (only model, layout and 3D windows can), or the file cannot be written.");
+    }
+
+    GS::ObjectState response ("imageFilePath", imageFilePath);
+    if (view2D) {
+        // The same data GetView2DTransformations reports for the current database,
+        // so a caller can map the pixels of the image back to model coordinates.
+        API_Box zoomBox = {};
+        API_Tranmat tranmat = {};
+        if (ACAPI_View_GetZoom (&zoomBox, &tranmat) == NoError) {
+            response.Add ("zoom", GS::ObjectState (
+                "xMin", zoomBox.xMin,
+                "yMin", zoomBox.yMin,
+                "xMax", zoomBox.xMax,
+                "yMax", zoomBox.yMax));
+            response.Add ("rotation", std::atan2 (tranmat.tmx[4], tranmat.tmx[0]));
+        }
+    }
+    return response;
+}
+
 GetGeoLocationCommand::GetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1573,123 +1830,10 @@ GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "projectLocation": {
-                "type": "object",
-                "properties": {
-                    "longitude": {
-                        "type": "number",
-                        "description": "longitude in degrees"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "description": "latitude in degrees"
-                    },
-                    "altitude": {
-                        "type": "number",
-                        "description": "altitude in meters"
-                    },
-                    "north": {
-                        "type": "number",
-                        "description": "north direction in radians"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "longitude",
-                    "latitude",
-                    "altitude",
-                    "north"
-                ]
+                "$ref": "#/ProjectLocation"
             },
             "surveyPoint": {
-                "type": "object",
-                "properties": {
-                    "position": {
-                        "type": "object",
-                        "properties": {
-                            "eastings": {
-                                "type": "number",
-                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
-                            },
-                            "northings": {
-                                "type": "number",
-                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
-                            },
-                            "elevation": {
-                                "type": "number",
-                                "description": "Orthogonal height relative to the vertical datum specified."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "eastings",
-                            "northings",
-                            "elevation"
-                        ]
-                    },
-                    "positionInProject": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). The map coordinates of the same point are in 'position'."
-                    },
-                    "geoReferencingParameters": {
-                        "type": "object",
-                        "properties": {
-                            "crsName": {
-                                "type": "string",
-                                "description": "Name by which the coordinate reference system is identified."
-                            },
-                            "description": {
-                                "type": "string",
-                                "description": "Informal description of this coordinate reference system."
-                            },
-                            "geodeticDatum": {
-                                "type": "string",
-                                "description": "Name by which this datum is identified."
-                            },
-                            "verticalDatum": {
-                                "type": "string",
-                                "description": "Name by which the vertical datum is identified."
-                            },
-                            "mapProjection": {
-                                "type": "string",
-                                "description": "Name by which the map projection is identified."
-                            },
-                            "mapZone": {
-                                "type": "string",
-                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
-                            },
-                            "xAxisAbscissa": {
-                                "type": "number",
-                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
-                            },
-                            "xAxisOrdinate": {
-                                "type": "number",
-                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
-                            },
-                            "scale": {
-                                "type": "number",
-                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "crsName",
-                            "description",
-                            "geodeticDatum",
-                            "verticalDatum",
-                            "mapProjection",
-                            "mapZone",
-                            "xAxisAbscissa",
-                            "xAxisOrdinate",
-                            "scale"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "position",
-                    "positionInProject",
-                    "geoReferencingParameters"
-                ]
+                "$ref": "#/SurveyPoint"
             }
         },
         "additionalProperties": false,
@@ -1745,104 +1889,10 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetInputParametersSchema () c
         "type": "object",
         "properties": {
             "projectLocation": {
-                "type": "object",
-                "properties": {
-                    "longitude": {
-                        "type": "number",
-                        "description": "longitude in degrees"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "description": "latitude in degrees"
-                    },
-                    "altitude": {
-                        "type": "number",
-                        "description": "altitude in meters"
-                    },
-                    "north": {
-                        "type": "number",
-                        "description": "north direction in radians"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                ]
+                "$ref": "#/ProjectLocationUpdate"
             },
             "surveyPoint": {
-                "type": "object",
-                "properties": {
-                    "position": {
-                        "type": "object",
-                        "properties": {
-                            "eastings": {
-                                "type": "number",
-                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
-                            },
-                            "northings": {
-                                "type": "number",
-                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
-                            },
-                            "elevation": {
-                                "type": "number",
-                                "description": "Orthogonal height relative to the vertical datum specified."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                        ]
-                    },
-                    "positionInProject": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The survey point's position in the project's coordinate system (Options > Project Preferences > Location Settings > Survey Point > Position). Moves the survey point in the project without changing its map coordinates in 'position'."
-                    },
-                    "geoReferencingParameters": {
-                        "type": "object",
-                        "properties": {
-                            "crsName": {
-                                "type": "string",
-                                "description": "Name by which the coordinate reference system is identified."
-                            },
-                            "description": {
-                                "type": "string",
-                                "description": "Informal description of this coordinate reference system."
-                            },
-                            "geodeticDatum": {
-                                "type": "string",
-                                "description": "Name by which this datum is identified."
-                            },
-                            "verticalDatum": {
-                                "type": "string",
-                                "description": "Name by which the vertical datum is identified."
-                            },
-                            "mapProjection": {
-                                "type": "string",
-                                "description": "Name by which the map projection is identified."
-                            },
-                            "mapZone": {
-                                "type": "string",
-                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
-                            },
-                            "xAxisAbscissa": {
-                                "type": "number",
-                                "description": "Value along the easting axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisAbscissa)."
-                            },
-                            "xAxisOrdinate": {
-                                "type": "number",
-                                "description": "Value along the northing axis of the end point of a vector indicating the position of the local x axis of the engineering coordinate reference system (IfcMapConversion.XAxisOrdinate)."
-                            },
-                            "scale": {
-                                "type": "number",
-                                "description": "Scale to be used, when the units of the CRS are not identical to the units of the engineering coordinate system (IfcMapConversion.Scale)."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                ]
+                "$ref": "#/SurveyPointUpdate"
             }
         },
         "additionalProperties": false,
@@ -2245,9 +2295,8 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
                 "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
             },
             "elementsToExport": {
-                "type": "string",
-                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
-                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
+                "$ref": "#/IFCElementsToExport",
+                "description": "Only for the save method, and only together with translatorName. The default is VisibleElementsOnAllStories."
             }
         },
         "additionalProperties": false,
@@ -2471,7 +2520,8 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
 // A hotlink module is two things in Archicad: a NODE (the reference to the
 // source file, with its cache) and any number of INSTANCES (elements of type
 // API_HotlinkID, each placed by a transformation). GetHotlinks lists the
-// nodes; these three commands create nodes, place instances and move them.
+// nodes; these commands create nodes, place instances, move them, re-read
+// the nodes' source files and repoint nodes at other files.
 // Instances are ordinary elements otherwise: DeleteElements removes one,
 // GetDetailsOfElements reads its placement, and the elements inside a
 // placed instance report it as their hotlinkId.
@@ -2681,61 +2731,7 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The hotlink instances to place.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId",
-                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
-                        },
-                        "origin": {
-                            "$ref": "#/HotlinkOrigin"
-                        },
-                        "rotationAngle": {
-                            "type": "number",
-                            "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
-                        },
-                        "mirrored": {
-                            "type": "boolean",
-                            "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional story the instance is placed on. Defaults to the current story."
-                        },
-                        "floorDifference": {
-                            "type": "integer",
-                            "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
-                        },
-                        "skipNested": {
-                            "type": "boolean",
-                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
-                        },
-                        "suspendFixAngle": {
-                            "type": "boolean",
-                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
-                        },
-                        "ignoreTopFloorLinks": {
-                            "type": "boolean",
-                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
-                        },
-                        "relinkWallOpenings": {
-                            "type": "boolean",
-                            "description": "Optional. Defaults to the hotlink tool's current default."
-                        },
-                        "adjustLevelDiffs": {
-                            "type": "boolean",
-                            "description": "Optional. Defaults to the hotlink tool's current default."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId",
-                        "origin"
-                    ]
+                    "$ref": "#/HotlinkInstanceCreation"
                 }
             }
         },
@@ -2869,49 +2865,7 @@ GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The placed hotlink instances to change. Every field but elementId is optional; a field that is omitted keeps its current value.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "origin": {
-                            "$ref": "#/HotlinkOrigin"
-                        },
-                        "rotationAngle": {
-                            "type": "number",
-                            "description": "Rotation about the origin, counter-clockwise, in radians."
-                        },
-                        "mirrored": {
-                            "type": "boolean",
-                            "description": "Reflect the module's local X axis before the rotation."
-                        },
-                        "floorDifference": {
-                            "type": "integer"
-                        },
-                        "skipNested": {
-                            "type": "boolean"
-                        },
-                        "suspendFixAngle": {
-                            "type": "boolean"
-                        },
-                        "ignoreTopFloorLinks": {
-                            "type": "boolean"
-                        },
-                        "relinkWallOpenings": {
-                            "type": "boolean"
-                        },
-                        "adjustLevelDiffs": {
-                            "type": "boolean"
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Move the instance to this layer."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/HotlinkInstanceChange"
                 }
             }
         },
@@ -3039,6 +2993,213 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
         }
         return NoError;
     });
+
+    return response;
+}
+
+// The node keeps a cache of its source file's content, and Archicad re-reads
+// the file only when asked - the Hotlink Manager's Update button, which is
+// UpdateHotlinks. ChangeHotlinkNodes is the Relink button: it repoints a
+// node at another file. Neither is wrapped in ACAPI_CallUndoableCommand: the
+// DevKit lists the hotlink node functions among the non-undoable data
+// structure modifiers.
+
+UpdateHotlinksCommand::UpdateHotlinksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UpdateHotlinksCommand::GetName () const
+{
+    return "UpdateHotlinks";
+}
+
+GS::Optional<GS::UniString> UpdateHotlinksCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes to update, from GetHotlinks or CreateHotlinkNodes. Each node's cached content is re-read from its source file, as the Hotlink Manager's Update button does.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdateHotlinksCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UpdateHotlinksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& nodeData : hotlinkNodes) {
+        const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+        if (hotlinkNodeId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "hotlinkNodeId is missing"));
+            continue;
+        }
+
+        // Reading the node first tells a wrong id apart from a failed update
+        // and gives the source path for the message.
+        API_HotlinkNode node = {};
+        node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+        bool enableUnplaced = true;     // the node may have been created and not placed yet
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+            continue;
+        }
+        const GS::UniString sourcePath = node.sourceLocation != nullptr ? node.sourceLocation->ToDisplayText () : GS::UniString ();
+
+        const GSErrCode err = ACAPI_Hotlink_UpdateHotlinkCache (&node.guid);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to update the hotlink from " + sourcePath));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
+
+ChangeHotlinkNodesCommand::ChangeHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeHotlinkNodesCommand::GetName () const
+{
+    return "ChangeHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes to repoint at another source file, as the Hotlink Manager's Relink button does. The placed instances stay where they are. Follow it with UpdateHotlinks on the same nodes to re-read the content from the new file.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        },
+                        "sourceLocation": {
+                            "type": "string",
+                            "description": "Absolute path of the new module source file (.mod or .pln)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId",
+                        "sourceLocation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& nodeData : hotlinkNodes) {
+        const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+        GS::UniString sourcePath;
+        if (hotlinkNodeId == nullptr || !nodeData.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "hotlinkNodeId or sourceLocation is missing"));
+            continue;
+        }
+        IO::Location sourceLocation (sourcePath);
+        IO::Name lastLocalName;
+        if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "sourceLocation is not a valid path"));
+            continue;
+        }
+
+        // The modify call takes the whole node, so it is read first; only the
+        // source location is changed, the rest goes back as it came.
+        API_HotlinkNode node = {};
+        node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+        bool enableUnplaced = true;     // the node may have been created and not placed yet
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+            continue;
+        }
+        // The read allocates sourceLocation on the heap and the node's
+        // destructor frees it (see CreateHotlinkNodes), so the old location
+        // is freed here and the new one handed over the same way.
+        delete node.sourceLocation;
+        node.sourceLocation = new IO::Location (sourceLocation);
+
+        const GSErrCode err = ACAPI_Hotlink_ModifyHotlinkNode (&node);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to change the hotlink node's source to " + sourcePath));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
 
     return response;
 }

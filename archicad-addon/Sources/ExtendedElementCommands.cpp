@@ -393,10 +393,10 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
 // the caller clones element/memo/marker via PrepareWindowOrDoorDefaults.
 //
 // The parameter is a FAVORITE name (as returned by `GetFavoritesByType
-// (elementType=Door|Window)`), NOT a libpart `docu_UName`. Real
-// libpart-by-name lookup against AC29's Door/Window library is not
-// viable: the favorite name is the only stable identifier exposed to
-// API callers.
+// (elementType=Door|Window)`), NOT a libpart `docu_UName`. To place a
+// library part by its name instead, `libraryPartName` goes through
+// ApplyWindowOrDoorLibraryPartToDefaults; a favorite also carries the
+// settings saved with it.
 //
 // This is the workaround for `-2130313110 Failed to create door` /
 // `Failed to create window` on a fresh project where the user has
@@ -1659,6 +1659,12 @@ GS::Optional<GS::UniString> ApplyRoofStructure (
     return {};
 }
 
+} // namespace
+
+// Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it
+// for CreateSlabsCommand in ElementCreationCommands.cpp, so it needs external linkage.
+// Inside the namespace it would be a second, internal function: the call in
+// ModifySlabsCommand becomes ambiguous (C2668) and the declared one is never defined.
 GS::Optional<GS::UniString> ApplySlabStructure (
     API_Element& element,
     API_Element* mask,
@@ -1702,6 +1708,8 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     changed = true;
     return {};
 }
+
+namespace {
 
 bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
@@ -2542,7 +2550,7 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
 }
 
-bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo)
+bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo, double topExpansion, API_AttributeIndex surface)
 {
     void* bodyData = nullptr;
     if (ACAPI_Body_Create (nullptr, nullptr, &bodyData) != NoError || bodyData == nullptr) {
@@ -2555,15 +2563,18 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
         }
     });
 
+    // A topExpansion > 0 grows the top rectangle by that amount on all four sides, which makes
+    // a frustum (for example an excavation with sloped sides).
+    const double e = topExpansion;
     API_Coord3D coords[] = {
-        {0.0,   0.0,   0.0},
-        {sizeX, 0.0,   0.0},
-        {sizeX, sizeY, 0.0},
-        {0.0,   sizeY, 0.0},
-        {0.0,   0.0,   sizeZ},
-        {sizeX, 0.0,   sizeZ},
-        {sizeX, sizeY, sizeZ},
-        {0.0,   sizeY, sizeZ}
+        {0.0,       0.0,       0.0},
+        {sizeX,     0.0,       0.0},
+        {sizeX,     sizeY,     0.0},
+        {0.0,       sizeY,     0.0},
+        {-e,        -e,        sizeZ},
+        {sizeX + e, -e,        sizeZ},
+        {sizeX + e, sizeY + e, sizeZ},
+        {-e,        sizeY + e, sizeZ}
     };
 
     UInt32 vertices[8];
@@ -2585,15 +2596,21 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     ACAPI_Body_AddEdge (bodyData, vertices[2], vertices[6], edges[10]);
     ACAPI_Body_AddEdge (bodyData, vertices[3], vertices[7], edges[11]);
 
-#ifdef ServerMainVers_2700
-    API_OverriddenAttribute material;
-    material = buildingMaterial;
-#else
+    // Surface override of every face. This must be a surface (material) index: the AC27+ branch
+    // used to put the building material index here, so whichever surface had the same index was
+    // shown and surfaceId had no effect. Without a surface the faces show the building material's
+    // own surface.
     (void) buildingMaterial;
     API_OverriddenAttribute material = {};
-#endif
+    if (surface != APIInvalidAttributeIndex) {
+        SetOverriddenAttribute (material, surface);
+    }
+    // For a closed solid every edge has to run in opposite directions in its two faces. The
+    // bottom face is therefore traversed 0, 3, 2, 1 (reversed) to match the side faces. With the
+    // bottom in the same direction as the sides the morph was not a solid, and solid element
+    // operations (for example a subtraction) failed on it.
     UInt32 polygon = 0;
-    ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[1], edges[2], edges[3]}, 0, material, polygon);
+    ACAPI_Body_AddPolygon (bodyData, {-edges[3], -edges[2], -edges[1], -edges[0]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[4], edges[5], edges[6], edges[7]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[9], -edges[4], -edges[8]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[1], edges[10], -edges[5], -edges[9]}, 0, material, polygon);
@@ -2620,6 +2637,33 @@ static GS::UniString MorphEdgeTypeToString (API_MorphEdgeTypeID edgeType)
         case APIMorphEdgeType_SoftHiddenEdge:
         default:                                return "SoftHidden";
     }
+}
+
+static API_MorphEdgeTypeID MorphEdgeTypeFromString (const GS::UniString& edgeDefault)
+{
+    if (edgeDefault == "HardHidden") {
+        return APIMorphEdgeType_HardHiddenEdge;
+    }
+    if (edgeDefault == "SoftHidden") {
+        return APIMorphEdgeType_SoftHiddenEdge;
+    }
+    return APIMorphEdgeType_HardVisibleEdge;
+}
+
+// element.morph.edgeType is discarded by ACAPI_Element_Create/Change (see the note above
+// ApplyWindowOrDoorDetails). Archicad 29 added ACAPI_Element_ChangeMorphEdgeType, which changes
+// the edge type of every edge of an existing morph, so on AC29+ the requested edgeDefault is
+// applied with it once the element exists. It must run inside the same undoable session as the
+// Create/Change. On older versions there is nothing to call and the field stays a no-op.
+static GSErrCode ApplyMorphEdgeType (const API_Guid& morphGuid, API_MorphEdgeTypeID edgeType)
+{
+#ifdef ServerMainVers_2900
+    return ACAPI_Element_ChangeMorphEdgeType (morphGuid, edgeType);
+#else
+    UNUSED_PARAMETER (morphGuid);
+    UNUSED_PARAMETER (edgeType);
+    return NoError;
+#endif
 }
 
 static GS::UniString TextureProjectionTypeToString (API_TextureProjectionTypeID projectionType)
@@ -3198,9 +3242,11 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
 // still-unresolved Archicad SDK bug (reproduced independently by multiple developers across
 // AC23-27) - element.morph.edgeType (and even bodyType, always coming back Solid) is silently
 // discarded/reset by ACAPI_Element_Create/Change regardless of what's supplied, with no known
-// workaround. Not fixable from an add-on. The element-wide edgeType/bodyType fields are still
+// workaround through Create/Change. The element-wide edgeType/bodyType fields are still
 // set on the element (CreateMorphsCommand/ModifyMorphsCommand below) since doing so is harmless
-// and forward-compatible if GRAPHISOFT ever fixes this - but per-edge overrides were removed
+// and forward-compatible if GRAPHISOFT ever fixes this. Archicad 29 added a separate way to set
+// the element-wide edge type, ACAPI_Element_ChangeMorphEdgeType, used by ApplyMorphEdgeType above
+// after the Create/Change - so edgeDefault does take effect on AC29+ - but per-edge overrides were removed
 // entirely rather than ship a reconstruction step with real risk (raw MeshBody manipulation) for
 // zero actual effect. Reading back whatever Archicad itself currently reports (AddMorphBodyFromMemo
 // in ElementCommands.cpp) remains fully correct and unaffected - only writing is impossible.
@@ -3539,23 +3585,27 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                            "description": "Optional name of a Wall favorite to base the new element on. Its settings (structure, reference line location, top link, offsets, ...) are applied first, then the explicitly given fields override them. With a favorite only begCoordinate and endCoordinate are needed."
                         },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
                         "zCoordinate": { "type": "number", "description": "Absolute Z when floorIndex is absent; bottomOffset relative to the floor when floorIndex is provided." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "offset": { "type": "number" },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Optional explicit height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or the tool default. When omitted, the height and top link of the favorite (or of the Wall tool defaults) are kept." },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Optional thickness. When omitted, the favorite's or the Wall tool default's thickness is kept. Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the favorite (or the wall tool default), which may be a composite; send structureType 'Basic' for the thickness to apply."
+                        },
+                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
-                            "type": "string",
-                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"]
+                            "$ref": "#/WallReferenceLineLocation",
+                            "description": "Optional. When omitted, the favorite's or the Wall tool default's reference line location is kept. The Core* values only have an effect on a Composite or Profile wall."
                         },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite", "Profile"]
+                            "$ref": "#/WallStructureType",
+                            "description": "Optional. When neither this nor one of the attribute ids below is given, the favorite's or the Wall tool default's structure is kept."
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
@@ -3588,14 +3638,11 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                            "description": "Floor plan display option."
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -3635,7 +3682,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["begCoordinate", "endCoordinate", "height", "thickness"]
+                    "required": ["begCoordinate", "endCoordinate"]
                 }
             }
         },
@@ -3660,12 +3707,15 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     }
 
     double zCoordinate = 0.0;
-    double height = 0.0;
-    double thickness = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    parameters.Get ("height", height);
-    parameters.Get ("thickness", thickness);
 
+    // The element arrives filled from the Wall tool defaults, with the item's favorite
+    // (favoriteName) already applied to them by CreateElementsCommandBase. Only the
+    // fields the item actually names are written here, so a favorite's composite,
+    // reference line location, top link and offsets survive into the new wall (#766):
+    // forcing Basic / Center / relativeTopStory 0 here used to silently undo them.
+    // The plan outline is the one exception: a Poly wall needs a polygon memo that
+    // this command does not build, so the outline is always the plain Normal one.
     element.wall.type = APIWtyp_Normal;
     element.wall.begC = begCoordinate;
     element.wall.endC = endCoordinate;
@@ -3673,10 +3723,17 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     if (arcAngle.HasValue ()) {
         element.wall.angle = arcAngle.Get ();
     }
-    element.wall.height = height;
-    element.wall.relativeTopStory = 0;
-    element.wall.thickness = thickness;
-    element.wall.referenceLineLocation = APIWallRefLine_Center;
+    // An explicit height replaces a top link, as in CreateColumns: with a non-zero
+    // relativeTopStory Archicad recomputes the height from the story elevations.
+    auto height = GetOptionalDouble (parameters, "height");
+    if (height.HasValue ()) {
+        element.wall.height = height.Get ();
+        element.wall.relativeTopStory = 0;
+    }
+    auto thickness = GetOptionalDouble (parameters, "thickness");
+    if (thickness.HasValue ()) {
+        element.wall.thickness = thickness.Get ();
+    }
     GS::UniString referenceLineLocation;
     if (parameters.Get ("referenceLineLocation", referenceLineLocation)) {
         if (referenceLineLocation == "Outside") {
@@ -3693,15 +3750,13 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
             element.wall.referenceLineLocation = APIWallRefLine_CoreInside;
         }
     }
-    element.wall.modelElemStructureType = API_BasicStructure;
-    element.wall.offset = 0.0;
 
     auto offset = GetOptionalDouble (parameters, "offset");
-
     if (offset.HasValue ()) {
         element.wall.offset = offset.Get ();
     }
 
+    // The home story always comes from floorIndex/zCoordinate, never from the favorite.
     Int32 explicitFloorIndex = -1;
     if (parameters.Get ("floorIndex", explicitFloorIndex)) {
         element.header.floorInd   = static_cast<short> (explicitFloorIndex);
@@ -3766,8 +3821,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "type": "number",
                             "description": "Rotation angle of the profile around the beam's center line, in radians."
                         },
-                        "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" },
+                        "arcAngle": { "type": "number", "description": "Optional arc angle in radians. A non-zero value makes a horizontally curved beam." },
+                        "verticalCurveHeight": { "type": "number", "description": "Optional rise of a vertically curved beam. A non-zero value makes a vertically curved beam; it wins over arcAngle." },
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the beam. Applied to all segments.",
@@ -3779,9 +3834,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0
                         },
                         "anchorPoint": {
-                            "type": "string",
-                            "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
-                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                            "$ref": "#/BeamAnchorPoint"
                         },
                         "circleBased": {
                             "type": "boolean",
@@ -3847,13 +3900,21 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     if (profileAngle.HasValue ()) {
         element.beam.profileAngle = profileAngle.Get ();
     }
+    // A curve only takes effect with the matching beamShape: with the default straight shape the
+    // beam was created straight and arcAngle / verticalCurveHeight were ignored.
     auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
     if (arcAngle.HasValue ()) {
         element.beam.curveAngle = arcAngle.Get ();
+        if (arcAngle.Get () != 0.0) {
+            element.beam.beamShape = API_HorizontallyCurvedBeam;
+        }
     }
     auto curveHeight = GetOptionalDouble (parameters, "verticalCurveHeight");
     if (curveHeight.HasValue ()) {
         element.beam.verticalCurveHeight = curveHeight.Get ();
+        if (curveHeight.Get () != 0.0) {
+            element.beam.beamShape = API_VerticallyCurvedBeam;
+        }
     }
 
     GS::UniString anchorPoint;
@@ -4092,6 +4153,10 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
                         "oSide": { "type": "boolean" },
+                        "libraryPartName": {
+                            "type": "string",
+                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Applied to the tool defaults before cloning."
+                        },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
@@ -4119,6 +4184,62 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetRawResponseSchema () const
         "additionalProperties": false,
         "required": ["elements"]
     })";
+}
+
+// Applies a library part, given by its localized name (docu_UName), to the Door/Window tool
+// defaults BEFORE PrepareWindowOrDoorDefaults, so the cloned defaults and marker are consistent
+// (same reason as for ApplyWindowOrDoorFavoriteToDefaults). Without libraryPartName the tool
+// defaults are kept. This places parts that have no favorite, such as shutters or grilles.
+// The type of a library part is its place in the subtype hierarchy: the typeID that a search or
+// ACAPI_LibraryPart_Get returns does not tell a window from an object (Archicad 30 returns
+// APILib_ObjectID for windows and doors). Given to the search together with the name, the
+// window (or door) typeID limits it to that subtype, so a part of another type (an object, a
+// lamp, a door for CreateWindows) is not found and the tool defaults are left unchanged.
+static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& data, API_ElemTypeID typeId)
+{
+    GS::UniString libName;
+    if (!data.Get ("libraryPartName", libName) || libName.IsEmpty ()) {
+        return NoError;
+    }
+    API_LibPart libPart = {};
+    libPart.typeID = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    delete libPart.location;
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element element = {};
+    API_ElementMemo memo = {};
+#ifdef ServerMainVers_2600
+    element.header.type = typeId;
+#else
+    element.header.typeID = typeId;
+#endif
+    err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return err;
+    }
+    const GS::OnExit cleanup ([&]() { ACAPI_DisposeElemMemoHdls (&memo); });
+
+    double a = 0.0, b = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.params != nullptr) {
+        ACAPI_DisposeAddParHdl (&memo.params);
+    }
+    memo.params = addPars;
+    element.window.openingBase.libInd = libPart.index;
+
+    API_Element mask;
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.libInd);
+    return ACAPI_Element_ChangeDefaults (&element, &memo, &mask);
 }
 
 GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -4177,6 +4298,13 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
             GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_WindowID);
+            if (err == NoError) {
+                err = ApplyWindowOrDoorLibraryPartToDefaults (data, API_WindowID);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no window library part with that name."));
+                    continue;
+                }
+            }
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
                 continue;
@@ -4262,6 +4390,10 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
                         "oSide": { "type": "boolean" },
+                        "libraryPartName": {
+                            "type": "string",
+                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Applied to the tool defaults before cloning."
+                        },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
@@ -4347,6 +4479,13 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
             GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_DoorID);
+            if (err == NoError) {
+                err = ApplyWindowOrDoorLibraryPartToDefaults (data, API_DoorID);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no door library part with that name."));
+                    continue;
+                }
+            }
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
                 continue;
@@ -4558,19 +4697,26 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             GS::Array<Point2D> polygonCorners { {0, 0}, {width, 0}, {width, height}, {0, height} };
             Geometry::Polygon2D polygon = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/).PopLargest ();
 
-            // PlacePolygonal hangs the base polygon BELOW the point it is given, so the point
-            // ends up on the opening's top edge rather than its bottom one - measured on AC29,
-            // the created opening's sill came back at exactly basePoint.z - height for every
-            // height tried (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Raising the placement point by the
-            // height puts the bottom edge on the requested Z, which is what basePoint means in
-            // every other creation command and what the pre-AC29 branch now produces (#533).
+            // On AC29 PlacePolygonal hangs the base polygon BELOW the point it is given, so the
+            // point ends up on the opening's top edge rather than its bottom one - measured on
+            // AC29, the created opening's sill came back at exactly basePoint.z - height for
+            // every height tried (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Raising the placement point by
+            // the height puts the bottom edge on the requested Z, which is what basePoint means
+            // in every other creation command and what the pre-AC29 branch now produces (#533).
             //
             // The correction is applied to the point rather than to the polygon because the
             // polygon's own offset is ignored: building the corners over -height..0 instead of
             // 0..height changed nothing at all, so PlacePolygonal evidently normalizes the
             // polygon and keeps only its extents.
+            //
+            // AC30 no longer needs it: there PlacePolygonal already puts the sill on the given
+            // Z, so the raised point lifted every opening by its own height - measured on AC30
+            // with collision probes, basePoint.z 2.0 / height 1.0 came back at 3.0..4.0 and
+            // basePoint.z 1.0 / height 0.6 at 1.6..2.2 (#848). So the correction is AC29 only.
             API_Coord3D placementPoint = basePoint;
+#ifndef ServerMainVers_3000
             placementPoint.z += height;
+#endif
 
             ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*data.Get ("ownerElementId"))), ACAPI_GetToken ());
             ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, placementPoint, polygon);
@@ -4611,33 +4757,27 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         },
                         "body": {
                             "$ref": "#/MorphBody",
-                            "description": "Builds arbitrary geometry (any number of faces, holes, per-face materials, edge display overrides) instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
+                            "description": "Builds arbitrary geometry instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "xAxis": { "$ref": "#/Coordinate3D" },
                         "yAxis": { "$ref": "#/Coordinate3D" },
                         "zAxis": { "$ref": "#/Coordinate3D" },
                         "surfaceId": { "$ref": "#/AttributeId" },
+                        "topExpansion": { "type": "number", "minimum": 0.0, "description": "Only used with `size` (box) morphs. Expands the top rectangle outwards on all four sides by this amount, creating a frustum (e.g. sloped excavation shape). 0 creates a cuboid." },
                         "castShadow": { "type": "boolean" },
                         "receiveShadow": { "type": "boolean" },
                         "isAutoOnStoryVisibility": { "type": "boolean" },
                         "showContour": { "$ref": "#/StoryVisibility" },
                         "showFill": { "$ref": "#/StoryVisibility" },
                         "linkToSettings": {
-                            "type": "object",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                            "$ref": "#/ViewDepthLimitation"
                         },
                         "cutFillPen": { "type": "integer" },
                         "cutFillBackgroundPen": { "type": "integer" },
@@ -4654,22 +4794,11 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         "coverFillBGPen": { "type": "integer" },
                         "use3DHatching": { "type": "boolean" },
                         "coverFillOrientation": {
-                            "type": "object",
-                            "properties": {
-                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
-                                "origo": { "$ref": "#/Coordinate2D" },
-                                "matrix00": { "type": "number" },
-                                "matrix10": { "type": "number" },
-                                "matrix01": { "type": "number" },
-                                "matrix11": { "type": "number" },
-                                "innerRadius": { "type": "number" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/CoverFillOrientation"
                         },
                         "useDistortedCoverFill": { "type": "boolean" },
                         "textureProjectionType": {
-                            "type": "string",
-                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                            "$ref": "#/TextureProjectionType"
                         },
                         "textureProjectionCoords": {
                             "type": "array",
@@ -4776,10 +4905,28 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+            // ApplyMorphCosmeticDetails has put surfaceId into element.morph.material; the faces
+            // of a box morph get the same surface.
+            API_AttributeIndex surfaceIndex = APIInvalidAttributeIndex;
+#ifdef ServerMainVers_2700
+            if (element.morph.material.hasValue) {
+                surfaceIndex = element.morph.material.value;
+            }
+#else
+            if (element.morph.material.overridden) {
+                surfaceIndex = element.morph.material.attributeIndex;
+            }
+#endif
+
+            // The schema keeps it non-negative.
+            double topExpansion = 0.0;
+            data.Get ("topExpansion", topExpansion);
+
             API_ElementMemo memo = {};
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
+            GS::Optional<API_MorphEdgeTypeID> requestedEdgeType;
 
             if (sizeOS != nullptr) {
                 const API_Coord3D size = Get3DCoordinateFromObjectState (*sizeOS);
@@ -4787,7 +4934,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                     elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
                     continue;
                 }
-                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo)) {
+                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo, topExpansion, surfaceIndex)) {
                     elements.Push (CreateErrorResponse (APIERR_GENERAL, "Failed to build morph body."));
                     continue;
                 }
@@ -4805,13 +4952,8 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
                 GS::UniString edgeDefault;
                 if (bodyOS->Get ("edgeDefault", edgeDefault)) {
-                    if (edgeDefault == "HardHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_HardHiddenEdge;
-                    } else if (edgeDefault == "SoftHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_SoftHiddenEdge;
-                    } else {
-                        element.morph.edgeType = APIMorphEdgeType_HardVisibleEdge;
-                    }
+                    element.morph.edgeType = MorphEdgeTypeFromString (edgeDefault);
+                    requestedEdgeType = element.morph.edgeType;
                 }
             }
 
@@ -4819,6 +4961,16 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create morph."));
                 continue;
+            }
+
+            // ACAPI_Element_Create discards element.morph.edgeType (see ApplyMorphEdgeType);
+            // on AC29+ this applies the requested edgeDefault to the created element.
+            if (requestedEdgeType.HasValue ()) {
+                err = ApplyMorphEdgeType (element.header.guid, requestedEdgeType.Get ());
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set its edge type."));
+                    continue;
+                }
             }
 
             // element.morph.material (the default-surface override, "surfaceId" on this command)
@@ -4862,7 +5014,11 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "level": { "type": "number" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Without structureType the new roof keeps the structure of the roof tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply."
+                        },
                         "polygonCoordinates": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
@@ -4874,14 +5030,8 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                         },
                         "holes": { "$ref": "#/Holes2D" },
                         "pivotLine": {
-                            "type": "object",
-                            "description": "If given, a single-plane roof is created instead of a multi-plane roof: one plane tilted along this pivot line. The plane rises on the left side of the line direction (begCoordinate towards endCoordinate); flip the line to tilt towards the other side.",
-                            "properties": {
-                                "begCoordinate": { "$ref": "#/Coordinate2D" },
-                                "endCoordinate": { "$ref": "#/Coordinate2D" }
-                            },
-                            "additionalProperties": false,
-                            "required": ["begCoordinate", "endCoordinate"]
+                            "$ref": "#/RoofPivotLine",
+                            "description": "If given, creates a single-plane roof instead of a multi-plane roof, tilted along this pivot line."
                         },
                         "angle": {
                             "type": "number",
@@ -4894,18 +5044,11 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                             "minItems": 1,
                             "maxItems": 16,
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "levelHeight": { "type": "number" },
-                                    "levelAngle": { "type": "number", "exclusiveMinimum": 0.0 }
-                                },
-                                "additionalProperties": false,
-                                "required": ["levelHeight", "levelAngle"]
+                                "$ref": "#/RoofLevel"
                             }
                         },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite"]
+                            "$ref": "#/RoofStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" }
@@ -5056,18 +5199,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                         "witnessPoints": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "elementId": { "$ref": "#/ElementId" },
-                                    "line": { "type": "boolean" },
-                                    "inIndex": { "type": "integer" },
-                                    "special": { "type": "integer" },
-                                    "nodeType": { "type": "integer" },
-                                    "nodeStatus": { "type": "integer" },
-                                    "nodeId": { "type": "number", "minimum": 0.0 }
-                                },
-                                "additionalProperties": false,
-                                "required": ["elementId"]
+                                "$ref": "#/AssociativeWitnessPoint"
                             },
                             "minItems": 2
                         }
@@ -5517,34 +5649,34 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "geometryType": { "type": "string", "enum": ["Straight", "Trapezoid"], "description": "The wall's plan outline shape (Polygonal is not settable here, read-only via GetDetailsOfElements). This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
+                        "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Polygonal is not settable here; it is read-only via GetDetailsOfElements. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Send structureType 'Basic' in the same call to switch such a wall first."
+                        },
                         "bottomOffset": { "type": "number" },
                         "offset": { "type": "number" },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite", "Profile"]
+                            "$ref": "#/WallStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
                         "profileId": { "$ref": "#/AttributeId" },
                         "referenceLineLocation": {
-                            "type": "string",
-                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"],
-                            "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin."
+                            "$ref": "#/WallReferenceLineLocation"
                         },
-                        "profileType": { "type": "string", "enum": ["Normal", "Slanted", "Trapez"], "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). slantAlpha/slantBeta only have an effect once this is set to Slanted." },
+                        "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },
                         "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
                         "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
                         "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
                         "zoneRel": {
-                            "type": "string",
-                            "enum": ["Boundary", "ReduceArea", "None", "SubtractFromZone"]
+                            "$ref": "#/WallZoneRelation"
                         },
                         "visibility": { "$ref": "#/StoryVisibility" },
                         "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically." },
@@ -5581,14 +5713,11 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup - pairs with aboveViewLinePen."
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"],
-                            "description": "Floor plan display option."
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"],
-                            "description": "Floor plan view depth limitation. Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "Only has an effect on a multi-story wall (relativeTopStory/topOffset making it span more than one story)."
                         },
                         "useCompositePriority": {
                             "type": "boolean",
@@ -5715,7 +5844,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "isSlanted": { "type": "boolean" },
                         "isFlipped": { "type": "boolean" },
                         "profileAngle": { "type": "number" },
-                        "anchorPoint": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
@@ -5870,16 +5999,18 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "zCoordinate": { "type": "number" },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite slab first."
+                        },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite"]
+                            "$ref": "#/SlabStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
                         "referencePlaneLocation": {
-                            "type": "string",
-                            "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                            "$ref": "#/SlabReferencePlaneLocation"
                         },
                         "polygonOutline": {
                             "type": "array",
@@ -6039,25 +6170,22 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "level": { "type": "number" },
-                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first."
+                        },
                         "eavesOverhang": { "type": "number" },
                         "levels": {
                             "type": "array",
                             "minItems": 1,
                             "maxItems": 16,
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "levelHeight": { "type": "number" },
-                                    "levelAngle": { "type": "number", "exclusiveMinimum": 0.0 }
-                                },
-                                "additionalProperties": false,
-                                "required": ["levelHeight", "levelAngle"]
+                                "$ref": "#/RoofLevel"
                             }
                         },
                         "structureType": {
-                            "type": "string",
-                            "enum": ["Basic", "Composite"]
+                            "$ref": "#/RoofStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
@@ -6342,7 +6470,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
                         "axisRotationAngle": { "type": "number" },
-                        "coreAnchor": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "coreAnchor": { "$ref": "#/ColumnCoreAnchor" },
                         "isSlanted": { "type": "boolean" },
                         "slantAngle": { "type": "number" },
                         "slantDirectionAngle": { "type": "number" },
@@ -6629,20 +6757,13 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                         "showContour": { "$ref": "#/StoryVisibility" },
                         "showFill": { "$ref": "#/StoryVisibility" },
                         "linkToSettings": {
-                            "type": "object",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "displayOption": {
-                            "type": "string",
-                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                            "$ref": "#/DisplayOption"
                         },
                         "viewDepthLimitation": {
-                            "type": "string",
-                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                            "$ref": "#/ViewDepthLimitation"
                         },
                         "cutFillPen": { "type": "integer" },
                         "cutFillBackgroundPen": { "type": "integer" },
@@ -6659,22 +6780,11 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                         "coverFillBGPen": { "type": "integer" },
                         "use3DHatching": { "type": "boolean" },
                         "coverFillOrientation": {
-                            "type": "object",
-                            "properties": {
-                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
-                                "origo": { "$ref": "#/Coordinate2D" },
-                                "matrix00": { "type": "number" },
-                                "matrix10": { "type": "number" },
-                                "matrix01": { "type": "number" },
-                                "matrix11": { "type": "number" },
-                                "innerRadius": { "type": "number" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/CoverFillOrientation"
                         },
                         "useDistortedCoverFill": { "type": "boolean" },
                         "textureProjectionType": {
-                            "type": "string",
-                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                            "$ref": "#/TextureProjectionType"
                         },
                         "textureProjectionCoords": {
                             "type": "array",
@@ -6766,6 +6876,7 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
             API_ElementMemo bodyMemo = {};
             const GS::OnExit bodyMemoGuard ([&bodyMemo] () { ACAPI_DisposeElemMemoHdls (&bodyMemo); });
             bool replacingBody = false;
+            GS::Optional<API_MorphEdgeTypeID> requestedEdgeType;
 
             const GS::ObjectState* bodyOS = item.Get ("body");
             if (bodyOS != nullptr) {
@@ -6783,13 +6894,8 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, bodyType);
                 GS::UniString edgeDefault;
                 if (bodyOS->Get ("edgeDefault", edgeDefault)) {
-                    if (edgeDefault == "HardHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_HardHiddenEdge;
-                    } else if (edgeDefault == "SoftHidden") {
-                        element.morph.edgeType = APIMorphEdgeType_SoftHiddenEdge;
-                    } else {
-                        element.morph.edgeType = APIMorphEdgeType_HardVisibleEdge;
-                    }
+                    element.morph.edgeType = MorphEdgeTypeFromString (edgeDefault);
+                    requestedEdgeType = element.morph.edgeType;
                     ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, edgeType);
                 }
                 replacingBody = true;
@@ -6816,7 +6922,22 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
             err = replacingBody
                 ? ACAPI_Element_Change (&element, &mask, &bodyMemo, APIMemoMask_All, true)
                 : ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify morph."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify morph."));
+                continue;
+            }
+
+            // ACAPI_Element_Change discards element.morph.edgeType (see ApplyMorphEdgeType);
+            // on AC29+ this applies the requested edgeDefault to the modified element.
+            if (requestedEdgeType.HasValue ()) {
+                err = ApplyMorphEdgeType (element.header.guid, requestedEdgeType.Get ());
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Morph modified, but failed to set its edge type."));
+                    continue;
+                }
+            }
+
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }
@@ -6983,34 +7104,7 @@ GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create Interior Elevation elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "nodeCoordinates": {
-                            "type": "array",
-                            "description": "The corner points of the connected segment chain. Each consecutive pair of points becomes one segment, so a room with four walls needs five points to be closed, or four to be left open.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 2
-                        },
-                        "depth": {
-                            "type": "number",
-                            "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Name of the interior elevation. Each segment is named after it."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "ID string of the interior elevation."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "The story to place the interior elevation on. Defaults to the current story."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["nodeCoordinates"]
+                    "$ref": "#/InteriorElevationData"
                 }
             }
         },
@@ -7335,9 +7429,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
                                 "description": "The height of the skirt."
                             },
                             "ridges": {
-                                "type": "string",
-                                "description": "How ridges between mesh facets are displayed in 3D.",
-                                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                                "$ref": "#/MeshRidges"
                             },
                             "showLines": {
                                 "type": "boolean",
@@ -7373,16 +7465,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
                                 "type": "array",
                                 "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
                                 "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "coordinates": {
-                                            "type": "array",
-                                            "description": "The 3D coordinates of the leveling subline.",
-                                            "items": { "$ref": "#/Coordinate3D" }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["coordinates"]
+                                    "$ref": "#/MeshSubline"
                                 }
                             }
                         },
