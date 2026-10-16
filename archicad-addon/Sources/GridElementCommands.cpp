@@ -346,11 +346,11 @@ GS::ObjectState GetGridElementDefaultsCommand::Execute (const GS::ObjectState& /
     element.header.type = GridElemType ();
     const GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to read the Grid Element defaults.");
+        return CreateErrorResponse (err, "Failed to read the Grid Element defaults.");
     }
     return DescribeGridElement (element, memo.params, true);
 #else
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Grid Element commands need Archicad 26 or later.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Grid Element commands need Archicad 26 or later.");
 #endif
 }
 
@@ -439,7 +439,7 @@ GS::ObjectState GetGridElementsCommand::Execute (const GS::ObjectState& paramete
     return response;
 #else
     (void) parameters;
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Grid Element commands need Archicad 26 or later.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Grid Element commands need Archicad 26 or later.");
 #endif
 }
 
@@ -479,7 +479,7 @@ GS::Optional<GS::UniString> CreateGridElementsCommand::GetInputParametersSchema 
                                 "type": "object",
                                 "properties": {
                                     "name": { "type": "string" },
-                                    "value": { "type": ["number", "boolean", "string"] }
+                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
                                 },
                                 "additionalProperties": false,
                                 "required": ["name", "value"]
