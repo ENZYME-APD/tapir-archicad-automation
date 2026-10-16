@@ -2664,7 +2664,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                     },
                     "buildingMaterialId": {
                         "$ref": "#/AttributeId",
-                        "description": "Optional building material. Sets the mesh's building material and overrides its top/side/bottom surfaces to that material's surface (so the mesh is colored)."
+                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface."
                     },
                     "ridges": {
                         "$ref": "#/MeshRidges"
@@ -2788,9 +2788,9 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("sublines", sublines);
     BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
 
-    // Building material of the mesh. The top, side and bottom surfaces are also overridden with
-    // the material's own surface (cutMaterial): a surface override left in the Mesh tool defaults
-    // would otherwise keep showing the old color.
+    // Building material of the mesh. Its top, side and bottom surface overrides are cleared, so the
+    // mesh shows the building material's own surface and follows later changes of it; an override
+    // left in the Mesh tool defaults would otherwise keep showing the old color.
     const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
     if (buildingMaterialIdOS != nullptr) {
         API_Attribute attribute = {};
@@ -2800,10 +2800,9 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
             return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
         }
         element.mesh.buildingMaterial = attribute.header.index;
-        SetOverriddenAttribute (element.mesh.topMat, attribute.buildingMaterial.cutMaterial);
-        SetOverriddenAttribute (element.mesh.sideMat, attribute.buildingMaterial.cutMaterial);
-        SetOverriddenAttribute (element.mesh.botMat, attribute.buildingMaterial.cutMaterial);
-        element.mesh.materialsChained = false;
+        element.mesh.topMat = API_OverriddenAttribute ();
+        element.mesh.sideMat = API_OverriddenAttribute ();
+        element.mesh.botMat = API_OverriddenAttribute ();
     }
 
     return {};

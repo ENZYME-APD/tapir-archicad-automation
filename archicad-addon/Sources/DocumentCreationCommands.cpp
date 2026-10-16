@@ -158,17 +158,19 @@ GS::Optional<API_Guid> FindNewLayoutSubsetGuid (const GS::Array<API_Guid>& befor
 }
 
 // Sets the paper size (in mm) of a master layout. Its margins are kept.
-void SetMasterLayoutSize (const API_DatabaseUnId& databaseUnId, double widthMm, double heightMm)
+GSErrCode SetMasterLayoutSize (const API_DatabaseUnId& databaseUnId, double widthMm, double heightMm)
 {
     API_LayoutInfo info = {};
-    if (ACAPI_Navigator_GetLayoutSets (&info, const_cast<API_DatabaseUnId*> (&databaseUnId)) != NoError) {
-        return;
+    GSErrCode err = ACAPI_Navigator_GetLayoutSets (&info, const_cast<API_DatabaseUnId*> (&databaseUnId));
+    if (err != NoError) {
+        return err;
     }
     info.sizeX = widthMm;
     info.sizeY = heightMm;
-    ACAPI_Navigator_ChangeLayoutSets (&info, const_cast<API_DatabaseUnId*> (&databaseUnId));
+    err = ACAPI_Navigator_ChangeLayoutSets (&info, const_cast<API_DatabaseUnId*> (&databaseUnId));
     delete info.customData;
     info.customData = nullptr;
+    return err;
 }
 
 }
@@ -408,7 +410,12 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
                 double paperWidth = 0.0, paperHeight = 0.0;
                 if (item.Get ("paperWidth", paperWidth) && item.Get ("paperHeight", paperHeight) &&
                         paperWidth > 0.0 && paperHeight > 0.0) {
-                    SetMasterLayoutSize (masterLayoutDbInfo.databaseUnId, paperWidth, paperHeight);
+                    // Reported per item, as the layout would otherwise get a size its new master does not have.
+                    const GSErrCode sizeErr = SetMasterLayoutSize (masterLayoutDbInfo.databaseUnId, paperWidth, paperHeight);
+                    if (sizeErr != NoError) {
+                        databases.Push (CreateErrorResponse (sizeErr, "The master layout was created, but its paper size could not be set; no layout was created."));
+                        continue;
+                    }
                 }
             }
         }

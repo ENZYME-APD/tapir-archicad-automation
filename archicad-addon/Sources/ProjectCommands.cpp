@@ -1367,7 +1367,7 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetInputParametersSchema () cons
         "properties": {
             "projectPath": {
                 "type": "string",
-                "description": "Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten. When omitted, the project is saved to its own file."
+                "description": "Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten. When omitted, or when it is the project's own file, the project is saved in place, which keeps the refusal of a project opened read-only."
             }
         },
         "additionalProperties": false
@@ -1381,19 +1381,33 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
     })";
 }
 
+// Whether the location is the file of the open project (a solo project saved before).
+static bool IsFileOfOpenProject (const IO::Location& location)
+{
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) != NoError) {
+        return false;
+    }
+    return !projectInfo.untitled && projectInfo.location != nullptr && *projectInfo.location == location;
+}
+
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString projectPath;
     if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
         IO::Location fileLoc (projectPath);
-        API_FileSavePars fsp = {};
-        fsp.fileTypeID = APIFType_PlanFile;
-        fsp.file = &fileLoc;
-        GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
-        if (err != NoError) {
-            return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
+        // The project's own file takes the plain save below: a Save As to its own location would
+        // also overwrite a project that Archicad opened read-only, which the plain save refuses.
+        if (!IsFileOfOpenProject (fileLoc)) {
+            API_FileSavePars fsp = {};
+            fsp.fileTypeID = APIFType_PlanFile;
+            fsp.file = &fileLoc;
+            GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
+            }
+            return CreateSuccessfulExecutionResult ();
         }
-        return CreateSuccessfulExecutionResult ();
     }
 
     // The parameterless save acts on the current window - "saves the content of
