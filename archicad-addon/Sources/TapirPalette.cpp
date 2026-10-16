@@ -69,19 +69,35 @@ static GS::UniString SafeUTF8String (const char* bytes, GS::USize size)
     GS::USize i = 0;
     while (i < size) {
         const unsigned char c = static_cast<unsigned char> (bytes[i]);
+        // Well-formed sequences as in Table 3-7 of the Unicode Standard: the lead byte gives
+        // the length, and the range of the second byte also excludes overlong encodings,
+        // UTF-16 surrogates and code points above U+10FFFF.
         GS::USize seqLen = 0;
+        unsigned char secondMin = 0x80;
+        unsigned char secondMax = 0xBF;
         if (c < 0x80) {
             seqLen = 1;
-        } else if ((c & 0xE0) == 0xC0 && c >= 0xC2) {   // 0xC0/0xC1 are overlong encodings
+        } else if (c >= 0xC2 && c <= 0xDF) {
             seqLen = 2;
-        } else if ((c & 0xF0) == 0xE0) {
+        } else if (c >= 0xE0 && c <= 0xEF) {
             seqLen = 3;
-        } else if ((c & 0xF8) == 0xF0 && c <= 0xF4) {   // above U+10FFFF is invalid
+            if (c == 0xE0) {
+                secondMin = 0xA0;
+            } else if (c == 0xED) {
+                secondMax = 0x9F;
+            }
+        } else if (c >= 0xF0 && c <= 0xF4) {
             seqLen = 4;
+            if (c == 0xF0) {
+                secondMin = 0x90;
+            } else if (c == 0xF4) {
+                secondMax = 0x8F;
+            }
         }
         bool valid = seqLen > 0 && i + seqLen <= size;
         for (GS::USize j = 1; valid && j < seqLen; ++j) {
-            valid = (static_cast<unsigned char> (bytes[i + j]) & 0xC0) == 0x80;
+            const unsigned char next = static_cast<unsigned char> (bytes[i + j]);
+            valid = (j == 1) ? (next >= secondMin && next <= secondMax) : ((next & 0xC0) == 0x80);
         }
         if (valid) {
             clean.append (bytes + i, seqLen);
