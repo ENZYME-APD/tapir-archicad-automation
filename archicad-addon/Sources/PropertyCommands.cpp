@@ -241,15 +241,7 @@ GS::Optional<GS::UniString> GetAllPropertiesCommand::GetRawResponseSchema () con
                 "type": "array",
                 "description": "Every property group, including empty ones.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
-                        "name": { "type": "string" },
-                        "description": { "type": "string" },
-                        "isCustom": { "type": "boolean" }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "propertyGroupId", "name", "isCustom" ]
+                    "$ref": "#/PropertyGroupDetails"
                 }
             }
         },
@@ -386,7 +378,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetRawResponseSc
         "properties": {
             "propertyValuesForElements": {
                 "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+                "description": "The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
             }
         },
         "additionalProperties": false,
@@ -663,7 +655,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetRawResponse
         "properties": {
             "propertyValuesForAttributes": {
                 "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
+                "description": "The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
             }
         },
         "additionalProperties": false,
@@ -1675,65 +1667,7 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
                 "type": "array",
                 "description": "The property definitions to update. Only the fields given change; the definition keeps its guid, so element values survive.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyId": { "$ref": "#/PropertyId" },
-                        "name": { "type": "string", "description": "New name of the property." },
-                        "description": { "type": "string", "description": "New description of the property." },
-                        "groupId": { "$ref": "#/PropertyGroupId", "description": "Move the property into this custom property group." },
-                        "defaultValue": { "$ref": "#/PropertyDefaultValue", "description": "New default value: a basic value or expressions. Switching between the two is allowed." },
-                        "expressions": {
-                            "type": "array",
-                            "description": "The new expression strings for the property. Only for expression-based properties.",
-                            "items": { "type": "string" },
-                            "minItems": 1
-                        },
-                        "availability": {
-                            "type": "object",
-                            "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
-                            "properties": {
-                                "set": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } },
-                                "add": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } },
-                                "remove": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } }
-                            },
-                            "additionalProperties": false
-                        },
-                        "possibleEnumValues": {
-                            "$ref": "#/EnumValuesToAdd",
-                            "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
-                        },
-                        "renameEnumValues": {
-                            "type": "array",
-                            "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "enumValueId": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] },
-                                    "displayValue": { "type": "string" },
-                                    "nonLocalizedValue": { "type": "string" }
-                                },
-                                "additionalProperties": false,
-                                "required": [ "enumValueId", "displayValue" ]
-                            }
-                        },
-                        "removeEnumValues": {
-                            "type": "array",
-                            "description": "Enum options to remove. Elements holding a removed option lose that value.",
-                            "items": {
-                                "type": "object",
-                                "properties": { "enumValueId": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
-                                "additionalProperties": false,
-                                "required": [ "enumValueId" ]
-                            }
-                        },
-                        "enumOrder": {
-                            "type": "array",
-                            "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
-                            "items": { "type": "string" }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "propertyId" ]
+                    "$ref": "#/PropertyDefinitionUpdate"
                 }
             }
         },
@@ -1876,14 +1810,7 @@ GS::Optional<GS::UniString> UpdatePropertyGroupsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "The custom property groups to update. Only the fields given change.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
-                        "name": { "type": "string" },
-                        "description": { "type": "string" }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "propertyGroupId" ]
+                    "$ref": "#/PropertyGroupUpdate"
                 }
             }
         },
@@ -1976,7 +1903,7 @@ GS::Optional<GS::UniString> ImportPropertiesXmlCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "xml": { "type": "string", "description": "A Property Manager export (XML) to import." },
-            "conflictPolicy": { "type": "string", "enum": [ "append", "replace", "skip" ], "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one." }
+            "conflictPolicy": { "$ref": "#/PropertyImportConflictPolicy" }
         },
         "additionalProperties": false,
         "required": [ "xml", "conflictPolicy" ]
@@ -1989,8 +1916,8 @@ GS::Optional<GS::UniString> ImportPropertiesXmlCommand::GetRawResponseSchema () 
         "type": "object",
         "properties": {
             "executionResult": { "$ref": "#/ExecutionResult" },
-            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
-            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+            "created": { "type": "array", "items": { "$ref": "#/GuidId" } },
+            "removed": { "type": "array", "items": { "$ref": "#/GuidId" } }
         },
         "additionalProperties": false,
         "required": [ "executionResult", "created", "removed" ]

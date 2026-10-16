@@ -45,3 +45,25 @@ for requestedStory, story in zip (storiesToSet, storyInfo['stories']):
     assert (story['index'] == requestedStory['index'])
     assert (story['name'] == requestedStory['name'])
     assert (abs (story['level'] - requestedStory['level']) < 0.0001)
+
+# The levels converge whichever story is active. Archicad positions the stories relative
+# to the active one, so with the top story active a change below it used to move the
+# active story instead (#747). The command anchors the change on the lowest story whose
+# level changes for the duration of the call and leaves the active story as it found it.
+aclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan', 'storyIndex': storyInfo['lastStory']})
+
+activeStoryBefore = aclib.RunTapirCommand ('GetStories')['actStory']
+
+storiesToSet[0]['level'] -= 1.0
+
+aclib.RunTapirCommand ('SetStories', {'stories': storiesToSet})
+
+storyInfo = aclib.RunTapirCommand ('GetStories')
+
+assert (storyInfo['actStory'] == activeStoryBefore)
+
+for requestedStory, story in zip (storiesToSet, storyInfo['stories']):
+    assert (story['index'] == requestedStory['index'])
+    assert (abs (story['level'] - requestedStory['level']) < 0.0001)
+
+aclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan', 'storyIndex': storyInfo['firstStory']})
