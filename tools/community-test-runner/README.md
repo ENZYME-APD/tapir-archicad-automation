@@ -16,7 +16,8 @@ For every open pull request labelled `needs-test`, for each Archicad version you
 4. posts one comment whose first line can be read by a workflow:
    `tapir-test: AC28 PASS 12/12 build 1a2b3c4 tapir 1.7.1`, followed by a table.
 
-It never kills Archicad. If Archicad does not quit (a dialog, for instance), the runner stops and
+Ports follow the order in which Archicads start, so the runner asks each connection for its Archicad
+version and refuses a port that answers as another version. It never kills Archicad. If Archicad does not quit (a dialog, for instance), the runner stops and
 leaves the test build in place; close Archicad and run it again to restore your add-on.
 
 ## Setup (once)
@@ -71,7 +72,7 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
 Run checks against an Archicad you have open, before pushing them:
 
 ```
-python tapir_test_runner.py check checks/*.json --port 19723 --ac 28
+python tapir_test_runner.py check checks/*.json --port 19723
 ```
 
 `checks/` holds examples taken from the October 2026 verification of #747-#753.

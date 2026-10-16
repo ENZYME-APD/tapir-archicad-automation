@@ -38,6 +38,8 @@ class FakeArchicad:
         self.calls.append(command)
         if command == "GetAddOnVersion":
             return {"version": self.version}
+        if command == "API.GetProductInfo":
+            return {"version": 28, "buildNumber": 7006}
         if command == "GetProjectInfo":
             return {"isUntitled": self.untitled}
         if command == "GetElementsByType":

@@ -250,6 +250,11 @@ def version_tuple(text: str) -> tuple[int, ...]:
     return tuple(int(p) for p in re.findall(r"\d+", text)[:3])
 
 
+def archicad_version(send: Callable[..., dict]) -> str:
+    """The Archicad major version behind this connection. Ports follow the start order, so never infer it from the port."""
+    return str(send("API.GetProductInfo", {}, DEFAULT_TIMEOUT).get("version", "?"))
+
+
 def run_checks(send: Callable[..., dict], spec_files: list[Path]) -> tuple[list[dict], str]:
     version = send("GetAddOnVersion", {}, DEFAULT_TIMEOUT).get("version", "?")
     rows: list[dict] = []
@@ -332,6 +337,10 @@ class Installation:
         tapir = Tapir(self.ac["port"])
         if not wait_for(tapir.alive, self.ac.get("startTimeout", 300), 5):
             raise RuntimeError(f"Archicad {self.ac['version']} did not answer on port {self.ac['port']}")
+        running = archicad_version(tapir)
+        if running != str(self.ac["version"]):
+            raise RuntimeError(f"port {self.ac['port']} answers as Archicad {running}, not {self.ac['version']}; "
+                               "ports follow the start order - start only one Archicad while the runner works")
         return tapir
 
     def quit(self, tapir: Tapir) -> None:
@@ -476,7 +485,6 @@ def main(argv: list[str] | None = None) -> int:
     c = sub.add_parser("check", help="run check files against an already running Archicad")
     c.add_argument("files", nargs="+")
     c.add_argument("--port", type=int, default=19723)
-    c.add_argument("--ac", default="?", help="Archicad version for the report line")
     for name in ("once", "poll"):
         p = sub.add_parser(name)
         p.add_argument("--config", required=True)
@@ -489,7 +497,7 @@ def main(argv: list[str] | None = None) -> int:
         files = [Path(f) for pattern in args.files for f in sorted(glob.glob(pattern))]
         tapir = Tapir(args.port)
         rows, version = run_checks(tapir, files)
-        print(report(rows, args.ac, version, "local"))
+        print(report(rows, archicad_version(tapir), version, "local"))
         return 0 if all(r["ok"] is not False for r in rows) else 1
 
     cfg = json.loads(Path(args.config).read_text(encoding="utf-8"))
