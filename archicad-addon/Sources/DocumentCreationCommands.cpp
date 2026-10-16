@@ -825,7 +825,9 @@ static GSErrCode ActivateLayoutDatabase (const API_Guid& layoutDatabaseGuid)
 }
 
 // The active window, captured so that a command which has to switch windows can switch back
-// afterwards. The Floor Plan is one window for every story, so its active story is kept too.
+// afterwards. The active story is kept too: it is a project-wide setting, not a property of the
+// front window, so a view switch that lands on a story view changes it whatever window was in
+// front (the Floor Plan is one window for every story).
 struct ActiveWindowState {
     bool            valid = false;
     API_WindowInfo  window = {};
@@ -849,24 +851,21 @@ static ActiveWindowState GetActiveWindowState ()
 {
     ActiveWindowState state;
     state.valid = ACAPI_Window_GetCurrentWindow (&state.window) == NoError;
-    if (state.valid && state.window.typeID == APIWind_FloorPlanID) {
-        state.hasStory = GetActiveStory (state.actStory);
-    }
+    state.hasStory = GetActiveStory (state.actStory);
     return state;
 }
 
 static void RestoreActiveWindow (const ActiveWindowState& state)
 {
-    if (!state.valid) {
-        return;
-    }
-    API_WindowInfo windowInfo = state.window;
-    if (ACAPI_Window_ChangeWindow (&windowInfo) != NoError) {
-        return;
+    if (state.valid) {
+        API_WindowInfo windowInfo = state.window;
+        ACAPI_Window_ChangeWindow (&windowInfo);
     }
     // Putting the story into API_WindowInfo::index does not move the active story (#748):
     // the story is changed with the story settings command instead, the same way
-    // ChangeWindowCommand does it, and only when the window switch left another story active.
+    // ChangeWindowCommand and CreateZonesCommand do it, and only when the switches left
+    // another story active. This does not depend on the window switch: the story is
+    // project-wide, so it is restored even when the window could not be.
     short currentStory = 0;
     if (state.hasStory && GetActiveStory (currentStory) && currentStory != state.actStory) {
         API_StoryCmdType storyCmd = {};
