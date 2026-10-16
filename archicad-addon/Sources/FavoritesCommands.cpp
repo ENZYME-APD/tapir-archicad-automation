@@ -772,25 +772,32 @@ static bool MemoCarriesGeometry (const API_Elem_Head& header)
 // Favorite made from that very window (#812). The full mask it is given covers
 // API_WindowType::owner and openingBase.markGuid as well - the links to the wall and to the marker, which
 // no Favorite can supply. So an opening is changed with ACAPI_Element_Change instead, the call
-// SetGDLParametersOfElements and ChangeDetailsOfElements already make on openings: the
-// Favorite's whole window record and its parameters are put onto the target's own header,
-// wall, marker and placement (position along the wall, sill height, mirroring and the side
-// flags), so the opening stays where it is. Its size follows the Favorite, as the A and B
-// parameters in the Favorite's memo do. The Favorite's marker is not applied.
+// SetGDLParametersOfElements and ChangeDetailsOfElements already make on openings, and the
+// way they do it: the record handed over is the target's own, and the mask names only the
+// fields taken from the Favorite. Those are the opening settings in API_OpeningBaseType -
+// library part, size, pens, line types, materials, section attributes - and the reveal
+// fields, the same ones ChangeDetailsOfElements writes; the Favorite's A and B parameters in
+// its memo match its size. Everything else in API_WindowType stays the target's without
+// being named here: its wall, its marker, the position along the wall, the sill height and
+// the sill/header anchor that gives it its meaning, the mirroring and side flags and any
+// placement field a DevKit adds. The three placement flags inside API_OpeningBaseType are
+// put back from the target for the same reason. The Favorite's marker is not applied.
 static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_Favorite& favorite)
 {
-    API_Element element = favorite.element;
-    element.header = targetElement.header;
-    element.window.owner = targetElement.window.owner;
+    API_Element element = targetElement;
+    element.window.openingBase = favorite.element.window.openingBase;
     element.window.openingBase.markGuid = targetElement.window.openingBase.markGuid;
-    element.window.objLoc = targetElement.window.objLoc;
-    element.window.lower = targetElement.window.lower;
     element.window.openingBase.reflected = targetElement.window.openingBase.reflected;
     element.window.openingBase.oSide = targetElement.window.openingBase.oSide;
     element.window.openingBase.refSide = targetElement.window.openingBase.refSide;
+    element.window.reveal = favorite.element.window.reveal;
+    element.window.revealDepthOffset = favorite.element.window.revealDepthOffset;
 
     API_Element mask = {};
-    ACAPI_ELEMENT_MASK_SETFULL (mask);
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, reveal);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
 
     API_ElementMemo* memo = favorite.memo.HasValue () && favorite.memo->params != nullptr
         ? favorite.memo.GetPtr ()
