@@ -54,6 +54,10 @@ on:
         description: Fix this bot pull request; empty runs the sweep
         type: string
         default: ''
+      head_sha:
+        description: The head commit the sweep saw; a fix for an older head is skipped
+        type: string
+        default: ''
 
 run-name: "${{ inputs.pr_number && format('Fix bot PR #{0}', inputs.pr_number) || 'Bot PR sweep' }}"
 
@@ -212,7 +216,7 @@ jobs:
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
+                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (conflicts with main)"
                 busy=$((busy + 1))
               fi
@@ -290,7 +294,7 @@ jobs:
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
+                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (build failed: $buildFailed, review: ${review:-none})"
                 busy=$((busy + 1))
               fi
@@ -325,6 +329,8 @@ jobs:
     steps:
       - name: Check the pull request
         id: pr
+        env:
+          SEEN_HEAD: ${{ inputs.head_sha }}
         run: |
           set -euo pipefail
           case "$PR_NUMBER" in
@@ -344,11 +350,20 @@ jobs:
             echo "head=$(jq -r '.headRefOid' <<<"$info")"
             echo "mergeable=$(jq -r '.mergeable' <<<"$info")"
           } >> "$GITHUB_OUTPUT"
+          # Queued behind other work, this run can start after the pull
+          # request moved on (a push by a person or an earlier fix): its
+          # failures and findings belong to the old head, so leave the new
+          # one to the next sweep instead of spending a round on it.
+          if [ -n "$SEEN_HEAD" ] && [ "$SEEN_HEAD" != "$(jq -r '.headRefOid' <<<"$info")" ]; then
+            echo "The head moved since the sweep started this fix; the next sweep looks at the new one."
+            echo "superseded=true" >> "$GITHUB_OUTPUT"
+          fi
 
       # What to fix, as files the model reads: written here in shell so the
       # model needs no API access beyond its own pull request. Everything in
       # them is data.
       - name: Collect the failures and findings
+        if: steps.pr.outputs.superseded != 'true'
         env:
           HEAD: ${{ steps.pr.outputs.head }}
           CONTEXT: ${{ runner.temp }}/fix-context
@@ -382,12 +397,14 @@ jobs:
           ls -l "$CONTEXT"
 
       - name: Checkout the pull request's branch
+        if: steps.pr.outputs.superseded != 'true'
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr.outputs.branch }}
           fetch-depth: 0
 
       - name: Fix the pull request
+        if: steps.pr.outputs.superseded != 'true'
         id: fix
         uses: anthropics/claude-code-action@v1
         with:
