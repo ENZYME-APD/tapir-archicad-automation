@@ -1191,6 +1191,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("reflected", elem.window.openingBase.reflected);
                 typeSpecificDetails.Add ("refSide", elem.window.openingBase.refSide);
                 typeSpecificDetails.Add ("oSide", elem.window.openingBase.oSide);
+                // The same two members ModifyWindows/ModifyDoors write (#581), so a script can read
+                // its own write back (#895).
+                typeSpecificDetails.Add ("reveal", elem.window.reveal);
+                typeSpecificDetails.Add ("revealDepthOffset", elem.window.revealDepthOffset);
                 break;
 
             case API_LabelID: {

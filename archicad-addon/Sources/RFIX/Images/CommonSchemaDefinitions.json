@@ -7308,6 +7308,14 @@
             },
             "oSide": {
                 "type": "boolean"
+            },
+            "reveal": {
+                "type": "boolean",
+                "description": "Whether the reveal is turned on. The same value ModifyWindows and ModifyDoors take."
+            },
+            "revealDepthOffset": {
+                "type": "number",
+                "description": "Distance the frame plane is moved across the wall thickness, along the wall normal. The same value ModifyWindows and ModifyDoors take."
             }
         },
         "additionalProperties": false,
@@ -7319,7 +7327,9 @@
             "centerOffset",
             "reflected",
             "refSide",
-            "oSide"
+            "oSide",
+            "reveal",
+            "revealDepthOffset"
         ]
     },
     "PolylineDetails": {
