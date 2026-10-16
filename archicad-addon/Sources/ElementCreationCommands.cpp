@@ -4461,3 +4461,217 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
 
     return {};
 }
+
+const char* DimensionOriginToString (API_DimOriginID origin)
+{
+    switch (origin) {
+        case APIDimOrigin_RefLevel1:    return "ReferenceLevel1";
+        case APIDimOrigin_RefLevel2:    return "ReferenceLevel2";
+        case APIDimOrigin_StoredOrigin: return "StoredOrigin";
+        case APIDimOrigin_Altitude:     return "Altitude";
+        case APIDimOrigin_ProjectZero:
+        default:                        return "ProjectZero";
+    }
+}
+
+bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result)
+{
+    if (origin == "ProjectZero") {
+        result = APIDimOrigin_ProjectZero;
+    } else if (origin == "ReferenceLevel1") {
+        result = APIDimOrigin_RefLevel1;
+    } else if (origin == "ReferenceLevel2") {
+        result = APIDimOrigin_RefLevel2;
+    } else if (origin == "StoredOrigin") {
+        result = APIDimOrigin_StoredOrigin;
+    } else if (origin == "Altitude") {
+        result = APIDimOrigin_Altitude;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
+    CreateElementsCommandBase ("CreateLevelDimensions", API_LevelDimensionID, "levelDimensionsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "levelDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Level Dimensions (the Level Dimension tool of the floor plan).",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Level Dimension.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Level Dimension favorite to base the new element on. Its settings (marker, format, text style, layer, pen) are applied first, then the explicitly given fields override them."
+                    },
+                    "position": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The location of the marker on the floor plan. With a parentElementId it must lie on that element, the measured level is the parent's height at this point. Outside the parent's outline Archicad still creates the dimension, but without a height (GetDetailsOfElements reads a level of -110000000)."
+                    },
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional element the level dimension is associated with (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...). The dimension then shows the element's height at the position and follows the element when it changes. Without it the dimension measures the floor level, or the given static level."
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "Optional fixed level value in meters (absolute, from the project zero). Only used without parentElementId; the dimension then shows this value instead of the floor level."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "The index of the floor to place the dimension on. Optional parameter, by default the floor of the parent element, otherwise the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "Pen index of the marker. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    },
+                    "dimForm": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19,
+                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
+                    },
+                    "needPlus": {
+                        "type": "boolean",
+                        "description": "Show a plus sign for positive values. Optional parameter."
+                    },
+                    "markerSize": {
+                        "type": "number",
+                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Rotation angle of the marker in radians. Optional parameter."
+                    },
+                    "origin": {
+                        "$ref": "#/DimensionOrigin",
+                        "description": "The origin the level is measured from. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "position"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "levelDimensionsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
+{
+    const GS::ObjectState* positionOS = parameters.Get ("position");
+    if (positionOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'position' parameter");
+    }
+    element.levelDimension.loc = Get2DCoordinateFromObjectState (*positionOS);
+
+    // An associative level dimension refers to its parent by type and GUID; Archicad then
+    // measures the parent's height at loc itself and keeps the value up to date (the same
+    // way the Level Dimension tool does when clicked on a mesh or slab). Without a parent
+    // the dimension refers to the floor (API_ZombieElemID), or holds a static level.
+    const API_Guid parentGuid = GetGuidFromArrayItem ("parentElementId", parameters);
+    if (parentGuid != APINULLGuid) {
+        API_Elem_Head parentElemHead = {};
+        parentElemHead.guid = parentGuid;
+        if (ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
+        }
+#ifdef ServerMainVers_2600
+        element.levelDimension.parentType = parentElemHead.type;
+#else
+        element.levelDimension.parentType = parentElemHead.typeID;
+#endif
+        element.levelDimension.parentGuid = parentGuid;
+        element.levelDimension.staticLevel = false;
+        element.header.floorInd = parentElemHead.floorInd;
+    } else {
+        element.levelDimension.parentType = API_ZombieElemID;
+        element.levelDimension.parentGuid = APINULLGuid;
+        double level = 0.0;
+        if (parameters.Get ("level", level)) {
+            element.levelDimension.staticLevel = true;
+            element.levelDimension.level = level;
+        }
+    }
+
+    Int32 floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = static_cast<short> (floorIndex);
+    }
+
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+        element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen) && pen > 0) {
+        element.levelDimension.pen = static_cast<short> (pen);
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight) && textHeight > 0.0) {
+        element.levelDimension.note1.noteSize = textHeight;
+        element.levelDimension.note2.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen) && textPen > 0) {
+        element.levelDimension.note1.notePen = static_cast<short> (textPen);
+        element.levelDimension.note2.notePen = static_cast<short> (textPen);
+    }
+
+    Int32 dimForm = 0;
+    if (parameters.Get ("dimForm", dimForm)) {
+        // Archicad 29 knows the marker types 0-19 and silently replaces any other value by 0.
+        if (dimForm < 0 || dimForm > 19) {
+            return CreateErrorResponse (APIERR_BADPARS, "'dimForm' must be between 0 and 19");
+        }
+        element.levelDimension.dimForm = static_cast<short> (dimForm);
+    }
+
+    parameters.Get ("needPlus", element.levelDimension.needPlus);
+
+    double markerSize = 0.0;
+    if (parameters.Get ("markerSize", markerSize) && markerSize > 0.0) {
+        element.levelDimension.markerSize = markerSize;
+    }
+
+    parameters.Get ("angle", element.levelDimension.angle);
+
+    GS::UniString originStr;
+    if (parameters.Get ("origin", originStr)) {
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (originStr, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'origin' value: " + originStr);
+        }
+        element.levelDimension.origin = origin;
+    }
+
+    return {};
+}
