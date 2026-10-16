@@ -43,6 +43,7 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GridElementCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -543,6 +544,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLampsCommand> (
             elementCommands, "1.5.7",
             "Creates Lamp elements based on the given parameters."
+        );
+        err |= RegisterCommand<GetGridElementDefaultsCommand> (
+            elementCommands, "1.7.2",
+            "Returns the Grid Tool defaults: library part, size and GDL parameters of a new grid element. Needs Archicad 26 or later."
+        );
+        err |= RegisterCommand<GetGridElementsCommand> (
+            elementCommands, "1.7.2",
+            "Lists the grid elements (placed with the Grid Tool or created by CreateGridElements) with their position, angle, size, library part and optionally GDL parameters. Needs Archicad 26 or later."
+        );
+        err |= RegisterCommand<CreateGridElementsCommand> (
+            elementCommands, "1.7.2",
+            "Creates grid elements, the elements the Grid Tool places, from begin and end coordinates, with optional story, layer and GDL parameters. Needs Archicad 26 or later."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
             elementCommands, "1.1.9",
