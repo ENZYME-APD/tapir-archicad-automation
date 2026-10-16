@@ -188,7 +188,8 @@ GS::Optional<API_Guid> FindLayoutNavigatorItemGuid (const API_Guid& layoutDataba
 }
 
 // The last child of the given Layout Book item, not counting the item to be
-// placed; empty when there is no other child
+// placed and the Masters folder, which Archicad keeps last under the Layout
+// Book root; empty when there is no other child
 GS::Optional<API_Guid> FindLastLayoutBookChild (const API_Guid& parentGuid, const API_Guid& itemToPlace)
 {
     API_NavigatorItem parentItem = {};
@@ -201,8 +202,9 @@ GS::Optional<API_Guid> FindLastLayoutBookChild (const API_Guid& parentGuid, cons
         return {};
     }
     for (UIndex i = children.GetSize (); i > 0; --i) {
-        if (children[i - 1].guid != itemToPlace) {
-            return children[i - 1].guid;
+        const API_NavigatorItem& child = children[i - 1];
+        if (child.guid != itemToPlace && child.itemType != API_MasterFolderNavItem) {
+            return child.guid;
         }
     }
     return {};
