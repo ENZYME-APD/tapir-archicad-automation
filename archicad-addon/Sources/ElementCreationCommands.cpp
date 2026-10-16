@@ -847,7 +847,8 @@ static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& exist
     return CreateErrorResponse (APIERR_BADPARS,
         "The new zone would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
         ") on the same story, which Archicad answers with a modal warning dialog that blocks the API. "
-        "Move or delete that zone first, or set allowOverlap to true to create the new zone anyway.");
+        "Move or delete that zone first, or set allowOverlap to true to create the new zone anyway. "
+        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap creates it too.");
 }
 
 } // namespace
