@@ -1350,7 +1350,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id) and MEP system. Available from Archicad 28."
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions). Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPElementsCommand> (
             mepCommands, "1.5.6",
