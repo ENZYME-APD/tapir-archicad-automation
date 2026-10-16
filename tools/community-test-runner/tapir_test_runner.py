@@ -151,7 +151,7 @@ def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     if "approx" in rule:
         tol = rule.get("tol", 1e-3)
         ok = isinstance(actual, (int, float)) and abs(actual - rule["approx"]) <= tol
-        return ok, f"≈ {rule['approx']} ± {tol}"
+        return ok, f"~= {rule['approx']} +/- {tol}"
     if "lt" in rule:
         return isinstance(actual, (int, float)) and actual < rule["lt"], f"< {rule['lt']}"
     if "gt" in rule:
@@ -482,6 +482,8 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--config", required=True)
         p.add_argument("--no-post", action="store_true", help="print the report instead of commenting")
     args = parser.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # Windows consoles default to cp1252
 
     if args.mode == "check":
         files = [Path(f) for pattern in args.files for f in sorted(glob.glob(pattern))]
