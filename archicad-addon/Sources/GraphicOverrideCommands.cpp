@@ -343,7 +343,7 @@ GS::Optional<GS::UniString> CreateGraphicOverrideRulesCommand::GetInputParameter
                         },
                         "criterionXML": {
                             "type": "string",
-                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Left out: an empty criterion."
+                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Left out: Archicad's default criterion for new rules."
                         },
                         "style": {
                             "$ref": "#/GraphicOverrideStyle"

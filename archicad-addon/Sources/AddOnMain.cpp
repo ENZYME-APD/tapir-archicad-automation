@@ -914,7 +914,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
-            "Deletes graphic override rules. Available from Archicad 27."
+            "Deletes graphic override rules. They are also removed from the combinations that contain them. Available from Archicad 27."
         );
         err |= RegisterCommand<GetGraphicOverrideCombinationsCommand> (
             attributeCommands, "1.7.2",
