@@ -89,7 +89,7 @@ jobs:
           busy=0
 
           prs=$(gh pr list --repo "$REPO" --state open --base main --limit 200 \
-            --json number,isDraft,headRefName,headRefOid,author,isCrossRepository,labels,mergeable \
+            --json number,isDraft,headRefName,headRefOid,author,isCrossRepository,labels,mergeable,createdAt \
             --jq '[.[] | select((.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
                                and (.headRefName | startswith("claude/"))
                                and (.isCrossRepository | not) and (.isDraft | not)
@@ -100,10 +100,18 @@ jobs:
             exit 0
           fi
 
-          # Runs of the review and of fix, to see what is queued already and
-          # how many fix rounds a pull request has had.
+          # Recent runs of the review and of fix, to see what is queued or
+          # running already.
           reviewRuns=$(gh run list --repo "$REPO" --workflow claude_pr_review.yml --limit 400 --json displayTitle,status)
           stewardRuns=$(gh run list --repo "$REPO" --workflow claude_bot_pr_steward.yml --limit 400 --json displayTitle,status)
+
+          # How many dispatched runs of a workflow carry this title since the
+          # pull request was opened - its fix rounds or reviews, over its
+          # whole life, not only within the latest page of runs.
+          countRuns() {
+            gh api --paginate "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&created=%3E%3D$3&per_page=100" \
+              --jq "[.workflow_runs[] | select(.display_title == \"$2\")] | length" | jq -s 'add // 0'
+          }
 
           handOver() {
             echo "hand over: $2"
@@ -182,8 +190,8 @@ jobs:
           }
 
           # Oldest first, so a backlog drains in the order it was opened.
-          for row in $(jq -r 'sort_by(.number)[] | "\(.number),\(.headRefName),\(.headRefOid),\(.mergeable)"' <<<"$prs"); do
-            IFS=, read -r pr branch head mergeable <<<"$row"
+          for row in $(jq -r 'sort_by(.number)[] | "\(.number),\(.headRefName),\(.headRefOid),\(.mergeable),\(.createdAt)"' <<<"$prs"); do
+            IFS=, read -r pr branch head mergeable created <<<"$row"
             echo "::group::PR #$pr ($branch @ ${head:0:7})"
             fixTitle="Fix bot PR #$pr"
             fixActive=$(jq --arg t "$fixTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$stewardRuns")
@@ -200,7 +208,7 @@ jobs:
             # 0. A conflict with main: building the branch proves nothing, so
             # fix merges main in first.
             if [ "$mergeable" = "CONFLICTING" ]; then
-              rounds=$(jq --arg t "$fixTitle" '[.[] | select(.displayTitle == $t)] | length' <<<"$stewardRuns")
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$created")
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
               else
@@ -253,7 +261,7 @@ jobs:
             if [ -z "$review" ] && [ "$buildFailed" = false ]; then
               reviewTitle="Claude review of PR #$pr"
               active=$(jq --arg t "$reviewTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$reviewRuns")
-              total=$(jq --arg t "$reviewTitle" '[.[] | select(.displayTitle == $t)] | length' <<<"$reviewRuns")
+              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$created")
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
                 busy=$((busy + 1))
@@ -269,7 +277,7 @@ jobs:
 
             # 3. Something to fix.
             if [ "$buildFailed" = true ] || [ "$review" = "failure" ] || [ "$review" = "error" ]; then
-              rounds=$(jq --arg t "$fixTitle" '[.[] | select(.displayTitle == $t)] | length' <<<"$stewardRuns")
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$created")
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
               else

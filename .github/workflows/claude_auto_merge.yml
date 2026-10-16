@@ -222,7 +222,10 @@ jobs:
                 echo "::endgroup::"; continue
               fi
               openByPeople=$(jq '[.reviewThreads.nodes[] | select((.isResolved | not) and (.comments.nodes[0].author.login != "github-actions"))] | length' <<<"$people")
-              changesRequested=$(jq '[.reviews.nodes | group_by(.author.login)[] | last | select(.state == "CHANGES_REQUESTED")] | length' <<<"$people")
+              # As on GitHub: a reviewer's request stands until their approval
+              # or its dismissal - a later COMMENTED review does not clear it.
+              changesRequested=$(jq '[.reviews.nodes[] | select(.state != "COMMENTED" and .state != "PENDING")]
+                                     | group_by(.author.login) | map(last | select(.state == "CHANGES_REQUESTED")) | length' <<<"$people")
               if [ "$openByPeople" -ne 0 ] || [ "$changesRequested" -ne 0 ]; then
                 echo "skip: $openByPeople unresolved thread(s) by people, $changesRequested change request(s)"
                 echo "::endgroup::"; continue

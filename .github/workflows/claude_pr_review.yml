@@ -232,6 +232,9 @@ jobs:
           # text, the token has only pull-request write, and the prompt treats
           # the contributor's text as data, not instructions.
           allowed_non_write_users: "*"
+          # claude_bot_pr_steward.yml dispatches reviews with GITHUB_TOKEN, so
+          # the actor of those runs is the Actions bot.
+          allowed_bots: "github-actions"
 
           # track_progress is deliberately NOT set. It creates a tracking
           # comment with progress checkboxes as soon as the run starts and
@@ -436,9 +439,11 @@ jobs:
 
       # Reads the verdict of this run's summary: only a comment of this run
       # (posted after it started) carrying this run's nonce counts.
+      # Also after a failed step above: the summary with the verdict may
+      # already be posted, and a lost verdict means a re-review every hour.
       - name: Read the verdict
         id: verdict
-        if: steps.pr.outputs.skip != 'true'
+        if: always() && steps.pr.outputs.skip != 'true'
         env:
           STARTED_AT: ${{ steps.pr.outputs.started_at }}
           NONCE: ${{ steps.pr.outputs.nonce }}
@@ -456,7 +461,7 @@ jobs:
   # statuses: write - so nothing the review read can set a status itself.
   verdict:
     needs: review
-    if: needs.review.outputs.bot_pr == 'true' && needs.review.outputs.verdict != ''
+    if: always() && needs.review.outputs.bot_pr == 'true' && needs.review.outputs.verdict != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
