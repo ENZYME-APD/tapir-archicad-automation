@@ -90,6 +90,14 @@ class FakeArchicad:
             return {"boundingBoxes3D": [{"boundingBox3D": self.elements[e["elementId"]["guid"]]["box"]} for e in p["elements"]]}
         if command == "CreateTexts":
             return {"elements": [self._new("Text", text=t["text"], height=t["height"]) for t in p["textsData"]]}
+        if command == "CreateLabels":
+            return {"elements": [self._new("Label", text=lb["text"], style={"height": 2.5}) for lb in p["labelsData"]]}
+        if command == "ModifyLabels":
+            for item in p["labelsWithDetails"]:
+                element = self.elements[item["elementId"]["guid"]]
+                element["text"] = item.get("text", element["text"])
+                element["style"] = dict(element["style"], **item.get("style", {}))
+            return {"executionResults": [{"success": True} for _ in p["labelsWithDetails"]]}
         if command == "CreateRoofs":
             return {"elements": [self._new("Roof", thickness=rf["thickness"] if rf.get("structureType") == "Basic" else 0.345)
                                  for rf in p["roofsData"]]}
