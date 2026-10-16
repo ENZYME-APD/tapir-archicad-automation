@@ -1,0 +1,6 @@
+Slab: 2 element(s), volume 0.89 m3, conditional volume 0.92 m3
+Wall: 8 element(s), volume 9.70 m3, conditional volume 9.70 m3
+Quantities by building material:
+  GENERIC - EXTERNAL CLADDING: volume 0.19 m3, projected area 3.70 m2
+  GENERIC - INTERNAL CLADDING: volume 0.30 m3, projected area 2.95 m2
+  GENERIC - STRUCTURAL: volume 10.10 m3, projected area 32.48 m2

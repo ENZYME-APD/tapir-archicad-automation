@@ -121,6 +121,10 @@ div.scheme_container {
     overflow: auto;
 }
 
+div.scheme_container .description {
+    white-space: pre-line;
+}
+
 code.language-python.hljs {
     background: transparent;
     border: 1px dotted var(--gray-30);

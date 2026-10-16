@@ -861,7 +861,7 @@ GS::ObjectState SetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
 }
 
 GetIFCExportTranslatorsCommand::GetIFCExportTranslatorsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -879,22 +879,7 @@ GS::Optional<GS::UniString> GetIFCExportTranslatorsCommand::GetRawResponseSchema
                 "type": "array",
                 "description": "The IFC export translators of the project, the preview translator first.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the translator, as the IFC Translators dialog shows it."
-                        },
-                        "preview": {
-                            "type": "boolean",
-                            "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "preview"
-                    ]
+                    "$ref": "#/IFCExportTranslator"
                 }
             }
         },

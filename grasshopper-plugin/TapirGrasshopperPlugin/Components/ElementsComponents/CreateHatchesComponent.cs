@@ -35,6 +35,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("ForegroundColors", "foregroundColor", FieldKind.Color, "Color of the fill foreground; takes precedence over FillPenIndices."),
+            new Field("BackgroundColors", "backgroundColor", FieldKind.Color, "Color of the fill background; takes precedence over FillBackgroundPenIndices.")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateHatches;
 
