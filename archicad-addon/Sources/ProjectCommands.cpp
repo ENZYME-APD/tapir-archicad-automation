@@ -28,7 +28,7 @@ GS::Optional<GS::UniString> GetProjectInfoCommand::GetRawResponseSchema () const
             },
             "projectLocation": {
                 "type": "string",
-                "description": "The location of the project in the filesystem or a BIMcloud project reference.",
+                "description": "The location of the project in the filesystem or a BIMcloud project reference. A BIMcloud project reference is returned without the user name and login token.",
                 "minLength": 1
             },
             "projectPath": {
@@ -50,6 +50,31 @@ GS::Optional<GS::UniString> GetProjectInfoCommand::GetRawResponseSchema () const
     })";
 }
 
+// A Teamwork location reads as teamwork://<user>:<token>@<server>/<project>. The user name and
+// the BIMcloud login token must not leave the add-on, so the user info part of the authority is removed.
+static GS::UniString RemoveUserInfoFromUrl (const GS::UniString& url)
+{
+    const UIndex schemeEnd = url.FindFirst (GS::UniString ("://"));
+    if (schemeEnd == MaxUIndex) {
+        return url;
+    }
+
+    const UIndex authorityStart = schemeEnd + 3;
+    UIndex authorityEnd = url.FindFirst (GS::UniChar ('/'), authorityStart);
+    if (authorityEnd == MaxUIndex) {
+        authorityEnd = url.GetLength ();
+    }
+
+    const GS::UniString authority (url.GetSubstring (authorityStart, authorityEnd - authorityStart));
+    const UIndex userInfoEnd = authority.FindLast (GS::UniChar ('@'));
+    if (userInfoEnd == MaxUIndex) {
+        return url;
+    }
+
+    const UIndex hostStart = authorityStart + userInfoEnd + 1;
+    return GS::UniString (url.GetSubstring (0, authorityStart)) + GS::UniString (url.GetSubstring (hostStart, url.GetLength () - hostStart));
+}
+
 GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_ProjectInfo projectInfo = {};
@@ -62,14 +87,11 @@ GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*paramet
     response.Add ("isUntitled", projectInfo.untitled);
     response.Add ("isTeamwork", projectInfo.teamwork);
     if (!projectInfo.untitled) {
-        // Same pattern as GetSpecialFoldersCommand's ProjectPreviews case: a Teamwork
-        // project's own location lives in location_team, not location, which stays null
-        // for it. Previously this always read 'location', so projectLocation came back
-        // empty for every open Teamwork project despite the schema's own description
-        // ("...or a BIMcloud project reference").
+        // A Teamwork project has its location in location_team (as in GetSpecialFolders).
         const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
         if (projectLocation != nullptr) {
-            response.Add ("projectLocation", projectLocation->ToDisplayText ());
+            const GS::UniString locationText = projectLocation->ToDisplayText ();
+            response.Add ("projectLocation", projectInfo.teamwork ? RemoveUserInfoFromUrl (locationText) : locationText);
         }
         if (projectInfo.projectPath) {
             response.Add ("projectPath", *projectInfo.projectPath);
