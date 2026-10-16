@@ -117,8 +117,8 @@ jobs:
             echo "hand over: $2"
             gh label create needs-maintainer --repo "$REPO" --color D93F0B \
               --description "The automation stopped; a maintainer has to look" 2>/dev/null || true
-            gh pr edit "$1" --repo "$REPO" --add-label needs-maintainer
-            gh pr comment "$1" --repo "$REPO" --body "The automation stopped working on this pull request: $2. A maintainer has to take it from here (remove the \`needs-maintainer\` label to hand it back)."
+            gh pr edit "$1" --repo "$REPO" --add-label needs-maintainer || echo "::warning::could not label #$1"
+            gh pr comment "$1" --repo "$REPO" --body "The automation stopped working on this pull request: $2. A maintainer has to take it from here (remove the \`needs-maintainer\` label to hand it back)." || echo "::warning::could not comment on #$1"
           }
 
           # Once the builds are green, one comment links the built add-on for
@@ -212,7 +212,7 @@ jobs:
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr"
+                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (conflicts with main)"
                 busy=$((busy + 1))
               fi
@@ -226,16 +226,21 @@ jobs:
                     | select(.name == "build" or (.name | test("^(generate_docs|build_win|build_mac|build_installer)")))' | jq -s '.')
             has() { jq -e --arg p "$1" 'any(.[]; .name | startswith($p))' <<<"$checks" >/dev/null; }
 
-            # 1. Builds that have not run on this head.
-            started=0
-            if ! has generate_docs; then
-              gh workflow run archicad_addon_build_check.yml --repo "$REPO" --ref "$branch"; started=1
-            fi
-            if ! jq -e 'any(.[]; .name == "build")' <<<"$checks" >/dev/null; then
-              gh workflow run grasshopper_plugin_build_check.yml --repo "$REPO" --ref "$branch"; started=1
-            fi
-            if ! has build_installer; then
-              gh workflow run installer_build_check.yml --repo "$REPO" --ref "$branch"; started=1
+            # 1. Builds that have not run on this head. A dispatch runs the
+            # workflow as the branch has it; a branch older than the build
+            # checks' workflow_dispatch trigger refuses it, and needs main
+            # merged in by a person (the bot's token cannot push the
+            # workflow changes such a merge brings).
+            started=0 dispatchFailed=0
+            dispatch() {
+              if gh workflow run "$1" --repo "$REPO" --ref "$branch"; then started=1; else dispatchFailed=1; fi
+            }
+            if ! has generate_docs; then dispatch archicad_addon_build_check.yml; fi
+            if ! jq -e 'any(.[]; .name == "build")' <<<"$checks" >/dev/null; then dispatch grasshopper_plugin_build_check.yml; fi
+            if ! has build_installer; then dispatch installer_build_check.yml; fi
+            if [ "$dispatchFailed" -eq 1 ]; then
+              handOver "$pr" "the build checks cannot be started on its branch, which predates their workflow_dispatch trigger - merge main into it (Update branch)"
+              echo "::endgroup::"; continue
             fi
             if [ "$started" -eq 1 ]; then
               echo "started the builds"
@@ -268,7 +273,7 @@ jobs:
               elif [ "$total" -ge 10 ]; then
                 handOver "$pr" "ten reviews recorded no verdict"
               else
-                gh workflow run claude_pr_review.yml --repo "$REPO" --ref main -f pr_number="$pr"
+                gh workflow run claude_pr_review.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
                 echo "started the review"
                 busy=$((busy + 1))
               fi
@@ -281,7 +286,7 @@ jobs:
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr"
+                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (build failed: $buildFailed, review: ${review:-none})"
                 busy=$((busy + 1))
               fi
@@ -416,7 +421,10 @@ jobs:
               do this first: `git merge origin/main`, resolve every conflict
               so that both main's change and this pull request's intent
               survive, and commit the merge. If the two cannot both survive,
-              run `git merge --abort` and say so in your comment. Builds and
+              run `git merge --abort` and say so in your comment. If the
+              merge brings changes under .github/, your push is refused (this
+              token may not update workflows): abort the merge and say that a
+              maintainer must merge main in (Update branch). Builds and
               findings from before the merge may be stale - judge them
               against the merged code.
             - A command this pull request registers in AddOnMain.cpp must use
