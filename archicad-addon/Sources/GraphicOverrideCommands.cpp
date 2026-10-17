@@ -1079,14 +1079,21 @@ GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::Objec
                     executionResults (CreateFailedExecutionResult (err, "Failed to find or create the rule group '" + moveRulesToGroup + "'."));
                     continue;
                 }
-                for (const API_Guid& ruleId : ruleIds) {
-                    err = ACAPI_GraphicalOverride_MoveOverrideRule (ruleId, targetGuid, nullptr);
+                // nextRule nullptr appends the rule to the target group, so the rules keep their order.
+                UIndex movedCount = 0;
+                for (; movedCount < ruleIds.GetSize (); ++movedCount) {
+                    err = ACAPI_GraphicalOverride_MoveOverrideRule (ruleIds[movedCount], targetGuid, nullptr);
                     if (err != NoError) {
                         break;
                     }
                 }
                 if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to move the rules of '" + ruleGroupName + "'. The group is kept."));
+                    // Put the rules already moved back in front of the one that failed, in their order,
+                    // so the group is left as it was.
+                    for (UIndex i = 0; i < movedCount; ++i) {
+                        ACAPI_GraphicalOverride_MoveOverrideRule (ruleIds[i], ruleGroupGuid, &ruleIds[movedCount]);
+                    }
+                    executionResults (CreateFailedExecutionResult (err, "Failed to move the rules of '" + ruleGroupName + "'. The group and its rules are kept."));
                     continue;
                 }
             } else if (!ruleIds.IsEmpty () && !deleteRules) {

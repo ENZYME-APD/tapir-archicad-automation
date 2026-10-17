@@ -82,6 +82,19 @@ static const ElemTypeInfo kElemTypeTable[] = {
     { "PipeRouting",        "1297109573", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
 };
 
+// User strings (values, property and group names, classification item IDs and system names) go
+// into the XML as element text: escape the characters XML reserves, or a name like "Doors & Windows"
+// makes the XML malformed and Archicad drops the whole criterion without an error.
+static GS::UniString XmlEscape (const GS::UniString& text)
+{
+    GS::UniString escaped = text;
+    escaped.ReplaceAll ("&", "&amp;");
+    escaped.ReplaceAll ("<", "&lt;");
+    escaped.ReplaceAll (">", "&gt;");
+    escaped.ReplaceAll ("\"", "&quot;");
+    return escaped;
+}
+
 static const ElemTypeInfo* FindElemTypeInfo (const GS::UniString& name)
 {
     for (const ElemTypeInfo& info : kElemTypeTable) {
@@ -115,16 +128,62 @@ static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info)
 // different, unrelated operator) is its natural negation, matching an item and all its descendants
 // resp. excluding all of them.
 //
-// The classification SYSTEM name is by-name (HasNameId, like every custom property), not a fixed
-// guid - and, confirmed live cross-project, is NOT a universal constant: a project can contain
-// several classification systems (Archicad's own default, Uniclass, Omniclass, project-specific
-// ones, ...), and even Archicad's own default system's exact label can differ between projects/
-// versions (seen "Classification Archicad - 2.0" in one project, "Classification Archicad - v 2.0"
-// in another) - a mismatched name here silently discards the whole criterion, just like a
-// mismatched custom property/group name does. kDefaultClassificationSystemName is only a fallback
-// for the common case; callers targeting a different system must pass classificationSystem
-// explicitly.
-static const char* kDefaultClassificationSystemName = "Classification Archicad - 2.0";
+// The classification SYSTEM is named, not identified by guid (HasNameId, like every custom
+// property), and a mismatched name silently discards the whole criterion. The criteria editor
+// writes it as "<name> - <edition version>" (read back live: "Classification Archicad - v 2.0"
+// for the system named "Classification Archicad" with version "v 2.0"), and the label differs
+// between languages and versions, so it is never hardcoded: it is resolved from the systems of the
+// project, see ResolveClassificationSystemLabel.
+static GS::UniString ClassificationSystemLabel (const API_ClassificationSystem& system)
+{
+    return system.editionVersion.IsEmpty () ? system.name : system.name + " - " + system.editionVersion;
+}
+
+static bool ContainsClassificationItemId (const GS::Array<API_ClassificationItem>& items, const GS::UniString& itemId)
+{
+    for (const API_ClassificationItem& item : items) {
+        if (item.id == itemId)
+            return true;
+        GS::Array<API_ClassificationItem> children;
+        if (ACAPI_Classification_GetClassificationItemChildren (item.guid, children) == NoError && ContainsClassificationItemId (children, itemId))
+            return true;
+    }
+    return false;
+}
+
+// requested: a system's name or its "<name> - <version>" label. Not given: the only system of the
+// project that contains itemId; an error when none or several do.
+static bool ResolveClassificationSystemLabel (const GS::UniString& itemId, const GS::UniString& requested, GS::UniString& outLabel, GS::UniString& outError)
+{
+    GS::Array<API_ClassificationSystem> systems;
+    ACAPI_Classification_GetClassificationSystems (systems);
+    GS::Array<GS::UniString> candidates;
+    for (const API_ClassificationSystem& system : systems) {
+        const GS::UniString label = ClassificationSystemLabel (system);
+        if (!requested.IsEmpty ()) {
+            if (requested == label || requested == system.name) {
+                outLabel = label;
+                return true;
+            }
+            continue;
+        }
+        GS::Array<API_ClassificationItem> roots;
+        if (ACAPI_Classification_GetClassificationSystemRootItems (system.guid, roots) == NoError && ContainsClassificationItemId (roots, itemId))
+            candidates.Push (label);
+    }
+    if (!requested.IsEmpty ()) {
+        outError = "Unknown classification system '" + requested + "'.";
+        return false;
+    }
+    if (candidates.GetSize () == 1) {
+        outLabel = candidates[0];
+        return true;
+    }
+    outError = candidates.IsEmpty ()
+        ? "No classification system of the project contains the item '" + itemId + "'."
+        : "Several classification systems contain the item '" + itemId + "': give 'classificationSystem'.";
+    return false;
+}
 
 static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bool isNot, const GS::UniString& systemName)
 {
@@ -134,7 +193,7 @@ static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bo
          +         "<PropertyDefinitionUserId Version=\"2\">"
          +             "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +             "<Guid>00000000-0000-0000-0000-000000000000</Guid>"
-         +             "<HasNameId>true</HasNameId><Name>" + systemName + "</Name>"
+         +             "<HasNameId>true</HasNameId><Name>" + XmlEscape (systemName) + "</Name>"
          +             "<PropertyDefinitionGroupUserId Version=\"2\">"
          +                 "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +                 "<Guid>00000000-0000-0000-0000-000000000000</Guid>"
@@ -142,7 +201,7 @@ static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bo
          +             "</PropertyDefinitionGroupUserId>"
          +         "</PropertyDefinitionUserId>"
          +         GS::UniString (isNot ? "<CriteriaOperatorEnum>14</CriteriaOperatorEnum>" : "<CriteriaOperatorEnum>12</CriteriaOperatorEnum>")
-         +         "<ClassificationValue><ClassificationItemUserID>" + itemId + "</ClassificationItemUserID></ClassificationValue>"
+         +         "<ClassificationValue><ClassificationItemUserID>" + XmlEscape (itemId) + "</ClassificationItemUserID></ClassificationValue>"
          +     "</VBEF::ConditionIO>"
          + "</PropertyCriterion>";
 }
@@ -179,34 +238,30 @@ static const char* kLayerVisiblePropertyGuid     = "708E442F-1EDF-4E5D-84F9-F97C
 static const char* kLayerCombinationPropertyGuid = "C0FFBC04-E003-4357-A1E4-A6A092BFCF86";
 static const char* kLayerNamePropertyGuid        = "812CD483-40FB-4E75-966F-E76C3E68B9F7";
 
+// header.name is the legacy 8-bit name and garbles non-ASCII characters, so the Unicode name is read
+// through uniStringNamePtr, the way GetAttributeName in AttributeCommands.cpp does.
 static bool FindAttributeIndexByName (API_AttrTypeID typeID, const GS::UniString& name, Int32& outIndex)
 {
     GS::Array<API_Attribute> attrs;
     ACAPI_Attribute_GetAttributesByType (typeID, attrs);
+    bool found = false;
     for (API_Attribute& attr : attrs) {
-        if (GS::UniString (attr.header.name) == name) {
-            outIndex = GetAttributeIndex (attr.header.index);
-            return true;
+        if (!found) {
+            GS::UniString attrName;
+            API_Attribute named = {};
+            named.header.typeID = attr.header.typeID;
+            named.header.index = attr.header.index;
+            named.header.guid = attr.header.guid;
+            named.header.uniStringNamePtr = &attrName;
+            if (ACAPI_Attribute_Get (&named) == NoError && attrName == name) {
+                outIndex = GetAttributeIndex (attr.header.index);
+                found = true;
+            }
+            DisposeAttribute (named);
         }
+        DisposeAttribute (attr);
     }
-    return false;
-}
-
-// Fonts are not part of the generic Attribute system (no API_AttrTypeID for them) - looked up via
-// the dedicated ACAPI_Font_SearchFont instead. Confirmed live: unlike every attribute-based lookup
-// above, this does NOT fail for an unrecognized name - ArchiCAD's font table grows on demand (fonts
-// are OS-level resources referenced by name, not a fixed project attribute list), so searching for
-// a typo'd font name silently registers a new font entry and returns success rather than an error.
-static bool FindFontIndexByName (const GS::UniString& name, Int32& outIndex)
-{
-    API_FontType font = {};
-    font.head.index = 0;
-    GS::UniString mutableName = name;
-    font.head.uniStringNamePtr = &mutableName;
-    if (ACAPI_Font_SearchFont (font) != NoError)
-        return false;
-    outIndex = font.head.index;
-    return true;
+    return found;
 }
 
 // "Construction" criteria category system properties - same reverse-engineering method as "Model
@@ -275,11 +330,11 @@ static GS::UniString CustomPropertyHeaderXML (const GS::UniString& propertyName,
     return GS::UniString ("<PropertyDefinitionUserId Version=\"2\">")
          +     "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +     "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
-         +     "<Name>" + propertyName + "</Name>"
+         +     "<Name>" + XmlEscape (propertyName) + "</Name>"
          +     "<PropertyDefinitionGroupUserId Version=\"2\">"
          +         "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +         "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
-         +         "<Name>" + groupName + "</Name>"
+         +         "<Name>" + XmlEscape (groupName) + "</Name>"
          +     "</PropertyDefinitionGroupUserId>"
          + "</PropertyDefinitionUserId>";
 }
@@ -319,12 +374,12 @@ static GS::UniString BoolVariantXML (bool value)
 
 static GS::UniString StringVariantXML (const GS::UniString& value)
 {
-    return GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + value + "</Value></Variant>";
+    return GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + XmlEscape (value) + "</Value></Variant>";
 }
 
 static GS::UniString NumVariantXML (double value)
 {
-    return GS::UniString ("<Variant Type=\"NumVariant\"><Status>Normal</Status><Value>") + GS::UniString::Printf ("%g", value) + "</Value></Variant>";
+    return GS::UniString ("<Variant Type=\"NumVariant\"><Status>Normal</Status><Value>") + GS::UniString::Printf ("%.15g", value) + "</Value></Variant>";
 }
 
 // Custom properties of Integer valueType (e.g. "Occupants") use a distinct IntVariant, not
@@ -370,7 +425,7 @@ static GS::UniString ProfileParameterHeaderByNameXML (const GS::UniString& prope
     return GS::UniString ("<PropertyDefinitionUserId Version=\"2\">")
          +     "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +     "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
-         +     "<Name>" + propertyName + "</Name>"
+         +     "<Name>" + XmlEscape (propertyName) + "</Name>"
          +     "<PropertyDefinitionGroupUserId Version=\"2\">"
          +         "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +         "<Guid>00000000-0000-0000-0000-000000000000</Guid><HasNameId>true</HasNameId>"
@@ -386,7 +441,7 @@ static GS::UniString ProfileParameterCriterionXML (const GS::UniString& headerXM
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + headerXML
          + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", numOp) + "</CriteriaOperatorEnum>"
-         + "<ProfileParameterValue><Value><Variant Type=\"NumVariant\"><Status>Normal</Status><Value>" + GS::UniString::Printf ("%g", value) + "</Value></Variant></Value></ProfileParameterValue>"
+         + "<ProfileParameterValue><Value><Variant Type=\"NumVariant\"><Status>Normal</Status><Value>" + GS::UniString::Printf ("%.15g", value) + "</Value></Variant></Value></ProfileParameterValue>"
          + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
@@ -466,7 +521,7 @@ static GS::UniString StringListCriterionXML (const char* propertyGuid, const GS:
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + PropertyHeaderXML (propertyGuid, groupGuid)
          + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", stringOp) + "</CriteriaOperatorEnum>"
-         + "<Value><Variant Type=\"StringListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + value + "</ValueItem></ValueArray></Variant></Value>"
+         + "<Value><Variant Type=\"StringListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + XmlEscape (value) + "</ValueItem></ValueArray></Variant></Value>"
          + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
@@ -477,7 +532,7 @@ static GS::UniString StringListCriterionXML (const char* propertyGuid, const GS:
 // don't, hence the default of false here.
 static GS::UniString StringModelViewCriterionXML (const char* propertyGuid, const GS::UniString& value, int stringOp, const char* groupGuid = kModelViewPropertyGroupGuid, bool bareVariant = false)
 {
-    const GS::UniString variantXML = GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + value + "</Value></Variant>";
+    const GS::UniString variantXML = GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + XmlEscape (value) + "</Value></Variant>";
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + PropertyHeaderXML (propertyGuid, groupGuid)
@@ -671,7 +726,7 @@ static GS::UniString RealAttributeCriterionXML (const char* attributeGuid, doubl
          +     "<AttributeCriterion Mv=\"1\" Sv=\"0\"><AttributeGuid>" + attributeGuid + "</AttributeGuid></AttributeCriterion>"
          +     "<ClassGuid>" + kRealConditionClassGuid + "</ClassGuid>"
          +     "<RealSimpleCondition Mv=\"1\" Sv=\"0\"><Type>" + GS::UniString::Printf ("%d", realType) + "</Type>"
-         +         "<Value>" + GS::UniString::Printf ("%g", value) + "</Value></RealSimpleCondition>"
+         +         "<Value>" + GS::UniString::Printf ("%.15g", value) + "</Value></RealSimpleCondition>"
          + "</RealCriterion>";
 }
 
@@ -766,7 +821,7 @@ static GS::UniString NumListCriterionXML (const char* propertyGuid, double value
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + PropertyHeaderXML (propertyGuid, groupGuid)
          + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", numOp) + "</CriteriaOperatorEnum>"
-         + "<Value><Variant Type=\"NumListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + GS::UniString::Printf ("%g", value) + "</ValueItem></ValueArray></Variant></Value>"
+         + "<Value><Variant Type=\"NumListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + GS::UniString::Printf ("%.15g", value) + "</ValueItem></ValueArray></Variant></Value>"
          + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
@@ -864,7 +919,7 @@ static GS::UniString NumPropertyCriterionXML (const char* propertyGuid, double v
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
          + PropertyHeaderXML (propertyGuid, groupGuid)
          + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", numOp) + "</CriteriaOperatorEnum>"
-         + "<Value><Variant Type=\"NumVariant\"><Status>Normal</Status><Value>" + GS::UniString::Printf ("%g", value) + "</Value></Variant></Value>"
+         + "<Value><Variant Type=\"NumVariant\"><Status>Normal</Status><Value>" + GS::UniString::Printf ("%.15g", value) + "</Value></Variant></Value>"
          + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
@@ -1078,9 +1133,10 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("classification", classification) || node.Get ("classificationNot", classificationNot)) {
         const bool isNot = !classificationNot.IsEmpty ();
         const GS::UniString& itemId = isNot ? classificationNot : classification;
-        GS::UniString classificationSystem;
-        if (!node.Get ("classificationSystem", classificationSystem) || classificationSystem.IsEmpty ())
-            classificationSystem = kDefaultClassificationSystemName;
+        GS::UniString requestedSystem, classificationSystem;
+        node.Get ("classificationSystem", requestedSystem);
+        if (!ResolveClassificationSystemLabel (itemId, requestedSystem, classificationSystem, outError))
+            return false;
         outXML = WrapAsTrivialGroup (ClassificationCriterionXML (itemId, isNot, classificationSystem));
         return true;
     }
@@ -1901,30 +1957,30 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
     if (node.Get ("fontIs", fontIs)) {
-        Int32 idx = 0;
-        if (!FindFontIndexByName (fontIs, idx)) {
-            outError = "Unknown font '" + fontIs + "'.";
+        const GS::Optional<short> idx = GetFontIndexFromName (fontIs);
+        if (!idx.HasValue ()) {
+            outError = "Unknown font '" + fontIs + "'. Give the name GetDetailsOfElements reports in fontName, with its script (e.g. 'Arial Western').";
             return false;
         }
-        outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, idx, 0, kPlanSectionPropertyGroupGuid));
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, *idx, 0, kPlanSectionPropertyGroupGuid));
         return true;
     }
     if (node.Get ("fontContains", fontContains)) {
-        Int32 idx = 0;
-        if (!FindFontIndexByName (fontContains, idx)) {
-            outError = "Unknown font '" + fontContains + "'.";
+        const GS::Optional<short> idx = GetFontIndexFromName (fontContains);
+        if (!idx.HasValue ()) {
+            outError = "Unknown font '" + fontContains + "'. Give the name GetDetailsOfElements reports in fontName, with its script (e.g. 'Arial Western').";
             return false;
         }
-        outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, idx, 6, kPlanSectionPropertyGroupGuid));
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, *idx, 6, kPlanSectionPropertyGroupGuid));
         return true;
     }
     if (node.Get ("fontNotContains", fontNotContains)) {
-        Int32 idx = 0;
-        if (!FindFontIndexByName (fontNotContains, idx)) {
-            outError = "Unknown font '" + fontNotContains + "'.";
+        const GS::Optional<short> idx = GetFontIndexFromName (fontNotContains);
+        if (!idx.HasValue ()) {
+            outError = "Unknown font '" + fontNotContains + "'. Give the name GetDetailsOfElements reports in fontName, with its script (e.g. 'Arial Western').";
             return false;
         }
-        outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, idx, 7, kPlanSectionPropertyGroupGuid));
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kFontPropertyGuid, *idx, 7, kPlanSectionPropertyGroupGuid));
         return true;
     }
     if (node.Get ("penReplacement", penReplacement) || node.Get ("penReplacementNot", penReplacementNot)) {

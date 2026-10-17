@@ -12701,7 +12701,7 @@
             },
             "classificationSystem": {
                 "type": "string",
-                "description": "The name of the classification system 'classification'/'classificationNot' refers to, exactly as shown in the Classification Manager (e.g. 'Uniclass 2015', a project-specific system, or Archicad's own default - note its exact label can differ between projects/Archicad versions, e.g. 'Classification Archicad - 2.0' vs 'Classification Archicad - v 2.0'). A project can contain several classification systems at once. Defaults to Archicad's default system name if omitted; only needed alongside 'classification'/'classificationNot'."
+                "description": "The classification system 'classification'/'classificationNot' refers to: its name as shown in the Classification Manager (e.g. 'Classification Archicad'), or its name and version as the criteria editor shows them (e.g. 'Classification Archicad - v 2.0'). Left out: the only classification system of the project that contains the item ID; an error when several do."
             },
             "all3DTypes": {
                 "type": "boolean",
@@ -13285,7 +13285,7 @@
             "slabDefaultEdgeAngleGreaterOrEqual": { "type": "number" },
             "slabCutLinePen": { "type": "integer", "description": "Matches slabs whose cut line pen equals this plain pen index." },
             "slabCutLinePenNot": { "type": "integer" },
-            "slabConstructionMaterialFill": { "type": "string", "description": "Matches slabs whose construction material fill is this Building Material attribute (by name)." },
+            "slabConstructionMaterialFill": { "type": "string", "description": "Matches slabs whose construction material fill is this Fill attribute (by name). Despite the field's label in the criteria editor, Archicad stores a Fill here, not a Building Material (checked on rules made in the editor)." },
             "slabConstructionMaterialFillNot": { "type": "string" },
             "roofCutBodyType": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"], "description": "Matches roofs whose cut body type equals this." },
             "roofCutBodyTypeNot": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"] },
@@ -13324,9 +13324,9 @@
             "hatchFillNot": { "type": "string", "description": "Matches elements whose hatch is NOT this Fill attribute (by name)." },
             "lineAttribute": { "type": "string", "description": "Matches elements whose contour/line is this Line Type attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
             "lineAttributeNot": { "type": "string", "description": "Matches elements whose contour/line is NOT this Line Type attribute (by name)." },
-            "fontIs": { "type": "string", "description": "Matches elements whose font equals this font name exactly. Applies to 2D annotation (Text/Label) elements - unlike every other field in this schema, this one and 'textPen*' are NOT combined with a 3D-model-element anchor when used alone or together, since they don't apply to 3D model elements." },
-            "fontContains": { "type": "string", "description": "Matches elements whose font is one of a list containing this font name (ArchiCAD's 'contains' operator for a font field)." },
-            "fontNotContains": { "type": "string", "description": "Matches elements whose font is not one of a list containing this font name." },
+            "fontIs": { "type": "string", "description": "Matches elements whose font equals this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western') exactly. Applies to 2D annotation (Text/Label) elements - unlike every other field in this schema, this one and 'textPen*' are NOT combined with a 3D-model-element anchor when used alone or together, since they don't apply to 3D model elements." },
+            "fontContains": { "type": "string", "description": "Matches elements whose font is one of a list containing this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western') (ArchiCAD's 'contains' operator for a font field)." },
+            "fontNotContains": { "type": "string", "description": "Matches elements whose font is not one of a list containing this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western')." },
             "penReplacement": { "type": "string", "enum": [ "None", "ForegroundOnly", "BackgroundOnly", "Both" ], "description": "Matches elements whose pen replacement rule equals this value." },
             "penReplacementNot": { "type": "string", "enum": [ "None", "ForegroundOnly", "BackgroundOnly", "Both" ], "description": "Matches elements whose pen replacement rule does not equal this value." },
             "linePenContains": { "type": "integer", "description": "Matches elements whose line pen number is this value (by plain pen number 1-255, not an attribute name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
