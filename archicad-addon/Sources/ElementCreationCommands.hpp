@@ -13,6 +13,12 @@ const char* DimensionOriginToString (API_DimOriginID origin);
 bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result);
 API_JustID ParseJustificationString (const GS::UniString& justification);
 
+// Shared by CreateCurtainWallsCommand and ModifyCurtainWallsCommand (ExtendedElementCommands.cpp):
+// rewrite a column/row pattern (API_CWSegmentPatternData) from a CurtainWallPattern object, and the
+// pattern cells of a memo from CurtainWallPatternCell objects. Both return the reason on invalid input.
+GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern);
+GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged);
+
 class CreateElementsCommandBase : public CommandBase
 {
 public:
