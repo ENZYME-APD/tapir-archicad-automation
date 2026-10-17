@@ -120,6 +120,39 @@ static API_AttrTypeID ConvertAttributeTypeStringToID (const GS::UniString& typeS
     return API_ZombieAttrID;
 }
 
+#ifdef ServerMainVers_2600
+
+// Attribute folders exist from AC26. API_Attr_Head does not tell the folder of an attribute, so the folder tree
+// of the type is walked once from its root and the path of every attribute it holds is collected by guid.
+// An attribute the walk does not reach is reported in the root folder.
+static void CollectAttributeFolderPaths (const API_AttributeFolder& folder, GS::HashTable<API_Guid, GS::Array<GS::UniString>>& folderPathsByAttribute)
+{
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return;
+    }
+    for (const API_Guid& attributeId : content.attributeIds) {
+        folderPathsByAttribute.Put (attributeId, folder.path);
+    }
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        CollectAttributeFolderPaths (subFolder, folderPathsByAttribute);
+    }
+}
+
+static GS::HashTable<API_Guid, GS::Array<GS::UniString>> GetAttributeFolderPaths (API_AttrTypeID typeID)
+{
+    GS::HashTable<API_Guid, GS::Array<GS::UniString>> folderPathsByAttribute;
+    API_AttributeFolder rootFolder;
+    rootFolder.typeID = typeID;
+    rootFolder.guid = APINULLGuid;
+    if (ACAPI_Attribute_GetFolder (rootFolder) == NoError) {
+        CollectAttributeFolderPaths (rootFolder, folderPathsByAttribute);
+    }
+    return folderPathsByAttribute;
+}
+
+#endif
+
 GetAttributesByTypeCommand::GetAttributesByTypeCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -170,11 +203,25 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
     GS::Array<API_Attribute> attrs;
     ACAPI_Attribute_GetAttributesByType (typeID, attrs);
 
+#ifdef ServerMainVers_2600
+    const GS::HashTable<API_Guid, GS::Array<GS::UniString>> folderPathsByAttribute = GetAttributeFolderPaths (typeID);
+#endif
+
     for (API_Attribute& attr : attrs) {
         GS::ObjectState attributeDetails;
         attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
         attributeDetails.Add ("name", GetAttributeName (attr.header));
+        // The folder path is always present: empty for the root folder, and always empty before AC26,
+        // which has no attribute folders.
+        GS::Array<GS::UniString> folderPath;
+#ifdef ServerMainVers_2600
+        folderPathsByAttribute.Get (attr.header.guid, &folderPath);
+#endif
+        const auto& folderPathList = attributeDetails.AddList<GS::UniString> ("folderPath");
+        for (const GS::UniString& folderName : folderPath) {
+            folderPathList (folderName);
+        }
         // API_Attr_Head::modiTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC) in a UInt64,
         // the same stamp the Attribute Manager writes as ModiTime into its XML export.
         attributeDetails.Add ("modificationTime", static_cast<Int64> (attr.header.modiTime));
