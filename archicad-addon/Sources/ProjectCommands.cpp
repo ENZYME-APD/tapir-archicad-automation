@@ -2515,6 +2515,104 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
 
 
 // ---------------------------------------------------------------------------
+// Auto-Intersection (Options > Auto-Intersection).
+//
+// It is a setting of the running Archicad, not of the project, and it changes
+// what the wall and beam creation commands produce: with it on, the new
+// elements are cleaned up and joined at their intersections. A script that
+// needs a known result reads the state, sets the one it needs and restores
+// the previous one afterwards.
+// ---------------------------------------------------------------------------
+
+GetAutoIntersectCommand::GetAutoIntersectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAutoIntersectCommand::GetName () const
+{
+    return "GetAutoIntersect";
+}
+
+GS::Optional<GS::UniString> GetAutoIntersectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isOn": {
+                "type": "boolean",
+                "description": "True if Auto-Intersection is currently on."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isOn"
+        ]
+    })";
+}
+
+GS::ObjectState GetAutoIntersectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    bool isOn = false;
+    GSErrCode err = ACAPI_View_IsAutoIntersectOn (&isOn);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Auto-Intersection state.");
+    }
+
+    return GS::ObjectState ("isOn", isOn);
+}
+
+SetAutoIntersectCommand::SetAutoIntersectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetAutoIntersectCommand::GetName () const
+{
+    return "SetAutoIntersect";
+}
+
+GS::Optional<GS::UniString> SetAutoIntersectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isOn": {
+                "type": "boolean",
+                "description": "Turn Auto-Intersection on or off."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isOn"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetAutoIntersectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetAutoIntersectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool isOn = false;
+    if (!parameters.Get ("isOn", isOn)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: isOn.");
+    }
+
+    GSErrCode err = ACAPI_View_ChangeAutoIntersect (&isOn);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the Auto-Intersection state.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+
+// ---------------------------------------------------------------------------
 // Hotlink nodes and instances.
 //
 // A hotlink module is two things in Archicad: a NODE (the reference to the
