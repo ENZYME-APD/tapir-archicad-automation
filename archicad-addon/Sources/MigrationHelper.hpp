@@ -51,6 +51,11 @@
 #define ACAPI_Selection_Select ACAPI_Element_Select
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
+#define ACAPI_ElementLink_Link ACAPI_Element_Link
+#define ACAPI_ElementLink_Unlink ACAPI_Element_Unlink
+#define ACAPI_ElementLink_GetLinks ACAPI_Element_GetLinks
+#define ACAPI_ElementLink_GetLinkFlags ACAPI_Element_GetLinkFlags
+
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
