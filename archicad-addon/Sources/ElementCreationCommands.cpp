@@ -136,6 +136,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
 #else
             element.header.typeID = elemTypeID;
 #endif
+            PrepareDefaultsQuery (element, data);
             err = ACAPI_Element_GetDefaults (&element, &memo);
             if (err != NoError) {
                 elements (CreateErrorResponse (err, "Failed to read the " + elemTypeName + " defaults."));
@@ -3228,11 +3229,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label."
+                        "description" : "The parent element if the label is an associative label. Without favoriteName the label starts from the Label tool default of the parent's element type (the one Label Selected Elements uses), not from the independent label's default."
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
-                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool defaults or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default (of the parent's element type, see parentElementId) or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
                     },
                     "text": {
                         "type": "string",
@@ -4272,6 +4273,37 @@ static bool IsSameParameterList (API_AddParType** lhs, API_AddParType** rhs)
     return true;
 }
 
+// The Label tool keeps one default per labeled element type (Label Settings' element type
+// list, the one Document > Annotation > Label Selected Elements places from) besides the one
+// of the independent label, and parentType is the field ACAPI_Element_GetDefaults has to
+// select it by. Read with parentType unset, an associative label started from the
+// independent label's default. In #742 a Flexi_Zone_Label placed that way on a zone came
+// out without its parameters while Label Selected Elements places it with all of them, so
+// the parent's type is given before the defaults are read, as Archicad itself labels. An
+// item with a favorite keeps reading the default the favorite was applied to
+// (ApplyFavoriteToElementDefaults changes the defaults with the favorite's own parentType,
+// and the restore snapshot is taken without one), so the favorite is not silently lost: the
+// favorite defines that label anyway.
+void CreateLabelsCommand::PrepareDefaultsQuery (API_Element& element, const GS::ObjectState& parameters) const
+{
+    GS::UniString favoriteName;
+    if (parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ()) {
+        return;
+    }
+
+    API_Elem_Head parentElemHead = {};
+    parentElemHead.guid = GetGuidFromArrayItem ("parentElementId", parameters);
+    if (parentElemHead.guid == APINULLGuid || ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+        // No parent, or none with this guid: SetTypeSpecificParameters answers the latter.
+        return;
+    }
+#ifdef ServerMainVers_2600
+    element.label.parentType = parentElemHead.type;
+#else
+    element.label.parentType = parentElemHead.typeID;
+#endif
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -4365,7 +4397,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         if (defaultLabelClass != APILblClass_Symbol) {
             GS::UniString favoriteName;
             const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("labelClass 'Symbol' needs a symbol library part, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("labelClass 'Symbol' needs a symbol library part, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default") + (element.label.parent != APINULLGuid ? " for the parent's element type" : "")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set that Label tool default to a symbol label first.");
         }
 
         // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library
@@ -4373,10 +4405,11 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         // (PrepareWindowOrDoorDefaults) and interior elevation markers get theirs. Reported in
         // #742 that a Symbol label created here had no GDL parameters at all - nothing but its
         // hotspot drawn, and Get/SetGDLParametersOfElements refusing it - also with the Label
-        // tool set to Flexi_Zone_Label, where the defaults come back with a parameter handle.
-        // So what the defaults carry is not taken on trust: the library part's own list is read,
-        // and the defaults' handle is kept only when it is that library part's list (same count,
-        // same names and types - a favorite or tool default that matches keeps its values);
+        // tool set to Flexi_Zone_Label, where the defaults come back with a parameter handle
+        // (read, until PrepareDefaultsQuery, from the independent label's default). So what the
+        // defaults carry is not taken on trust: the library part's own list is read, and the
+        // defaults' handle is kept only when it is that library part's list (same count, same
+        // names and types - a favorite or tool default that matches keeps its values);
         // otherwise the library part's defaults are placed.
         double a = 0.0;
         double b = 0.0;
