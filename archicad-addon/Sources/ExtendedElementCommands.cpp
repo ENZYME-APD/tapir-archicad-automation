@@ -6437,6 +6437,24 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
         if (item.Contains ("zCoordinate") && std::fabs (readBack.curtainWall.planeOffset - element.curtainWall.planeOffset) > 1e-6 && std::fabs (readBack.curtainWall.storyRelLevel - element.curtainWall.storyRelLevel) > 1e-6) {
             return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the bottom elevation to the curtain wall.");
         }
+        if (!coordinates.IsEmpty ()) {
+            // The reference line is read back too: a polygon change Archicad accepted but
+            // ignored would otherwise be the silent no-op this command exists to avoid.
+            const UInt32 nCoords = coordinates.GetSize ();
+            API_ElementMemo readBackMemo = {};
+            const GS::OnExit readBackMemoGuard ([&readBackMemo] () { ACAPI_DisposeElemMemoHdls (&readBackMemo); });
+            if (ACAPI_Element_GetMemo (element.header.guid, &readBackMemo, APIMemoMask_Polygon) != NoError || readBackMemo.coords == nullptr) {
+                return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read back the reference line of the modified curtain wall.");
+            }
+            const UInt32 nReadBackCoords = static_cast<UInt32> (BMGetHandleSize (reinterpret_cast<GSHandle> (readBackMemo.coords)) / sizeof (API_Coord));
+            bool applied = readBack.curtainWall.nSegments + 1 == nCoords && nReadBackCoords >= nCoords + 1;
+            for (UIndex i = 0; applied && i < nCoords; ++i) {
+                applied = IsSame2DCoordinate ((*readBackMemo.coords)[i + 1], Get2DCoordinateFromObjectState (coordinates[i]));
+            }
+            if (!applied) {
+                return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the coordinates to the reference line of the curtain wall.");
+            }
+        }
         element = readBack;
     }
 
