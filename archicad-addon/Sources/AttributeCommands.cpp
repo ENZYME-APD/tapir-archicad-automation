@@ -2680,6 +2680,236 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
+#ifdef ServerMainVers_2600
+
+// The folder names joined with '/', for messages only: a folder is always identified by its path array.
+static GS::UniString GetAttributeFolderPathString (const GS::Array<GS::UniString>& path)
+{
+    GS::UniString result;
+    for (const GS::UniString& folderName : path) {
+        if (!result.IsEmpty ()) {
+            result.Append ("/");
+        }
+        result.Append (folderName);
+    }
+    return result;
+}
+
+// Reads an {attributeType, path} item into an API_AttributeFolder. Returns the failed execution result for an
+// invalid item, GS::NoValue when the folder description is valid (the folder itself may still not exist).
+static GS::Optional<GS::ObjectState> GetAttributeFolderFromObjectState (const GS::ObjectState& os, API_AttributeFolder& folder)
+{
+    GS::UniString typeStr;
+    os.Get ("attributeType", typeStr);
+    const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+    if (typeID == API_ZombieAttrID) {
+        return CreateFailedExecutionResult (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ()));
+    }
+
+    GS::Array<GS::UniString> path;
+    os.Get ("path", path);
+    for (const GS::UniString& folderName : path) {
+        if (folderName.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "A folder name in path must not be empty.");
+        }
+    }
+
+    folder.typeID = typeID;
+    folder.path = path;
+    folder.guid = APINULLGuid;
+    return GS::NoValue;
+}
+
+// Resolves folder.guid from its typeID and path; false when no folder exists on that path.
+static bool FindAttributeFolder (API_AttributeFolder& folder)
+{
+    folder.guid = APINULLGuid;
+    return ACAPI_Attribute_GetFolder (folder) == NoError && folder.guid != APINULLGuid;
+}
+
+#endif
+
+CreateAttributeFoldersCommand::CreateAttributeFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateAttributeFoldersCommand::GetName () const
+{
+    return "CreateAttributeFolders";
+}
+
+GS::Optional<GS::UniString> CreateAttributeFoldersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeFolders": {
+                "$ref": "#/AttributeFolders"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeFolders"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateAttributeFoldersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState CreateAttributeFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> attributeFolders;
+    parameters.Get ("attributeFolders", attributeFolders);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : attributeFolders) {
+        API_AttributeFolder folder;
+        const GS::Optional<GS::ObjectState> invalidItem = GetAttributeFolderFromObjectState (item, folder);
+        if (invalidItem.HasValue ()) {
+            executionResults (*invalidItem);
+            continue;
+        }
+        if (folder.path.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "path must not be empty: the root folder always exists."));
+            continue;
+        }
+
+        // Created level by level from the root, so a missing parent folder is created too and an existing one,
+        // including the requested folder itself, is kept as it is.
+        GSErrCode err = NoError;
+        API_AttributeFolder current;
+        current.typeID = folder.typeID;
+        current.guid = APINULLGuid;
+        for (const GS::UniString& folderName : folder.path) {
+            current.path.Push (folderName);
+            if (FindAttributeFolder (current)) {
+                continue;
+            }
+            err = ACAPI_Attribute_CreateFolder (current);
+            if (err != NoError) {
+                break;
+            }
+        }
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err,
+                GS::UniString::Printf ("Failed to create attribute folder '%T'.", GetAttributeFolderPathString (current.path).ToPrintf ())));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Attribute folders require Archicad 26 or newer.");
+#endif
+}
+
+DeleteAttributeFoldersCommand::DeleteAttributeFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteAttributeFoldersCommand::GetName () const
+{
+    return "DeleteAttributeFolders";
+}
+
+GS::Optional<GS::UniString> DeleteAttributeFoldersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeFolders": {
+                "$ref": "#/AttributeFolders"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeFolders"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteAttributeFoldersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> attributeFolders;
+    parameters.Get ("attributeFolders", attributeFolders);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : attributeFolders) {
+        API_AttributeFolder folder;
+        const GS::Optional<GS::ObjectState> invalidItem = GetAttributeFolderFromObjectState (item, folder);
+        if (invalidItem.HasValue ()) {
+            executionResults (*invalidItem);
+            continue;
+        }
+        if (folder.path.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The root folder cannot be deleted."));
+            continue;
+        }
+        if (!FindAttributeFolder (folder)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID,
+                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Attribute_DeleteFolder (folder);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err,
+                GS::UniString::Printf ("Failed to delete attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Attribute folders require Archicad 26 or newer.");
+#endif
+}
+
 CreateAttributesCommandBase::CreateAttributesCommandBase (const GS::String& commandNameIn, API_AttrTypeID attrTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
