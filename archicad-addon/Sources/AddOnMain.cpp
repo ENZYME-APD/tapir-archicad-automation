@@ -323,6 +323,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.4.0",
             "Gets the project calculation units."
         );
+        err |= RegisterCommand<GetProjectPreferencesCommand> (
+            projectCommands, "1.7.2",
+            "Gets pages of the project preferences (Options > Project Preferences): the working units and the calculation units. Further pages may follow."
+        );
+        err |= RegisterCommand<SetProjectPreferencesCommand> (
+            projectCommands, "1.7.2",
+            "Changes pages of the project preferences (Options > Project Preferences): the working units and the calculation units. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27."
+        );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
             "Gets the project location details."
