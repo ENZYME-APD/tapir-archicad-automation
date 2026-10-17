@@ -218,8 +218,13 @@ jobs:
             IFS=, read -r pr branch head mergeable created <<<"$row"
             # Failed runs count over the last day only: with the hour's wait
             # after each, ten of them mean a lasting problem, not an outage.
+            # A person removing needs-maintainer hands the pull request back
+            # with a clean count, so only failures after that count.
             failSince=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
             if [[ "$created" > "$failSince" ]]; then failSince=$created; fi
+            handedBack=$(gh api --paginate "repos/$REPO/issues/$pr/events?per_page=100" \
+              --jq '.[] | select(.event == "unlabeled" and .label.name == "needs-maintainer") | .created_at' | tail -n 1 || true)
+            if [[ -n "$handedBack" && "$handedBack" > "$failSince" ]]; then failSince=$handedBack; fi
             echo "::group::PR #$pr ($branch @ ${head:0:7})"
             fixTitle="Fix bot PR #$pr"
             fixActive=$(jq --arg t "$fixTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$stewardRuns")
