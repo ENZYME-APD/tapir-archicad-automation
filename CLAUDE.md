@@ -258,9 +258,10 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   review on each new head, links the built add-on in a comment asking the
   issue's author to test it in Archicad, and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main` (which it merges in), at most
-  `BOT_PR_MAX_FIX_ROUNDS` (default 3) times, on at most `BOT_PR_SWEEP_BATCH`
+  `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
   (default 5) PRs per sweep. Then
-  it labels the PR `needs-maintainer` and stops. `BOT_PR_STEWARD=false` turns it
+  it labels the PR `needs-maintainer` and stops; removing the label hands the PR
+  back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path. It also merges the issue bot's
