@@ -595,6 +595,313 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+// Trace & Reference of the floor plan. API_GhostStoryType (ACAPI_View_GetGhostStorySettings)
+// is the read-only view of it: on, one story / the one above / the one below, which story,
+// the color and the element type filter. The API has no setter for that struct: the ghost
+// story is the ghost record of the floor plan database (API_GhostRecord), which
+// ACAPI_View_ChangeGhostRecord changes and ACAPI_View_CreateGhostRecord creates when the
+// floor plan has none yet. Both commands work on the floor plan database, whatever window
+// is in front, and put the previous current database back afterwards.
+
+static GS::ObjectState CreateGhostStorySettingsObjectState (const API_GhostStoryType& settings)
+{
+    GS::ObjectState os (
+        "on", settings.on,
+        "showOne", settings.showOne,
+        "showAbove", settings.showAbove,
+        "showBelow", settings.showBelow,
+        "storyIndex", static_cast<Int32> (settings.storyInd),
+        "ghostColor", GS::ObjectState (
+            "red", settings.ghostColor.f_red,
+            "green", settings.ghostColor.f_green,
+            "blue", settings.ghostColor.f_blue));
+
+    // API_ElemFilter is one flag per element type, indexed by API_ElemTypeID.
+    const auto& filter = os.AddList<GS::UniString> ("filter");
+    for (Int32 typeId = API_ZombieElemID + 1; typeId <= API_LastElemType; ++typeId) {
+        if (!settings.filter[typeId]) {
+            continue;
+        }
+        const GS::UniString typeName = GetElementTypeNonLocalizedName (static_cast<API_ElemTypeID> (typeId));
+        if (typeName != "Unknown") {
+            filter (typeName);
+        }
+    }
+
+    return os;
+}
+
+GetGhostStorySettingsCommand::GetGhostStorySettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetGhostStorySettingsCommand::GetName () const
+{
+    return "GetGhostStorySettings";
+}
+
+GS::Optional<GS::UniString> GetGhostStorySettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "on": {
+            "type": "boolean",
+            "description": "Whether the ghost story (Trace & Reference) is shown on the floor plan."
+        },
+        "showOne": {
+            "type": "boolean",
+            "description": "Whether the story at storyIndex is the ghost story."
+        },
+        "showAbove": {
+            "type": "boolean",
+            "description": "Whether the story above the current one is the ghost story."
+        },
+        "showBelow": {
+            "type": "boolean",
+            "description": "Whether the story below the current one is the ghost story."
+        },
+        "storyIndex": {
+            "type": "integer",
+            "description": "The index of the ghost story, as GetStories reports it. Meaningful when showOne is true."
+        },
+        "ghostColor": {
+            "$ref": "#/ColorRGB",
+            "description": "The color the ghost story is drawn in."
+        },
+        "filter": {
+            "type": "array",
+            "description": "The element types shown in the ghost story.",
+            "items": {
+                "$ref": "#/ElementType"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "on",
+        "showOne",
+        "showAbove",
+        "showBelow",
+        "storyIndex",
+        "ghostColor",
+        "filter"
+    ]
+})";
+}
+
+GS::ObjectState GetGhostStorySettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&]() {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, which holds the ghost story settings.");
+    }
+
+    API_GhostStoryType settings = {};
+    const GSErrCode err = ACAPI_View_GetGhostStorySettings (&settings);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the ghost story settings.");
+    }
+
+    return CreateGhostStorySettingsObjectState (settings);
+}
+
+SetGhostStorySettingsCommand::SetGhostStorySettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetGhostStorySettingsCommand::GetName () const
+{
+    return "SetGhostStorySettings";
+}
+
+GS::Optional<GS::UniString> SetGhostStorySettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "description": "Every field is optional; the ones left out keep their current value. A story choice (showOne, showAbove or showBelow true) replaces the current one.",
+    "properties": {
+        "on": {
+            "type": "boolean",
+            "description": "Show (true) or hide (false) the ghost story on the floor plan."
+        },
+        "showOne": {
+            "type": "boolean",
+            "description": "Show the story at storyIndex as the ghost story."
+        },
+        "showAbove": {
+            "type": "boolean",
+            "description": "Show the story above the current one as the ghost story."
+        },
+        "showBelow": {
+            "type": "boolean",
+            "description": "Show the story below the current one as the ghost story."
+        },
+        "storyIndex": {
+            "type": "integer",
+            "description": "The index of the story to show when showOne is true, as GetStories reports it."
+        },
+        "ghostColor": {
+            "$ref": "#/ColorRGB",
+            "description": "The color to draw the ghost story in."
+        },
+        "filter": {
+            "type": "array",
+            "description": "The element types to show in the ghost story; the others are hidden.",
+            "items": {
+                "$ref": "#/ElementType"
+            }
+        }
+    },
+    "additionalProperties": false
+})";
+}
+
+GS::Optional<GS::UniString> SetGhostStorySettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetGhostStorySettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&]() {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (databaseErr != NoError) {
+        return CreateFailedExecutionResult (databaseErr, "Failed to activate the floor plan database, which holds the ghost story settings.");
+    }
+
+    // The fields left out keep their value: the current settings are the baseline.
+    API_GhostStoryType current = {};
+    GSErrCode err = ACAPI_View_GetGhostStorySettings (&current);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current ghost story settings.");
+    }
+
+    bool on = current.on;
+    parameters.Get ("on", on);
+
+    // A story choice in the input replaces the current one: the two flags not given are
+    // cleared, so {"showBelow": true} alone switches from the story above to the one below.
+    // Without a true flag in the input the flags not given keep their value.
+    bool showOne = false;
+    bool showAbove = false;
+    bool showBelow = false;
+    const bool hasShowOne = parameters.Get ("showOne", showOne);
+    const bool hasShowAbove = parameters.Get ("showAbove", showAbove);
+    const bool hasShowBelow = parameters.Get ("showBelow", showBelow);
+    if (!showOne && !showAbove && !showBelow) {
+        if (!hasShowOne) {
+            showOne = current.showOne;
+        }
+        if (!hasShowAbove) {
+            showAbove = current.showAbove;
+        }
+        if (!hasShowBelow) {
+            showBelow = current.showBelow;
+        }
+    }
+    if ((showOne ? 1 : 0) + (showAbove ? 1 : 0) + (showBelow ? 1 : 0) > 1) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Only one of showOne, showAbove and showBelow can be true.");
+    }
+
+    Int32 storyIndex = current.storyInd;
+    if (parameters.Get ("storyIndex", storyIndex)) {
+        const Stories stories = GetStories ();
+        if (stories.find (static_cast<short> (storyIndex)) == stories.end ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is not the index of a story of the project.");
+        }
+    }
+
+    API_RGBColor ghostColor = current.ghostColor;
+    GetColor (parameters, "ghostColor", ghostColor);
+
+    GS::Array<GS::UniString> filterNames;
+    const bool hasFilter = parameters.Get ("filter", filterNames);
+    GS::Array<API_ElemTypeID> filterTypes;
+    for (const GS::UniString& typeName : filterNames) {
+        const API_ElemTypeID typeId = GetElementTypeFromNonLocalizedName (typeName);
+        if (typeId == API_ZombieElemID) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Unknown element type in filter: ") + typeName);
+        }
+        filterTypes.Push (typeId);
+    }
+
+    API_DatabaseInfo floorPlanDatabase = {};
+    err = ACAPI_Database_GetCurrentDatabase (&floorPlanDatabase);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the floor plan database.");
+    }
+
+    API_GhostRecord ghostRecord = {};
+    const bool hasRecord = ACAPI_View_GetGhostRecord (&floorPlanDatabase.databaseUnId, &ghostRecord) == NoError;
+    if (!hasRecord) {
+        // The floor plan has no ghost record yet (Trace & Reference was never used in it).
+        // A new one: the active view is drawn in its own colors, fills are kept in both,
+        // and the element filter starts from what the floor plan reports now.
+        ghostRecord = {};
+        ghostRecord.parentDatabase = floorPlanDatabase.databaseUnId;
+        ghostRecord.viewOriginalColor = true;
+        ghostRecord.viewBackgroundFill = true;
+        ghostRecord.ghostBackgroundFill = true;
+        for (Int32 typeId = 0; typeId <= API_LastElemType; ++typeId) {
+            ghostRecord.filter[typeId] = current.filter[typeId];
+        }
+    }
+
+    // A story of the floor plan is the reference, whatever the record referred to before.
+    ghostRecord.ghostDatabase = floorPlanDatabase.databaseUnId;
+    ghostRecord.ghostDBType = floorPlanDatabase.typeID;
+    ghostRecord.activated = on;
+    ghostRecord.show = on;
+    if (showOne) {
+        ghostRecord.ghostType = APIGhost_ShowOneFloor;
+    } else if (showAbove) {
+        ghostRecord.ghostType = APIGhost_ShowAboveFloor;
+    } else if (showBelow) {
+        ghostRecord.ghostType = APIGhost_ShowBelowFloor;
+    } else {
+        ghostRecord.ghostType = APIGhost_NoFloor;
+    }
+    ghostRecord.floor = static_cast<short> (storyIndex);
+    ghostRecord.ghostColor = ghostColor;
+    if (hasFilter) {
+        for (Int32 typeId = 0; typeId <= API_LastElemType; ++typeId) {
+            ghostRecord.filter[typeId] = false;
+        }
+        for (const API_ElemTypeID typeId : filterTypes) {
+            ghostRecord.filter[typeId] = true;
+        }
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetGhostStorySettingsCommand", [&]() -> GSErrCode {
+        return hasRecord
+            ? ACAPI_View_ChangeGhostRecord (&ghostRecord)
+            : ACAPI_View_CreateGhostRecord (&ghostRecord);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, hasRecord
+            ? "Failed to change the ghost record of the floor plan."
+            : "Failed to create the ghost record of the floor plan.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetView2DTransformationsCommand::GetView2DTransformationsCommand () :
     CommandBase (CommonSchema::Used)
 {}

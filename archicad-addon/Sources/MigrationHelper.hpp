@@ -489,6 +489,28 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+// The ghost story settings of the floor plan (APIEnv_GetGhostStorySettingsID) and the
+// ghost record of a database (APIDb_GetGhostRecordID and its change/create pair).
+inline GSErrCode ACAPI_View_GetGhostStorySettings (API_GhostStoryType* ghostStorySettings)
+{
+    return ACAPI_Environment (APIEnv_GetGhostStorySettingsID, ghostStorySettings);
+}
+
+inline GSErrCode ACAPI_View_GetGhostRecord (const API_DatabaseUnId* databaseUnId, API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Database (APIDb_GetGhostRecordID, (void*) databaseUnId, ghostRecord);
+}
+
+inline GSErrCode ACAPI_View_ChangeGhostRecord (const API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Database (APIDb_ChangeGhostRecordID, (void*) ghostRecord);
+}
+
+inline GSErrCode ACAPI_View_CreateGhostRecord (const API_GhostRecord* ghostRecord)
+{
+    return ACAPI_Database (APIDb_CreateGhostRecordID, (void*) ghostRecord);
+}
+
 #endif
 
 #ifndef ServerMainVers_2600
