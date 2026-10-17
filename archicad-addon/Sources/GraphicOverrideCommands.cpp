@@ -1,4 +1,5 @@
 #include "GraphicOverrideCommands.hpp"
+#include "GraphicOverrideCriterion.hpp"
 
 #ifdef ServerMainVers_2700
 
@@ -225,6 +226,27 @@ GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& ruleGroupG
     return err;
 }
 
+// The criterion of a rule comes either as Archicad's XML ("criterionXML") or as the structured
+// "criterion", which is turned into that XML. Neither given leaves criterionXML unchanged.
+GSErrCode GetCriterionXMLFromObjectState (const GS::ObjectState& item, GS::UniString& criterionXML, GS::UniString& errorMessage)
+{
+    const GS::ObjectState* criterion = item.Get ("criterion");
+    if (criterion == nullptr) {
+        item.Get ("criterionXML", criterionXML);
+        return NoError;
+    }
+    if (item.Contains ("criterionXML")) {
+        errorMessage = "Give either 'criterion' or 'criterionXML', not both.";
+        return APIERR_BADPARS;
+    }
+    GS::UniString criterionError;
+    if (!GraphicOverrideCriterionToXML (*criterion, criterionXML, criterionError)) {
+        errorMessage = "Invalid 'criterion': " + criterionError;
+        return APIERR_BADPARS;
+    }
+    return NoError;
+}
+
 GS::Array<API_Guid> GetRuleGuidsFromArray (const GS::Array<GS::ObjectState>& ruleIds)
 {
     GS::Array<API_Guid> guids;
@@ -374,7 +396,11 @@ GS::Optional<GS::UniString> CreateGraphicOverrideRulesCommand::GetInputParameter
                         },
                         "criterionXML": {
                             "type": "string",
-                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Take it from GetGraphicOverrideRules and change its values: Archicad drops XML written from scratch without an error, and the rule then applies to all elements. Left out: Archicad's default criterion for new rules."
+                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Take it from GetGraphicOverrideRules and change its values: Archicad drops XML written from scratch without an error, and the rule then applies to all elements. Left out together with 'criterion': Archicad's default criterion for new rules."
+                        },
+                        "criterion": {
+                            "$ref": "#/GraphicOverrideCriterion",
+                            "description": "The criterion of the rule as structured conditions, turned into Archicad's criterion XML. Use it instead of criterionXML, not with it."
                         },
                         "style": {
                             "$ref": "#/GraphicOverrideStyle"
@@ -433,7 +459,12 @@ GS::ObjectState CreateGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
                 graphicOverrideRuleIdsList (CreateErrorResponse (APIERR_BADPARS, "Missing 'name' or 'ruleGroupName' parameter."));
                 continue;
             }
-            item.Get ("criterionXML", rule.criterionXML);
+            GS::UniString criterionErrorMessage;
+            const GSErrCode criterionErr = GetCriterionXMLFromObjectState (item, rule.criterionXML, criterionErrorMessage);
+            if (criterionErr != NoError) {
+                graphicOverrideRuleIdsList (CreateErrorResponse (criterionErr, criterionErrorMessage));
+                continue;
+            }
             const GS::ObjectState* style = item.Get ("style");
             if (style != nullptr) {
                 GS::UniString errorMessage;
@@ -499,6 +530,10 @@ GS::Optional<GS::UniString> ModifyGraphicOverrideRulesCommand::GetInputParameter
                             "type": "string",
                             "description": "The new criterion of the rule, in the XML format Archicad saves override rules in. Take it from GetGraphicOverrideRules and change its values: Archicad drops XML written from scratch without an error, and the rule then applies to all elements."
                         },
+                        "criterion": {
+                            "$ref": "#/GraphicOverrideCriterion",
+                            "description": "The new criterion of the rule as structured conditions, turned into Archicad's criterion XML. Use it instead of criterionXML, not with it."
+                        },
                         "style": {
                             "$ref": "#/GraphicOverrideStyle"
                         }
@@ -559,7 +594,12 @@ GS::ObjectState ModifyGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
                 continue;
             }
             item.Get ("name", rule.name);
-            item.Get ("criterionXML", rule.criterionXML);
+            GS::UniString criterionErrorMessage;
+            err = GetCriterionXMLFromObjectState (item, rule.criterionXML, criterionErrorMessage);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, criterionErrorMessage));
+                continue;
+            }
             const GS::ObjectState* style = item.Get ("style");
             if (style != nullptr) {
                 GS::UniString errorMessage;
@@ -839,6 +879,252 @@ GS::ObjectState CreateGraphicOverrideCombinationsCommand::Execute (const GS::Obj
                 continue;
             }
             graphicOverrideCombinationIdsList (GS::ObjectState ("graphicOverrideCombinationId", CreateGuidObjectState (combination.guid)));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+GetGraphicOverrideRuleGroupsCommand::GetGraphicOverrideRuleGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGraphicOverrideRuleGroupsCommand::GetName () const
+{
+    return "GetGraphicOverrideRuleGroups";
+}
+
+GS::Optional<GS::UniString> GetGraphicOverrideRuleGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideRuleGroups": {
+                "type": "array",
+                "description": "The graphic override rule groups of the project, empty ones included.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "graphicOverrideRuleIds": {
+                            "type": "array",
+                            "description": "The rules of the group.",
+                            "items": {
+                                "$ref": "#/GraphicOverrideRuleIdArrayItem"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "graphicOverrideRuleIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRuleGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<API_Guid> ruleGroupIds;
+    const GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the graphic override rule groups.");
+    }
+
+    GS::ObjectState response;
+    const auto& graphicOverrideRuleGroupsList = response.AddList<GS::ObjectState> ("graphicOverrideRuleGroups");
+    for (const API_Guid& ruleGroupId : ruleGroupIds) {
+        API_OverrideRuleGroup ruleGroup = {};
+        ruleGroup.guid = ruleGroupId;
+        GS::Array<API_Guid> ruleIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &ruleIds) != NoError) {
+            continue;
+        }
+        GS::ObjectState ruleGroupOs ("name", ruleGroup.name);
+        const auto& ruleIdsList = ruleGroupOs.AddList<GS::ObjectState> ("graphicOverrideRuleIds");
+        for (const API_Guid& ruleId : ruleIds) {
+            ruleIdsList (GS::ObjectState ("graphicOverrideRuleId", CreateGuidObjectState (ruleId)));
+        }
+        graphicOverrideRuleGroupsList (ruleGroupOs);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+DeleteGraphicOverrideRuleGroupsCommand::DeleteGraphicOverrideRuleGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteGraphicOverrideRuleGroupsCommand::GetName () const
+{
+    return "DeleteGraphicOverrideRuleGroups";
+}
+
+GS::Optional<GS::UniString> DeleteGraphicOverrideRuleGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ruleGroupNames": {
+                "type": "array",
+                "description": "The names of the rule groups to delete. The rules of a group are deleted with it.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ruleGroupNames"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteGraphicOverrideRuleGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> ruleGroupNames;
+    if (!parameters.Get ("ruleGroupNames", ruleGroupNames)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'ruleGroupNames' parameter.");
+    }
+
+    GS::HashTable<GS::UniString, API_Guid> ruleGroupGuidsByName;
+    GS::Array<API_Guid> ruleGroupIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) == NoError) {
+        for (const API_Guid& ruleGroupId : ruleGroupIds) {
+            API_OverrideRuleGroup ruleGroup = {};
+            ruleGroup.guid = ruleGroupId;
+            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError && !ruleGroupGuidsByName.ContainsKey (ruleGroup.name)) {
+                ruleGroupGuidsByName.Add (ruleGroup.name, ruleGroup.guid);
+            }
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Delete Graphic Override Rule Groups", [&] () -> GSErrCode {
+        for (const GS::UniString& ruleGroupName : ruleGroupNames) {
+            if (!ruleGroupGuidsByName.ContainsKey (ruleGroupName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + ruleGroupName + "'."));
+                continue;
+            }
+            const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideRuleGroup (ruleGroupGuidsByName[ruleGroupName]);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to delete the rule group '" + ruleGroupName + "'."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+DeleteGraphicOverrideCombinationsCommand::DeleteGraphicOverrideCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteGraphicOverrideCombinationsCommand::GetName () const
+{
+    return "DeleteGraphicOverrideCombinations";
+}
+
+GS::Optional<GS::UniString> DeleteGraphicOverrideCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "graphicOverrideCombinationIds": {
+                "type": "array",
+                "description": "The graphic override combinations to delete. Their rules are kept.",
+                "items": {
+                    "$ref": "#/GraphicOverrideCombinationIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideCombinationIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteGraphicOverrideCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteGraphicOverrideCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> graphicOverrideCombinationIds;
+    if (!parameters.Get ("graphicOverrideCombinationIds", graphicOverrideCombinationIds)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'graphicOverrideCombinationIds' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Delete Graphic Override Combinations", [&] () -> GSErrCode {
+        for (const GS::ObjectState& combinationId : graphicOverrideCombinationIds) {
+            const API_Guid combinationGuid = GetGuidFromArrayItem ("graphicOverrideCombinationId", combinationId);
+            const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideCombination (combinationGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to delete the graphic override combination."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });

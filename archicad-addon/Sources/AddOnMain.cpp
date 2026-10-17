@@ -929,11 +929,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
-            "Creates graphic override rules. The rule group is created when no rule group has the given name. Available from Archicad 27."
+            "Creates graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. The rule group is created when no rule group has the given name. Available from Archicad 27."
         );
         err |= RegisterCommand<ModifyGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
-            "Modifies the name, criterion or style of graphic override rules. A given style replaces the whole style of the rule. Available from Archicad 27."
+            "Modifies the name, criterion or style of graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. A given style replaces the whole style of the rule. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
@@ -946,6 +946,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateGraphicOverrideCombinationsCommand> (
             attributeCommands, "1.7.2",
             "Creates graphic override combinations from existing rules. Available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.2",
+            "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.2",
+            "Gets all graphic override rule groups of the project with the rules they contain, empty groups included. Available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.2",
+            "Deletes graphic override rule groups, found by name, together with their rules. Available from Archicad 27."
         );
         AddCommandGroup (attributeCommands);
     }
