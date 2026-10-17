@@ -4737,7 +4737,8 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
             }
         },
         "additionalProperties": false,
@@ -4770,10 +4771,38 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
+    // The zones of the call are deleted before everything else (#901). An automatic
+    // zone is recomputed from its bounding elements when one of them is deleted, and
+    // when the room is no longer closed Archicad opens its modal "No closed polygon
+    // found around the clicked point" dialog - which blocks this command, and every
+    // later one, until someone clicks it in Archicad. One ACAPI_Element_Delete call
+    // with the walls listed before their zone opened that dialog, while deleting the
+    // zone first in a call of its own did not; so the zones get a call of their own,
+    // before the rest, within the same undoable command. Guids that are not in the
+    // project stay in the second call, which deletes the rest of the batch regardless.
+    GS::Array<API_Guid> zoneGuids;
+    GS::Array<API_Guid> otherGuids;
+    for (const API_Guid& elemGuid : elemGuids) {
+        API_Elem_Head elemHead = {};
+        if (LoadElementHeaderByGuid (elemGuid, elemHead) && GetElemTypeId (elemHead) == API_ZoneID) {
+            zoneGuids.Push (elemGuid);
+        } else {
+            otherGuids.Push (elemGuid);
+        }
+    }
+
     GSErrCode deleteErr = NoError;
     if (!elemGuids.IsEmpty ()) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-            deleteErr = ACAPI_Element_Delete (elemGuids);
+            if (!zoneGuids.IsEmpty ()) {
+                deleteErr = ACAPI_Element_Delete (zoneGuids);
+            }
+            if (!otherGuids.IsEmpty ()) {
+                const GSErrCode otherErr = ACAPI_Element_Delete (otherGuids);
+                if (deleteErr == NoError) {
+                    deleteErr = otherErr;
+                }
+            }
 
             return deleteErr;
         });
