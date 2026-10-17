@@ -8,6 +8,7 @@
 #endif
 
 #include <cmath>
+#include <initializer_list>
 
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -2146,11 +2147,8 @@ static GS::UniString ConvertAPIExtraAccuracyType (API_ExtraAccuracyID apiExtraAc
     }
 }
 
-GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+static GS::ObjectState CreateCalculationUnitsObjectState (const API_CalcUnitPrefs& unitPrefs)
 {
-    API_CalcUnitPrefs unitPrefs;
-    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
-
     return GS::ObjectState (
         "length", GS::ObjectState (
             "unit", ConvertAPILengthType (unitPrefs.length.unit),
@@ -2168,6 +2166,705 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "unit", ConvertAPIAngleType (unitPrefs.angle.unit),
             "decimals", unitPrefs.angle.decimals,
             "accuracy", unitPrefs.angle.accuracy));
+}
+
+GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_CalcUnitPrefs unitPrefs = {};
+    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
+
+    return CreateCalculationUnitsObjectState (unitPrefs);
+}
+
+// Project preferences (Options > Project Preferences)
+//
+// Every page is one DevKit struct, read whole with ACAPI_ProjectSetting_GetPreferences
+// and written back whole with ACAPI_ProjectSetting_SetPreferences. So SetProjectPreferences
+// reads the page first, changes only the fields it was given and keeps the rest as it is.
+// The names of the units are the ones GetCalculationUnits answers with, parsed back here.
+
+template <typename EnumType>
+static bool ParseEnumByName (const GS::UniString& str, std::initializer_list<EnumType> values, GS::UniString (*toString) (EnumType), EnumType& result)
+{
+    for (EnumType value : values) {
+        if (toString (value) == str) {
+            result = value;
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ParseAPILengthType (const GS::UniString& str, API_LengthTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_LengthTypeID::Meter,
+        API_LengthTypeID::Decimeter,
+        API_LengthTypeID::Centimeter,
+        API_LengthTypeID::Millimeter,
+        API_LengthTypeID::FootFracInch,
+        API_LengthTypeID::FootDecInch,
+        API_LengthTypeID::DecFoot,
+        API_LengthTypeID::FracInch,
+        API_LengthTypeID::DecInch
+    }, ConvertAPILengthType, result);
+}
+
+static bool ParseAPIAreaType (const GS::UniString& str, API_AreaTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_AreaTypeID::SquareMeter,
+        API_AreaTypeID::SquareCentimeter,
+        API_AreaTypeID::SquareMillimeter,
+        API_AreaTypeID::SquareFoot,
+        API_AreaTypeID::SquareInch
+    }, ConvertAPIAreaType, result);
+}
+
+static bool ParseAPIVolumeType (const GS::UniString& str, API_VolumeTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_VolumeTypeID::CubicMeter,
+        API_VolumeTypeID::Liter,
+        API_VolumeTypeID::CubicCentimeter,
+        API_VolumeTypeID::CubicMillimeter,
+        API_VolumeTypeID::CubicFoot,
+        API_VolumeTypeID::CubicInch,
+        API_VolumeTypeID::CubicYard,
+        API_VolumeTypeID::Gallon
+    }, ConvertAPIVolumeType, result);
+}
+
+static bool ParseAPIAngleType (const GS::UniString& str, API_AngleTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_AngleTypeID::DecimalDegree,
+        API_AngleTypeID::DegreeMinSec,
+        API_AngleTypeID::Grad,
+        API_AngleTypeID::Radian,
+        API_AngleTypeID::Surveyors
+    }, ConvertAPIAngleType, result);
+}
+
+static bool ParseAPIExtraAccuracyType (const GS::UniString& str, API_ExtraAccuracyID& result)
+{
+    return ParseEnumByName (str, {
+        API_ExtraAccuracyID::APIExtAc_Off,
+        API_ExtraAccuracyID::APIExtAc_Small5,
+        API_ExtraAccuracyID::APIExtAc_Small25,
+        API_ExtraAccuracyID::APIExtAc_Small1,
+        API_ExtraAccuracyID::APIExtAc_Small01,
+        API_ExtraAccuracyID::APIExtAc_Fractions
+    }, ConvertAPIExtraAccuracyType, result);
+}
+
+// Reads an integer field of the preferences from `os`, into the (mostly short) struct field.
+template <typename IntType>
+static bool GetPreferenceIntegerField (const GS::ObjectState& os, const char* key, IntType& target)
+{
+    Int32 value = 0;
+    if (!os.Get (key, value)) {
+        return false;
+    }
+    target = static_cast<IntType> (value);
+    return true;
+}
+
+// Reads the "unit" field of a unit object into `target`, with the parser of its unit type.
+// Returns the error message for a name no unit has, NoValue otherwise.
+template <typename UnitType>
+static GS::Optional<GS::UniString> GetPreferenceUnitField (const GS::ObjectState& os, const char* quantity, bool (*parse) (const GS::UniString&, UnitType&), UnitType& target, bool& changed)
+{
+    GS::UniString unitStr;
+    if (!os.Get ("unit", unitStr)) {
+        return GS::NoValue;
+    }
+    if (!parse (unitStr, target)) {
+        return GS::UniString ("Unknown ") + quantity + " unit: " + unitStr;
+    }
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> GetPreferenceAccuracyField (const GS::ObjectState& os, const char* quantity, API_ExtraAccuracyID& target, bool& changed)
+{
+    GS::UniString accuracyStr;
+    if (!os.Get ("accuracy", accuracyStr)) {
+        return GS::NoValue;
+    }
+    if (!ParseAPIExtraAccuracyType (accuracyStr, target)) {
+        return GS::UniString ("Unknown ") + quantity + " accuracy: " + accuracyStr;
+    }
+    changed = true;
+    return GS::NoValue;
+}
+
+// --- Working Units page
+
+static GS::ObjectState CreateWorkingUnitsObjectState (const API_WorkingUnitsPrefs& prefs)
+{
+    return GS::ObjectState (
+        "length", GS::ObjectState (
+            "unit", ConvertAPILengthType (prefs.lengthUnit),
+            "decimals", prefs.lenDecimals,
+            "roundInch", prefs.roundInch),
+        "area", GS::ObjectState (
+            "unit", ConvertAPIAreaType (prefs.areaUnit),
+            "decimals", prefs.areaDecimals),
+        "volume", GS::ObjectState (
+            "unit", ConvertAPIVolumeType (prefs.volumeUnit),
+            "decimals", prefs.volumeDecimals),
+        "angle", GS::ObjectState (
+            "unit", ConvertAPIAngleType (prefs.angleUnit),
+            "decimals", prefs.angleDecimals,
+            "accuracy", prefs.angleAccuracy));
+}
+
+// The Apply functions change the fields of `prefs` that `os` gives and set `changed`
+// when there was one. They return the error message for a value that cannot be
+// applied, NoValue otherwise.
+static GS::Optional<GS::UniString> ApplyWorkingUnits (const GS::ObjectState& os, API_WorkingUnitsPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error;
+
+    GS::ObjectState length;
+    if (os.Get ("length", length)) {
+        error = GetPreferenceUnitField (length, "length", ParseAPILengthType, prefs.lengthUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (length, "decimals", prefs.lenDecimals);
+        changed |= GetPreferenceIntegerField (length, "roundInch", prefs.roundInch);
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = GetPreferenceUnitField (area, "area", ParseAPIAreaType, prefs.areaUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (area, "decimals", prefs.areaDecimals);
+    }
+
+    GS::ObjectState volume;
+    if (os.Get ("volume", volume)) {
+        error = GetPreferenceUnitField (volume, "volume", ParseAPIVolumeType, prefs.volumeUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (volume, "decimals", prefs.volumeDecimals);
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = GetPreferenceUnitField (angle, "angle", ParseAPIAngleType, prefs.angleUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (angle, "decimals", prefs.angleDecimals);
+        changed |= GetPreferenceIntegerField (angle, "accuracy", prefs.angleAccuracy);
+    }
+
+    return GS::NoValue;
+}
+
+// --- Calculation Units page
+
+static GS::Optional<GS::UniString> ApplyCalculationUnits (const GS::ObjectState& os, API_CalcUnitPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error;
+
+    GS::ObjectState length;
+    if (os.Get ("length", length)) {
+        error = GetPreferenceUnitField (length, "length", ParseAPILengthType, prefs.length.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (length, "length", prefs.length.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (length, "decimals", prefs.length.decimals);
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = GetPreferenceUnitField (area, "area", ParseAPIAreaType, prefs.area.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (area, "area", prefs.area.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (area, "decimals", prefs.area.decimals);
+    }
+
+    GS::ObjectState volume;
+    if (os.Get ("volume", volume)) {
+        error = GetPreferenceUnitField (volume, "volume", ParseAPIVolumeType, prefs.volume.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (volume, "volume", prefs.volume.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (volume, "decimals", prefs.volume.decimals);
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = GetPreferenceUnitField (angle, "angle", ParseAPIAngleType, prefs.angle.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (angle, "decimals", prefs.angle.decimals);
+        changed |= GetPreferenceIntegerField (angle, "accuracy", prefs.angle.accuracy);
+    }
+
+    return GS::NoValue;
+}
+
+// --- Reference Levels page
+
+static GS::ObjectState CreateReferenceLevelsObjectState (const API_RefLevelsPrefs& prefs)
+{
+    return GS::ObjectState (
+        "level1", GS::ObjectState (
+            "name", GS::UniString (prefs.level1Str),
+            "level", prefs.level1),
+        "level2", GS::ObjectState (
+            "name", GS::UniString (prefs.level2Str),
+            "level", prefs.level2));
+}
+
+static GS::Optional<GS::UniString> ApplyReferenceLevels (const GS::ObjectState& os, API_RefLevelsPrefs& prefs, bool& changed)
+{
+    GS::ObjectState level1;
+    if (os.Get ("level1", level1)) {
+        changed |= SetUCharProperty (&level1, "name", prefs.level1Str);
+        changed |= level1.Get ("level", prefs.level1);
+    }
+
+    GS::ObjectState level2;
+    if (os.Get ("level2", level2)) {
+        changed |= SetUCharProperty (&level2, "name", prefs.level2Str);
+        changed |= level2.Get ("level", prefs.level2);
+    }
+
+    return GS::NoValue;
+}
+
+// --- The commands
+
+// Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
+// (one of the Apply functions above) and writes it back. Answers an ExecutionResult.
+template <typename PrefsType, typename ApplyFunction>
+static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_PrefsTypeID prefsType, const GS::ObjectState& pageFields, ApplyFunction apply)
+{
+    PrefsType prefs = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, prefsType);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, GS::UniString ("Failed to read the ") + pageName + " preferences.");
+    }
+
+    bool changed = false;
+    const GS::Optional<GS::UniString> error = apply (pageFields, prefs, changed);
+    if (error.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, error.Get ());
+    }
+    if (!changed) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("No field of the ") + pageName + " preferences given.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Set Project Preferences", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_SetPreferences (&prefs, prefsType);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, GS::UniString ("Failed to set the ") + pageName + " preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The "required" list of a preferences object: every field in the response of
+// GetProjectPreferences, none in the input of SetProjectPreferences, where a
+// missing field keeps its value.
+static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired, const GS::UniString& fields)
+{
+    if (allFieldsRequired) {
+        return GS::UniString ("\"required\": [") + fields + "]";
+    }
+    return "\"required\": []";
+}
+
+static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")") + R"(
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")") + R"(
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")") + R"(
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")") + R"(
+            }
+        },
+        "additionalProperties": false,
+        )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")") + R"(
+    })";
+}
+
+static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")") + R"(
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")") + R"(
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")") + R"(
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")") + R"(
+            }
+        },
+        "additionalProperties": false,
+        )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")") + R"(
+    })";
+}
+
+static GS::UniString GetReferenceLevelsSchema (bool allFieldsRequired)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The Reference Levels page: the two reference levels of the project, each with a name and a level above Project Zero.",
+        "properties": {
+            "level1": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the first reference level."
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "The height of the first reference level above Project Zero, in meters."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "level")") + R"(
+            },
+            "level2": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the second reference level."
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "The height of the second reference level above Project Zero, in meters."
+                    }
+                },
+                "additionalProperties": false,
+                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "level")") + R"(
+            }
+        },
+        "additionalProperties": false,
+        )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("level1", "level2")") + R"(
+    })";
+}
+
+GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetProjectPreferencesCommand::GetName () const
+{
+    return "GetProjectPreferences";
+}
+
+GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "preferenceTypes": {
+                "type": "array",
+                "description": "The preference pages to get. Every page when missing.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "WorkingUnits",
+                        "CalculationUnits",
+                        "ReferenceLevels"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The pages asked for, by name.",
+        "properties": {
+            "workingUnits": )") + GetWorkingUnitsSchema (true) + R"(,
+            "calculationUnits": )") + GetCalculationUnitsPageSchema (true) + R"(,
+            "referenceLevels": )") + GetReferenceLevelsSchema (true) + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> preferenceTypes;
+    if (!parameters.Get ("preferenceTypes", preferenceTypes)) {
+        preferenceTypes.Push ("WorkingUnits");
+        preferenceTypes.Push ("CalculationUnits");
+        preferenceTypes.Push ("ReferenceLevels");
+    }
+
+    GS::ObjectState response;
+    for (const GS::UniString& preferenceType : preferenceTypes) {
+        if (preferenceType == "WorkingUnits") {
+            API_WorkingUnitsPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_WorkingUnitsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the working units preferences.");
+            }
+            response.Add ("workingUnits", CreateWorkingUnitsObjectState (prefs));
+        } else if (preferenceType == "CalculationUnits") {
+            API_CalcUnitPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_CalcUnitsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the calculation units preferences.");
+            }
+            response.Add ("calculationUnits", CreateCalculationUnitsObjectState (prefs));
+        } else if (preferenceType == "ReferenceLevels") {
+            API_RefLevelsPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the reference levels preferences.");
+            }
+            response.Add ("referenceLevels", CreateReferenceLevelsObjectState (prefs));
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
+        }
+    }
+
+    return response;
+}
+
+SetProjectPreferencesCommand::SetProjectPreferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetProjectPreferencesCommand::GetName () const
+{
+    return "SetProjectPreferences";
+}
+
+GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The pages to change, by name. Only the given fields of a page change, the rest keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet).",
+        "properties": {
+            "workingUnits": )") + GetWorkingUnitsSchema (false) + R"(,
+            "calculationUnits": )") + GetCalculationUnitsPageSchema (false) + R"(,
+            "referenceLevels": )") + GetReferenceLevelsSchema (false) + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "One execution result per page given in the input, by name.",
+        "properties": {
+            "workingUnits": {
+                "$ref": "#/ExecutionResult"
+            },
+            "calculationUnits": {
+                "$ref": "#/ExecutionResult"
+            },
+            "referenceLevels": {
+                "$ref": "#/ExecutionResult"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    bool anyPage = false;
+
+    GS::ObjectState workingUnits;
+    if (parameters.Get ("workingUnits", workingUnits)) {
+        anyPage = true;
+        response.Add ("workingUnits", SetProjectPreferencesPage<API_WorkingUnitsPrefs> ("working units", APIPrefs_WorkingUnitsID, workingUnits, ApplyWorkingUnits));
+    }
+
+    GS::ObjectState calculationUnits;
+    if (parameters.Get ("calculationUnits", calculationUnits)) {
+        anyPage = true;
+        response.Add ("calculationUnits", SetProjectPreferencesPage<API_CalcUnitPrefs> ("calculation units", APIPrefs_CalcUnitsID, calculationUnits, ApplyCalculationUnits));
+    }
+
+    GS::ObjectState referenceLevels;
+    if (parameters.Get ("referenceLevels", referenceLevels)) {
+        anyPage = true;
+        response.Add ("referenceLevels", SetProjectPreferencesPage<API_RefLevelsPrefs> ("reference levels", APIPrefs_ReferenceLevelsID, referenceLevels, ApplyReferenceLevels));
+    }
+
+    if (!anyPage) {
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, calculationUnits or referenceLevels.");
+    }
+
+    return response;
 }
 
 static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
