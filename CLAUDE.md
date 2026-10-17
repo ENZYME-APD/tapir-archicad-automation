@@ -204,7 +204,9 @@ Grasshopper component.
 
 GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml`,
-  `installer_build_check.yml` — PR build checks for each component. The installer
+  `installer_build_check.yml` — PR build checks for each component, also run
+  on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
+  uses); a newer push to a pull request cancels its superseded runs. The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
@@ -230,16 +232,37 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   when it changed (never hand-edit those docs).
 - `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
-  write access: it answers, closes verified already-fixed issues, or opens a **draft**
-  PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`. No label is needed;
-  applying `claude-fix` re-runs `fix` on an existing issue, and a `workflow_dispatch`
-  with an `issue_number` runs it on that issue. Its header documents the
-  security bounds and the repository rulesets they rely on.
+  write access: it answers, closes verified already-fixed issues, or opens a
+  ready-for-review PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`, and asks
+  the issue's author (tagged) to verify it in Archicad. An issue too large for
+  one PR gets a split plan (`<!-- claude-split-plan: parts=N -->`, at most six
+  parts) and one PR per part, opened one run at a time (`next-part` job) on
+  `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`. No label
+  is needed; applying `claude-fix` re-runs `fix` on an existing issue, and a
+  `workflow_dispatch` with an `issue_number` runs it on that issue. Its header
+  documents the security bounds and the repository rulesets they rely on.
 - `claude_pr_review.yml` — the PR review bot. Reviews on open/push and re-reviews on
   any human PR comment, without re-posting open findings, and resolves the threads it
-  opened once the change or the discussion settles them.
+  opened once the change or the discussion settles them. On the issue bot's PRs it
+  also records its verdict as the `claude-review` commit status (set by a job
+  without a model, from a nonce-tagged marker in the review).
+- `claude_bot_pr_steward.yml` — drives the issue bot's PRs to mergeable without a
+  maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
+  started by the issue bot and the review, dispatches the build checks and the
+  review on each new head, links the built add-on in a comment asking the
+  issue's author to test it in Archicad, and starts a `fix` run on a failed build,
+  a blocking review or a conflict with `main` (which it merges in), at most
+  `BOT_PR_MAX_FIX_ROUNDS` (default 3) times, on at most `BOT_PR_SWEEP_BATCH`
+  (default 5) PRs per sweep. Then
+  it labels the PR `needs-maintainer` and stops. `BOT_PR_STEWARD=false` turns it
+  off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
-  authors that touch no release-critical path (never the bots' own PRs).
+  authors that touch no release-critical path. It also merges the issue bot's
+  PRs (`claude/` branches) with no human interaction once every build check is
+  green and `claude-review` has been a success for `BOT_AUTO_MERGE_DELAY_HOURS`
+  (default 72), with no open thread by a person, no changes requested and no
+  `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
+  This is a deliberate maintainer decision to minimize human maintenance.
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
   requests in the project's Discord channels, then dispatches
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
