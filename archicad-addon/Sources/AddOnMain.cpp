@@ -297,6 +297,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.0.7",
             "Opens the given project."
         );
+        err |= RegisterCommand<NewProjectCommand> (
+            projectCommands, "1.7.2",
+            "Starts a new, untitled project from the template set in Archicad's New Project settings, as File > New does; with newAndReset also the working environment is reset, as New and Reset All does. The unsaved changes of the open project are discarded, as with OpenProject."
+        );
         err |= RegisterCommand<CloseProjectCommand> (
             projectCommands, "1.3.1",
             "Closes the currently opened project."
