@@ -5356,7 +5356,20 @@ GS::String ConsolidationCommandBase::GetName () const
 GS::Optional<GS::UniString> ConsolidationCommandBase::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "result": {
+                "type": "string",
+                "description": "What Archicad answered for the JSON query, as it came. Present when the query ran. The Archicad API does not document its content; it may report a failure of the menu command even though the query itself ran."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
     })";
 }
 
@@ -5366,11 +5379,16 @@ GS::ObjectState ConsolidationCommandBase::Execute (const GS::ObjectState& /*para
     GS::UniString result;
     const GSErrCode err = RunJsonQuery (query, result);
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to run the %T menu command.", menuCommandName.ToPrintf ()));
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to run the %T menu command.", menuCommandName.ToPrintf ())));
     }
-    return CreateSuccessfulExecutionResult ();
+
+    // The answer is undocumented and may say that the menu command failed although the query ran,
+    // so it is passed on for the caller to see.
+    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+    response.Add ("result", result);
+    return response;
 #else
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+    return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer."));
 #endif
 }
 

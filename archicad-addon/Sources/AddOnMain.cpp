@@ -837,11 +837,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ConsolidateLinesCommand> (
             attributeCommands, "1.7.2",
-            "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran. Available from Archicad 27."
+            "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27."
         );
         err |= RegisterCommand<ConsolidateFillsCommand> (
             attributeCommands, "1.7.2",
-            "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran. Available from Archicad 27."
+            "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
