@@ -2726,6 +2726,8 @@ GS::ObjectState DeselectAllCommand::Execute (const GS::ObjectState& /*parameters
 // typeID tells the marquee shape (API_MarqueeHorBox, API_MarqueeRotBox, API_MarqueePoly),
 // marquee.box/boxRotAngle hold a rectangle, marquee.coords/nCoords the polygon in the
 // usual 1-based form with the closing vertex repeated, and multiStory the "thick" marquee.
+// Unlike API_ElementMemo, API_Region has no nested polygon member: its vertex count is the
+// field nCoords right next to coords (marquee.polygon.nCoords does not compile, AC25 to AC30).
 
 static bool IsMarqueeSelectionType (API_SelTypeID typeID)
 {
