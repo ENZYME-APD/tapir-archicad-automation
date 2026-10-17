@@ -2717,15 +2717,15 @@ static GS::Optional<GS::ObjectState> GetAttributeFolderFromObjectState (const GS
 
     folder.typeID = typeID;
     folder.path = path;
-    folder.guid = APINULLGuid;
+    folder.guid = GS::Guid ();
     return GS::NoValue;
 }
 
-// Resolves folder.guid from its typeID and path; false when no folder exists on that path.
+// Resolves folder.guid (a GS::Guid, not an API_Guid) from its typeID and path; false when no folder exists on that path.
 static bool FindAttributeFolder (API_AttributeFolder& folder)
 {
-    folder.guid = APINULLGuid;
-    return ACAPI_Attribute_GetFolder (folder) == NoError && folder.guid != APINULLGuid;
+    folder.guid = GS::Guid ();
+    return ACAPI_Attribute_GetFolder (folder) == NoError && !folder.guid.IsNull ();
 }
 
 #endif
@@ -2798,7 +2798,7 @@ GS::ObjectState CreateAttributeFoldersCommand::Execute (const GS::ObjectState& p
         GSErrCode err = NoError;
         API_AttributeFolder current;
         current.typeID = folder.typeID;
-        current.guid = APINULLGuid;
+        current.guid = GS::Guid ();
         for (const GS::UniString& folderName : folder.path) {
             current.path.Push (folderName);
             if (FindAttributeFolder (current)) {
@@ -3108,23 +3108,20 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
     const auto& folderExecutionResults = response.AddList<GS::ObjectState> ("folderExecutionResults");
 
     // Moved one by one, so that every item gets its own result like in the other attribute commands.
+    // ACAPI_Attribute_Move takes the attributes to move as GS::Guids (not API_Guids or API_Attr_Heads).
     const GS::Array<API_AttributeFolder> noFolders;
-    const GS::Array<API_Attr_Head> noAttributes;
+    const GS::Array<GS::Guid> noAttributes;
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        // Looked up with the target folder's type, so an attribute of another type fails here instead of in the API.
         API_AttributeIndex index;
         if (!GetAttributeIndexFromAttributeId (attributeIdItem, targetFolder.typeID, index)) {
             attributeExecutionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found among the attributes of the target folder's type."));
             continue;
         }
 
-        API_Attr_Head attrHead = {};
-        attrHead.typeID = targetFolder.typeID;
-        attrHead.index = index;
-        attrHead.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
-
-        GS::Array<API_Attr_Head> attributesToMove;
-        attributesToMove.Push (attrHead);
+        GS::Array<GS::Guid> attributesToMove;
+        attributesToMove.Push (APIGuid2GSGuid (GetGuidFromAttributesArrayItem (attributeIdItem)));
         const GSErrCode err = ACAPI_Attribute_Move (noFolders, attributesToMove, targetFolder);
         if (err != NoError) {
             attributeExecutionResults (CreateFailedExecutionResult (err, "Failed to move the attribute."));
