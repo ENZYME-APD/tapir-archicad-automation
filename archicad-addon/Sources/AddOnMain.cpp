@@ -790,6 +790,14 @@ GSErrCode Initialize (void)
             classificationCommands, "1.0.7",
             "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
         );
+        err |= RegisterCommand<GetClassificationsOfAttributesCommand> (
+            classificationCommands, "1.7.2",
+            "Returns the classifications of the given attributes (building materials, composites, surfaces, etc.) in every classification system they are classified in."
+        );
+        err |= RegisterCommand<SetClassificationsOfAttributesCommand> (
+            classificationCommands, "1.7.2",
+            "Sets the classifications of attributes (building materials, composites, surfaces, etc.). The given item replaces the attribute's current item in the same classification system. In order to set the classification of an attribute to unclassified in a system, omit the classificationItemId field."
+        );
         err |= RegisterCommand<CreateClassificationSystemsCommand> (
             classificationCommands, "1.5.0",
             "Creates Classification Systems including Classification Items based on the given parameters."
