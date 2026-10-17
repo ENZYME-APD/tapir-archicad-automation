@@ -261,18 +261,6 @@
   ],
   "teardown": [
     {
-      "command": "DeleteGraphicOverrideRules",
-      "params": {
-        "graphicOverrideRuleIds": [
-          {
-            "graphicOverrideRuleId": {
-              "guid": "${rule}"
-            }
-          }
-        ]
-      }
-    },
-    {
       "command": "DeleteGraphicOverrideRuleGroups",
       "params": {
         "ruleGroupNames": [
