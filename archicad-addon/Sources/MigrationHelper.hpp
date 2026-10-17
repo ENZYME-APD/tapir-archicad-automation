@@ -53,6 +53,12 @@
 
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
+#define ACAPI_SurveyPoint_IsSurveyPointVisible(par1) ACAPI_Environment (APIEnv_IsSurveyPointVisibleID, par1)
+#define ACAPI_SurveyPoint_SetSurveyPointVisibility(par1) ACAPI_Environment (APIEnv_SetSurveyPointVisibilityID, par1)
+#ifdef ServerMainVers_2600
+#define ACAPI_SurveyPoint_IsSurveyPointLocked(par1) ACAPI_Environment (APIEnv_IsSurveyPointLockedID, par1)
+#define ACAPI_SurveyPoint_SetSurveyPointLocked(par1) ACAPI_Environment (APIEnv_SetSurveyPointLockedID, par1)
+#endif
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
 #define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
 

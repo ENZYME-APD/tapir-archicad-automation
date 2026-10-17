@@ -325,11 +325,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
-            "Gets the project location details."
+            "Gets the project location details: the project location, and the survey point's position, geo-referencing parameters, visibility and lock state (the lock from Archicad 26)."
         );
         err |= RegisterCommand<SetGeoLocationCommand> (
             projectCommands, "1.2.9",
-            "Sets the project location details."
+            "Sets the project location details: the project location, and the survey point's position, geo-referencing parameters, visibility and lock state (the lock from Archicad 26). Omitted fields stay unchanged."
         );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",

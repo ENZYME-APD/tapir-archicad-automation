@@ -9100,6 +9100,14 @@
             },
             "geoReferencingParameters": {
                 "$ref": "#/GeoReferencingParameters"
+            },
+            "isVisible": {
+                "type": "boolean",
+                "description": "Whether the survey point is shown in the project."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "Whether the survey point is locked, so it cannot be moved. Available from Archicad 26; left out on older versions."
             }
         },
         "additionalProperties": false,
@@ -9144,6 +9152,14 @@
             },
             "geoReferencingParameters": {
                 "$ref": "#/GeoReferencingParametersUpdate"
+            },
+            "isVisible": {
+                "type": "boolean",
+                "description": "Shows (true) or hides (false) the survey point. Omitted means unchanged."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "Locks (true) or unlocks (false) the survey point, so it cannot or can be moved. Omitted means unchanged. Available from Archicad 26; the command fails on older versions when it is given."
             }
         },
         "additionalProperties": false,
