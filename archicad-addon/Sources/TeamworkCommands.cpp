@@ -55,6 +55,93 @@ GS::ObjectState TeamworkReceiveCommand::Execute (const GS::ObjectState& /*parame
         : CreateFailedExecutionResult (err, "Failed to receive changes.");
 }
 
+GetTeamworkProjectInfoCommand::GetTeamworkProjectInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetTeamworkProjectInfoCommand::GetName () const
+{
+    return "GetTeamworkProjectInfo";
+}
+
+GS::Optional<GS::UniString> GetTeamworkProjectInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isTeamwork": {
+                "type": "boolean",
+                "description": "True, if the opened project is a Teamwork (BIMcloud) project. When false, every other Teamwork field is left out."
+            },
+            "isOnline": {
+                "type": "boolean",
+                "description": "True, if the Teamwork project is connected to its BIMcloud server. False in a solo project or when the Teamwork project works offline."
+            },
+            "userId": {
+                "type": "number",
+                "description": "The Teamwork user identifier of the current user, as the Teamwork commands report users."
+            },
+            "userName": {
+                "type": "string",
+                "description": "The name of the current Teamwork user."
+            },
+            "serverUrl": {
+                "type": "string",
+                "description": "The address of the BIMcloud server of the Teamwork project."
+            },
+            "projectName": {
+                "type": "string",
+                "description": "The name of the Teamwork project on the server."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isTeamwork",
+            "isOnline"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectInfo projectInfo = {};
+    const GSErrCode err = ACAPI_ProjectOperation_Project (&projectInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
+    }
+
+    GS::ObjectState response;
+    response.Add ("isTeamwork", projectInfo.teamwork);
+    if (!projectInfo.teamwork) {
+        response.Add ("isOnline", false);
+        return response;
+    }
+
+    response.Add ("isOnline", ACAPI_Teamwork_IsOnline ());
+    response.Add ("userId", projectInfo.userId);
+
+    GS::UniString serverUrl;
+    GS::UniString projectName;
+    GS::UniString userName;
+    const bool hasDetails = projectInfo.location_team != nullptr &&
+        ACAPI_Teamwork_GetTeamworkProjectDetails (*projectInfo.location_team, &serverUrl, &projectName, &userName) == NoError;
+    if (!hasDetails || userName.IsEmpty ()) {
+        // The user is known from the user id even when the server details are not.
+        ACAPI_Teamwork_GetUsernameFromId (projectInfo.userId, &userName);
+    }
+
+    if (!userName.IsEmpty ()) {
+        response.Add ("userName", userName);
+    }
+    if (hasDetails) {
+        response.Add ("serverUrl", serverUrl);
+        response.Add ("projectName", projectName);
+    }
+
+    return response;
+}
+
 ReserveElementsCommand::ReserveElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
