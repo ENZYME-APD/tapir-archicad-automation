@@ -6770,6 +6770,176 @@ GS::Optional<GS::UniString> ModifyOpeningsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
+// The optional fields of one ModifyOpenings item.
+struct OpeningModification {
+    GS::Optional<double>      width;
+    GS::Optional<double>      height;
+    GS::Optional<API_Coord3D> basePoint;
+};
+
+// Reads the optional fields of a ModifyOpenings item; the error text when they are not usable.
+static GS::Optional<GS::UniString> GetOpeningModification (const GS::ObjectState& item, OpeningModification& modification)
+{
+    modification.width = GetOptionalDouble (item, "width");
+    modification.height = GetOptionalDouble (item, "height");
+    if ((modification.width.HasValue () && modification.width.Get () <= 0.0) ||
+        (modification.height.HasValue () && modification.height.Get () <= 0.0)) {
+        return GS::UniString ("'width' and 'height' must be greater than zero.");
+    }
+    modification.basePoint = GetOptionalCoordinate3D (item, "basePoint");
+    if (!modification.width.HasValue () && !modification.height.HasValue () && !modification.basePoint.HasValue ()) {
+        return GS::UniString ("No opening fields to modify.");
+    }
+    return {};
+}
+
+#ifdef ServerMainVers_2900
+
+// Measured positions of the opening are compared with this tolerance, the one CommandBase uses
+// for coordinates.
+constexpr double OpeningPlacementTolerance = 0.001;
+
+// The lowest Z of the opening's 3D bounds: the bottom edge of an opening in a wall, measured
+// the way Get3DBoundingBoxes reports it.
+static GS::Optional<double> GetOpeningBottom (const API_Guid& openingGuid)
+{
+    API_Elem_Head elemHead = {};
+    elemHead.guid = openingGuid;
+    API_Box3D bounds = {};
+    if (ACAPI_Element_CalcBounds (&elemHead, &bounds) != NoError) {
+        return {};
+    }
+    return bounds.zMin;
+}
+
+// A pure translation; API_Tranmat is a 3x4 matrix stored row by row with the translation in
+// tmx[3], tmx[7] and tmx[11] (see CreateHotlinkTransformation).
+static API_Tranmat CreateTranslation (double dx, double dy, double dz)
+{
+    API_Tranmat translation = {};
+    translation.tmx[0]  = 1.0;
+    translation.tmx[3]  = dx;
+    translation.tmx[5]  = 1.0;
+    translation.tmx[7]  = dy;
+    translation.tmx[10] = 1.0;
+    translation.tmx[11] = dz;
+    return translation;
+}
+
+// Archicad 29 replaced the API_OpeningType struct, which the pre-29 branch of ModifyOpenings
+// and of CreateOpenings write, with the ACAPI::Element::Opening interface; CreateOpenings
+// places new openings through its OpeningDefault there, and this changes an existing one
+// through Opening::Modify. Like the MEP element modifiers in MEPCommands.cpp, Modify opens its
+// own undoable command (it takes the undo string), so it is not wrapped in
+// ACAPI_CallUndoableCommand.
+//
+// The extrusion parameters keep the anchor point of the opening - its centre by default - in
+// place when the height changes, and the vertical placement rules of PlacePolygonal differ
+// between Archicad 29 and 30 (see CreateOpenings). So instead of deriving the bottom edge from
+// the anchor rules, it is measured through the 3D bounds before and after the change and the
+// opening is moved by the difference: a new height keeps the bottom edge where it was and a new
+// basePoint puts it on the requested Z, as on Archicad 28 and earlier. The horizontal position
+// of a new basePoint follows CreateOpenings: the anchor point of the opening geometry - the
+// origin PlacePolygonal was given - is translated to the point CreateOpenings would place at.
+static GS::ObjectState ModifyOpeningThroughOpeningInterface (const API_Guid& openingGuid, const OpeningModification& modification)
+{
+    using ACAPI::Element::Opening;
+
+    const ACAPI::UniqueID openingId (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ());
+    ACAPI::Result<Opening> opening = Opening::Get (openingId);
+    if (opening.IsErr ()) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    // Openings in a wall are extruded horizontally; only those have a bottom edge to keep.
+    const auto extrusionDirection = opening->GetOpeningGeometry ().GetExtrusionDirection ();
+    const bool hasBottomEdge = std::fabs (extrusionDirection.z) < OpeningPlacementTolerance;
+    const GS::Optional<double> bottomBefore = hasBottomEdge ? GetOpeningBottom (openingGuid) : GS::Optional<double> ();
+
+    if (modification.width.HasValue () || modification.height.HasValue ()) {
+        ACAPI::Result<void> result =opening->Modify ([&] (Opening::Modifier& modifier) {
+            auto&& extrusionParameters = modifier.GetExtrusionParameters ();
+            if (modification.width.HasValue ()) {
+                (void) extrusionParameters.SetWidth (modification.width.Get ());
+            }
+            if (modification.height.HasValue ()) {
+                (void) extrusionParameters.SetHeight (modification.height.Get ());
+            }
+        }, "Modify Openings");
+        if (result.IsErr ()) {
+            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to modify opening.");
+        }
+
+        // Read the opening back: a value the interface silently kept is a failure of the item.
+        ACAPI::Result<Opening> resized = Opening::Get (openingId);
+        if (resized.IsErr ()) {
+            return CreateFailedExecutionResult (resized.UnwrapErr ().kind, "Failed to read the opening back.");
+        }
+        const auto& extrusionParameters = resized->GetExtrusionParameters ();
+        if ((modification.width.HasValue () && std::fabs (extrusionParameters.GetWidth () - modification.width.Get ()) > OpeningPlacementTolerance) ||
+            (modification.height.HasValue () && std::fabs (extrusionParameters.GetHeight () - modification.height.Get ()) > OpeningPlacementTolerance)) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "The opening did not take the new width or height.");
+        }
+    }
+
+    if (modification.basePoint.HasValue ()) {
+        ACAPI::Result<Opening> current = Opening::Get (openingId);
+        if (current.IsErr ()) {
+            return CreateFailedExecutionResult (current.UnwrapErr ().kind, "Failed to read the opening back.");
+        }
+
+        // The point CreateOpenings hands to PlacePolygonal for this basePoint: on Archicad 29
+        // PlacePolygonal hangs the polygon below the point, so CreateOpenings raises it by the
+        // height there; Archicad 30 puts the sill on the point itself (#848).
+        API_Coord3D placementPoint = modification.basePoint.Get ();
+#ifndef ServerMainVers_3000
+        placementPoint.z += current->GetExtrusionParameters ().GetHeight ();
+#endif
+        const auto anchorPoint = current->GetOpeningGeometry ().GetAnchorPoint ();
+        const API_Tranmat translation = CreateTranslation (placementPoint.x - anchorPoint.x,
+                                                           placementPoint.y - anchorPoint.y,
+                                                           placementPoint.z - anchorPoint.z);
+        ACAPI::Result<void> result =current->Modify ([&] (Opening::Modifier& modifier) {
+            (void) modifier.GetOpeningGeometry ().Transform (translation);
+        }, "Modify Openings");
+        if (result.IsErr ()) {
+            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to move opening.");
+        }
+    }
+
+    // Put the bottom edge where it belongs - unchanged after a resize, on basePoint.z after a
+    // move - and fail the item when it is not there afterwards either.
+    GS::Optional<double> targetBottom = bottomBefore;
+    if (hasBottomEdge && modification.basePoint.HasValue ()) {
+        targetBottom = modification.basePoint.Get ().z;
+    }
+    if (targetBottom.HasValue ()) {
+        GS::Optional<double> bottom = GetOpeningBottom (openingGuid);
+        if (bottom.HasValue () && std::fabs (bottom.Get () - targetBottom.Get ()) > OpeningPlacementTolerance) {
+            ACAPI::Result<Opening> moved = Opening::Get (openingId);
+            if (moved.IsErr ()) {
+                return CreateFailedExecutionResult (moved.UnwrapErr ().kind, "Failed to read the opening back.");
+            }
+            const API_Tranmat correction = CreateTranslation (0.0, 0.0, targetBottom.Get () - bottom.Get ());
+            ACAPI::Result<void> result =moved->Modify ([&] (Opening::Modifier& modifier) {
+                (void) modifier.GetOpeningGeometry ().Transform (correction);
+            }, "Modify Openings");
+            if (result.IsErr ()) {
+                return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to move opening.");
+            }
+            bottom = GetOpeningBottom (openingGuid);
+        }
+        if (!bottom.HasValue () || std::fabs (bottom.Get () - targetBottom.Get ()) > OpeningPlacementTolerance) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The bottom edge of the opening is at z=%.3f instead of the requested z=%.3f.",
+                                                                                       bottom.HasValue () ? bottom.Get () : 0.0, targetBottom.Get ()));
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+#endif
+
 GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -6780,7 +6950,6 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
 
 #ifndef ServerMainVers_2900
     const Stories stories = GetStories ();
-#endif
 
     return ExecuteModifyWithResults ("Modify Openings", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
@@ -6789,7 +6958,6 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
-#ifndef ServerMainVers_2900
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -6804,17 +6972,15 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
-            const auto width = GetOptionalDouble (item, "width");
-            const auto height = GetOptionalDouble (item, "height");
-            if ((width.HasValue () && width.Get () <= 0.0) || (height.HasValue () && height.Get () <= 0.0)) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'width' and 'height' must be greater than zero."));
+            OpeningModification modification;
+            const auto modificationError = GetOpeningModification (item, modification);
+            if (modificationError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, modificationError.Get ()));
                 continue;
             }
-            const bool hasBasePoint = item.Get ("basePoint") != nullptr;
-            if (!width.HasValue () && !height.HasValue () && !hasBasePoint) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No opening fields to modify."));
-                continue;
-            }
+            const auto& width = modification.width;
+            const auto& height = modification.height;
+            const bool hasBasePoint = modification.basePoint.HasValue ();
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
@@ -6838,7 +7004,7 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
                 ACAPI_ELEMENT_MASK_SET (mask, API_OpeningType, extrusionGeometryData.parameters.height);
             }
             if (hasBasePoint) {
-                const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*item.Get ("basePoint"));
+                const API_Coord3D& basePoint = modification.basePoint.Get ();
                 element.opening.extrusionGeometryData.frame.basePoint = basePoint;
                 ACAPI_ELEMENT_MASK_SET (mask, API_OpeningType, extrusionGeometryData.frame.basePoint);
                 bottomAboveStory = basePoint.z - GetZPos (element.header.floorInd, 0.0, stories);
@@ -6851,15 +7017,25 @@ GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameter
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify opening."));
-#else
-            // Archicad 29 replaced the API_OpeningType struct, which the branch above and the
-            // pre-29 CreateOpenings write, with the ACAPI::Element::Opening interface that
-            // CreateOpenings uses there to place a new opening. Changing an existing opening
-            // through that interface is not implemented yet.
-            results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "ModifyOpenings is not supported in Archicad 29 and later yet; it needs Archicad 28 or earlier."));
-#endif
         }
     });
+#else
+    GS::Array<GS::ObjectState> results;
+    for (const auto& item : items) {
+        if (item.Get ("elementId") == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+            continue;
+        }
+        OpeningModification modification;
+        const auto modificationError = GetOpeningModification (item, modification);
+        if (modificationError.HasValue ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, modificationError.Get ()));
+            continue;
+        }
+        results.Push (ModifyOpeningThroughOpeningInterface (GetGuidFromObjectState (*item.Get ("elementId")), modification));
+    }
+    return CreateExecutionResultResponse (results);
+#endif
 }
 
 ModifyMorphsCommand::ModifyMorphsCommand () :

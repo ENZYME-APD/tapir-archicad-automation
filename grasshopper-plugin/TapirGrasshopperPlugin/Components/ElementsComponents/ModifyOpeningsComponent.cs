@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public ModifyOpeningsComponent()
             : base(
                 "ModifyOpenings",
-                "Modify Opening elements. Only the connected optional inputs are changed on the elements. Needs Archicad 28 or earlier.",
+                "Modify Opening elements. Only the connected optional inputs are changed on the elements.",
                 GroupNames.ElementModification)
         {
         }
