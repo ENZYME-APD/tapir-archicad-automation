@@ -141,6 +141,64 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     return APINumbering_ByLayout;
 }
 
+// The status ACAPI_Drawing_CheckDrawingStatus reports is the Drawing Manager's Status column:
+// 1 is OK (the drawing is up to date with its source), 2 is Modified (the source changed since
+// the drawing was last updated). Anything else - e.g. a source that cannot be checked, like a
+// missing external file - is reported as Unknown.
+static GS::UniString DrawingStatusToString (Int32 status)
+{
+    switch (status) {
+        case 1:  return "UpToDate";
+        case 2:  return "Modified";
+        default: return "Unknown";
+    }
+}
+
+// The Drawing Manager's Source column (API_DrawingLinkTypeID).
+static GS::UniString DrawingLinkTypeToString (API_DrawingLinkTypeID linkType)
+{
+    switch (linkType) {
+        case API_DrawingLink_InternalViewID: return "InternalView";
+        case API_DrawingLink_ExternalViewID: return "ExternalView";
+        case API_DrawingLink_DrawingID:      return "Drawing";
+        case API_DrawingLink_DXF_DWGID:      return "DXF_DWG";
+        case API_DrawingLink_PDFID:          return "PDF";
+        case API_DrawingLink_ImageID:        return "Image";
+        case API_DrawingLink_PMKID:          return "PlotMaker";
+        case API_DrawingLink_APIID:          return "AddOn";
+        case API_DrawingLink_UnknownID:      return "Unknown";
+        default:                             return "Other";
+    }
+}
+
+// Adds the Drawing Manager columns that are not stored in API_DrawingType itself:
+// status (ACAPI_Drawing_CheckDrawingStatus), and the source link type and path
+// (ACAPI_Drawing_GetDrawingLink). Each is left out when its API call fails.
+static void AddDrawingManagerDetails (const API_Guid& drawingGuid, GS::ObjectState& os)
+{
+    API_Guid guid = drawingGuid;
+    Int32 status = 0;
+    if (ACAPI_Drawing_CheckDrawingStatus (&guid, &status) == NoError) {
+        os.Add ("status", DrawingStatusToString (status));
+    }
+
+    API_DrawingLinkInfo linkInfo = {};
+    if (ACAPI_Drawing_GetDrawingLink (&drawingGuid, &linkInfo) != NoError) {
+        return;
+    }
+    // linkPath and viewPath are allocated by the API and owned by the caller - released the
+    // same way as in the DevKit's Database_Control example.
+    const GS::OnExit linkInfoGuard ([&linkInfo] () {
+        delete linkInfo.linkPath;
+        delete linkInfo.viewPath;
+    });
+
+    os.Add ("linkType", DrawingLinkTypeToString (linkInfo.linkTypeID));
+    if (linkInfo.linkPath != nullptr) {
+        os.Add ("linkPath", linkInfo.linkPath->ToDisplayText ());
+    }
+}
+
 static API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
 {
     API_Element element = {};
@@ -1556,6 +1614,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
                 }
                 typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Drawing Manager columns: Update Type and Stored in Project come from the element
+                // itself, Status and Source from their own API calls.
+                typeSpecificDetails.Add ("manualUpdate",    elem.drawing.manualUpdate);
+                typeSpecificDetails.Add ("storedInProject", elem.drawing.storedInProject);
+                AddDrawingManagerDetails (elem.header.guid, typeSpecificDetails);
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
