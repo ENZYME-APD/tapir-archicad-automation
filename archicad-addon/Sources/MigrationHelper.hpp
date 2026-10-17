@@ -53,6 +53,12 @@
 
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
+// The place settings (API_PlaceInfo: date, time, location and the sun angles) and the
+// sun light settings (API_SunInfo) of the project; the sun position is calculated from
+// the date, time and location of an API_PlaceInfo by APIAny_CalcSunOnPlaceID.
+#define ACAPI_GeoLocation_GetPlaceSets(par1) ACAPI_Environment (APIEnv_GetPlaceSetsID, par1)
+#define ACAPI_GeoLocation_GetSunSets(par1) ACAPI_Environment (APIEnv_GetSunSetsID, par1)
+#define ACAPI_GeoLocation_CalcSunOnPlace(par1) ACAPI_Goodies (APIAny_CalcSunOnPlaceID, par1)
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
 #define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
 
@@ -695,6 +701,19 @@ inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API
     return NoError;
 }
 #endif
+
+// AC30 deprecates ACAPI_GeoLocation_CalcSunOnPlace (API_PlaceInfo*) for an overload that
+// takes a reference, and the deprecation warning is an error on Windows (C4996). AC27-29
+// have the pointer form only, and before 27 the macro above maps it onto
+// APIAny_CalcSunOnPlaceID, which takes the pointer too.
+inline GSErrCode TAPIR_GeoLocation_CalcSunOnPlace (API_PlaceInfo& placeInfo)
+{
+#ifdef ServerMainVers_3000
+    return ACAPI_GeoLocation_CalcSunOnPlace (placeInfo);
+#else
+    return ACAPI_GeoLocation_CalcSunOnPlace (&placeInfo);
+#endif
+}
 
 inline void DisposeAttribute (API_Attribute& attr)
 {

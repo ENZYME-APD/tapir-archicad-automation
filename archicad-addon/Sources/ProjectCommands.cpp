@@ -1963,6 +1963,221 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     return CreateSuccessfulExecutionResult ();
 }
 
+// The sun commands work on API_PlaceInfo, the project's date, time and location
+// (Options > Project Preferences > Location Settings), from which Archicad
+// calculates the sun angles sunAngXY (azimuth) and sunAngZ (altitude), in radians.
+
+// Overwrites the date and time fields of placeInfo that dateTime carries (a
+// SunDateTimeUpdate); returns whether it carried any.
+static bool GetSunDateTimeFromObjectState (const GS::ObjectState& dateTime, API_PlaceInfo& placeInfo)
+{
+    bool hasAnyField = false;
+    // The date and time fields of API_PlaceInfo are unsigned short.
+    const auto getUShortField = [&] (const char* fieldName, unsigned short& target) {
+        Int32 value = 0;
+        if (dateTime.Get (fieldName, value)) {
+            target = static_cast<unsigned short> (value);
+            hasAnyField = true;
+        }
+    };
+    getUShortField ("year", placeInfo.year);
+    getUShortField ("month", placeInfo.month);
+    getUShortField ("day", placeInfo.day);
+    getUShortField ("hour", placeInfo.hour);
+    getUShortField ("minute", placeInfo.minute);
+    getUShortField ("second", placeInfo.second);
+    hasAnyField |= dateTime.Get ("daylightSaving", placeInfo.sumTime);
+    return hasAnyField;
+}
+
+static GS::ObjectState CreateSunDateTimeObjectState (const API_PlaceInfo& placeInfo)
+{
+    return GS::ObjectState (
+        "year", static_cast<Int32> (placeInfo.year),
+        "month", static_cast<Int32> (placeInfo.month),
+        "day", static_cast<Int32> (placeInfo.day),
+        "hour", static_cast<Int32> (placeInfo.hour),
+        "minute", static_cast<Int32> (placeInfo.minute),
+        "second", static_cast<Int32> (placeInfo.second),
+        "daylightSaving", placeInfo.sumTime);
+}
+
+static GS::ObjectState CreateSunPositionObjectState (const API_PlaceInfo& placeInfo)
+{
+    const double radiansToDegrees = 180.0 / std::acos (-1.0);
+    return GS::ObjectState (
+        "azimuth", placeInfo.sunAngXY * radiansToDegrees,
+        "altitude", placeInfo.sunAngZ * radiansToDegrees);
+}
+
+GetSunSettingsCommand::GetSunSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSunSettingsCommand::GetName () const
+{
+    return "GetSunSettings";
+}
+
+GS::Optional<GS::UniString> GetSunSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dateTime": {
+                "$ref": "#/SunDateTime"
+            },
+            "timeZoneInMinutes": {
+                "type": "integer",
+                "description": "The time zone of the project location in minutes, as Archicad stores it."
+            },
+            "timeZoneOffset": {
+                "type": "integer",
+                "description": "The time zone offset of the project location in minutes, as Archicad stores it."
+            },
+            "sunPosition": {
+                "$ref": "#/SunPosition",
+                "description": "The sun position for the project's date, time and location."
+            },
+            "sunLight": {
+                "type": "object",
+                "description": "The sun and ambient light settings of the project. Missing when Archicad cannot report them.",
+                "properties": {
+                    "sunColor": {
+                        "$ref": "#/ColorRGB"
+                    },
+                    "sunIntensity": {
+                        "type": "integer",
+                        "description": "The intensity of the sun light in percent."
+                    },
+                    "ambientColor": {
+                        "$ref": "#/ColorRGB"
+                    },
+                    "ambientIntensity": {
+                        "type": "integer",
+                        "description": "The intensity of the ambient light in percent."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sunColor",
+                    "sunIntensity",
+                    "ambientColor",
+                    "ambientIntensity"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dateTime",
+            "timeZoneInMinutes",
+            "timeZoneOffset",
+            "sunPosition"
+        ]
+    })";
+}
+
+GS::ObjectState GetSunSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_PlaceInfo placeInfo = {};
+    GSErrCode err = ACAPI_GeoLocation_GetPlaceSets (&placeInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project's date, time and location.");
+    }
+
+    // Report the sun position of the date, time and location just read rather than
+    // the angles stored with them, so the response is consistent with itself.
+    API_PlaceInfo calculatedPlaceInfo = placeInfo;
+    if (TAPIR_GeoLocation_CalcSunOnPlace (calculatedPlaceInfo) == NoError) {
+        placeInfo.sunAngXY = calculatedPlaceInfo.sunAngXY;
+        placeInfo.sunAngZ = calculatedPlaceInfo.sunAngZ;
+    }
+
+    GS::ObjectState response (
+        "dateTime", CreateSunDateTimeObjectState (placeInfo),
+        "timeZoneInMinutes", placeInfo.timeZoneInMinutes,
+        "timeZoneOffset", placeInfo.timeZoneOffset,
+        "sunPosition", CreateSunPositionObjectState (placeInfo));
+
+    API_SunInfo sunInfo = {};
+    if (ACAPI_GeoLocation_GetSunSets (&sunInfo) == NoError) {
+        response.Add ("sunLight", GS::ObjectState (
+            "sunColor", GS::ObjectState ("red", sunInfo.sunRGB.f_red, "green", sunInfo.sunRGB.f_green, "blue", sunInfo.sunRGB.f_blue),
+            "sunIntensity", static_cast<Int32> (sunInfo.sunIntensity),
+            "ambientColor", GS::ObjectState ("red", sunInfo.ambientRGB.f_red, "green", sunInfo.ambientRGB.f_green, "blue", sunInfo.ambientRGB.f_blue),
+            "ambientIntensity", static_cast<Int32> (sunInfo.ambientIntensity)));
+    }
+
+    return response;
+}
+
+CalculateSunPositionCommand::CalculateSunPositionCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CalculateSunPositionCommand::GetName () const
+{
+    return "CalculateSunPosition";
+}
+
+GS::Optional<GS::UniString> CalculateSunPositionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dateTime": {
+                "$ref": "#/SunDateTimeUpdate",
+                "description": "The date and time to calculate the sun position for; the fields left out keep the project's date and time."
+            },
+            "location": {
+                "$ref": "#/ProjectLocationUpdate",
+                "description": "The location to calculate the sun position at; the fields left out keep the project location."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> CalculateSunPositionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/SunPosition"
+    })";
+}
+
+GS::ObjectState CalculateSunPositionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Start from the project's settings so every field the caller leaves out keeps
+    // its value; the project itself is not changed.
+    API_PlaceInfo placeInfo = {};
+    GSErrCode err = ACAPI_GeoLocation_GetPlaceSets (&placeInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project's date, time and location.");
+    }
+
+    GS::ObjectState dateTime;
+    if (parameters.Get ("dateTime", dateTime)) {
+        GetSunDateTimeFromObjectState (dateTime, placeInfo);
+    }
+    GS::ObjectState location;
+    if (parameters.Get ("location", location)) {
+        location.Get ("longitude", placeInfo.longitude);
+        location.Get ("latitude", placeInfo.latitude);
+        location.Get ("altitude", placeInfo.altitude);
+        location.Get ("north", placeInfo.north);
+    }
+
+    err = TAPIR_GeoLocation_CalcSunOnPlace (placeInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to calculate the sun position.");
+    }
+
+    return CreateSunPositionObjectState (placeInfo);
+}
+
 GetCalculationUnitsCommand::GetCalculationUnitsCommand () :
     CommandBase (CommonSchema::Used)
 {
