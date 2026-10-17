@@ -35,6 +35,11 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 protected:
+    // Called on the zeroed element (only its type set) right before ACAPI_Element_GetDefaults
+    // reads the tool defaults for one item: a command whose tool keeps more than one default
+    // fills the input fields ACAPI_Element_GetDefaults selects by from the item here. Not
+    // called for the snapshot that restores the defaults after a favorite.
+    virtual void PrepareDefaultsQuery (API_Element& /*element*/, const GS::ObjectState& /*parameters*/) const {}
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const = 0;
 protected:
     GS::String     commandName;
@@ -160,6 +165,7 @@ class CreateLabelsCommand : public CreateElementsCommandBase
 public:
     CreateLabelsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual void PrepareDefaultsQuery (API_Element& element, const GS::ObjectState& parameters) const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 

@@ -7747,6 +7747,20 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
         return APIERR_REFUSEDPAR;
     }
 
+    // The Label tool keeps one default per labeled element type besides the independent
+    // label's, selected by parentType in ACAPI_Element_ChangeDefaults/GetDefaults (see
+    // CreateLabelsCommand::PrepareDefaultsQuery). A label favorite carries the parentType of
+    // the label it was made from, so left as it is, a favorite made from a zone's label would
+    // change the Zone label default - which the caller neither reads back (its defaults for a
+    // favorite item are read with parentType unset) nor snapshots and restores. Push every
+    // label favorite into the independent label's default instead: that is the one default
+    // CreateElementsCommandBase::Execute reads for a favorite item and restores afterwards,
+    // and the favorite defines the whole label anyway. The created label gets its real
+    // parentType from parentElementId in SetTypeSpecificParameters.
+    if (expectedTypeId == API_LabelID) {
+        favorite.element.label.parentType = API_ZombieElemID;
+    }
+
     API_Element mask;
     ACAPI_ELEMENT_MASK_SETFULL (mask);
     err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
