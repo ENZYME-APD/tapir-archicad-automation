@@ -37,6 +37,86 @@
             "$ref": "#/ElementIdOrError"
         }
     },
+    "ComponentId": {
+        "type": "object",
+        "description": "The identifier of a component (one building material skin or profile part) of an element. It identifies the component only together with its element.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ElementComponentId": {
+        "type": "object",
+        "description": "The identifier of a component of an element: the element and the component within it.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "componentId": {
+                "$ref": "#/ComponentId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "componentId"
+        ]
+    },
+    "ElementComponentIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "elementComponentId": {
+                "$ref": "#/ElementComponentId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementComponentId"
+        ]
+    },
+    "ElementComponents": {
+        "type": "array",
+        "description": "A list of element components.",
+        "items": {
+            "$ref": "#/ElementComponentIdArrayItem"
+        }
+    },
+    "ElementComponentsArrayItem": {
+        "type": "object",
+        "properties": {
+            "elementComponents": {
+                "$ref": "#/ElementComponents"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementComponents"
+        ]
+    },
+    "ElementComponentsOrError": {
+        "type": "object",
+        "description": "The components of an element or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementComponentsArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementComponentsOrErrorArray": {
+        "type": "array",
+        "description": "A list of element component lists or errors.",
+        "items": {
+            "$ref": "#/ElementComponentsOrError"
+        }
+    },
     "ElementTrims": {
         "type": "object",
         "description": "The trims of one element: the roofs and shells trimming it, and the elements it trims.",
