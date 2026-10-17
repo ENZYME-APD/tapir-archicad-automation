@@ -22,6 +22,7 @@
 #include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementChangeTrackingCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
@@ -190,6 +191,8 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_6, MenuCommandHandler);
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
+    // The element states of CaptureElementState belong to the open project: drop them when it closes.
+    err |= InstallElementStateProjectEventHandler ();
 
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
@@ -355,6 +358,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetAllElementsCommand> (
             elementCommands, "1.0.7",
             "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering."
+        );
+        err |= RegisterCommand<CaptureElementStateCommand> (
+            elementCommands, "1.7.2",
+            "Captures the current state of the elements of the project and returns a stateId for it, so that GetElementChangesSince can later list what was created, modified and deleted since. The optional type selects how changes are detected (modification stamps by default, or the 3D model). The state lives in the add-on's memory only: it is lost when the project is closed or Archicad restarts, and ReleaseElementState frees it earlier."
+        );
+        err |= RegisterCommand<GetElementChangesSinceCommand> (
+            elementCommands, "1.7.2",
+            "Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted."
+        );
+        err |= RegisterCommand<ReleaseElementStateCommand> (
+            elementCommands, "1.7.2",
+            "Frees a state captured by CaptureElementState. Every state is freed anyway when the project is closed or Archicad quits."
         );
         err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
             elementCommands, "1.0.7",
@@ -1574,5 +1589,7 @@ GSErrCode FreeData (void)
     // ScriptUIPalette::Release for why (real macOS crash on quit, EXC_BAD_ACCESS tearing down the
     // browser control after Archicad's own environment had already begun shutting down).
     ScriptUIPalette::Release ();
+    // Frees the difference generator handles of the states CaptureElementState still holds.
+    ReleaseAllElementStates ();
     return NoError;
 }
