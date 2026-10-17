@@ -2910,6 +2910,282 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
 #endif
 }
 
+RenameAttributeFoldersCommand::RenameAttributeFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameAttributeFoldersCommand::GetName () const
+{
+    return "RenameAttributeFolders";
+}
+
+GS::Optional<GS::UniString> RenameAttributeFoldersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeFolders": {
+                "type": "array",
+                "description": "The folders to rename, each given by attribute type and path together with its new name.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeType": {
+                            "$ref": "#/AttributeType"
+                        },
+                        "path": {
+                            "type": "array",
+                            "description": "The names of the folders from the root folder down to the folder to rename, the root folder itself not included.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "newName": {
+                            "type": "string",
+                            "description": "The new name of the folder."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["attributeType", "path", "newName"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeFolders"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameAttributeFoldersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RenameAttributeFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> attributeFolders;
+    parameters.Get ("attributeFolders", attributeFolders);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : attributeFolders) {
+        API_AttributeFolder folder;
+        const GS::Optional<GS::ObjectState> invalidItem = GetAttributeFolderFromObjectState (item, folder);
+        if (invalidItem.HasValue ()) {
+            executionResults (*invalidItem);
+            continue;
+        }
+        if (folder.path.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The root folder cannot be renamed."));
+            continue;
+        }
+
+        GS::UniString newName;
+        item.Get ("newName", newName);
+        if (newName.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "newName must not be empty."));
+            continue;
+        }
+
+        if (!FindAttributeFolder (folder)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID,
+                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Attribute_RenameFolder (folder, newName);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err,
+                GS::UniString::Printf ("Failed to rename attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Attribute folders require Archicad 26 or newer.");
+#endif
+}
+
+MoveAttributesAndFoldersCommand::MoveAttributesAndFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveAttributesAndFoldersCommand::GetName () const
+{
+    return "MoveAttributesAndFolders";
+}
+
+GS::Optional<GS::UniString> MoveAttributesAndFoldersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds",
+                "description": "The attributes to move. They must have the attribute type of the target folder."
+            },
+            "attributeFolders": {
+                "$ref": "#/AttributeFolders",
+                "description": "The folders to move, with their contents. They must have the attribute type of the target folder."
+            },
+            "targetFolder": {
+                "$ref": "#/AttributeFolder",
+                "description": "The folder to move the attributes and folders into. An empty path is the root folder."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targetFolder"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveAttributesAndFoldersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeExecutionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per item of attributeIds, in the same order."
+            },
+            "folderExecutionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per item of attributeFolders, in the same order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeExecutionResults",
+            "folderExecutionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::ObjectState targetFolderOs;
+    parameters.Get ("targetFolder", targetFolderOs);
+    API_AttributeFolder targetFolder;
+    const GS::Optional<GS::ObjectState> invalidTarget = GetAttributeFolderFromObjectState (targetFolderOs, targetFolder);
+    if (invalidTarget.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid targetFolder: the attributeType is unknown or a folder name in path is empty.");
+    }
+    // The root folder is identified by its empty path alone, so it is not looked up.
+    if (!targetFolder.path.IsEmpty () && !FindAttributeFolder (targetFolder)) {
+        return CreateErrorResponse (APIERR_BADID,
+            GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (targetFolder.path).ToPrintf ()));
+    }
+
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+    GS::Array<GS::ObjectState> attributeFolders;
+    parameters.Get ("attributeFolders", attributeFolders);
+
+    GS::ObjectState response;
+    const auto& attributeExecutionResults = response.AddList<GS::ObjectState> ("attributeExecutionResults");
+    const auto& folderExecutionResults = response.AddList<GS::ObjectState> ("folderExecutionResults");
+
+    // Moved one by one, so that every item gets its own result like in the other attribute commands.
+    const GS::Array<API_AttributeFolder> noFolders;
+    const GS::Array<API_Attr_Head> noAttributes;
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_AttributeIndex index;
+        if (!GetAttributeIndexFromAttributeId (attributeIdItem, targetFolder.typeID, index)) {
+            attributeExecutionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found among the attributes of the target folder's type."));
+            continue;
+        }
+
+        API_Attr_Head attrHead = {};
+        attrHead.typeID = targetFolder.typeID;
+        attrHead.index = index;
+        attrHead.guid = GetGuidFromAttributesArrayItem (attributeIdItem);
+
+        GS::Array<API_Attr_Head> attributesToMove;
+        attributesToMove.Push (attrHead);
+        const GSErrCode err = ACAPI_Attribute_Move (noFolders, attributesToMove, targetFolder);
+        if (err != NoError) {
+            attributeExecutionResults (CreateFailedExecutionResult (err, "Failed to move the attribute."));
+            continue;
+        }
+
+        attributeExecutionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    for (const GS::ObjectState& item : attributeFolders) {
+        API_AttributeFolder folder;
+        const GS::Optional<GS::ObjectState> invalidItem = GetAttributeFolderFromObjectState (item, folder);
+        if (invalidItem.HasValue ()) {
+            folderExecutionResults (*invalidItem);
+            continue;
+        }
+        if (folder.path.IsEmpty ()) {
+            folderExecutionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The root folder cannot be moved."));
+            continue;
+        }
+        if (folder.typeID != targetFolder.typeID) {
+            folderExecutionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The attributeType of the folder differs from the target folder's."));
+            continue;
+        }
+
+        // A folder's own subtree starts with its path: moving it there would make it its own ancestor.
+        bool targetIsInsideFolder = targetFolder.path.GetSize () >= folder.path.GetSize ();
+        for (UIndex i = 0; targetIsInsideFolder && i < folder.path.GetSize (); ++i) {
+            targetIsInsideFolder = (targetFolder.path[i] == folder.path[i]);
+        }
+        if (targetIsInsideFolder) {
+            folderExecutionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                GS::UniString::Printf ("Attribute folder '%T' cannot be moved into itself or one of its subfolders.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        if (!FindAttributeFolder (folder)) {
+            folderExecutionResults (CreateFailedExecutionResult (APIERR_BADID,
+                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        GS::Array<API_AttributeFolder> foldersToMove;
+        foldersToMove.Push (folder);
+        const GSErrCode err = ACAPI_Attribute_Move (foldersToMove, noAttributes, targetFolder);
+        if (err != NoError) {
+            folderExecutionResults (CreateFailedExecutionResult (err,
+                GS::UniString::Printf ("Failed to move attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+            continue;
+        }
+
+        folderExecutionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Attribute folders require Archicad 26 or newer.");
+#endif
+}
+
 CreateAttributesCommandBase::CreateAttributesCommandBase (const GS::String& commandNameIn, API_AttrTypeID attrTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
