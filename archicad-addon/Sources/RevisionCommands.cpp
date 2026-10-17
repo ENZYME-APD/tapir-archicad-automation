@@ -21,6 +21,26 @@ GS::Optional<GS::UniString> GetRevisionIssuesCommand::GetRawResponseSchema () co
                 "items": {
                     "$ref": "#/RevisionIssue"
                 }
+            },
+            "customScheme": {
+                "type": "array",
+                "description": "The custom scheme fields of the revision issues (key and name). Present only when the project defines any.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "customSchemeKey": {
+                            "$ref": "#/Guid"
+                        },
+                        "customSchemeName": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "customSchemeKey",
+                        "customSchemeName"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -28,6 +48,15 @@ GS::Optional<GS::UniString> GetRevisionIssuesCommand::GetRawResponseSchema () co
             "revisionIssues"
         ]
     })";
+}
+
+// The custom scheme of the revision issues (Issue Scheme in Project Preferences >
+// Revision Management): the key of each field and its name.
+static GS::HashTable<API_Guid, GS::UniString> GetRevisionIssueCustomScheme ()
+{
+    GS::HashTable<API_Guid, GS::UniString> customScheme;
+    ACAPI_Revision_GetRVMIssueCustomScheme (&customScheme);
+    return customScheme;
 }
 
 GS::ObjectState GetRevisionIssuesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
@@ -75,6 +104,215 @@ GS::ObjectState GetRevisionIssuesCommand::Execute (const GS::ObjectState& /*para
         }
         revisionIssues (issueData);
     }
+
+    const GS::HashTable<API_Guid, GS::UniString> customScheme = GetRevisionIssueCustomScheme ();
+    if (!customScheme.IsEmpty ()) {
+        const auto& customSchemeList = response.AddList<GS::ObjectState> ("customScheme");
+        for (auto& kv : customScheme) {
+            customSchemeList (GS::ObjectState (
+#ifdef ServerMainVers_2800
+                "customSchemeKey", APIGuidToString (kv.key),
+                "customSchemeName", kv.value));
+#else
+                "customSchemeKey", APIGuidToString (*kv.key),
+                "customSchemeName", *kv.value));
+#endif
+        }
+    }
+
+    return response;
+}
+
+ModifyRevisionIssuesCommand::ModifyRevisionIssuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyRevisionIssuesCommand::GetName () const
+{
+    return "ModifyRevisionIssues";
+}
+
+GS::Optional<GS::UniString> ModifyRevisionIssuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "revisionIssues": {
+                "type": "array",
+                "description": "The revision issues to modify. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "revisionIssueId": {
+                            "$ref": "#/RevisionIssueId"
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "The new ID of the revision issue.",
+                            "minLength": 1
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "The new short description of the revision issue."
+                        },
+                        "customSchemeData": {
+                            "type": "array",
+                            "description": "The custom scheme fields to set. A field is addressed by its key (as GetRevisionIssues returns it) or by its name; the fields not listed keep their values.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "customSchemeKey": {
+                                        "$ref": "#/Guid"
+                                    },
+                                    "customSchemeName": {
+                                        "type": "string"
+                                    },
+                                    "customSchemeValue": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "customSchemeValue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "revisionIssueId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionIssues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyRevisionIssuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyRevisionIssuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> revisionIssues;
+    if (!parameters.Get ("revisionIssues", revisionIssues)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'revisionIssues' parameter.");
+    }
+
+    GS::Array<API_RVMIssue> issueList;
+    GSErrCode err = ACAPI_Revision_GetRVMIssues (&issueList);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive issues.");
+    }
+
+    // Field name -> key, for the custom scheme fields addressed by name.
+    const GS::HashTable<API_Guid, GS::UniString> customScheme = GetRevisionIssueCustomScheme ();
+    GS::HashTable<GS::UniString, API_Guid> customSchemeKeysByName;
+    for (auto& kv : customScheme) {
+#ifdef ServerMainVers_2800
+        customSchemeKeysByName.Put (kv.value, kv.key);
+#else
+        customSchemeKeysByName.Put (*kv.value, *kv.key);
+#endif
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Modify Revision Issues", [&]() -> GSErrCode {
+        for (const GS::ObjectState& issueData : revisionIssues) {
+            const GS::ObjectState* revisionIssueId = issueData.Get ("revisionIssueId");
+            if (revisionIssueId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'revisionIssueId' parameter."));
+                continue;
+            }
+
+            const API_Guid issueGuid = GetGuidFromObjectState (*revisionIssueId);
+            const API_RVMIssue* foundIssue = nullptr;
+            for (const API_RVMIssue& candidate : issueList) {
+                if (candidate.guid == issueGuid) {
+                    foundIssue = &candidate;
+                    break;
+                }
+            }
+            if (foundIssue == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Revision issue not found."));
+                continue;
+            }
+
+            API_RVMIssue issue = *foundIssue;
+
+            GS::UniString id;
+            if (issueData.Get ("id", id)) {
+                if (id.IsEmpty ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'id' parameter must not be empty."));
+                    continue;
+                }
+                issue.id = id;
+            }
+
+            GS::UniString description;
+            if (issueData.Get ("description", description)) {
+                issue.description = description;
+            }
+
+            GS::UniString customSchemeError;
+            GS::Array<GS::ObjectState> customSchemeData;
+            if (issueData.Get ("customSchemeData", customSchemeData)) {
+                for (const GS::ObjectState& field : customSchemeData) {
+                    API_Guid key = APINULLGuid;
+                    GS::UniString keyString;
+                    GS::UniString name;
+                    if (field.Get ("customSchemeKey", keyString)) {
+                        key = APIGuidFromString (keyString.ToCStr ());
+                    } else if (field.Get ("customSchemeName", name)) {
+                        if (!customSchemeKeysByName.Get (name, &key)) {
+                            customSchemeError = GS::UniString ("Unknown custom scheme field: ") + name;
+                            break;
+                        }
+                    } else {
+                        customSchemeError = GS::UniString ("Each custom scheme field needs 'customSchemeKey' or 'customSchemeName'.");
+                        break;
+                    }
+                    if (key == APINULLGuid) {
+                        customSchemeError = GS::UniString ("Invalid custom scheme key: ") + keyString;
+                        break;
+                    }
+
+                    GS::UniString value;
+                    field.Get ("customSchemeValue", value);
+                    issue.customData.Put (key, value);
+                }
+            }
+            if (!customSchemeError.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, customSchemeError));
+                continue;
+            }
+
+            const GSErrCode changeErr = ACAPI_Revision_ChangeRVMIssue (&issue);
+            executionResults (changeErr == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (changeErr, "Failed to modify the revision issue."));
+        }
+        return NoError;
+    });
 
     return response;
 }
