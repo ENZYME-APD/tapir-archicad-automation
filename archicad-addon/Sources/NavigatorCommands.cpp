@@ -1447,6 +1447,35 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetRawResponseSchema ()
     return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
 }
 
+// A worksheet or detail of the Project Map is a database, like a layout, and
+// ACAPI_Navigator_DeleteNavigatorView deletes View Map views only. The item is
+// looked up in the Project Map by its database instead of trusting the mapId
+// returned with it, so a View Map view of the same worksheet - another item on
+// the same database - is not matched and still deletes only the view.
+static bool IsProjectMapWorksheetOrDetail (const API_Guid& guid, const API_NavigatorItem& navItem)
+{
+    if (navItem.db.typeID != APIWind_WorksheetID && navItem.db.typeID != APIWind_DetailID) {
+        return false;
+    }
+
+    API_NavigatorItem filterItem = {};
+    filterItem.mapId           = API_ProjectMap;
+    filterItem.itemType        = navItem.itemType;
+    filterItem.db.databaseUnId = navItem.db.databaseUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return false;
+    }
+
+    for (const API_NavigatorItem& result : results) {
+        if (result.guid == guid) {
+            return true;
+        }
+    }
+    return false;
+}
+
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> navigatorItemIds;
@@ -1470,9 +1499,17 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         }
 
         GSErrCode err = NoError;
+        GS::UniString failureMessage = "Failed to delete navigator item.";
         if (navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem) {
             API_DatabaseInfo dbInfo = navItem.db;
             err = ACAPI_Database_DeleteDatabase (&dbInfo);
+        } else if (IsProjectMapWorksheetOrDetail (guid, navItem)) {
+            // Only independent worksheets and details are databases of their
+            // own; one placed by a marker belongs to its marker and cannot be
+            // deleted this way.
+            API_DatabaseInfo dbInfo = navItem.db;
+            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            failureMessage = "Failed to delete the worksheet or detail. Only independent worksheets and details can be deleted; delete a marker-linked one by deleting its marker.";
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
         } else {
@@ -1483,7 +1520,7 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         if (err == APIERR_NOTSUPPORTED) {
             executionResults (CreateFailedExecutionResult (err, "Deleting layout subsets is not supported by the ArchiCAD API."));
         } else if (err != NoError) {
-            executionResults (CreateFailedExecutionResult (err, "Failed to delete navigator item."));
+            executionResults (CreateFailedExecutionResult (err, failureMessage));
         } else {
             executionResults (CreateSuccessfulExecutionResult ());
         }
