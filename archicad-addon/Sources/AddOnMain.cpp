@@ -1075,11 +1075,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
-            "Gets settings of layouts, including Layout Info Panel custom data fields."
+            "Gets settings of layouts, including their master layout and Layout Info Panel custom data fields."
         );
         err |= RegisterCommand<SetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
-            "Sets settings of layouts, including Layout Info Panel custom data fields."
+            "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields."
         );
         err |= RegisterCommand<GetLayoutCustomSchemeCommand> (
             navigatorCommands, "1.1.7",
