@@ -213,6 +213,14 @@ GSErrCode Initialize (void)
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
         );
+        err |= RegisterCommand<GetCurrentWindowDrawingScaleCommand> (
+            applicationCommands, "1.7.2",
+            "Returns the drawing scale of the current (active) window, the scale shown in the bottom bar, as its denominator: 100.0 for 1:100, 20.0 for 1:20. Unlike GetViewSettings it needs no saved view. It reads the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts always return 1.0."
+        );
+        err |= RegisterCommand<SetCurrentWindowDrawingScaleCommand> (
+            applicationCommands, "1.7.2",
+            "Changes the drawing scale of the current (active) window, the scale shown in the bottom bar, to the given denominator: 100 for 1:100. It changes the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts are always 1:1 and are rejected. The scale must be between 1 and 30000. The change is undoable."
+        );
         err |= RegisterCommand<ChangeWindowCommand> (
             applicationCommands, "1.3.1",
             "Changes the current (active) window to the given window. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."

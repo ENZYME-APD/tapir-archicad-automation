@@ -284,6 +284,120 @@ GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*p
     return GS::ObjectState ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
 }
 
+GetCurrentWindowDrawingScaleCommand::GetCurrentWindowDrawingScaleCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetCurrentWindowDrawingScaleCommand::GetName () const
+{
+    return "GetCurrentWindowDrawingScale";
+}
+
+GS::Optional<GS::UniString> GetCurrentWindowDrawingScaleCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "scale": {
+                "type": "number",
+                "description": "The denominator of the drawing scale of the current window: 100.0 for 1:100, 20.0 for 1:20. Always 1.0 for layouts."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "scale"
+        ]
+    })";
+}
+
+GS::ObjectState GetCurrentWindowDrawingScaleCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The scale belongs to the current database (every floor plan, section, elevation,
+    // detail, worksheet and 3D document window has its own), which is the database of the
+    // current window unless an earlier command switched it.
+    double scale = 0.0;
+    GSErrCode err = ACAPI_Drawing_GetDrawingScale (&scale);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the drawing scale of the current window!");
+    }
+    return GS::ObjectState ("scale", scale);
+}
+
+SetCurrentWindowDrawingScaleCommand::SetCurrentWindowDrawingScaleCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String SetCurrentWindowDrawingScaleCommand::GetName () const
+{
+    return "SetCurrentWindowDrawingScale";
+}
+
+GS::Optional<GS::UniString> SetCurrentWindowDrawingScaleCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "scale": {
+                "type": "number",
+                "description": "The denominator of the new drawing scale: 100 for 1:100, 20 for 1:20. Archicad accepts scales between 1 and 30000."
+            },
+            "rebuild": {
+                "type": "boolean",
+                "description": "Rebuild the window after the scale changed (the API's zoom flag). Default: false.",
+                "default": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "scale"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetCurrentWindowDrawingScaleCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetCurrentWindowDrawingScaleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    double scale = 0.0;
+    if (!parameters.Get ("scale", scale)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: scale.");
+    }
+    bool rebuild = false;
+    parameters.Get ("rebuild", rebuild);
+
+    // ACAPI_Drawing_ChangeDrawingScale documents the accepted scale as greater than 1 and
+    // smaller than 30000 and answers anything else with a bare APIERR_BADPARS. The negated
+    // comparison also rejects NaN.
+    if (!(scale >= 1.0 && scale <= 30000.0)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: scale must be the denominator of a scale between 1:1 and 1:30000 (100 for 1:100).");
+    }
+
+    API_WindowInfo windowInfo = {};
+    GSErrCode err = ACAPI_Window_GetCurrentWindow (&windowInfo);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current window!");
+    }
+    if (windowInfo.typeID == APIWind_LayoutID || windowInfo.typeID == APIWind_MasterLayoutID) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window is a layout: a layout is always 1:1 and its scale cannot be changed. Activate a floor plan, section, elevation, detail or worksheet window first (see ChangeWindow).");
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetCurrentWindowDrawingScaleCommand", [&] () -> GSErrCode {
+        return ACAPI_Drawing_ChangeDrawingScale (&scale, rebuild);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the drawing scale of the current window. Archicad accepts scales between 1 and 30000 in a floor plan, section, elevation, detail, worksheet or 3D document window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 ChangeWindowCommand::ChangeWindowCommand () :
     CommandBase (CommonSchema::Used)
 {
