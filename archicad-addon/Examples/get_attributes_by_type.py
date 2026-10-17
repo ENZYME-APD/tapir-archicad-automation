@@ -4,9 +4,13 @@ import aclib
 # so the check below is what catches an attribute that comes back without a real stamp.
 # From Archicad 30 an attribute Archicad keeps a creation record of also carries creationInfo
 # (how, from where, by whom and when it was created); older versions never return it, and an
-# attribute without a record has none, so it is only printed where it is present.
+# attribute without a record has none, so it is only reported where it is present. Of its fields
+# only the method is printed: the user name and the time are those of whoever ran the script
+# (Test/output_masks.py masks them in the response above), so the lines below only check that
+# the other fields are there.
 allTimesSet = True
-creationInfos = []
+allCreationInfosComplete = True
+creationMethods = []
 for type in [
             "Layer",
             "Line",
@@ -23,9 +27,16 @@ for type in [
             ]:
     attributes = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': type})['attributes']
     allTimesSet = allTimesSet and all (a['modificationTime'] > 0 for a in attributes)
-    creationInfos.extend ((type, a['name'], a['creationInfo']) for a in attributes if 'creationInfo' in a)
+    for a in attributes:
+        if 'creationInfo' not in a:
+            continue
+        info = a['creationInfo']
+        allCreationInfosComplete = allCreationInfosComplete and all (
+            isinstance (info.get (field), str) for field in ['method', 'methodDescription', 'source', 'creatorUserName']
+        ) and isinstance (info.get ('creationTime'), int) and info['creationTime'] > 0
+        creationMethods.append ((type, a['name'], info['method']))
 
 print ('all attributes have a modification time: {}'.format (allTimesSet))
-for type, name, info in creationInfos:
-    print ('{} "{}" was created by {} ({}) from "{}" by user "{}" at {}'.format (
-        type, name, info['method'], info['methodDescription'], info['source'], info['creatorUserName'], info['creationTime']))
+print ('all creation infos are complete: {}'.format (allCreationInfosComplete))
+for type, name, method in creationMethods:
+    print ('{} "{}" was created by {}'.format (type, name, method))
