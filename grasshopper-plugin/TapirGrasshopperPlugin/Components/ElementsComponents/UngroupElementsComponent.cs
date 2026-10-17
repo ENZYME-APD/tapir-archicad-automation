@@ -18,7 +18,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "UngroupElements",
                 "Ungroup the given groups one level, like Edit > Grouping > Ungroup: " +
-                "each group is dissolved, the elements and subgroups it directly contains stay.",
+                "each group is dissolved, the elements and subgroups it directly contains stay. " +
+                "A group nested in another group is reported as failed; ungroup the containing group first.",
                 GroupNames.ElementGrouping)
         {
         }

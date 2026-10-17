@@ -657,7 +657,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UngroupElementsCommand> (
             elementGroupingCommands, "1.7.2",
-            "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. Returns an execution result per group."
+            "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. A group nested in another group is reported as failed; ungroup the containing group first. Returns an execution result per group."
         );
         err |= RegisterCommand<GetGroupsOfElementsCommand> (
             elementGroupingCommands, "1.5.6",

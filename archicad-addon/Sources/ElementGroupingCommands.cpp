@@ -147,7 +147,7 @@ GS::Optional<GS::UniString> UngroupElementsCommand::GetInputParametersSchema() c
         "properties": {
             "groups": {
                 "type": "array",
-                "description": "The groups to ungroup, as returned by CreateGroups or GetGroupsOfElements.",
+                "description": "The groups to ungroup, as returned by CreateGroups or GetGroupsOfElements. A group nested in another group is reported as failed: ungroup the containing group first.",
                 "items": {
                     "$ref": "#/GroupIdArrayItem"
                 }
@@ -206,6 +206,21 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
             }
             if (elemGuids.IsEmpty()) {
                 executionResults(CreateFailedExecutionResult(APIERR_BADID, "The group does not exist or contains no elements."));
+                continue;
+            }
+
+            // Edit > Grouping > Ungroup dissolves the outermost group of the selected
+            // elements, so the tool is only called on groups that are not nested in
+            // another one; otherwise it could dissolve the containing group instead
+            // of the given one.
+            API_Guid rootGroupGuid = APINULLGuid;
+            err = ACAPI_Grouping_GetRootGroup(elemGuids.GetFirst(), &rootGroupGuid);
+            if (err != NoError) {
+                executionResults(CreateFailedExecutionResult(err, "Failed to get the root group of the group's elements."));
+                continue;
+            }
+            if (rootGroupGuid != groupGuid) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADPARS, "The group is nested in another group. Ungroup the containing group first."));
                 continue;
             }
 
