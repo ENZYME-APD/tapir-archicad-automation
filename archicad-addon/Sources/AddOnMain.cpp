@@ -1046,6 +1046,14 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.1.4",
             "Releases elements in Teamwork mode."
         );
+        err |= RegisterCommand<GetReservationStatusOfElementsCommand> (
+            teamworkCommands, "1.7.2",
+            "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user and the element's owner."
+        );
+        err |= RegisterCommand<GrantElementsCommand> (
+            teamworkCommands, "1.7.2",
+            "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog."
+        );
         err |= RegisterCommand<ReserveLockableObjectSetCommand> (
             teamworkCommands, "1.7.1",
             "Reserves a non-element lockable object set (attributes, favorites, project info, project preferences, etc.) in Teamwork mode. The object set is given by its Archicad API name, e.g. 'Composites', 'LayerSettingsDialog' or 'ProjectInfo'."
