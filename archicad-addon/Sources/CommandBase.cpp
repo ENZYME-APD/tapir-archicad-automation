@@ -787,7 +787,12 @@ GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories
     }
 
     if (storyPtr == nullptr) {
-        return { 0, zPos };
+        if (stories.empty ()) {
+            return { 0, zPos };
+        }
+        // zPos is below the level of every story: keep the element on the lowest one with a
+        // negative offset instead of jumping to story 0 (which may be several stories higher).
+        storyPtr = &stories.begin ()->second;
     }
 
     return { storyPtr->index, zPos - storyPtr->level };

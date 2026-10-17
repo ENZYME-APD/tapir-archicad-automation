@@ -2041,13 +2041,19 @@ bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::Object
     }
 
     auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    short floorIndex = 0;
+    const bool hasFloorIndex = details.Get ("floorIndex", floorIndex);
 
     if (zCoordinate.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", zCoordinate.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.slab.level = floorIndexAndOffset.second;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
+        changed = true;
+    } else if (hasFloorIndex) {
+        element.header.floorInd = floorIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
     }
 
@@ -2177,12 +2183,18 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
         changed = true;
     }
     auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    short floorIndex = 0;
+    const bool hasFloorIndex = details.Get ("floorIndex", floorIndex);
     if (zCoordinate.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", zCoordinate.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.column.bottomOffset = floorIndexAndOffset.second;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, bottomOffset);
+        changed = true;
+    } else if (hasFloorIndex) {
+        element.header.floorInd = floorIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
     }
     auto height = GetOptionalDouble (details, "height");
@@ -6009,7 +6021,8 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "zCoordinate": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the slab's reference level. The home story is derived from it unless floorIndex is given; a Z below the lowest story stays on the lowest story with a negative level." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story." },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -6477,7 +6490,8 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "origin": { "$ref": "#/Coordinate2D" },
-                        "zCoordinate": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the column's bottom. The home story is derived from it unless floorIndex is given; a Z below the lowest story stays on the lowest story with a negative bottomOffset." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story (combine with bottomOffset to set the offset relative to it)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
                         "axisRotationAngle": { "type": "number" },
