@@ -1849,28 +1849,42 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
     API_GeoLocation apiGeoLocation = {};
     ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
 
+    GS::ObjectState surveyPoint (
+        "position", GS::ObjectState (
+            "eastings", apiGeoLocation.geoReferenceData.eastings,
+            "northings", apiGeoLocation.geoReferenceData.northings,
+            "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
+        "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
+        "geoReferencingParameters", GS::ObjectState (
+            "crsName", apiGeoLocation.geoReferenceData.name,
+            "description", apiGeoLocation.geoReferenceData.description,
+            "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
+            "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
+            "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
+            "mapZone", apiGeoLocation.geoReferenceData.mapZone,
+            "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
+            "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
+            "scale", apiGeoLocation.geoReferenceData.scale));
+
+    bool isVisible = false;
+    if (ACAPI_SurveyPoint_IsSurveyPointVisible (&isVisible) == NoError) {
+        surveyPoint.Add ("isVisible", isVisible);
+    }
+#ifdef ServerMainVers_2600
+    // The survey point lock exists from Archicad 26; older versions leave isLocked out.
+    bool isLocked = false;
+    if (ACAPI_SurveyPoint_IsSurveyPointLocked (&isLocked) == NoError) {
+        surveyPoint.Add ("isLocked", isLocked);
+    }
+#endif
+
     return GS::ObjectState (
         "projectLocation", GS::ObjectState (
             "longitude", apiGeoLocation.placeInfo.longitude,
             "latitude", apiGeoLocation.placeInfo.latitude,
             "altitude", apiGeoLocation.placeInfo.altitude,
             "north", apiGeoLocation.placeInfo.north),
-        "surveyPoint", GS::ObjectState (
-            "position", GS::ObjectState (
-                "eastings", apiGeoLocation.geoReferenceData.eastings,
-                "northings", apiGeoLocation.geoReferenceData.northings,
-                "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
-            "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
-            "geoReferencingParameters", GS::ObjectState (
-                "crsName", apiGeoLocation.geoReferenceData.name,
-                "description", apiGeoLocation.geoReferenceData.description,
-                "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
-                "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
-                "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
-                "mapZone", apiGeoLocation.geoReferenceData.mapZone,
-                "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
-                "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
-                "scale", apiGeoLocation.geoReferenceData.scale)));
+        "surveyPoint", surveyPoint);
 }
 
 SetGeoLocationCommand::SetGeoLocationCommand () :
@@ -1913,51 +1927,99 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     API_GeoLocation apiGeoLocation = {};
     ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
 
-    bool hasAnyInput = false;
+    bool hasGeoLocationInput = false;
+    bool isVisible = false;
+    bool setVisibility = false;
+    bool isLocked = false;
+    bool setLocked = false;
 
     GS::ObjectState projectLocation;
     if (parameters.Get ("projectLocation", projectLocation)) {
-        hasAnyInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
-        hasAnyInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
-        hasAnyInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
-        hasAnyInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
+        hasGeoLocationInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
+        hasGeoLocationInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
+        hasGeoLocationInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
+        hasGeoLocationInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
     }
     GS::ObjectState surveyPoint;
     if (parameters.Get ("surveyPoint", surveyPoint)) {
         GS::ObjectState position;
         if (surveyPoint.Get ("position", position)) {
-            hasAnyInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
-            hasAnyInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
-            hasAnyInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
+            hasGeoLocationInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
+            hasGeoLocationInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
+            hasGeoLocationInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
         }
         GS::ObjectState positionInProject;
         if (surveyPoint.Get ("positionInProject", positionInProject)) {
             apiGeoLocation.surveyPointPosition = Get3DCoordinateFromObjectState (positionInProject);
-            hasAnyInput = true;
+            hasGeoLocationInput = true;
         }
         GS::ObjectState geoReferencingParameters;
         if (surveyPoint.Get ("geoReferencingParameters", geoReferencingParameters)) {
-            hasAnyInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
-            hasAnyInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
-            hasAnyInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
-            hasAnyInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
-            hasAnyInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
-            hasAnyInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
-            hasAnyInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
-            hasAnyInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
-            hasAnyInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
         }
+        setVisibility = surveyPoint.Get ("isVisible", isVisible);
+        setLocked = surveyPoint.Get ("isLocked", isLocked);
     }
 
-    if (!hasAnyInput) {
+#ifndef ServerMainVers_2600
+    if (setLocked) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The survey point lock (surveyPoint.isLocked) needs Archicad 26 or later.");
+    }
+#endif
+
+    if (!hasGeoLocationInput && !setVisibility && !setLocked) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "No valid input parameters provided to update geolocation.");
     }
 
-	GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
-        return ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+    GS::UniString errorMessage;
+    GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
+        GSErrCode stepErr = NoError;
+#ifdef ServerMainVers_2600
+        // Unlock before the position changes and lock after them, so one call can both
+        // move a locked survey point and lock a moved one.
+        if (setLocked && !isLocked) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointLocked (&isLocked);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to unlock the survey point.";
+                return stepErr;
+            }
+        }
+#endif
+        if (hasGeoLocationInput) {
+            stepErr = ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to set geolocation.";
+                return stepErr;
+            }
+        }
+        if (setVisibility) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointVisibility (&isVisible);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to set the survey point visibility.";
+                return stepErr;
+            }
+        }
+#ifdef ServerMainVers_2600
+        if (setLocked && isLocked) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointLocked (&isLocked);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to lock the survey point.";
+                return stepErr;
+            }
+        }
+#endif
+        return NoError;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to set geolocation.");
+        return CreateFailedExecutionResult (err, errorMessage.IsEmpty () ? GS::UniString ("Failed to set geolocation.") : errorMessage);
     }
 
     return CreateSuccessfulExecutionResult ();
