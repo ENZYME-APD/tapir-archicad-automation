@@ -1150,6 +1150,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("fixedStampAngle", elem.zone.fixedAngle);
                 typeSpecificDetails.Add ("isManual", elem.zone.manual);
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
+                typeSpecificDetails.Add ("height", elem.zone.roomHeight);
+                typeSpecificDetails.Add ("bottomOffset", elem.zone.roomBaseLev);
+                typeSpecificDetails.Add ("topOffset", elem.zone.roomTopOffset);
+                typeSpecificDetails.Add ("relativeTopStory", elem.zone.relativeTopStory);
+                typeSpecificDetails.Add ("floorThickness", elem.zone.roomFlThick);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -2024,16 +2029,11 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                     } break;
                     case API_ZoneID: {
-                        const GS::ObjectState* stampPosition = typeSpecificDetails->Get ("stampPosition");
-                        if (stampPosition != nullptr) {
-                            elem.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
-                        }
-                        if (typeSpecificDetails->Get ("stampAngle", elem.zone.stampAngle)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
-                        }
-                        if (typeSpecificDetails->Get ("fixedStampAngle", elem.zone.fixedAngle)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+                        // The same fields as ModifyZones, applied by the same helper.
+                        auto zoneError = ApplyZoneSettings (*typeSpecificDetails, elem, mask);
+                        if (zoneError.HasValue ()) {
+                            executionResults (CreateFailedExecutionResult (*zoneError));
+                            continue;
                         }
                     } break;
                     case API_LineID: {
