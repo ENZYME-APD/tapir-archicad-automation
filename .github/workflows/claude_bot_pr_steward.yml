@@ -32,8 +32,8 @@ name: Claude Bot PR Steward
 #   request without a recorded verdict, the pull request gets the
 #   `needs-maintainer` label and the steward leaves it alone.
 # - A review or fix run whose model call failed (an API error, a spent usage
-#   limit) did nothing, so it is not a round: the next one waits an hour, and
-#   only ten failures within a day hand the pull request over.
+#   limit) did nothing, so it is not a round: the next one waits for the next
+#   hourly sweep, and only ten failures within a day hand the pull request over.
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
 # - A sweep starts new work (builds, a review or a fix) on at most
@@ -128,15 +128,17 @@ jobs:
               --jq "[.workflow_runs[] | select(.display_title == \"$2\" and (\"$4\" == \"\" or .conclusion == \"$4\"
                      or (\"$4\" == \"failure\" and (.conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\"))))] | length" | jq -s 'add // 0'
           }
-          # Whether a run with this title failed within the last hour: then
-          # wait instead of starting another one minutes later, so an outage
-          # does not burn every attempt within the hour.
+          # Whether a run with this title failed within the last 50 minutes:
+          # then wait for the next hourly sweep instead of starting another
+          # one minutes later, so an outage does not burn every attempt within
+          # the hour. Under the cron period, so a run that failed just after
+          # one hourly sweep is retried by the next one, not the one after.
           failedRecently() {
             local last
             last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)" \
               --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0]
                      | select(.conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\") | .updated_at")
-            [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 3600 ]
+            [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 3000 ]
           }
 
           handOver() {
@@ -229,7 +231,7 @@ jobs:
               echo "left for a later sweep (this one started work on $BATCH already)"
               echo "::endgroup::"; continue
             fi
-            # Failed runs count over the last day only: with the hour's wait
+            # Failed runs count over the last day only: with a sweep's wait
             # after each, ten of them mean a lasting problem, not an outage.
             # A person removing needs-maintainer hands the pull request back
             # with a clean count, so only failures after that count.
@@ -249,7 +251,7 @@ jobs:
               elif [ "$failed" -ge 10 ]; then
                 handOver "$pr" "its fix run failed $failed times (see the runs' logs)"
               elif failedRecently claude_bot_pr_steward.yml "$fixTitle"; then
-                echo "the last fix run failed less than an hour ago - waiting"
+                echo "the last fix run failed less than 50 minutes ago - waiting"
               else
                 gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (conflicts with main)"
@@ -319,7 +321,7 @@ jobs:
               elif [ "$failed" -ge 10 ]; then
                 handOver "$pr" "its review failed $failed times (see the runs' logs)"
               elif failedRecently claude_pr_review.yml "$reviewTitle"; then
-                echo "the last review failed less than an hour ago - waiting"
+                echo "the last review failed less than 50 minutes ago - waiting"
               else
                 gh workflow run claude_pr_review.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
                 echo "started the review"
@@ -337,7 +339,7 @@ jobs:
               elif [ "$failed" -ge 10 ]; then
                 handOver "$pr" "its fix run failed $failed times (see the runs' logs)"
               elif failedRecently claude_bot_pr_steward.yml "$fixTitle"; then
-                echo "the last fix run failed less than an hour ago - waiting"
+                echo "the last fix run failed less than 50 minutes ago - waiting"
               else
                 gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (build failed: $buildFailed, review: ${review:-none})"
