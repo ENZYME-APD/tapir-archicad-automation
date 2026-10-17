@@ -23,6 +23,7 @@
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
+#include "ElementURLReferenceCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
 #include "ElementGroupingCommands.hpp"
@@ -451,6 +452,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetMarkerParametersOfElementsCommand> (
             elementCommands, "1.7.1",
             "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are."
+        );
+        err |= RegisterCommand<GetURLReferencesOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. An element without a link gets the error APIERR_NOUSERDATA."
+        );
+        err |= RegisterCommand<SetURLReferencesOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Fails with APIERR_MOREUSER for an element that already holds a link."
         );
         err |= RegisterCommand<CreateColumnsCommand> (
             elementCommands, "1.0.3",
