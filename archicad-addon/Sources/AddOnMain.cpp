@@ -708,7 +708,10 @@ GSErrCode Initialize (void)
             "a Favorite never moves or resizes the target element. For the hierarchical types (Stair, "
             "Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are "
             "inseparable from the Favorite's own geometry. By default settings, classifications, "
-            "categories and properties are all applied; each can be opted out of individually."
+            "categories and properties are all applied; each can be opted out of individually. "
+            "keepFields lists fields of the target (its ID, layer, an opening's width, height and sill "
+            "height, a Wall's reference line location, height and top link) that are copied back after "
+            "the Favorite has been applied, so that e.g. only the library part or the wall type changes."
         );
         err |= RegisterCommand<UpdateFavoritesFromElementsCommand> (
             favoritesCommands, "1.5.4",
