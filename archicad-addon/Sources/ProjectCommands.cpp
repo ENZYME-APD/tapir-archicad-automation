@@ -3203,3 +3203,161 @@ GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& param
 
     return response;
 }
+
+// Breaking a node turns the elements of its placed instances into ordinary
+// elements of the project (the Hotlink Manager's Break Hotlink); deleting a
+// node removes it together with its placed instances (the Hotlink Manager's
+// Delete). Both take the same input and differ only in the call, so one
+// function runs both. Unlike Update and Change above they change elements,
+// so they run in one undo step for the whole call, as DeleteElements does.
+enum class HotlinkNodeRemoval {
+    Break,
+    Delete
+};
+
+static GS::Optional<GS::UniString> GetHotlinkNodesInputSchema (const GS::UniString& description)
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": ")" + description + R"(",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, HotlinkNodeRemoval removal)
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    const bool isDelete = removal == HotlinkNodeRemoval::Delete;
+    ACAPI_CallUndoableCommand (isDelete ? "Delete Hotlink Nodes" : "Break Hotlink Nodes", [&] () -> GSErrCode {
+        for (const GS::ObjectState& nodeData : hotlinkNodes) {
+            const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
+            if (hotlinkNodeId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "hotlinkNodeId is missing"));
+                continue;
+            }
+
+            // Reading the node first tells a wrong id (or a node already gone
+            // with its parent earlier in the same call) apart from a failed
+            // removal, and gives the name for the message.
+            API_HotlinkNode node = {};
+            node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+            bool enableUnplaced = true;     // the node may have been created and not placed yet
+            if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+                continue;
+            }
+            const GS::UniString name (node.name);
+
+            const GSErrCode err = isDelete
+                ? ACAPI_Hotlink_DeleteHotlinkNode (&node.guid)
+                : ACAPI_Hotlink_BreakHotlinkNode (&node.guid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, (isDelete ? "Failed to delete the hotlink node " : "Failed to break the hotlink node ") + name));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+BreakHotlinkNodesCommand::BreakHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String BreakHotlinkNodesCommand::GetName () const
+{
+    return "BreakHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return GetHotlinkNodesInputSchema (
+        "The hotlink nodes to break, from GetHotlinks or CreateHotlinkNodes. The elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file, as the Hotlink Manager's Break Hotlink does. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).");
+}
+
+GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState BreakHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Break);
+}
+
+DeleteHotlinkNodesCommand::DeleteHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteHotlinkNodesCommand::GetName () const
+{
+    return "DeleteHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return GetHotlinkNodesInputSchema (
+        "The hotlink nodes to delete, from GetHotlinks or CreateHotlinkNodes. Each node is removed together with its placed instances and their elements, as the Hotlink Manager's Delete does; use BreakHotlinkNodes instead to keep the elements. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).");
+}
+
+GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Delete);
+}
