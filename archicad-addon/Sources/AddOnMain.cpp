@@ -21,6 +21,7 @@
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
+#include "RenderingCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ElementCreationCommands.hpp"
@@ -44,7 +45,6 @@
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
 #include "GridElementCommands.hpp"
-#include "RenderingCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
