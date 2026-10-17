@@ -73,6 +73,10 @@
 #define ACAPI_LibraryPart_GetNum(par1) ACAPI_LibPart_GetNum(par1)
 #define ACAPI_LibraryPart_GetParams ACAPI_LibPart_GetParams
 #define ACAPI_LibraryPart_GetParamValues(par1) ACAPI_Goodies(APIAny_GetParamValuesID,par1)
+#define ACAPI_LibraryPart_Create(par1) ACAPI_LibPart_Create(par1)
+#define ACAPI_LibraryPart_AddSection ACAPI_LibPart_AddSection
+#define ACAPI_LibraryPart_GetSect_ParamDef ACAPI_LibPart_GetSect_ParamDef
+#define ACAPI_LibraryPart_Save(par1) ACAPI_LibPart_Save(par1)
 
 #define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
 #define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
