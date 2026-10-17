@@ -27,7 +27,9 @@ def check(label, expected, got):
     print(f'  [{tag}] {label}  (expected={expected!r}, got={got!r})')
 
 def details_of(guid):
-    return run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': guid}}]})['detailsOfElements'][0]['details']
+    # GetDetailsOfElements puts floorIndex on the element item itself; the type-specific fields
+    # (bottomOffset, level, ...) are under its 'details' object.
+    return run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': guid}}]})['detailsOfElements'][0]
 
 stories = sorted(run('GetStories')['stories'], key=lambda s: s['index'])
 lowest = stories[0]
@@ -48,21 +50,21 @@ r = run('ModifyColumns', {'columnsWithDetails': [{'elementId': {'guid': columnGu
 check('ModifyColumns succeeds', True, r['executionResults'][0].get('success'))
 d = details_of(columnGuid)
 check('column floorIndex is the lowest story', lowest['index'], d.get('floorIndex'))
-check('column bottomOffset is negative, relative to the lowest story', -0.3, round(d.get('bottomOffset', 0), 6))
+check('column bottomOffset is negative, relative to the lowest story', -0.3, round(d['details'].get('bottomOffset', 0), 6))
 
 print('TEST -- ModifyColumns: floorIndex pins the story zCoordinate is resolved against')
 r = run('ModifyColumns', {'columnsWithDetails': [{'elementId': {'guid': columnGuid}, 'floorIndex': highest['index'], 'zCoordinate': belowLowestZ}]})
 check('ModifyColumns with floorIndex succeeds', True, r['executionResults'][0].get('success'))
 d = details_of(columnGuid)
 check('column floorIndex is the pinned story', highest['index'], d.get('floorIndex'))
-check('column bottomOffset is relative to the pinned story', round(belowLowestZ - highest['level'], 6), round(d.get('bottomOffset', 0), 6))
+check('column bottomOffset is relative to the pinned story', round(belowLowestZ - highest['level'], 6), round(d['details'].get('bottomOffset', 0), 6))
 
 print('TEST -- ModifyColumns: floorIndex alone only changes the home story')
 r = run('ModifyColumns', {'columnsWithDetails': [{'elementId': {'guid': columnGuid}, 'floorIndex': lowest['index'], 'bottomOffset': 0.1}]})
 check('ModifyColumns with floorIndex and bottomOffset succeeds', True, r['executionResults'][0].get('success'))
 d = details_of(columnGuid)
 check('column floorIndex is back on the lowest story', lowest['index'], d.get('floorIndex'))
-check('column bottomOffset is the given one', 0.1, round(d.get('bottomOffset', 0), 6))
+check('column bottomOffset is the given one', 0.1, round(d['details'].get('bottomOffset', 0), 6))
 print()
 
 # =============================================================================
@@ -79,14 +81,14 @@ r = run('ModifySlabs', {'slabsWithDetails': [{'elementId': {'guid': slabGuid}, '
 check('ModifySlabs succeeds', True, r['executionResults'][0].get('success'))
 d = details_of(slabGuid)
 check('slab floorIndex is the lowest story', lowest['index'], d.get('floorIndex'))
-check('slab level is negative, relative to the lowest story', -0.3, round(d.get('level', 0), 6))
+check('slab level is negative, relative to the lowest story', -0.3, round(d['details'].get('level', 0), 6))
 
 print('TEST -- ModifySlabs: floorIndex pins the story zCoordinate is resolved against')
 r = run('ModifySlabs', {'slabsWithDetails': [{'elementId': {'guid': slabGuid}, 'floorIndex': highest['index'], 'zCoordinate': belowLowestZ}]})
 check('ModifySlabs with floorIndex succeeds', True, r['executionResults'][0].get('success'))
 d = details_of(slabGuid)
 check('slab floorIndex is the pinned story', highest['index'], d.get('floorIndex'))
-check('slab level is relative to the pinned story', round(belowLowestZ - highest['level'], 6), round(d.get('level', 0), 6))
+check('slab level is relative to the pinned story', round(belowLowestZ - highest['level'], 6), round(d['details'].get('level', 0), 6))
 
 print('TEST -- ModifySlabs: floorIndex alone only changes the home story')
 r = run('ModifySlabs', {'slabsWithDetails': [{'elementId': {'guid': slabGuid}, 'floorIndex': lowest['index']}]})
