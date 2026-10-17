@@ -39,6 +39,45 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     ACAPI_DisposeElemMemoHdls (&memo);
 }
 
+// The baseline of a Stair is a polyline, not a polygon: it lives in the memo's stairBaseLine
+// (the very handle CreateStairsCommand::SetTypeSpecificParameters fills in to place one),
+// 1-based like the other memo polygons, with no closing vertex. Read with APIMemoMask_All,
+// the way CalculateStairBounds and GetSubelementsOfHierarchicalElements already read the
+// Stair's memo in this file. The arcs come back with the same 0-based indices as the
+// polygon arcs of the other element types.
+static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError || memo.stairBaseLine.coords == nullptr) {
+        return;
+    }
+    const auto& baseLine = memo.stairBaseLine;
+
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (baseLine.coords)) / sizeof (API_Coord);
+    GSIndex last = nCoords - 1;
+    if (baseLine.pends != nullptr && BMhGetSize (reinterpret_cast<GSHandle> (baseLine.pends)) / sizeof (Int32) > 1) {
+        last = (*baseLine.pends)[1];
+    }
+    for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
+        coords (Create2DCoordinateObjectState ((*baseLine.coords)[i]));
+    }
+
+    if (baseLine.parcs == nullptr) {
+        return;
+    }
+    const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (baseLine.parcs)) / sizeof (API_PolyArc);
+    if (nArcs == 0) {
+        return;
+    }
+    const auto& arcs = os.AddList<GS::ObjectState> ("baseLineArcs");
+    for (GSIndex i = 0; i < nArcs; ++i) {
+        arcs (CreatePolyArcObjectState ((*baseLine.parcs)[i]));
+    }
+}
+
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -1623,6 +1662,23 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("ignoreTopFloorLinks", elem.hotlink.ignoreTopFloorLinks);
                 typeSpecificDetails.Add ("relinkWallOpenings", elem.hotlink.relinkWallOpenings);
                 typeSpecificDetails.Add ("adjustLevelDiffs", elem.hotlink.adjustLevelDiffs);
+            } break;
+
+            case API_StairID: {
+                // The fields CreateStairs writes, read back (#823). The finishes and the
+                // structure are modeled by the Stair's subelements (risers, treads and
+                // structures, see GetSubelementsOfHierarchicalElements), not by the Stair
+                // element itself. basePlane.basePoint.z is the base's offset from the home
+                // story, the way CreateStairs sets it from the resolved floor index.
+                typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
+                typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
+                typeSpecificDetails.Add ("treadDepth", elem.stair.treadDepth);
+                typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
+                typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
+                typeSpecificDetails.Add ("level", elem.stair.basePlane.basePoint.z);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.stair.basePlane.basePoint.z, stories));
+                typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
+                AddStairBaseLineFromMemo (elem.header.guid, typeSpecificDetails);
             } break;
 
             default:
@@ -4398,6 +4454,14 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             if (err != NoError) {
                 // The Stair has no solid body at all - for example it is filtered out of the 3D
                 // model - so fall back to the old answer instead of failing the whole element.
+                err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            }
+        } else if (typeID == API_RiserID || typeID == API_TreadID || typeID == API_StairStructureID) {
+            // A riser, tread or structure of a Stair carries the 3D body CalculateStairBounds
+            // unions for the Stair, so it is read from its solid bodies the same way (#823);
+            // ACAPI_Element_CalcBounds stays the fallback when it has none.
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+            if (err != NoError) {
                 err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
             }
         } else {
