@@ -53,6 +53,12 @@
 
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
+// The place settings (API_PlaceInfo: date, time, location and the sun angles) and the
+// sun light settings (API_SunInfo) of the project; the sun position is calculated from
+// the date, time and location of an API_PlaceInfo by APIAny_CalcSunOnPlaceID.
+#define ACAPI_GeoLocation_GetPlaceSets(par1) ACAPI_Environment (APIEnv_GetPlaceSetsID, par1)
+#define ACAPI_GeoLocation_GetSunSets(par1) ACAPI_Environment (APIEnv_GetSunSetsID, par1)
+#define ACAPI_GeoLocation_CalcSunOnPlace(par1) ACAPI_Goodies (APIAny_CalcSunOnPlaceID, par1)
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
 #define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
 
