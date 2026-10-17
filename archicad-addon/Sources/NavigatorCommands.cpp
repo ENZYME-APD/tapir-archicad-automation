@@ -858,6 +858,7 @@ GS::ObjectState SetGhostStorySettingsCommand::Execute (const GS::ObjectState& pa
         ghostRecord.viewOriginalColor = true;
         ghostRecord.viewBackgroundFill = true;
         ghostRecord.ghostBackgroundFill = true;
+        ghostRecord.ghostColor.f_alpha = 1.0;
         for (Int32 typeId = 0; typeId <= API_LastElemType; ++typeId) {
             ghostRecord.filter[typeId] = current.filter[typeId];
         }
@@ -878,7 +879,11 @@ GS::ObjectState SetGhostStorySettingsCommand::Execute (const GS::ObjectState& pa
         ghostRecord.ghostType = APIGhost_NoFloor;
     }
     ghostRecord.floor = static_cast<short> (storyIndex);
-    ghostRecord.ghostColor = ghostColor;
+    // The record's color is an API_RGBAColor: its alpha (the ghost's intensity) is kept,
+    // since the settings only carry the RGB part.
+    ghostRecord.ghostColor.f_red = ghostColor.f_red;
+    ghostRecord.ghostColor.f_green = ghostColor.f_green;
+    ghostRecord.ghostColor.f_blue = ghostColor.f_blue;
     if (hasFilter) {
         for (Int32 typeId = 0; typeId <= API_LastElemType; ++typeId) {
             ghostRecord.filter[typeId] = false;
