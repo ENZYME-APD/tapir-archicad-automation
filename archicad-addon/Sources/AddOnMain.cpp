@@ -376,6 +376,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.2",
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
         );
+        err |= RegisterCommand<GetHotspotsOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the hotspots of the given elements: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
             elementCommands, "1.7.2",
             "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
