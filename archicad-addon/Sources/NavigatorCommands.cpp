@@ -726,7 +726,7 @@ GS::Optional<GS::UniString> SetGhostStorySettingsCommand::GetInputParametersSche
 {
     return R"({
     "type": "object",
-    "description": "Every field is optional; the ones left out keep their current value. A story choice (showOne, showAbove or showBelow true) replaces the current one.",
+    "description": "Every field is optional; the ones left out keep their current value. A story choice (showOne, showAbove or showBelow true) replaces the current reference, whatever it is; without one the reference is kept, also when it is another view (a section, an elevation, a worksheet).",
     "properties": {
         "on": {
             "type": "boolean",
@@ -867,21 +867,26 @@ GS::ObjectState SetGhostStorySettingsCommand::Execute (const GS::ObjectState& pa
         }
     }
 
-    // A story of the floor plan is the reference, whatever the record referred to before.
-    ghostRecord.ghostDatabase = floorPlanDatabase.databaseUnId;
-    ghostRecord.ghostDBType = floorPlanDatabase.typeID;
     ghostRecord.activated = on;
     ghostRecord.show = on;
-    if (showOne) {
-        ghostRecord.ghostType = APIGhost_ShowOneFloor;
-    } else if (showAbove) {
-        ghostRecord.ghostType = APIGhost_ShowAboveFloor;
-    } else if (showBelow) {
-        ghostRecord.ghostType = APIGhost_ShowBelowFloor;
-    } else {
-        ghostRecord.ghostType = APIGhost_NoFloor;
+    // A story choice makes a story of the floor plan the reference, whatever the record
+    // referred to before. Without one an existing record keeps its reference, which may be
+    // another view (a section, an elevation, a worksheet): a color-only or on/off call must
+    // not replace it. A new record has nothing to keep.
+    if (!hasRecord || showOne || showAbove || showBelow) {
+        ghostRecord.ghostDatabase = floorPlanDatabase.databaseUnId;
+        ghostRecord.ghostDBType = floorPlanDatabase.typeID;
+        if (showOne) {
+            ghostRecord.ghostType = APIGhost_ShowOneFloor;
+        } else if (showAbove) {
+            ghostRecord.ghostType = APIGhost_ShowAboveFloor;
+        } else if (showBelow) {
+            ghostRecord.ghostType = APIGhost_ShowBelowFloor;
+        } else {
+            ghostRecord.ghostType = APIGhost_NoFloor;
+        }
+        ghostRecord.floor = static_cast<short> (storyIndex);
     }
-    ghostRecord.floor = static_cast<short> (storyIndex);
     // The record's color is an API_RGBAColor: its alpha (the ghost's intensity) is kept,
     // since the settings only carry the RGB part.
     ghostRecord.ghostColor.f_red = ghostColor.f_red;

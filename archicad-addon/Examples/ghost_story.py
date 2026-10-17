@@ -23,6 +23,8 @@ aclib.RunTapirCommand ('SetGhostStorySettings', {
 })
 aclib.RunTapirCommand ('GetGhostStorySettings')
 
-# Put the original settings back: what GetGhostStorySettings returns is valid input.
+# Put the original settings back: what GetGhostStorySettings returns is valid input. When
+# the original reference was not a story (all three show flags false), the lowest story
+# stays the reference; the on/off state, the color and the filter are put back either way.
 aclib.RunTapirCommand ('SetGhostStorySettings', originalSettings)
 aclib.RunTapirCommand ('GetGhostStorySettings')

@@ -1102,7 +1102,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetGhostStorySettingsCommand> (
             navigatorCommands, "1.7.2",
-            "Sets the Trace & Reference ghost story settings of the floor plan through its ghost record, which is created when the floor plan has none. Every field is optional; the ones left out keep their value."
+            "Sets the Trace & Reference ghost story settings of the floor plan through its ghost record, which is created when the floor plan has none. Every field is optional; the ones left out keep their value, and without a story choice the current reference is kept."
         );
         err |= RegisterCommand<GetView2DTransformationsCommand> (
             navigatorCommands, "1.1.7",

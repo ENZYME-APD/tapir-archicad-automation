@@ -17,7 +17,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "SetGhostStorySettings",
                 "Set the Trace & Reference ghost story settings of the floor plan. Every input is " +
                 "optional: the ones left empty keep their value. A story choice (ShowOne, ShowAbove " +
-                "or ShowBelow true) replaces the current one.",
+                "or ShowBelow true) replaces the current reference; without one it is kept, also " +
+                "when it is another view.",
                 GroupNames.Navigator)
         {
         }
