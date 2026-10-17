@@ -280,10 +280,8 @@ inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGu
 }
 
 // APIDb_BreakHotlinkNodeID and APIDb_DeleteHotlinkNodeID take the node guid as
-// par1; APIDb_GetHotlinkSourceStatusID takes the source location as par1 and
-// the API_HotlinkSourceStatus to fill as par2 (APIdefs_Database.h), the same
-// arguments as AC27's ACAPI_Hotlink_BreakHotlinkNode, ACAPI_Hotlink_DeleteHotlinkNode
-// and ACAPI_Hotlink_GetHotlinkSourceStatus.
+// par1 (APIdefs_Database.h), the same argument as AC27's
+// ACAPI_Hotlink_BreakHotlinkNode and ACAPI_Hotlink_DeleteHotlinkNode.
 inline GSErrCode ACAPI_Hotlink_BreakHotlinkNode (const API_Guid* hotlinkNodeGuid)
 {
     return ACAPI_Database (APIDb_BreakHotlinkNodeID, (void*) hotlinkNodeGuid);
@@ -292,11 +290,6 @@ inline GSErrCode ACAPI_Hotlink_BreakHotlinkNode (const API_Guid* hotlinkNodeGuid
 inline GSErrCode ACAPI_Hotlink_DeleteHotlinkNode (const API_Guid* hotlinkNodeGuid)
 {
     return ACAPI_Database (APIDb_DeleteHotlinkNodeID, (void*) hotlinkNodeGuid);
-}
-
-inline GSErrCode ACAPI_Hotlink_GetHotlinkSourceStatus (const IO::Location* hotlinkNodeLocation, API_HotlinkSourceStatus* hotlinkSourceStatus)
-{
-    return ACAPI_Database (APIDb_GetHotlinkSourceStatusID, (void*) hotlinkNodeLocation, (void*) hotlinkSourceStatus);
 }
 
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)

@@ -2,14 +2,12 @@ import os
 import sys
 import aclib
 
-# Hotlink source status, breaking and deleting nodes.
+# Breaking and deleting hotlink nodes.
 #
-# GetHotlinks reports the state of each node's source file as sourceStatus
-# (Available, Modified or Missing) - what the Hotlink Manager's Status column
-# shows. This example lists that for every node, then shows the two ways of
-# removing a node: BreakHotlinkNodes turns the elements of its placed
-# instances into ordinary elements of the project, DeleteHotlinkNodes removes
-# the node together with its instances.
+# This example lists the nodes of the open project with their source file,
+# then shows the two ways of removing a node: BreakHotlinkNodes turns the
+# elements of its placed instances into ordinary elements of the project,
+# DeleteHotlinkNodes removes the node together with its instances.
 #
 # Set TAPIR_HOTLINK_SOURCE to the absolute path of a .mod or .pln to have the
 # example create a node from it, place it, break it, then create and place it
@@ -24,7 +22,7 @@ def CollectNodes (hotlinks):
 
 hotlinks = aclib.RunTapirCommand ('GetHotlinks')['hotlinks']
 for node in CollectNodes (hotlinks):
-    print ('{}: {} - {}'.format (node.get ('name', '?'), node.get ('location', 'no location'), node.get ('sourceStatus', 'status not read')))
+    print ('{}: {}'.format (node.get ('name', '?'), node.get ('location', 'no location')))
 
 sourcePath = os.environ.get ('TAPIR_HOTLINK_SOURCE')
 if not sourcePath:

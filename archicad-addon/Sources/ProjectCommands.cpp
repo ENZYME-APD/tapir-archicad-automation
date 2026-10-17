@@ -637,24 +637,6 @@ static GS::Optional<GS::UniString> GetLocationOfHotlink (const API_Guid& hotlink
     return hotlinkNode.sourceLocation->ToDisplayText ();
 }
 
-// The state of the source file as the Hotlink Manager's Status column shows
-// it. Archicad looks the file up for this (on a server for a BIMcloud
-// source), which is what the Hotlink Manager does for every node it lists.
-static GS::Optional<GS::UniString> GetSourceStatusOfHotlink (const IO::Location& sourceLocation)
-{
-    API_HotlinkSourceStatus sourceStatus = {};
-    if (ACAPI_Hotlink_GetHotlinkSourceStatus (&sourceLocation, &sourceStatus) != NoError) {
-        return GS::NoValue;
-    }
-
-    switch (sourceStatus) {
-        case APIHotlink_Available:  return GS::UniString ("Available");
-        case APIHotlink_Modified:   return GS::UniString ("Modified");
-        case APIHotlink_Missing:    return GS::UniString ("Missing");
-        default:                    return GS::UniString ("Unknown");
-    }
-}
-
 static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
     GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree)
 {
@@ -665,21 +647,14 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
         hotlinkNodeOS.Add ("location", location.Get ());
     }
 
-    // The node guid is what CreateHotlinkInstances needs; the name, type and
-    // source status are what a caller shows. All are additions to the
-    // original shape.
+    // The node guid is what CreateHotlinkInstances needs; the name and type
+    // are what a caller shows. All three are additions to the original shape.
     hotlinkNodeOS.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkGuid));
     API_HotlinkNode hotlinkNode = {};
     hotlinkNode.guid = hotlinkGuid;
     if (ACAPI_Hotlink_GetHotlinkNode (&hotlinkNode) == NoError) {
         hotlinkNodeOS.Add ("name", GS::UniString (hotlinkNode.name));
         hotlinkNodeOS.Add ("type", hotlinkNode.type == APIHotlink_XRef ? "XRef" : "Module");
-        if (hotlinkNode.sourceLocation != nullptr) {
-            const GS::Optional<GS::UniString> sourceStatus = GetSourceStatusOfHotlink (*hotlinkNode.sourceLocation);
-            if (sourceStatus.HasValue ()) {
-                hotlinkNodeOS.Add ("sourceStatus", sourceStatus.Get ());
-            }
-        }
     }
 
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);

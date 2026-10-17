@@ -54,12 +54,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutTexts(
                 "Types",
                 "Module or XRef, for each hotlink node in the order of Locations.");
-
-            OutTexts(
-                "SourceStatuses",
-                "Available, Modified or Missing: the state of each hotlink node's source " +
-                "file in the order of Locations, as the Hotlink Manager's Status column " +
-                "shows it. Empty when the add-on could not read it.");
         }
 
         protected override void Solve(
@@ -104,10 +98,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.SetDataList(
                 5,
                 nodes.Select(link => link.Type));
-
-            da.SetDataList(
-                6,
-                nodes.Select(link => link.SourceStatus));
         }
     }
 }
