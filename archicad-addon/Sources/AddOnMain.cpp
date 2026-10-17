@@ -44,6 +44,7 @@
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
 #include "GridElementCommands.hpp"
+#include "RenderingCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -316,6 +317,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SaveCurrentWindowAsImageCommand> (
             projectCommands, "1.7.1",
             "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format."
+        );
+        err |= RegisterCommand<GetRenderingScenesCommand> (
+            projectCommands, "1.7.2",
+            "Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them."
+        );
+        err |= RegisterCommand<SetCurrentRenderingSceneCommand> (
+            projectCommands, "1.7.2",
+            "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does."
+        );
+        err |= RegisterCommand<PhotoRenderCommand> (
+            projectCommands, "1.7.2",
+            "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
