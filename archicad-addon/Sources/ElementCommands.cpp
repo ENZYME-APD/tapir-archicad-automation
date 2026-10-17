@@ -3987,6 +3987,154 @@ GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameter
     return response;
 }
 
+// The mirror axis is the line through beginPoint and endPoint, given in begC
+// and endC like the two points of the rotation arc in RotateElement.
+static GSErrCode MirrorElement (const API_Guid& elemGuid, const API_Coord& beginPoint, const API_Coord& endPoint, bool withCopy)
+{
+    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Mirror;
+    editPars.begC = API_Coord3D { beginPoint.x, beginPoint.y, 0.0 };
+    editPars.endC = API_Coord3D { endPoint.x, endPoint.y, 0.0 };
+    editPars.withDelete = !withCopy;
+
+    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+}
+
+MirrorElementsCommand::MirrorElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MirrorElementsCommand::GetName () const
+{
+    return "MirrorElements";
+}
+
+GS::Optional<GS::UniString> MirrorElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithMirrorAxes": {
+                "type": "array",
+                "description": "The elements with mirror axes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "mirrorAxis": {
+                            "type": "object",
+                            "description": "The mirror axis: the line through two points on the floor plan.",
+                            "properties": {
+                                "beginPoint": {
+                                    "$ref": "#/Coordinate2D",
+                                    "description": "First point of the mirror axis."
+                                },
+                                "endPoint": {
+                                    "$ref": "#/Coordinate2D",
+                                    "description": "Second point of the mirror axis. Must differ from beginPoint."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["beginPoint", "endPoint"]
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description": "Optional parameter. If true, a mirrored copy of the element is created and the original is kept. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "mirrorAxis"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elementsWithMirrorAxes"]
+    })";
+}
+
+GS::Optional<GS::UniString> MirrorElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MirrorElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithMirrorAxes;
+    parameters.Get ("elementsWithMirrorAxes", elementsWithMirrorAxes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Mirror Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithMirrorAxis : elementsWithMirrorAxes) {
+            const GS::ObjectState* elementId = elementWithMirrorAxis.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* mirrorAxis = elementWithMirrorAxis.Get ("mirrorAxis");
+            if (mirrorAxis == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* beginPoint = mirrorAxis->Get ("beginPoint");
+            const GS::ObjectState* endPoint = mirrorAxis->Get ("endPoint");
+            if (beginPoint == nullptr || endPoint == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis beginPoint or endPoint is missing"));
+                continue;
+            }
+
+            const API_Coord axisBegin = Get2DCoordinateFromObjectState (*beginPoint);
+            const API_Coord axisEnd = Get2DCoordinateFromObjectState (*endPoint);
+            if (IsSame2DCoordinate (axisBegin, axisEnd)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "mirrorAxis beginPoint and endPoint are the same point, so they do not define an axis"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            bool copy = false;
+            elementWithMirrorAxis.Get ("copy", copy);
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "mirrored");
+            if (notEditableResult.HasValue ()) {
+                executionResults (*notEditableResult);
+                continue;
+            }
+
+            const GSErrCode err = MirrorElement (elemGuid, axisBegin, axisEnd, copy);
+            if (err != NoError) {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to mirror element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 FilterElementsCommand::FilterElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
