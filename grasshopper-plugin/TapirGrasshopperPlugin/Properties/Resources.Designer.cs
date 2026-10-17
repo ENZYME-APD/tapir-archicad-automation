@@ -2952,5 +2952,61 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap GetProjectInfoGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetProjectInfoGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateProjectInfoGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateProjectInfoGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameProjectInfoGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameProjectInfoGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteProjectInfoGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteProjectInfoGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MoveProjectInfoGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MoveProjectInfoGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameProjectInfoFields
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameProjectInfoFields", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MoveProjectInfoFields
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MoveProjectInfoFields", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

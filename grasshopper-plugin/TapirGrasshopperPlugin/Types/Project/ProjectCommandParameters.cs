@@ -12,6 +12,13 @@ namespace TapirGrasshopperPlugin.Types.Project
             "projectInfoValue",
             NullValueHandling = NullValueHandling.Ignore)]
         public string ProjectInfoValue;
+
+        // The Project Info group to create the field in (Archicad 30 or newer);
+        // omitted, the field goes to the first group.
+        [JsonProperty(
+            "projectInfoGroupId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public ProjectInfoGroupGuid ProjectInfoGroupId;
     }
 
     public class CreateProjectInfoFieldsParameters
@@ -22,8 +29,18 @@ namespace TapirGrasshopperPlugin.Types.Project
 
     public class DeleteProjectInfoFieldsParameters
     {
-        [JsonProperty("projectInfoIds")]
+        // Autotext keys, as GetProjectInfoFields returns them.
+        [JsonProperty(
+            "projectInfoIds",
+            NullValueHandling = NullValueHandling.Ignore)]
         public List<string> ProjectInfoIds;
+
+        // Fields of the Project Info groups (Archicad 30 or newer), as
+        // GetProjectInfoGroups returns them.
+        [JsonProperty(
+            "projectInfoFieldIds",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<ProjectInfoFieldGuidWrapper> ProjectInfoFieldIds;
     }
 
     public class RebuildViewParameters
