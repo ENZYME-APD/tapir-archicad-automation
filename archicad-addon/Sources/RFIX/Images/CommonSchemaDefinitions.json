@@ -3979,6 +3979,10 @@
             "projectInfoValue": {
                 "type": "string",
                 "description": "Initial value of the project info field."
+            },
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId",
+                "description": "The Project Info group to create the field in. Available from Archicad 30, where the field goes to the first group when omitted; on older versions giving it is an error."
             }
         },
         "additionalProperties": false,
@@ -5663,6 +5667,25 @@
         "description": "A list of Project Info group identifiers or errors.",
         "items": {
             "$ref": "#/ProjectInfoGroupIdOrError"
+        }
+    },
+    "CreatedProjectInfoFieldOrError": {
+        "type": "object",
+        "description": "A created project info field or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/CreatedProjectInfoField"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "CreatedProjectInfoFieldsOrErrors": {
+        "type": "array",
+        "description": "A list of created project info fields or errors, one per requested field.",
+        "items": {
+            "$ref": "#/CreatedProjectInfoFieldOrError"
         }
     },
     "ElementClassificationItemArray": {
@@ -10133,6 +10156,32 @@
         "additionalProperties": false,
         "required": [
             "projectInfoId",
+            "projectInfoName",
+            "projectInfoValue"
+        ]
+    },
+    "CreatedProjectInfoField": {
+        "type": "object",
+        "properties": {
+            "projectInfoId": {
+                "type": "string",
+                "description": "The id of the project info field: its autotext key, as GetProjectInfoFields returns it and SetProjectInfoField takes it. On Archicad 30 it is given only when exactly one project info autotext has the name of the new field, and omitted otherwise."
+            },
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId",
+                "description": "The id of the field in the Project Info groups, as GetProjectInfoGroups returns it. Available from Archicad 30."
+            },
+            "projectInfoName": {
+                "type": "string",
+                "description": "The name of the project info field visible on UI."
+            },
+            "projectInfoValue": {
+                "type": "string",
+                "description": "The value of the project info field."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
             "projectInfoName",
             "projectInfoValue"
         ]
