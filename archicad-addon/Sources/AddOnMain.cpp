@@ -831,6 +831,18 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Deletes the given attributes."
         );
+        err |= RegisterCommand<GetUsedAttributesCommand> (
+            attributeCommands, "1.7.2",
+            "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ConsolidateLinesCommand> (
+            attributeCommands, "1.7.2",
+            "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ConsolidateFillsCommand> (
+            attributeCommands, "1.7.2",
+            "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran. Available from Archicad 27."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates or overwrites Layer attributes based on the given parameters."
