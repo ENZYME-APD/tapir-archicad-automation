@@ -1,5 +1,6 @@
 #include "AttributeCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "ObjectStateJSONConversion.hpp"
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
 #include "VectorImageIterator.hpp"
@@ -5326,4 +5327,127 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
     }
 
     return response;
+}
+
+// ACAPI_Database_JsonQuery answers a query string with a string. The queries used here: "lineConsolidation"
+// and "fillNormalization" run the Line Consolidation and Fill Consolidation menu commands, "usedAttributes"
+// reports the attributes in use. AC25 and AC26 declare APIDb_JsonQueryID with other parameter types, so
+// these commands are Archicad 27+ only.
+#ifdef ServerMainVers_2700
+static GSErrCode RunJsonQuery (const GS::UniString& query, GS::UniString& result)
+{
+    return ACAPI_Database_JsonQuery (&query, &result);
+}
+#endif
+
+ConsolidationCommandBase::ConsolidationCommandBase (const GS::String& commandNameIn, const GS::UniString& queryIn, const GS::UniString& menuCommandNameIn)
+    : CommandBase (CommonSchema::Used)
+    , commandName (commandNameIn)
+    , query (queryIn)
+    , menuCommandName (menuCommandNameIn)
+{
+}
+
+GS::String ConsolidationCommandBase::GetName () const
+{
+    return commandName;
+}
+
+GS::Optional<GS::UniString> ConsolidationCommandBase::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "result": {
+                "type": "string",
+                "description": "What Archicad answered for the JSON query, as it came. Present when the query ran. The Archicad API does not document its content; it may report a failure of the menu command even though the query itself ran."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    })";
+}
+
+GS::ObjectState ConsolidationCommandBase::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString result;
+    const GSErrCode err = RunJsonQuery (query, result);
+    if (err != NoError) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to run the %T menu command.", menuCommandName.ToPrintf ())));
+    }
+
+    // The answer is undocumented and may say that the menu command failed although the query ran,
+    // so it is passed on for the caller to see.
+    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+    response.Add ("result", result);
+    return response;
+#else
+    return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer."));
+#endif
+}
+
+ConsolidateLinesCommand::ConsolidateLinesCommand ()
+    : ConsolidationCommandBase ("ConsolidateLines", "lineConsolidation", "Line Consolidation")
+{
+}
+
+ConsolidateFillsCommand::ConsolidateFillsCommand ()
+    : ConsolidationCommandBase ("ConsolidateFills", "fillNormalization", "Fill Consolidation")
+{
+}
+
+GetUsedAttributesCommand::GetUsedAttributesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetUsedAttributesCommand::GetName () const
+{
+    return "GetUsedAttributes";
+}
+
+GS::Optional<GS::UniString> GetUsedAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The attributes in use, as Archicad reports them for the usedAttributes JSON query. The Archicad API does not document the layout of the report, so it is passed on as it comes: parsed into usedAttributes when it is a JSON object, otherwise as text in raw.",
+        "properties": {
+            "usedAttributes": {
+                "type": "object",
+                "description": "The report parsed as a JSON object."
+            },
+            "raw": {
+                "type": "string",
+                "description": "The report as text, when it is not a JSON object."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetUsedAttributesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString result;
+    const GSErrCode err = RunJsonQuery ("usedAttributes", result);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the used attributes.");
+    }
+
+    // The layout of the report is undocumented; an ObjectState only holds a JSON object, so anything
+    // else (an array, plain text) goes back as it came.
+    GS::ObjectState usedAttributes;
+    if (JSON::ConvertToObjectState (result, usedAttributes) == NoError) {
+        return GS::ObjectState ("usedAttributes", usedAttributes);
+    }
+    return GS::ObjectState ("raw", result);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
