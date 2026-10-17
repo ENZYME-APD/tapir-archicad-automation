@@ -12596,5 +12596,193 @@
                 "$ref": "#/ErrorItem"
             }
         ]
+    },
+    "GraphicOverrideRuleId": {
+        "type": "object",
+        "description": "The identifier of a graphic override rule.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "GraphicOverrideRuleIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideRuleId": {
+                "$ref": "#/GraphicOverrideRuleId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRuleId"
+        ]
+    },
+    "GraphicOverrideRuleIdOrError": {
+        "type": "object",
+        "description": "A graphic override rule identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GraphicOverrideRuleIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GraphicOverrideCombinationId": {
+        "type": "object",
+        "description": "The identifier of a graphic override combination.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "GraphicOverrideCombinationIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideCombinationId": {
+                "$ref": "#/GraphicOverrideCombinationId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideCombinationId"
+        ]
+    },
+    "GraphicOverrideCombinationIdOrError": {
+        "type": "object",
+        "description": "A graphic override combination identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GraphicOverrideCombinationIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GraphicOverrideFillTypes": {
+        "type": "object",
+        "description": "The fill types an override applies to.",
+        "properties": {
+            "cutFill": {
+                "type": "boolean",
+                "description": "Applies to cut fills."
+            },
+            "coverFill": {
+                "type": "boolean",
+                "description": "Applies to cover fills."
+            },
+            "draftingFill": {
+                "type": "boolean",
+                "description": "Applies to drafting fills."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutFill",
+            "coverFill",
+            "draftingFill"
+        ]
+    },
+    "GraphicOverrideSurfaceTypes": {
+        "type": "object",
+        "description": "The surface types an override applies to.",
+        "properties": {
+            "cutSurface": {
+                "type": "boolean",
+                "description": "Applies to cut surfaces."
+            },
+            "uncutSurface": {
+                "type": "boolean",
+                "description": "Applies to uncut surfaces."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutSurface",
+            "uncutSurface"
+        ]
+    },
+    "GraphicOverrideStyle": {
+        "type": "object",
+        "description": "What a graphic override rule overrides and how. A field that is left out is not overridden.",
+        "properties": {
+            "lineType": {
+                "$ref": "#/AttributeId",
+                "description": "The line type that replaces the line type of lines."
+            },
+            "lineMarkerTextPen": {
+                "type": "integer",
+                "description": "The pen index that replaces the pen of lines, markers and texts."
+            },
+            "fillType": {
+                "$ref": "#/AttributeId",
+                "description": "The fill type that replaces the fill type of fills."
+            },
+            "fillTypeAppliesTo": {
+                "$ref": "#/GraphicOverrideFillTypes",
+                "description": "The fills the fill type override applies to. Left out: all fills."
+            },
+            "fillForegroundPen": {
+                "type": "integer",
+                "description": "The pen index that replaces the foreground pen of fills."
+            },
+            "fillForegroundPenAppliesTo": {
+                "$ref": "#/GraphicOverrideFillTypes",
+                "description": "The fills the foreground pen override applies to. Left out: all fills."
+            },
+            "fillBackgroundPen": {
+                "type": "integer",
+                "description": "The pen index that replaces the background pen of fills. Use either this or fillBackgroundColor."
+            },
+            "fillBackgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "The color that replaces the background pen of fills. Use either this or fillBackgroundPen."
+            },
+            "fillBackgroundPenAppliesTo": {
+                "$ref": "#/GraphicOverrideFillTypes",
+                "description": "The fills the background pen override applies to. Left out: all fills."
+            },
+            "surface": {
+                "$ref": "#/AttributeId",
+                "description": "The surface that replaces the surface of elements. Use either this or surfaceColor."
+            },
+            "surfaceColor": {
+                "$ref": "#/ColorRGB",
+                "description": "The color that replaces the surface of elements. Use either this or surface."
+            },
+            "surfaceAppliesTo": {
+                "$ref": "#/GraphicOverrideSurfaceTypes",
+                "description": "The surfaces the surface override applies to. Left out: all surfaces."
+            },
+            "showSkinSeparators": {
+                "type": "boolean",
+                "description": "Show the skin separator lines."
+            },
+            "overridePenColorAndThickness": {
+                "type": "boolean",
+                "description": "Override the pen color and thickness."
+            },
+            "hiddenContours": {
+                "$ref": "#/GraphicOverrideSurfaceTypes",
+                "description": "The contours to hide when overrideContours is true."
+            },
+            "overrideContours": {
+                "type": "boolean",
+                "description": "Override the contour visibility."
+            }
+        },
+        "additionalProperties": false
     }
 }
