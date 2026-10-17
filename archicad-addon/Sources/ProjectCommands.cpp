@@ -2182,6 +2182,30 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
 // and written back whole with ACAPI_ProjectSetting_SetPreferences. So SetProjectPreferences
 // reads the page first, changes only the fields it was given and keeps the rest as it is.
 // The names of the units are the ones GetCalculationUnits answers with, parsed back here.
+// Writing a page back needs ACAPI_ProjectSetting_SetPreferences, which Archicad 27
+// introduced (ACAPI_Environment has no set-preferences function before it), so
+// SetProjectPreferences is available from Archicad 27.
+
+static GS::ObjectState CreateWorkingUnitsObjectState (const API_WorkingUnitPrefs& prefs)
+{
+    return GS::ObjectState (
+        "length", GS::ObjectState (
+            "unit", ConvertAPILengthType (prefs.lengthUnit),
+            "decimals", prefs.lenDecimals,
+            "roundInch", prefs.roundInch),
+        "area", GS::ObjectState (
+            "unit", ConvertAPIAreaType (prefs.areaUnit),
+            "decimals", prefs.areaDecimals),
+        "volume", GS::ObjectState (
+            "unit", ConvertAPIVolumeType (prefs.volumeUnit),
+            "decimals", prefs.volumeDecimals),
+        "angle", GS::ObjectState (
+            "unit", ConvertAPIAngleType (prefs.angleUnit),
+            "decimals", prefs.angleDecimals,
+            "accuracy", prefs.angleAccuracy));
+}
+
+#ifdef ServerMainVers_2700
 
 template <typename EnumType>
 static bool ParseEnumByName (const GS::UniString& str, std::initializer_list<EnumType> values, GS::UniString (*toString) (EnumType), EnumType& result)
@@ -2301,29 +2325,10 @@ static GS::Optional<GS::UniString> GetPreferenceAccuracyField (const GS::ObjectS
 
 // --- Working Units page
 
-static GS::ObjectState CreateWorkingUnitsObjectState (const API_WorkingUnitsPrefs& prefs)
-{
-    return GS::ObjectState (
-        "length", GS::ObjectState (
-            "unit", ConvertAPILengthType (prefs.lengthUnit),
-            "decimals", prefs.lenDecimals,
-            "roundInch", prefs.roundInch),
-        "area", GS::ObjectState (
-            "unit", ConvertAPIAreaType (prefs.areaUnit),
-            "decimals", prefs.areaDecimals),
-        "volume", GS::ObjectState (
-            "unit", ConvertAPIVolumeType (prefs.volumeUnit),
-            "decimals", prefs.volumeDecimals),
-        "angle", GS::ObjectState (
-            "unit", ConvertAPIAngleType (prefs.angleUnit),
-            "decimals", prefs.angleDecimals,
-            "accuracy", prefs.angleAccuracy));
-}
-
 // The Apply functions change the fields of `prefs` that `os` gives and set `changed`
 // when there was one. They return the error message for a value that cannot be
 // applied, NoValue otherwise.
-static GS::Optional<GS::UniString> ApplyWorkingUnits (const GS::ObjectState& os, API_WorkingUnitsPrefs& prefs, bool& changed)
+static GS::Optional<GS::UniString> ApplyWorkingUnits (const GS::ObjectState& os, API_WorkingUnitPrefs& prefs, bool& changed)
 {
     GS::Optional<GS::UniString> error;
 
@@ -2426,36 +2431,6 @@ static GS::Optional<GS::UniString> ApplyCalculationUnits (const GS::ObjectState&
     return GS::NoValue;
 }
 
-// --- Reference Levels page
-
-static GS::ObjectState CreateReferenceLevelsObjectState (const API_RefLevelsPrefs& prefs)
-{
-    return GS::ObjectState (
-        "level1", GS::ObjectState (
-            "name", GS::UniString (prefs.level1Str),
-            "level", prefs.level1),
-        "level2", GS::ObjectState (
-            "name", GS::UniString (prefs.level2Str),
-            "level", prefs.level2));
-}
-
-static GS::Optional<GS::UniString> ApplyReferenceLevels (const GS::ObjectState& os, API_RefLevelsPrefs& prefs, bool& changed)
-{
-    GS::ObjectState level1;
-    if (os.Get ("level1", level1)) {
-        changed |= SetUCharProperty (&level1, "name", prefs.level1Str);
-        changed |= level1.Get ("level", prefs.level1);
-    }
-
-    GS::ObjectState level2;
-    if (os.Get ("level2", level2)) {
-        changed |= SetUCharProperty (&level2, "name", prefs.level2Str);
-        changed |= level2.Get ("level", prefs.level2);
-    }
-
-    return GS::NoValue;
-}
-
 // --- The commands
 
 // Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
@@ -2488,6 +2463,8 @@ static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_Pref
     return CreateSuccessfulExecutionResult ();
 }
 
+#endif
+
 // The "required" list of a preferences object: every field in the response of
 // GetProjectPreferences, none in the input of SetProjectPreferences, where a
 // missing field keeps its value.
@@ -2501,7 +2478,7 @@ static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired
 
 static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
 {
-    return GS::UniString (R"({
+    GS::UniString schema = R"({
         "type": "object",
         "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
         "properties": {
@@ -2521,7 +2498,9 @@ static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")");
+    schema += R"(
             },
             "area": {
                 "type": "object",
@@ -2535,7 +2514,9 @@ static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
+    schema += R"(
             },
             "volume": {
                 "type": "object",
@@ -2549,7 +2530,9 @@ static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
+    schema += R"(
             },
             "angle": {
                 "type": "object",
@@ -2567,17 +2550,22 @@ static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
+    schema += R"(
             }
         },
         "additionalProperties": false,
-        )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")") + R"(
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
+    schema += R"(
     })";
+    return schema;
 }
 
 static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
 {
-    return GS::UniString (R"({
+    GS::UniString schema = R"({
         "type": "object",
         "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
         "properties": {
@@ -2596,7 +2584,9 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
             },
             "area": {
                 "type": "object",
@@ -2613,7 +2603,9 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
             },
             "volume": {
                 "type": "object",
@@ -2630,7 +2622,9 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
             },
             "angle": {
                 "type": "object",
@@ -2648,54 +2642,17 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
                     }
                 },
                 "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")") + R"(
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
+    schema += R"(
             }
         },
         "additionalProperties": false,
-        )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")") + R"(
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
+    schema += R"(
     })";
-}
-
-static GS::UniString GetReferenceLevelsSchema (bool allFieldsRequired)
-{
-    return GS::UniString (R"({
-        "type": "object",
-        "description": "The Reference Levels page: the two reference levels of the project, each with a name and a level above Project Zero.",
-        "properties": {
-            "level1": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the first reference level."
-                    },
-                    "level": {
-                        "type": "number",
-                        "description": "The height of the first reference level above Project Zero, in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "level")") + R"(
-            },
-            "level2": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the second reference level."
-                    },
-                    "level": {
-                        "type": "number",
-                        "description": "The height of the second reference level above Project Zero, in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "level")") + R"(
-            }
-        },
-        "additionalProperties": false,
-        )") + GetProjectPreferencesRequiredFields (allFieldsRequired, R"("level1", "level2")") + R"(
-    })";
+    return schema;
 }
 
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
@@ -2720,8 +2677,7 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                     "type": "string",
                     "enum": [
                         "WorkingUnits",
-                        "CalculationUnits",
-                        "ReferenceLevels"
+                        "CalculationUnits"
                     ]
                 },
                 "minItems": 1
@@ -2735,18 +2691,22 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
 
 GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    GS::UniString schema = R"({
         "type": "object",
         "description": "The pages asked for, by name.",
         "properties": {
-            "workingUnits": )") + GetWorkingUnitsSchema (true) + R"(,
-            "calculationUnits": )") + GetCalculationUnitsPageSchema (true) + R"(,
-            "referenceLevels": )") + GetReferenceLevelsSchema (true) + R"(
+            "workingUnits": )";
+    schema += GetWorkingUnitsSchema (true);
+    schema += R"(,
+            "calculationUnits": )";
+    schema += GetCalculationUnitsPageSchema (true);
+    schema += R"(
         },
         "additionalProperties": false,
         "required": [
         ]
     })";
+    return schema;
 }
 
 GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -2755,13 +2715,12 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
     if (!parameters.Get ("preferenceTypes", preferenceTypes)) {
         preferenceTypes.Push ("WorkingUnits");
         preferenceTypes.Push ("CalculationUnits");
-        preferenceTypes.Push ("ReferenceLevels");
     }
 
     GS::ObjectState response;
     for (const GS::UniString& preferenceType : preferenceTypes) {
         if (preferenceType == "WorkingUnits") {
-            API_WorkingUnitsPrefs prefs = {};
+            API_WorkingUnitPrefs prefs = {};
             const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_WorkingUnitsID);
             if (err != NoError) {
                 return CreateErrorResponse (err, "Failed to read the working units preferences.");
@@ -2774,13 +2733,6 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
                 return CreateErrorResponse (err, "Failed to read the calculation units preferences.");
             }
             response.Add ("calculationUnits", CreateCalculationUnitsObjectState (prefs));
-        } else if (preferenceType == "ReferenceLevels") {
-            API_RefLevelsPrefs prefs = {};
-            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ReferenceLevelsID);
-            if (err != NoError) {
-                return CreateErrorResponse (err, "Failed to read the reference levels preferences.");
-            }
-            response.Add ("referenceLevels", CreateReferenceLevelsObjectState (prefs));
         } else {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
         }
@@ -2801,18 +2753,22 @@ GS::String SetProjectPreferencesCommand::GetName () const
 
 GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    GS::UniString schema = R"({
         "type": "object",
         "description": "The pages to change, by name. Only the given fields of a page change, the rest keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet).",
         "properties": {
-            "workingUnits": )") + GetWorkingUnitsSchema (false) + R"(,
-            "calculationUnits": )") + GetCalculationUnitsPageSchema (false) + R"(,
-            "referenceLevels": )") + GetReferenceLevelsSchema (false) + R"(
+            "workingUnits": )";
+    schema += GetWorkingUnitsSchema (false);
+    schema += R"(,
+            "calculationUnits": )";
+    schema += GetCalculationUnitsPageSchema (false);
+    schema += R"(
         },
         "additionalProperties": false,
         "required": [
         ]
     })";
+    return schema;
 }
 
 GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema () const
@@ -2826,9 +2782,6 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
             },
             "calculationUnits": {
                 "$ref": "#/ExecutionResult"
-            },
-            "referenceLevels": {
-                "$ref": "#/ExecutionResult"
             }
         },
         "additionalProperties": false,
@@ -2839,13 +2792,14 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
 
 GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+#ifdef ServerMainVers_2700
     GS::ObjectState response;
     bool anyPage = false;
 
     GS::ObjectState workingUnits;
     if (parameters.Get ("workingUnits", workingUnits)) {
         anyPage = true;
-        response.Add ("workingUnits", SetProjectPreferencesPage<API_WorkingUnitsPrefs> ("working units", APIPrefs_WorkingUnitsID, workingUnits, ApplyWorkingUnits));
+        response.Add ("workingUnits", SetProjectPreferencesPage<API_WorkingUnitPrefs> ("working units", APIPrefs_WorkingUnitsID, workingUnits, ApplyWorkingUnits));
     }
 
     GS::ObjectState calculationUnits;
@@ -2854,17 +2808,15 @@ GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         response.Add ("calculationUnits", SetProjectPreferencesPage<API_CalcUnitPrefs> ("calculation units", APIPrefs_CalcUnitsID, calculationUnits, ApplyCalculationUnits));
     }
 
-    GS::ObjectState referenceLevels;
-    if (parameters.Get ("referenceLevels", referenceLevels)) {
-        anyPage = true;
-        response.Add ("referenceLevels", SetProjectPreferencesPage<API_RefLevelsPrefs> ("reference levels", APIPrefs_ReferenceLevelsID, referenceLevels, ApplyReferenceLevels));
-    }
-
     if (!anyPage) {
-        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, calculationUnits or referenceLevels.");
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits or calculationUnits.");
     }
 
     return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "SetProjectPreferences requires Archicad 27 or newer.");
+#endif
 }
 
 static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)

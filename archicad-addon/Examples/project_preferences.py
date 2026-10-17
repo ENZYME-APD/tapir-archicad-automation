@@ -5,10 +5,11 @@ import aclib
 originalPreferences = aclib.RunTapirCommand ('GetProjectPreferences')
 
 aclib.RunTapirCommand ('GetProjectPreferences', {
-    'preferenceTypes': ['WorkingUnits', 'ReferenceLevels']
+    'preferenceTypes': ['WorkingUnits']
 })
 
 # A page changes only in the fields given; the rest keeps its value.
+# SetProjectPreferences is available from Archicad 27.
 # In Teamwork, reserve the PreferencesDialog lockable object set first
 # (see teamwork_lockable_object_sets.py).
 aclib.RunTapirCommand ('SetProjectPreferences', {
@@ -27,30 +28,21 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
             'accuracy': 'ShowSmall5',
             'decimals': 3
         }
-    },
-    'referenceLevels': {
-        'level1': {
-            'name': 'Sea Level',
-            'level': -12.5
-        },
-        'level2': {
-            'name': 'Site Datum'
-        }
     }
 })
 
 aclib.RunTapirCommand ('GetProjectPreferences')
 
-# A wrong unit name fails that page only, the other pages still change.
+# A wrong unit name fails that page only, the other page still changes.
 aclib.RunTapirCommand ('SetProjectPreferences', {
     'workingUnits': {
         'length': {
             'unit': 'Furlong'
         }
     },
-    'referenceLevels': {
-        'level2': {
-            'level': 3.0
+    'calculationUnits': {
+        'volume': {
+            'decimals': 2
         }
     }
 })
