@@ -56,12 +56,18 @@ if 'elementId' in wall:
 else:
     print ('Creating the wall failed: {}'.format (wall['error']['message']))
 
-# --- an unknown element type is reported --------------------------------------------
+# --- a property is reported per element type ------------------------------------------
+# A custom property has a value only for the element types it is available for; the
+# others get an error item in its place (the element type itself must be a valid one,
+# the common schema's ElementType enum rejects unknown names before the command runs).
+customPropertyId = aclib.RunCommand ('API.GetPropertyIds', {'properties': [
+    {'type': 'UserDefined', 'localizedName': ['Tapir Group', 'Tapir Custom']}]})['properties'][0]['propertyId']
 response = run ('GetPropertyValuesOfElementDefaults', {
-    'elementTypes': ['NoSuchType'],
-    'properties': [{'propertyId': elementIdPropertyId}]
+    'elementTypes': ['Wall', 'Column'],
+    'properties': [{'propertyId': customPropertyId}]
 })
-print ('Unknown element type: {}'.format (firstValue (response['propertyValuesForElementDefaults'][0])))
+for elementType, propertyValues in zip (['Wall', 'Column'], response['propertyValuesForElementDefaults']):
+    print ('Custom property of the {} tool defaults: {}'.format (elementType, firstValue (propertyValues)))
 
 # --- restore the previous default ------------------------------------------------------
 if not previousDefault.startswith ('error: '):
