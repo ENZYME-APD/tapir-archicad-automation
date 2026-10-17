@@ -122,6 +122,19 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
 #define ACAPI_View_Rebuild(par1) ACAPI_Automate (APIDo_RebuildID, (void*) par1)
 
+// The drawing scale of the current database (APIdefs_Database.h: APIDb_GetDrawingScaleID 'GSCL',
+// APIDb_ChangeDrawingScaleID 'CDRS'). AC25/26 take the rebuild flag of the change as par2 (bool*),
+// AC27+ take it as a bool with a false default.
+inline GSErrCode ACAPI_Drawing_GetDrawingScale (double* scale)
+{
+    return ACAPI_Database (APIDb_GetDrawingScaleID, (void*) scale);
+}
+
+inline GSErrCode ACAPI_Drawing_ChangeDrawingScale (double* scale, bool zoom = false)
+{
+    return ACAPI_Database (APIDb_ChangeDrawingScaleID, (void*) scale, (void*) &zoom);
+}
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
