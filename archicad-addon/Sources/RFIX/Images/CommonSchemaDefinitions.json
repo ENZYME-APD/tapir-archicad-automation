@@ -2862,6 +2862,43 @@
             "$ref": "#/ExecutionResult"
         }
     },
+    "ElementCategoryType": {
+        "type": "string",
+        "description": "The type of an element category. The names of the categories and of their values are localized, so scripts should select a category by this type and a value by its categoryValueId, never by name. BRI is available only in the German localized version of Archicad.",
+        "enum": [
+            "StructuralFunction",
+            "Position",
+            "RenovationStatus",
+            "RenovationFilter",
+            "BRI"
+        ]
+    },
+    "ElementCategoryValueId": {
+        "type": "object",
+        "description": "The identifier of a value of an element category.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ElementCategoryId": {
+        "type": "object",
+        "description": "The identifier of an element category.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
     "ElementType": {
         "type": "string",
         "description": "The type of an element.",
