@@ -671,7 +671,7 @@ GS::Optional<GS::UniString> GetGhostStorySettingsCommand::GetRawResponseSchema (
         },
         "filter": {
             "type": "array",
-            "description": "The element types shown in the ghost story.",
+            "description": "The element types shown in the ghost story. Types without a Tapir element type name (for example MEP or external ones) are left out, so passing this list to SetGhostStorySettings hides them.",
             "items": {
                 "$ref": "#/ElementType"
             }
@@ -852,13 +852,16 @@ GS::ObjectState SetGhostStorySettingsCommand::Execute (const GS::ObjectState& pa
     if (!hasRecord) {
         // The floor plan has no ghost record yet (Trace & Reference was never used in it).
         // A new one: the active view is drawn in its own colors, fills are kept in both,
-        // and the element filter starts from what the floor plan reports now.
+        // and the element filter starts from what the floor plan reports now. The reference
+        // is drawn in place: no offset, no rotation, and scale 1 (the value-initialised 0
+        // would draw it degenerate).
         ghostRecord = {};
         ghostRecord.parentDatabase = floorPlanDatabase.databaseUnId;
         ghostRecord.viewOriginalColor = true;
         ghostRecord.viewBackgroundFill = true;
         ghostRecord.ghostBackgroundFill = true;
         ghostRecord.ghostColor.f_alpha = 1.0;
+        ghostRecord.scale = 1.0;
         for (Int32 typeId = 0; typeId <= API_LastElemType; ++typeId) {
             ghostRecord.filter[typeId] = current.filter[typeId];
         }
