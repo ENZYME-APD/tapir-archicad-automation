@@ -404,6 +404,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.3",
             "Gets the boundaries of the given Zones (connected elements, neighbour zones, etc.). Accepts either a single zoneElementId or a list of zones. Prefer the list: the expensive boundary recalculation runs once per call, so querying many Zones in one call is much faster than calling the command once per Zone."
         );
+        err |= RegisterCommand<GetZoneReductionsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
             "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
