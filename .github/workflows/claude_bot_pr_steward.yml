@@ -119,12 +119,14 @@ jobs:
           # $4 narrows it to one conclusion: a run whose model call failed
           # (an API error, a spent usage limit) did no review or fix, so only
           # successful runs count as rounds; failed ones - "failure" also takes
-          # in a time-out or a startup failure - have a cap of their own. A
-          # cancelled run (replaced, or stopped by a person) counts as neither.
+          # in a time-out, a startup failure and a cancelled run (a job past its
+          # timeout-minutes can end as cancelled; the steward starts a review or
+          # fix only when none is running, so nothing else replaces one) - have
+          # a cap of their own.
           countRuns() {
             gh api --paginate "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&created=%3E%3D$3&per_page=100" \
               --jq "[.workflow_runs[] | select(.display_title == \"$2\" and (\"$4\" == \"\" or .conclusion == \"$4\"
-                     or (\"$4\" == \"failure\" and (.conclusion == \"timed_out\" or .conclusion == \"startup_failure\"))))] | length" | jq -s 'add // 0'
+                     or (\"$4\" == \"failure\" and (.conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\"))))] | length" | jq -s 'add // 0'
           }
           # Whether a run with this title failed within the last hour: then
           # wait instead of starting another one minutes later, so an outage
@@ -133,7 +135,7 @@ jobs:
             local last
             last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)" \
               --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0]
-                     | select(.conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\") | .updated_at")
+                     | select(.conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\") | .updated_at")
             [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 3600 ]
           }
 
