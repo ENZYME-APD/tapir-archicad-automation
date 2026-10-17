@@ -1158,6 +1158,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
         );
+        err |= RegisterCommand<ZoomToElementsCommand> (
+            navigatorCommands, "1.7.2",
+            "Zooms the current window, 2D or 3D, to the given elements: selects them, zooms to the selection and restores the previous selection unless keepSelection is false. Fails when none of the elements could be selected, e.g. all of them are on another story or on a hidden layer."
+        );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan."
