@@ -3649,16 +3649,8 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
-                            "type": "object",
-                            "description": "Mode of linking the wall to its home story.",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": {
-                                    "type": "boolean",
-                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings",
+                            "description": "When newCreationMode is true, homeStoryDifference overrides the home story selected by floorIndex or derived from zCoordinate."
                         },
                         "inheritEndSurface": {
                             "type": "boolean",
@@ -5735,16 +5727,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
-                            "type": "object",
-                            "description": "Mode of linking the wall to its home story.",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": {
-                                    "type": "boolean",
-                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "inheritEndSurface": {
                             "type": "boolean",
@@ -5866,17 +5849,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Replaces all holes currently placed on the beam.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "type": { "type": "string", "enum": ["Rectangular", "Circular"] },
-                                    "showContour": { "type": "boolean" },
-                                    "centerX": { "type": "number" },
-                                    "centerZ": { "type": "number" },
-                                    "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                                    "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Only used for the Rectangular type." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["type", "centerX", "centerZ", "width"]
+                                "$ref": "#/BeamHoleModification"
                             }
                         },
                         "cutFillPen": { "$ref": "#/OverriddenPen" },
