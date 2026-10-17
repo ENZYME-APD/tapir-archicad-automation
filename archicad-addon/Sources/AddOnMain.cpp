@@ -1517,6 +1517,18 @@ GSErrCode Initialize (void)
             solidElementOperationCommands, "1.5.9",
             "Which roofs and shells trim each queried element, with the trim type, and which elements it trims."
         );
+        err |= RegisterCommand<MergeElementsCommand> (
+            solidElementOperationCommands, "1.7.2",
+            "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge."
+        );
+        err |= RegisterCommand<UnmergeElementsCommand> (
+            solidElementOperationCommands, "1.7.2",
+            "Removes the merge between the two elements of each given pair. Undoable; one execution result per pair."
+        );
+        err |= RegisterCommand<GetMergedElementsCommand> (
+            solidElementOperationCommands, "1.7.2",
+            "Gets the elements each queried element is merged with, one item per queried element; an unknown element is an error item."
+        );
         AddCommandGroup (solidElementOperationCommands);
     }
 
