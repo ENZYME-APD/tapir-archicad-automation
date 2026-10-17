@@ -4420,6 +4420,138 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+GetHotspotsOfElementsCommand::GetHotspotsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotspotsOfElementsCommand::GetName () const
+{
+    return "GetHotspotsOfElements";
+}
+
+GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotspotsOfElements": {
+                "type": "array",
+                "description": "The hotspots of each element, aligned with the input array of elements, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hotspots": {
+                                    "type": "array",
+                                    "description": "The hotspots of the element: the points Archicad snaps to and dimensions, in world coordinates (meters, absolute Z). Empty when the element has none.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "coordinate": {
+                                                "$ref": "#/Coordinate3D"
+                                            },
+                                            "neigId": {
+                                                "type": "integer",
+                                                "description": "Which kind of point of the element the hotspot is, as the DevKit's API_NeigID enumerator value of its neig (for example the begin or end point of a Wall's reference line, or a vertex of a Slab's polygon)."
+                                            },
+                                            "inIndex": {
+                                                "type": "integer",
+                                                "description": "Subindex of the point within its kind (API_Neig inIndex), for example the vertex index in the element's polygon."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "coordinate",
+                                            "neigId",
+                                            "inIndex"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hotspots"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotspotsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& hotspotsOfElements = response.AddList<GS::ObjectState> ("hotspotsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            hotspotsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            hotspotsOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // The hotspots are the element's neigs with their 3D position: the same points the
+        // cursor snaps to on the floor plan and the dimension tool attaches to.
+        GS::Array<API_ElementHotspot> elementHotspots;
+        err = ACAPI_Element_GetHotspots (elemHead.guid, &elementHotspots);
+        if (err != NoError) {
+            hotspotsOfElements (CreateErrorResponse (err, "Failed to get the hotspots of the element"));
+            continue;
+        }
+
+        GS::ObjectState hotspotsOfElement;
+        const auto& hotspots = hotspotsOfElement.AddList<GS::ObjectState> ("hotspots");
+        for (const API_ElementHotspot& elementHotspot : elementHotspots) {
+            GS::ObjectState hotspot;
+            hotspot.Add ("coordinate", Create3DCoordinateObjectState (elementHotspot.coord3D));
+            hotspot.Add ("neigId", static_cast<Int32> (elementHotspot.neig.neigID));
+            hotspot.Add ("inIndex", static_cast<Int32> (elementHotspot.neig.inIndex));
+            hotspots (hotspot);
+        }
+        hotspotsOfElements (hotspotsOfElement);
+    }
+
+    return response;
+}
+
 // Body-local vertex -> world coordinates with the body's placement. API_Tranmat is a 3x4 matrix
 // stored row by row (tmx[3], tmx[7] and tmx[11] are the translation), the same layout the Morph
 // code in ExtendedElementCommands.cpp reads and writes.
