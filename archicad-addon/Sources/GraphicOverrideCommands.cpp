@@ -986,10 +986,18 @@ GS::Optional<GS::UniString> DeleteGraphicOverrideRuleGroupsCommand::GetInputPara
         "properties": {
             "ruleGroupNames": {
                 "type": "array",
-                "description": "The names of the rule groups to delete. The rules of a group are deleted with it.",
+                "description": "The names of the rule groups to delete.",
                 "items": {
                     "type": "string"
                 }
+            },
+            "moveRulesToGroup": {
+                "type": "string",
+                "description": "The name of the rule group the rules of the deleted groups are moved to, so they are kept. Created when no rule group has this name."
+            },
+            "deleteRules": {
+                "type": "boolean",
+                "description": "Delete the rules of the deleted groups too. Without this or moveRulesToGroup, a group that still contains rules is not deleted."
             }
         },
         "additionalProperties": false,
@@ -1022,28 +1030,71 @@ GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::Objec
     if (!parameters.Get ("ruleGroupNames", ruleGroupNames)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'ruleGroupNames' parameter.");
     }
+    GS::UniString moveRulesToGroup;
+    const bool moveRules = parameters.Get ("moveRulesToGroup", moveRulesToGroup);
+    bool deleteRules = false;
+    parameters.Get ("deleteRules", deleteRules);
+    if (moveRules && deleteRules) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give either 'moveRulesToGroup' or 'deleteRules', not both.");
+    }
 
-    GS::HashTable<GS::UniString, API_Guid> ruleGroupGuidsByName;
-    GS::Array<API_Guid> ruleGroupIds;
-    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) == NoError) {
+    // Archicad deletes the rules of a group together with the group, and a rule cannot live
+    // outside a group. So the rules are moved first, deleted on request, or the group is kept.
+    const auto findRuleGroup = [] (const GS::UniString& name, API_Guid& ruleGroupGuid, GS::Array<API_Guid>& ruleIds) -> bool {
+        GS::Array<API_Guid> ruleGroupIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+            return false;
+        }
         for (const API_Guid& ruleGroupId : ruleGroupIds) {
             API_OverrideRuleGroup ruleGroup = {};
             ruleGroup.guid = ruleGroupId;
-            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError && !ruleGroupGuidsByName.ContainsKey (ruleGroup.name)) {
-                ruleGroupGuidsByName.Add (ruleGroup.name, ruleGroup.guid);
+            ruleIds.Clear ();
+            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &ruleIds) == NoError && ruleGroup.name == name) {
+                ruleGroupGuid = ruleGroup.guid;
+                return true;
             }
         }
-    }
+        return false;
+    };
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
     ACAPI_CallUndoableCommand ("Delete Graphic Override Rule Groups", [&] () -> GSErrCode {
         for (const GS::UniString& ruleGroupName : ruleGroupNames) {
-            if (!ruleGroupGuidsByName.ContainsKey (ruleGroupName)) {
+            API_Guid ruleGroupGuid = APINULLGuid;
+            GS::Array<API_Guid> ruleIds;
+            if (!findRuleGroup (ruleGroupName, ruleGroupGuid, ruleIds)) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + ruleGroupName + "'."));
                 continue;
             }
-            const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideRuleGroup (ruleGroupGuidsByName[ruleGroupName]);
+
+            if (!ruleIds.IsEmpty () && moveRules) {
+                if (moveRulesToGroup == ruleGroupName) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The rules of '" + ruleGroupName + "' cannot be moved into the group itself."));
+                    continue;
+                }
+                API_Guid targetGuid = APINULLGuid;
+                GSErrCode err = FindOrCreateRuleGroup (moveRulesToGroup, targetGuid);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to find or create the rule group '" + moveRulesToGroup + "'."));
+                    continue;
+                }
+                for (const API_Guid& ruleId : ruleIds) {
+                    err = ACAPI_GraphicalOverride_MoveOverrideRule (ruleId, targetGuid, nullptr);
+                    if (err != NoError) {
+                        break;
+                    }
+                }
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to move the rules of '" + ruleGroupName + "'. The group is kept."));
+                    continue;
+                }
+            } else if (!ruleIds.IsEmpty () && !deleteRules) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The rule group '" + ruleGroupName + "' still contains " + GS::ValueToUniString (ruleIds.GetSize ()) + " rule(s). Set 'moveRulesToGroup' to keep them or 'deleteRules' to delete them."));
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_GraphicalOverride_DeleteOverrideRuleGroup (ruleGroupGuid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to delete the rule group '" + ruleGroupName + "'."));
                 continue;

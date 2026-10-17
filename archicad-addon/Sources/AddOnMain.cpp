@@ -957,7 +957,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteGraphicOverrideRuleGroupsCommand> (
             attributeCommands, "1.7.2",
-            "Deletes graphic override rule groups, found by name, together with their rules. Available from Archicad 27."
+            "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27."
         );
         AddCommandGroup (attributeCommands);
     }
