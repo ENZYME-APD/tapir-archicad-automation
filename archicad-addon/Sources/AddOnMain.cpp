@@ -1071,7 +1071,10 @@ GSErrCode Initialize (void)
             "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink "
             "API, so this recreates the Drawing against the new source and deletes the original - the "
             "returned elementId is a NEW guid, not the input one. The Drawing Title marker's own "
-            "position is not preserved (undocumented Archicad limitation)."
+            "position is not preserved (undocumented Archicad limitation). The new source view is "
+            "made current before the Drawing is created (Archicad 27 or later), and the window and "
+            "story that were active when the command started are restored afterwards; the view "
+            "settings (zoom, layers, scale) shown in that window are not restored."
         );
         err |= RegisterCommand<GetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
