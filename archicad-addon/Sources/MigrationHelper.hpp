@@ -92,9 +92,14 @@
 #define ACAPI_ProjectOperation_CatchProjectEvent ACAPI_Notify_CatchProjectEvent
 
 // The element difference generator (APIdefs_ElementDifferenceGenerator.h) is called
-// ACAPI_ElemDifferenceGenerator_* before AC27, with the same parameters.
+// ACAPI_ElemDifferenceGenerator_* before AC27. AC25 takes the API_ElemDifference result by
+// pointer, AC26 and later by reference.
 #define ACAPI_DifferenceGenerator_GetState ACAPI_ElemDifferenceGenerator_GetState
+#ifdef ServerMainVers_2600
 #define ACAPI_DifferenceGenerator_GenerateDifference ACAPI_ElemDifferenceGenerator_GenerateDifference
+#else
+#define ACAPI_DifferenceGenerator_GenerateDifference(par1, par2, par3, par4) ACAPI_ElemDifferenceGenerator_GenerateDifference (par1, par2, par3, &(par4))
+#endif
 
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
