@@ -3232,7 +3232,7 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
-                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool defaults or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
                     },
                     "text": {
                         "type": "string",
@@ -4252,6 +4252,26 @@ static void CalcLabelParentBounds (const API_Elem_Head& parentElemHead, API_Box3
     }
 }
 
+// True when both handles hold the same parameter list: the same number of parameters, with
+// the same names and types in the same order (values may differ). An empty or null handle
+// matches only another empty or null one.
+static bool IsSameParameterList (API_AddParType** lhs, API_AddParType** rhs)
+{
+    const GSSize lhsCount = lhs != nullptr ? BMGetHandleSize ((GSHandle) lhs) / sizeof (API_AddParType) : 0;
+    const GSSize rhsCount = rhs != nullptr ? BMGetHandleSize ((GSHandle) rhs) / sizeof (API_AddParType) : 0;
+    if (lhsCount != rhsCount) {
+        return false;
+    }
+    for (GSIndex ii = 0; ii < lhsCount; ++ii) {
+        const API_AddParType& lhsParam = (*lhs)[ii];
+        const API_AddParType& rhsParam = (*rhs)[ii];
+        if (lhsParam.typeID != rhsParam.typeID || CHCompareCStrings (lhsParam.name, rhsParam.name) != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -4297,6 +4317,9 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         element.label.createAtDefaultPosition = true;
     }
 
+    // The class the Label tool defaults (or the favorite applied to them) came with: only a Symbol
+    // default names a symbol library part in u.symbol, see the Symbol branch below.
+    const API_LblClassID defaultLabelClass = element.label.labelClass;
     GS::UniString labelClassStr;
     if (parameters.Get ("labelClass", labelClassStr)) {
         element.label.labelClass = (labelClassStr == "Symbol") ? APILblClass_Symbol : APILblClass_Text;
@@ -4335,35 +4358,44 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
             }
         }
 
+        // u.symbol shares its storage with u.text: when the defaults are a Text label, u.symbol.libInd
+        // holds bytes of the text settings, which may by chance be a valid library part index of
+        // some unrelated library part. There is no input to name a symbol library part, so refuse
+        // instead of placing whatever that index points at (or nothing, as it did before).
+        if (defaultLabelClass != APILblClass_Symbol) {
+            GS::UniString favoriteName;
+            const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("labelClass 'Symbol' needs a symbol library part, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+        }
+
         // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library
         // part's parameter list in memo.params - the same way Objects, Window/Door markers
         // (PrepareWindowOrDoorDefaults) and interior elevation markers get theirs. Reported in
-        // #742 that the Label tool defaults come back without one for a Symbol label, even after
-        // a Symbol label favorite was applied: the label was then created with no GDL parameters
-        // at all - nothing but its hotspot drawn, and Get/SetGDLParametersOfElements refusing it.
-        // Fall back to the library part's own defaults in that case; tool defaults or a favorite
-        // that do carry parameters keep winning.
-        const GSSize paramNum = memo.params != nullptr
-            ? BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType)
-            : 0;
-        if (paramNum == 0) {
-            double a = 0.0;
-            double b = 0.0;
-            Int32 addParNum = 0;
-            API_AddParType** addPars = nullptr;
-            const GSErrCode paramsErr = ACAPI_LibraryPart_GetParams (element.label.u.symbol.libInd, &a, &b, &addParNum, &addPars);
-            if (paramsErr != NoError) {
-                if (addPars != nullptr) {
-                    ACAPI_DisposeAddParHdl (&addPars);
-                }
-                // Also the case when 'labelClass' switches a Text tool default to Symbol: the
-                // defaults then name no symbol library part, so there is nothing to place.
-                return CreateErrorResponse (paramsErr, "Failed to read the parameters of the symbol label's library part. The Label tool defaults do not name a valid symbol library part - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+        // #742 that a Symbol label created here had no GDL parameters at all - nothing but its
+        // hotspot drawn, and Get/SetGDLParametersOfElements refusing it - also with the Label
+        // tool set to Flexi_Zone_Label, where the defaults come back with a parameter handle.
+        // So what the defaults carry is not taken on trust: the library part's own list is read,
+        // and the defaults' handle is kept only when it is that library part's list (same count,
+        // same names and types - a favorite or tool default that matches keeps its values);
+        // otherwise the library part's defaults are placed.
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** libPartPars = nullptr;
+        const GSErrCode paramsErr = ACAPI_LibraryPart_GetParams (element.label.u.symbol.libInd, &a, &b, &addParNum, &libPartPars);
+        if (paramsErr != NoError || libPartPars == nullptr) {
+            if (libPartPars != nullptr) {
+                ACAPI_DisposeAddParHdl (&libPartPars);
             }
+            return CreateErrorResponse (paramsErr != NoError ? paramsErr : APIERR_BADINDEX, "Failed to read the parameters of the symbol label's library part. The Label tool defaults do not name a valid symbol library part - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+        }
+        if (IsSameParameterList (memo.params, libPartPars)) {
+            ACAPI_DisposeAddParHdl (&libPartPars);
+        } else {
             if (memo.params != nullptr) {
                 ACAPI_DisposeAddParHdl (&memo.params);
             }
-            memo.params = addPars;
+            memo.params = libPartPars;
         }
     }
 
