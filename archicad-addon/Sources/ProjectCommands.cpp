@@ -657,6 +657,18 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
         hotlinkNodeOS.Add ("type", hotlinkNode.type == APIHotlink_XRef ? "XRef" : "Module");
     }
 
+    // The instances are the API_HotlinkType elements placed from the node - what
+    // ChangeHotlinkInstances and DeleteElements take; the node itself is not an
+    // element. Listed in the order Archicad returns them, and left out when the
+    // node's instances cannot be read, so an empty list means none are placed.
+    GS::Array<API_Guid> instanceGuids;
+    if (ACAPI_Hotlink_GetHotlinkInstances (&hotlinkGuid, &instanceGuids) == NoError) {
+        const auto& instanceAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("instances");
+        for (const API_Guid& instanceGuid : instanceGuids) {
+            instanceAdder (CreateElementIdObjectState (instanceGuid));
+        }
+    }
+
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
     if (!children.IsEmpty ()) {
         const auto& listAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("children");
