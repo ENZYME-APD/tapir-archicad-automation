@@ -2717,15 +2717,15 @@ static GS::Optional<GS::ObjectState> GetAttributeFolderFromObjectState (const GS
 
     folder.typeID = typeID;
     folder.path = path;
-    folder.guid = APINULLGuid;
+    folder.guid = GS::Guid ();
     return GS::NoValue;
 }
 
-// Resolves folder.guid from its typeID and path; false when no folder exists on that path.
+// Resolves folder.guid (a GS::Guid, not an API_Guid) from its typeID and path; false when no folder exists on that path.
 static bool FindAttributeFolder (API_AttributeFolder& folder)
 {
-    folder.guid = APINULLGuid;
-    return ACAPI_Attribute_GetFolder (folder) == NoError && folder.guid != APINULLGuid;
+    folder.guid = GS::Guid ();
+    return ACAPI_Attribute_GetFolder (folder) == NoError && !folder.guid.IsNull ();
 }
 
 #endif
@@ -2798,7 +2798,7 @@ GS::ObjectState CreateAttributeFoldersCommand::Execute (const GS::ObjectState& p
         GSErrCode err = NoError;
         API_AttributeFolder current;
         current.typeID = folder.typeID;
-        current.guid = APINULLGuid;
+        current.guid = GS::Guid ();
         for (const GS::UniString& folderName : folder.path) {
             current.path.Push (folderName);
             if (FindAttributeFolder (current)) {
