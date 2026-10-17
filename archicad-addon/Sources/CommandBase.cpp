@@ -1213,5 +1213,7 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     memo.elemInfoString = new GS::UniString (id);
 
-    return ACAPI_Element_ChangeMemo (elementGuid, APIMemoMask_ElemInfoString, &memo);
+    // ACAPI_Element_ChangeMemo takes the guid by non-const reference.
+    API_Guid guid = elementGuid;
+    return ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
 }
