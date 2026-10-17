@@ -1160,7 +1160,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
-            "Creates Section elements on the floor plan."
+            "Creates Section elements on the floor plan. The floor plan must be the active window: creation fails while a Section or Elevation window is active."
         );
         err |= RegisterCommand<CreateInteriorElevationsCommand> (
             navigatorCommands, "1.5.8",
@@ -1168,7 +1168,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateElevationsCommand> (
             navigatorCommands, "1.7.2",
-            "Creates Elevation elements on the floor plan."
+            "Creates Elevation elements on the floor plan. The floor plan must be the active window: creation fails while a Section or Elevation window is active."
         );
         err |= RegisterCommand<GetSectionsAndElevationsDetailsCommand> (
             navigatorCommands, "1.7.2",
@@ -1176,7 +1176,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetSectionsAndElevationsDetailsCommand> (
             navigatorCommands, "1.7.2",
-            "Sets settings of the given Section and Elevation elements."
+            "Sets settings of the given Section and Elevation elements. Archicad keeps the name and reference ID of an existing element: set them when creating it."
         );
         err |= RegisterCommand<MoveNavigatorItemCommand> (
             navigatorCommands, "1.1.7",

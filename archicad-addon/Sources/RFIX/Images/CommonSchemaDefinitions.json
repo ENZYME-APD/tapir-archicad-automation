@@ -12789,8 +12789,8 @@
         "type": "object",
         "description": "Every user-configurable setting of a Section or Elevation element (API_SectionSegment / API_CutPlaneType). Shared by CreateSections, CreateElevations and SetSectionsAndElevationsDetails; all fields are optional.",
         "properties": {
-            "name": { "type": "string", "description": "Name of the section/elevation." },
-            "referenceId": { "type": "string", "description": "The reference ID text. If it contains a '/' character, the text is split between the beginning and end marks." },
+            "name": { "type": "string", "description": "Name of the section/elevation. Taken into account by CreateSections and CreateElevations only: SetSectionsAndElevationsDetails reports success but Archicad keeps the old name." },
+            "referenceId": { "type": "string", "description": "The reference ID text. If it contains a '/' character, the text is split between the beginning and end marks. Taken into account by CreateSections and CreateElevations only: SetSectionsAndElevationsDetails reports success but Archicad keeps the old reference ID." },
             "linePenIndex": { "type": "integer", "description": "Pen index of the section/elevation line." },
             "textPenIndex": { "type": "integer", "description": "Pen index of the marker text." },
             "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the section/elevation line." },
