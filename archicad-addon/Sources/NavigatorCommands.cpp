@@ -923,6 +923,142 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+HideElementsCommand::HideElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String HideElementsCommand::GetName () const
+{
+    return "HideElements";
+}
+
+GS::Optional<GS::UniString> HideElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> HideElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+static GSErrCode GetSelectedNeigs (GS::Array<API_Neig>& selectedNeigs)
+{
+    API_SelectionInfo selectionInfo;
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    if (err != NoError && err != APIERR_NOSEL) {
+        return err;
+    }
+    if (err == APIERR_NOSEL || selectionInfo.typeID == API_SelEmpty) {
+        selectedNeigs.Clear ();
+    }
+    return NoError;
+}
+
+GS::ObjectState HideElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    if (elements.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No elements given.");
+    }
+
+    GS::HashSet<API_Guid> guidsToHide;
+    GS::Array<API_Neig> neigsToHide;
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid guid = GetGuidFromElementsArrayItem (element);
+        if (!guidsToHide.Contains (guid)) {
+            guidsToHide.Add (guid);
+            neigsToHide.Push (API_Neig (guid));
+        }
+    }
+
+    // ACAPI_View_ChangeShowHideState hides the selected elements, so the given
+    // elements are selected for the call and the user's selection is put back
+    // afterwards, without the elements that are hidden by then.
+    GS::Array<API_Neig> previousSelection;
+    GSErrCode err = GetSelectedNeigs (previousSelection);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current selection.");
+    }
+
+    err = ACAPI_Selection_DeselectAll ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to clear the selection.");
+    }
+
+    GS::ObjectState result;
+    bool hidden = false;
+    err = ACAPI_Selection_Select (neigsToHide, true);
+    if (err != NoError) {
+        result = CreateFailedExecutionResult (err, "Failed to select the elements to hide.");
+    } else {
+        bool toShow = false;
+        err = ACAPI_View_ChangeShowHideState (&toShow);
+        if (err != NoError) {
+            result = CreateFailedExecutionResult (err, "Failed to hide the elements.");
+        } else {
+            result = CreateSuccessfulExecutionResult ();
+            hidden = true;
+        }
+    }
+
+    GS::Array<API_Neig> selectionToRestore;
+    for (const API_Neig& neig : previousSelection) {
+        if (!hidden || !guidsToHide.Contains (neig.guid)) {
+            selectionToRestore.Push (neig);
+        }
+    }
+    ACAPI_Selection_DeselectAll ();
+    if (!selectionToRestore.IsEmpty ()) {
+        ACAPI_Selection_Select (selectionToRestore, true);
+    }
+
+    return result;
+}
+
+ShowAllHiddenElementsCommand::ShowAllHiddenElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ShowAllHiddenElementsCommand::GetName () const
+{
+    return "ShowAllHiddenElements";
+}
+
+GS::Optional<GS::UniString> ShowAllHiddenElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ShowAllHiddenElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    bool toShow = true;
+    const GSErrCode err = ACAPI_View_ChangeShowHideState (&toShow);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to show the hidden elements.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CloneProjectMapItemToViewMapCommand::CloneProjectMapItemToViewMapCommand () :
     CommandBase (CommonSchema::NotUsed)
 {}

@@ -49,6 +49,7 @@
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
+#define ACAPI_Selection_DeselectAll ACAPI_Element_DeselectAll
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
@@ -89,6 +90,7 @@
 #define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
 #define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent
 
+#define ACAPI_View_ChangeShowHideState(par1) ACAPI_Environment (APIEnv_ChangeShowHideStateID, par1)
 #define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
 #define ACAPI_View_Get3DProjectionSets(par1) ACAPI_Environment (APIEnv_Get3DProjectionSetsID, par1)
