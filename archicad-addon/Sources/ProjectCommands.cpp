@@ -8,6 +8,7 @@
 #endif
 
 #include <cmath>
+#include <initializer_list>
 
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -2146,11 +2147,8 @@ static GS::UniString ConvertAPIExtraAccuracyType (API_ExtraAccuracyID apiExtraAc
     }
 }
 
-GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+static GS::ObjectState CreateCalculationUnitsObjectState (const API_CalcUnitPrefs& unitPrefs)
 {
-    API_CalcUnitPrefs unitPrefs;
-    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
-
     return GS::ObjectState (
         "length", GS::ObjectState (
             "unit", ConvertAPILengthType (unitPrefs.length.unit),
@@ -2168,6 +2166,971 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "unit", ConvertAPIAngleType (unitPrefs.angle.unit),
             "decimals", unitPrefs.angle.decimals,
             "accuracy", unitPrefs.angle.accuracy));
+}
+
+GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_CalcUnitPrefs unitPrefs = {};
+    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
+
+    return CreateCalculationUnitsObjectState (unitPrefs);
+}
+
+// Project preferences (Options > Project Preferences)
+//
+// Every page is one DevKit struct, read whole with ACAPI_ProjectSetting_GetPreferences
+// and written back whole with ACAPI_ProjectSetting_SetPreferences. So SetProjectPreferences
+// reads the page first, changes only the fields it was given and keeps the rest as it is.
+// The names of the units are the ones GetCalculationUnits answers with, parsed back here.
+// Writing a page back needs ACAPI_ProjectSetting_SetPreferences, which Archicad 27
+// introduced (ACAPI_Environment has no set-preferences function before it), so
+// SetProjectPreferences is available from Archicad 27.
+
+static GS::ObjectState CreateWorkingUnitsObjectState (const API_WorkingUnitPrefs& prefs)
+{
+    return GS::ObjectState (
+        "length", GS::ObjectState (
+            "unit", ConvertAPILengthType (prefs.lengthUnit),
+            "decimals", prefs.lenDecimals,
+            "roundInch", prefs.roundInch),
+        "area", GS::ObjectState (
+            "unit", ConvertAPIAreaType (prefs.areaUnit),
+            "decimals", prefs.areaDecimals),
+        "volume", GS::ObjectState (
+            "unit", ConvertAPIVolumeType (prefs.volumeUnit),
+            "decimals", prefs.volumeDecimals),
+        "angle", GS::ObjectState (
+            "unit", ConvertAPIAngleType (prefs.angleUnit),
+            "decimals", prefs.angleDecimals,
+            "accuracy", prefs.angleAccuracy));
+}
+
+// The flag fields of the dimension formats are bool or char in the DevKit, answered as booleans.
+static GS::ObjectState CreateLengthDimFormatObjectState (const API_LengthDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPILengthType (format.unit),
+        "decimals", format.lenDecimals,
+        "roundInch", format.roundInch,
+        "accuracy", ConvertAPIExtraAccuracyType (static_cast<API_ExtraAccuracyID> (format.showSmall5)),
+        "showZeroWhole", format.show0Whole != 0,
+        "showZeroInch", format.show0Inch != 0,
+        "hideZeroDecimals", format.hide0Dec != 0);
+}
+
+static GS::ObjectState CreateAngleDimFormatObjectState (const API_AngleDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPIAngleType (format.unit),
+        "decimals", format.angleDecimals,
+        "hideZeroDecimals", format.hide0Dec != 0);
+}
+
+static GS::ObjectState CreateAreaDimFormatObjectState (const API_AreaDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPIAreaType (format.unit),
+        "decimals", format.areaDecimals,
+        "hideZeroDecimals", format.hide0Dec != 0);
+}
+
+static GS::ObjectState CreateDimensionsObjectState (const API_DimensionPrefs& prefs)
+{
+    return GS::ObjectState (
+        "dimensionStandardIndex", prefs.index,
+        "linear", CreateLengthDimFormatObjectState (prefs.linear),
+        "angle", CreateAngleDimFormatObjectState (prefs.angle),
+        "radial", CreateLengthDimFormatObjectState (prefs.radial),
+        "level", CreateLengthDimFormatObjectState (prefs.level),
+        "elevation", CreateLengthDimFormatObjectState (prefs.elevation),
+        "doorWindow", CreateLengthDimFormatObjectState (prefs.doorwindow),
+        "parapet", CreateLengthDimFormatObjectState (prefs.parapet),
+        "area", CreateAreaDimFormatObjectState (prefs.area));
+}
+
+#ifdef ServerMainVers_2700
+
+template <typename EnumType>
+static bool ParseEnumByName (const GS::UniString& str, std::initializer_list<EnumType> values, GS::UniString (*toString) (EnumType), EnumType& result)
+{
+    for (EnumType value : values) {
+        if (toString (value) == str) {
+            result = value;
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ParseAPILengthType (const GS::UniString& str, API_LengthTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_LengthTypeID::Meter,
+        API_LengthTypeID::Decimeter,
+        API_LengthTypeID::Centimeter,
+        API_LengthTypeID::Millimeter,
+        API_LengthTypeID::FootFracInch,
+        API_LengthTypeID::FootDecInch,
+        API_LengthTypeID::DecFoot,
+        API_LengthTypeID::FracInch,
+        API_LengthTypeID::DecInch
+    }, ConvertAPILengthType, result);
+}
+
+static bool ParseAPIAreaType (const GS::UniString& str, API_AreaTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_AreaTypeID::SquareMeter,
+        API_AreaTypeID::SquareCentimeter,
+        API_AreaTypeID::SquareMillimeter,
+        API_AreaTypeID::SquareFoot,
+        API_AreaTypeID::SquareInch
+    }, ConvertAPIAreaType, result);
+}
+
+static bool ParseAPIVolumeType (const GS::UniString& str, API_VolumeTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_VolumeTypeID::CubicMeter,
+        API_VolumeTypeID::Liter,
+        API_VolumeTypeID::CubicCentimeter,
+        API_VolumeTypeID::CubicMillimeter,
+        API_VolumeTypeID::CubicFoot,
+        API_VolumeTypeID::CubicInch,
+        API_VolumeTypeID::CubicYard,
+        API_VolumeTypeID::Gallon
+    }, ConvertAPIVolumeType, result);
+}
+
+static bool ParseAPIAngleType (const GS::UniString& str, API_AngleTypeID& result)
+{
+    return ParseEnumByName (str, {
+        API_AngleTypeID::DecimalDegree,
+        API_AngleTypeID::DegreeMinSec,
+        API_AngleTypeID::Grad,
+        API_AngleTypeID::Radian,
+        API_AngleTypeID::Surveyors
+    }, ConvertAPIAngleType, result);
+}
+
+static bool ParseAPIExtraAccuracyType (const GS::UniString& str, API_ExtraAccuracyID& result)
+{
+    return ParseEnumByName (str, {
+        API_ExtraAccuracyID::APIExtAc_Off,
+        API_ExtraAccuracyID::APIExtAc_Small5,
+        API_ExtraAccuracyID::APIExtAc_Small25,
+        API_ExtraAccuracyID::APIExtAc_Small1,
+        API_ExtraAccuracyID::APIExtAc_Small01,
+        API_ExtraAccuracyID::APIExtAc_Fractions
+    }, ConvertAPIExtraAccuracyType, result);
+}
+
+// Reads an integer field of the preferences from `os`, into the (mostly short) struct field.
+template <typename IntType>
+static bool GetPreferenceIntegerField (const GS::ObjectState& os, const char* key, IntType& target)
+{
+    Int32 value = 0;
+    if (!os.Get (key, value)) {
+        return false;
+    }
+    target = static_cast<IntType> (value);
+    return true;
+}
+
+// Reads a boolean field of the preferences from `os`, into the bool or char struct field.
+template <typename FlagType>
+static bool GetPreferenceFlagField (const GS::ObjectState& os, const char* key, FlagType& target)
+{
+    bool value = false;
+    if (!os.Get (key, value)) {
+        return false;
+    }
+    target = static_cast<FlagType> (value ? 1 : 0);
+    return true;
+}
+
+// Reads the "unit" field of a unit object into `target`, with the parser of its unit type.
+// Returns the error message for a name no unit has, NoValue otherwise.
+template <typename UnitType>
+static GS::Optional<GS::UniString> GetPreferenceUnitField (const GS::ObjectState& os, const char* quantity, bool (*parse) (const GS::UniString&, UnitType&), UnitType& target, bool& changed)
+{
+    GS::UniString unitStr;
+    if (!os.Get ("unit", unitStr)) {
+        return GS::NoValue;
+    }
+    if (!parse (unitStr, target)) {
+        return GS::UniString ("Unknown ") + quantity + " unit: " + unitStr;
+    }
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> GetPreferenceAccuracyField (const GS::ObjectState& os, const char* quantity, API_ExtraAccuracyID& target, bool& changed)
+{
+    GS::UniString accuracyStr;
+    if (!os.Get ("accuracy", accuracyStr)) {
+        return GS::NoValue;
+    }
+    if (!ParseAPIExtraAccuracyType (accuracyStr, target)) {
+        return GS::UniString ("Unknown ") + quantity + " accuracy: " + accuracyStr;
+    }
+    changed = true;
+    return GS::NoValue;
+}
+
+// --- Working Units page
+
+// The Apply functions change the fields of `prefs` that `os` gives and set `changed`
+// when there was one. They return the error message for a value that cannot be
+// applied, NoValue otherwise.
+static GS::Optional<GS::UniString> ApplyWorkingUnits (const GS::ObjectState& os, API_WorkingUnitPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error;
+
+    GS::ObjectState length;
+    if (os.Get ("length", length)) {
+        error = GetPreferenceUnitField (length, "length", ParseAPILengthType, prefs.lengthUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (length, "decimals", prefs.lenDecimals);
+        changed |= GetPreferenceIntegerField (length, "roundInch", prefs.roundInch);
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = GetPreferenceUnitField (area, "area", ParseAPIAreaType, prefs.areaUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (area, "decimals", prefs.areaDecimals);
+    }
+
+    GS::ObjectState volume;
+    if (os.Get ("volume", volume)) {
+        error = GetPreferenceUnitField (volume, "volume", ParseAPIVolumeType, prefs.volumeUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (volume, "decimals", prefs.volumeDecimals);
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = GetPreferenceUnitField (angle, "angle", ParseAPIAngleType, prefs.angleUnit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (angle, "decimals", prefs.angleDecimals);
+        changed |= GetPreferenceIntegerField (angle, "accuracy", prefs.angleAccuracy);
+    }
+
+    return GS::NoValue;
+}
+
+// --- Calculation Units page
+
+static GS::Optional<GS::UniString> ApplyCalculationUnits (const GS::ObjectState& os, API_CalcUnitPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error;
+
+    GS::ObjectState length;
+    if (os.Get ("length", length)) {
+        error = GetPreferenceUnitField (length, "length", ParseAPILengthType, prefs.length.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (length, "length", prefs.length.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (length, "decimals", prefs.length.decimals);
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = GetPreferenceUnitField (area, "area", ParseAPIAreaType, prefs.area.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (area, "area", prefs.area.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (area, "decimals", prefs.area.decimals);
+    }
+
+    GS::ObjectState volume;
+    if (os.Get ("volume", volume)) {
+        error = GetPreferenceUnitField (volume, "volume", ParseAPIVolumeType, prefs.volume.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetPreferenceAccuracyField (volume, "volume", prefs.volume.accuracy, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (volume, "decimals", prefs.volume.decimals);
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = GetPreferenceUnitField (angle, "angle", ParseAPIAngleType, prefs.angle.unit, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+        changed |= GetPreferenceIntegerField (angle, "decimals", prefs.angle.decimals);
+        changed |= GetPreferenceIntegerField (angle, "accuracy", prefs.angle.accuracy);
+    }
+
+    return GS::NoValue;
+}
+
+// --- Dimensions page
+
+static GS::Optional<GS::UniString> ApplyLengthDimFormat (const GS::ObjectState& os, const char* name, API_LengthDimFormat& format, bool& changed)
+{
+    GS::Optional<GS::UniString> error = GetPreferenceUnitField (os, name, ParseAPILengthType, format.unit, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    API_ExtraAccuracyID accuracy = static_cast<API_ExtraAccuracyID> (format.showSmall5);
+    error = GetPreferenceAccuracyField (os, name, accuracy, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+    format.showSmall5 = static_cast<decltype (format.showSmall5)> (accuracy);
+
+    changed |= GetPreferenceIntegerField (os, "decimals", format.lenDecimals);
+    changed |= GetPreferenceIntegerField (os, "roundInch", format.roundInch);
+    changed |= GetPreferenceFlagField (os, "showZeroWhole", format.show0Whole);
+    changed |= GetPreferenceFlagField (os, "showZeroInch", format.show0Inch);
+    changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
+
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyAngleDimFormat (const GS::ObjectState& os, API_AngleDimFormat& format, bool& changed)
+{
+    const GS::Optional<GS::UniString> error = GetPreferenceUnitField (os, "angle dimension", ParseAPIAngleType, format.unit, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    changed |= GetPreferenceIntegerField (os, "decimals", format.angleDecimals);
+    changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
+
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyAreaDimFormat (const GS::ObjectState& os, API_AreaDimFormat& format, bool& changed)
+{
+    const GS::Optional<GS::UniString> error = GetPreferenceUnitField (os, "area dimension", ParseAPIAreaType, format.unit, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    changed |= GetPreferenceIntegerField (os, "decimals", format.areaDecimals);
+    changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
+
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyDimensions (const GS::ObjectState& os, API_DimensionPrefs& prefs, bool& changed)
+{
+    changed |= GetPreferenceIntegerField (os, "dimensionStandardIndex", prefs.index);
+
+    struct LengthDimFormatField {
+        const char* key;
+        const char* name;
+        API_LengthDimFormat API_DimensionPrefs::* format;
+    };
+    static const LengthDimFormatField lengthDimFormatFields[] = {
+        { "linear", "linear dimension", &API_DimensionPrefs::linear },
+        { "radial", "radial dimension", &API_DimensionPrefs::radial },
+        { "level", "level dimension", &API_DimensionPrefs::level },
+        { "elevation", "elevation dimension", &API_DimensionPrefs::elevation },
+        { "doorWindow", "door/window dimension", &API_DimensionPrefs::doorwindow },
+        { "parapet", "sill height dimension", &API_DimensionPrefs::parapet }
+    };
+
+    GS::Optional<GS::UniString> error;
+    for (const LengthDimFormatField& field : lengthDimFormatFields) {
+        GS::ObjectState format;
+        if (os.Get (field.key, format)) {
+            error = ApplyLengthDimFormat (format, field.name, prefs.*(field.format), changed);
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+
+    GS::ObjectState angle;
+    if (os.Get ("angle", angle)) {
+        error = ApplyAngleDimFormat (angle, prefs.angle, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::ObjectState area;
+    if (os.Get ("area", area)) {
+        error = ApplyAreaDimFormat (area, prefs.area, changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    return GS::NoValue;
+}
+
+// --- The commands
+
+// Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
+// (one of the Apply functions above) and writes it back. Answers an ExecutionResult.
+template <typename PrefsType, typename ApplyFunction>
+static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_PrefsTypeID prefsType, const GS::ObjectState& pageFields, ApplyFunction apply)
+{
+    PrefsType prefs = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, prefsType);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, GS::UniString ("Failed to read the ") + pageName + " preferences.");
+    }
+
+    bool changed = false;
+    const GS::Optional<GS::UniString> error = apply (pageFields, prefs, changed);
+    if (error.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, error.Get ());
+    }
+    if (!changed) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("No field of the ") + pageName + " preferences given.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Set Project Preferences", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_SetPreferences (&prefs, prefsType);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, GS::UniString ("Failed to set the ") + pageName + " preferences. In Teamwork the PreferencesDialog lockable object set has to be reserved first.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+#endif
+
+// The "required" list of a preferences object: every field in the response of
+// GetProjectPreferences, none in the input of SetProjectPreferences, where a
+// missing field keeps its value.
+static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired, const GS::UniString& fields)
+{
+    if (allFieldsRequired) {
+        return GS::UniString ("\"required\": [") + fields + "]";
+    }
+    return "\"required\": []";
+}
+
+static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")");
+    schema += R"(
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
+    schema += R"(
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
+    schema += R"(
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
+    schema += R"(
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetLengthDimFormatSchema (bool allFieldsRequired, const GS::UniString& description)
+{
+    GS::UniString schema = GS::UniString (R"({
+                "type": "object",
+                "description": ")") + description + R"(",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "showZeroWhole": {
+                        "type": "boolean",
+                        "description": "Show the zero before the decimal point of values below one."
+                    },
+                    "showZeroInch": {
+                        "type": "boolean",
+                        "description": "Show zero inches in feet and inches values."
+                    },
+                    "hideZeroDecimals": {
+                        "type": "boolean",
+                        "description": "Hide the zero decimals at the end of the values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch", "accuracy", "showZeroWhole", "showZeroInch", "hideZeroDecimals")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetAngleDimFormatSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": "The format of the angle dimensions.",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display."
+                    },
+                    "hideZeroDecimals": {
+                        "type": "boolean",
+                        "description": "Hide the zero decimals at the end of the values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetAreaDimFormatSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+                "type": "object",
+                "description": "The format of the area values the dimensions show (area calculations).",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display."
+                    },
+                    "hideZeroDecimals": {
+                        "type": "boolean",
+                        "description": "Hide the zero decimals at the end of the values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
+    schema += R"(
+            })";
+    return schema;
+}
+
+static GS::UniString GetDimensionsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
+        "properties": {
+            "dimensionStandardIndex": {
+                "type": "integer",
+                "description": "The index of the dimension standard the page follows."
+            },
+            "linear": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the linear dimensions.");
+    schema += R"(,
+            "angle": )";
+    schema += GetAngleDimFormatSchema (allFieldsRequired);
+    schema += R"(,
+            "radial": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the radial dimensions.");
+    schema += R"(,
+            "level": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the level dimensions.");
+    schema += R"(,
+            "elevation": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the elevation dimensions.");
+    schema += R"(,
+            "doorWindow": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the door, window and skylight dimensions.");
+    schema += R"(,
+            "parapet": )";
+    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the sill height (parapet) dimensions.");
+    schema += R"(,
+            "area": )";
+    schema += GetAreaDimFormatSchema (allFieldsRequired);
+    schema += R"(
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("dimensionStandardIndex", "linear", "angle", "radial", "level", "elevation", "doorWindow", "parapet", "area")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
+    schema += R"(
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
+    schema += R"(
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetProjectPreferencesCommand::GetName () const
+{
+    return "GetProjectPreferences";
+}
+
+GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "preferenceTypes": {
+                "type": "array",
+                "description": "The preference pages to get. Every page when missing.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "WorkingUnits",
+                        "Dimensions",
+                        "CalculationUnits"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema () const
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The pages asked for, by name.",
+        "properties": {
+            "workingUnits": )";
+    schema += GetWorkingUnitsSchema (true);
+    schema += R"(,
+            "dimensions": )";
+    schema += GetDimensionsSchema (true);
+    schema += R"(,
+            "calculationUnits": )";
+    schema += GetCalculationUnitsPageSchema (true);
+    schema += R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+    return schema;
+}
+
+GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> preferenceTypes;
+    if (!parameters.Get ("preferenceTypes", preferenceTypes)) {
+        preferenceTypes.Push ("WorkingUnits");
+        preferenceTypes.Push ("Dimensions");
+        preferenceTypes.Push ("CalculationUnits");
+    }
+
+    GS::ObjectState response;
+    for (const GS::UniString& preferenceType : preferenceTypes) {
+        if (preferenceType == "WorkingUnits") {
+            API_WorkingUnitPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_WorkingUnitsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the working units preferences.");
+            }
+            response.Add ("workingUnits", CreateWorkingUnitsObjectState (prefs));
+        } else if (preferenceType == "Dimensions") {
+            API_DimensionPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_DimensionsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the dimensions preferences.");
+            }
+            response.Add ("dimensions", CreateDimensionsObjectState (prefs));
+        } else if (preferenceType == "CalculationUnits") {
+            API_CalcUnitPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_CalcUnitsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the calculation units preferences.");
+            }
+            response.Add ("calculationUnits", CreateCalculationUnitsObjectState (prefs));
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
+        }
+    }
+
+    return response;
+}
+
+SetProjectPreferencesCommand::SetProjectPreferencesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetProjectPreferencesCommand::GetName () const
+{
+    return "SetProjectPreferences";
+}
+
+GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSchema () const
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The pages to change, by name. Only the given fields of a page change, the rest keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet).",
+        "properties": {
+            "workingUnits": )";
+    schema += GetWorkingUnitsSchema (false);
+    schema += R"(,
+            "dimensions": )";
+    schema += GetDimensionsSchema (false);
+    schema += R"(,
+            "calculationUnits": )";
+    schema += GetCalculationUnitsPageSchema (false);
+    schema += R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+    return schema;
+}
+
+GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "One execution result per page given in the input, by name.",
+        "properties": {
+            "workingUnits": {
+                "$ref": "#/ExecutionResult"
+            },
+            "dimensions": {
+                "$ref": "#/ExecutionResult"
+            },
+            "calculationUnits": {
+                "$ref": "#/ExecutionResult"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::ObjectState response;
+    bool anyPage = false;
+
+    GS::ObjectState workingUnits;
+    if (parameters.Get ("workingUnits", workingUnits)) {
+        anyPage = true;
+        response.Add ("workingUnits", SetProjectPreferencesPage<API_WorkingUnitPrefs> ("working units", APIPrefs_WorkingUnitsID, workingUnits, ApplyWorkingUnits));
+    }
+
+    GS::ObjectState dimensions;
+    if (parameters.Get ("dimensions", dimensions)) {
+        anyPage = true;
+        response.Add ("dimensions", SetProjectPreferencesPage<API_DimensionPrefs> ("dimensions", APIPrefs_DimensionsID, dimensions, ApplyDimensions));
+    }
+
+    GS::ObjectState calculationUnits;
+    if (parameters.Get ("calculationUnits", calculationUnits)) {
+        anyPage = true;
+        response.Add ("calculationUnits", SetProjectPreferencesPage<API_CalcUnitPrefs> ("calculation units", APIPrefs_CalcUnitsID, calculationUnits, ApplyCalculationUnits));
+    }
+
+    if (!anyPage) {
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions or calculationUnits.");
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "SetProjectPreferences requires Archicad 27 or newer.");
+#endif
 }
 
 static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
