@@ -3463,6 +3463,37 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
 #endif
 }
 
+// ACAPI_Element_Edit reports NoError for an element it is not allowed to edit
+// (hidden or locked layer, locked element, teamwork access) and leaves it
+// untouched, so the element is checked before the edit. Returns the failed
+// execution result for an element that cannot be edited, and nothing when the
+// edit may go ahead. operation is the past participle of the edit ("moved").
+static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation)
+{
+    API_Elem_Head elemHead = {};
+    if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
+    }
+
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = elemHead.layer;
+    if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
+        if ((layerAttr.header.flags & APILay_Locked) != 0) {
+            return CreateFailedExecutionResult (APIERR_LOCKEDLAY, GS::UniString::Printf ("The element was not %s, because its layer is locked.", operation));
+        }
+        if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+            return CreateFailedExecutionResult (APIERR_HIDDENLAY, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
+        }
+    }
+
+    if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because it is not editable.", operation));
+    }
+
+    return GS::NoValue;
+}
+
 UpdateZonesCommand::UpdateZonesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3478,6 +3509,10 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () cons
     return R"({
         "type": "object",
         "properties": {
+            "zones": {
+                "$ref": "#/Elements",
+                "description": "The Zones to update. When given, exactly these Zones are updated: the command selects them (activating their story in the floor plan when needed), updates them and puts the previous selection and active story back. When a listed Zone cannot be selected (it does not exist, it is not a Zone, its layer is hidden or locked, it is not editable), the command fails with an error per Zone and updates nothing. An empty list updates nothing. When not given, the Zones of the current selection are updated, and with an empty selection every Zone of the project, as the Update Zones command of Archicad does."
+            },
             "keepStampPosition": {
                 "type": "boolean",
                 "description": "Keep the position of the Zone Stamps. The default is true."
@@ -3500,8 +3535,389 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () cons
 GS::Optional<GS::UniString> UpdateZonesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "Whether the update was done. With zones given, it is false when any of them was not updated."
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "zones": {
+                "type": "array",
+                "description": "Only when zones was given: one item per requested Zone, in the order of the request.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "success": {
+                            "type": "boolean",
+                            "description": "Whether the Zone was updated."
+                        },
+                        "error": {
+                            "$ref": "#/Error"
+                        },
+                        "areaBefore": {
+                            "type": "number",
+                            "description": "The measured area of the Zone before the update, in square meters. Omitted when it could not be read."
+                        },
+                        "areaAfter": {
+                            "type": "number",
+                            "description": "The measured area of the Zone after the update, in square meters. Omitted when the Zone was not updated or the area could not be read."
+                        },
+                        "areaChanged": {
+                            "type": "boolean",
+                            "description": "Whether the update changed the measured area of the Zone. Omitted when either area could not be read."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "success"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
     })";
+}
+
+static GSErrCode UpdateSelectedZones (API_RoomUpdateParams& roomUpdateParams)
+{
+    GSErrCode err = NoError;
+
+    ACAPI_CallUndoableCommand ("UpdateZonesCommand", [&]() {
+        err = ACAPI_Internal (APIInternal_UpdateRoomsID, &roomUpdateParams);
+
+        return err;
+    });
+
+    return err;
+}
+
+static bool GetZoneArea (const API_Guid& zoneGuid, double& area)
+{
+    API_QuantityPar quantityParams = {};
+
+    // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
+    API_ElementQuantity elementQuantity = {};
+    GS::Array<API_CompositeQuantity> composites;
+    API_Quantities quantities = {};
+    quantities.elements = &elementQuantity;
+    quantities.composites = &composites;
+
+    API_QuantitiesMask mask;
+    ACAPI_ELEMENT_QUANTITIES_MASK_SETFULL (mask);
+
+    if (ACAPI_Element_GetQuantities (zoneGuid, &quantityParams, &quantities, &mask) != NoError) {
+        return false;
+    }
+
+    area = elementQuantity.zone.area;
+    return true;
+}
+
+// The selected elements of the current database. isElementSelection is false
+// for a marquee, whose elements are returned too.
+static GSErrCode GetSelectedNeigs (GS::Array<API_Neig>& selectedNeigs, bool& isElementSelection)
+{
+    API_SelectionInfo selectionInfo = {};
+    selectedNeigs.Clear ();
+    isElementSelection = true;
+
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    if (err == APIERR_NOSEL) {
+        selectedNeigs.Clear ();
+        return NoError;
+    }
+    if (err != NoError) {
+        return err;
+    }
+
+    isElementSelection = selectionInfo.typeID == API_SelEmpty || selectionInfo.typeID == API_SelElems;
+    return NoError;
+}
+
+// One requested item of UpdateZones with zones given.
+struct ZoneToUpdate {
+    API_Guid                       guid = APINULLGuid;
+    bool                           hasElementId = false;
+    short                          floorInd = 0;
+    GS::Optional<double>           areaBefore;
+    GS::Optional<double>           areaAfter;
+    GS::Optional<GS::ObjectState>  failure;   // a FailedExecutionResult
+    bool                           updated = false;
+};
+
+static GS::ObjectState CreateZonesUpdateResponse (const std::vector<ZoneToUpdate>& zonesToUpdate, const GS::Optional<GS::ObjectState>& failure)
+{
+    GS::ObjectState response = failure.HasValue () ? *failure : CreateSuccessfulExecutionResult ();
+    const auto& zones = response.AddList<GS::ObjectState> ("zones");
+    for (const ZoneToUpdate& zone : zonesToUpdate) {
+        GS::ObjectState zoneResult = zone.failure.HasValue () ? *zone.failure : CreateSuccessfulExecutionResult ();
+        if (zone.hasElementId) {
+            zoneResult.Add ("elementId", CreateElementIdObjectState (zone.guid));
+        }
+        if (zone.areaBefore.HasValue ()) {
+            zoneResult.Add ("areaBefore", *zone.areaBefore);
+        }
+        if (zone.areaAfter.HasValue ()) {
+            zoneResult.Add ("areaAfter", *zone.areaAfter);
+        }
+        if (zone.areaBefore.HasValue () && zone.areaAfter.HasValue ()) {
+            zoneResult.Add ("areaChanged", std::fabs (*zone.areaAfter - *zone.areaBefore) > 1e-6);
+        }
+        zones (zoneResult);
+    }
+    return response;
+}
+
+// Marks every zone that is not failed and not updated yet with the given failure.
+static void FailRemainingZones (std::vector<ZoneToUpdate>& zonesToUpdate, GSErrCode errorCode, const GS::UniString& message)
+{
+    for (ZoneToUpdate& zone : zonesToUpdate) {
+        if (!zone.failure.HasValue () && !zone.updated) {
+            zone.failure = CreateFailedExecutionResult (errorCode, message);
+        }
+    }
+}
+
+// The internal update command works on the current selection of the floor plan, and with
+// an empty selection on every automatic zone of the project (#894). So the given zones are
+// updated by selecting exactly them: the current selection is put aside, the zones of one
+// story are selected with that story active (a zone is only shown, so only selectable, on
+// its own story - the same story switch CreateZones does), the selection is read back and
+// compared with the request, and only when it matches exactly is the update run. Every
+// zone is checked before anything is selected, so a zone that cannot be selected fails the
+// whole call without an update. The previous selection and active story are put back
+// afterwards. An empty list updates nothing: it never reaches the internal command, which
+// would take the empty selection as "all zones".
+static GS::ObjectState UpdateGivenZones (const GS::Array<GS::ObjectState>& zones, API_RoomUpdateParams& roomUpdateParams)
+{
+    std::vector<ZoneToUpdate> zonesToUpdate (zones.GetSize ());
+    GS::HashSet<API_Guid> requestedGuids;
+    bool anyFailure = false;
+    for (GS::UIndex i = 0; i < zones.GetSize (); ++i) {
+        ZoneToUpdate& zone = zonesToUpdate[i];
+        const GS::ObjectState* elementId = zones[i].Get ("elementId");
+        if (elementId == nullptr) {
+            zone.failure = CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+            anyFailure = true;
+            continue;
+        }
+        zone.guid = GetGuidFromObjectState (*elementId);
+        zone.hasElementId = true;
+
+        if (requestedGuids.Contains (zone.guid)) {
+            zone.failure = CreateFailedExecutionResult (APIERR_BADPARS, "The Zone is listed more than once.");
+            anyFailure = true;
+            continue;
+        }
+        requestedGuids.Add (zone.guid);
+
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (zone.guid, elemHead)) {
+            zone.failure = CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
+            anyFailure = true;
+            continue;
+        }
+        if (GetElemTypeId (elemHead) != API_ZoneID) {
+            zone.failure = CreateFailedExecutionResult (APIERR_BADELEMENTTYPE, GS::UniString ("The element is not a Zone but a ") + GetElementTypeNonLocalizedName (GetElemTypeId (elemHead)) + ".");
+            anyFailure = true;
+            continue;
+        }
+        zone.floorInd = elemHead.floorInd;
+
+        const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (zone.guid, "updated");
+        if (notEditableResult.HasValue ()) {
+            zone.failure = *notEditableResult;
+            anyFailure = true;
+            continue;
+        }
+
+        double area = 0.0;
+        if (GetZoneArea (zone.guid, area)) {
+            zone.areaBefore = area;
+        }
+    }
+
+    if (anyFailure) {
+        FailRemainingZones (zonesToUpdate, APIERR_GENERAL, "The Zone was not updated, because another Zone of the list cannot be updated (see its error).");
+        return CreateZonesUpdateResponse (zonesToUpdate, CreateFailedExecutionResult (APIERR_BADPARS, "Some of the given Zones cannot be updated; no Zone was updated."));
+    }
+
+    if (zonesToUpdate.empty ()) {
+        return CreateZonesUpdateResponse (zonesToUpdate, GS::NoValue);
+    }
+
+    // The selection the zones are put into is the one of the current database, and the
+    // zones are only shown in the floor plan.
+    API_DatabaseInfo currentDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&currentDatabase) != NoError || currentDatabase.typeID != APIWind_FloorPlanID) {
+        FailRemainingZones (zonesToUpdate, APIERR_BADDATABASE, "The Zone was not updated, because the floor plan is not the current window.");
+        return CreateZonesUpdateResponse (zonesToUpdate, CreateFailedExecutionResult (APIERR_BADDATABASE, "Zones can only be updated from the floor plan; activate it with ChangeWindow (windowType FloorPlan) first. No Zone was updated."));
+    }
+
+    GS::Array<API_Neig> originalNeigs;
+    bool isElementSelection = true;
+    GSErrCode err = GetSelectedNeigs (originalNeigs, isElementSelection);
+    if (err != NoError) {
+        FailRemainingZones (zonesToUpdate, err, "The Zone was not updated, because the current selection could not be read.");
+        return CreateZonesUpdateResponse (zonesToUpdate, CreateFailedExecutionResult (err, "Failed to read the current selection; no Zone was updated."));
+    }
+    if (!isElementSelection) {
+        FailRemainingZones (zonesToUpdate, APIERR_BADPARS, "The Zone was not updated, because a marquee is active in the floor plan.");
+        return CreateZonesUpdateResponse (zonesToUpdate, CreateFailedExecutionResult (APIERR_BADPARS, "A marquee is active in the floor plan; remove it first. No Zone was updated."));
+    }
+
+    API_StoryInfo storyInfo = {};
+    err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (err != NoError) {
+        FailRemainingZones (zonesToUpdate, err, "The Zone was not updated, because the stories could not be read.");
+        return CreateZonesUpdateResponse (zonesToUpdate, CreateFailedExecutionResult (err, "Failed to retrieve stories info; no Zone was updated."));
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    // Put back the selection last (after the story, below, as the selection belongs to the
+    // story that was active): whatever is selected now is deselected, the original selection
+    // is selected again.
+    const GS::OnExit restoreSelection ([&] () {
+        GS::Array<API_Neig> currentNeigs;
+        bool currentIsElementSelection = true;
+        if (GetSelectedNeigs (currentNeigs, currentIsElementSelection) == NoError && !currentNeigs.IsEmpty ()) {
+            ACAPI_Selection_Select (currentNeigs, false);
+        }
+        if (!originalNeigs.IsEmpty ()) {
+            ACAPI_Selection_Select (originalNeigs, true);
+        }
+    });
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    if (!originalNeigs.IsEmpty ()) {
+        ACAPI_Selection_Select (originalNeigs, false);
+    }
+
+    std::vector<short> storiesInOrder;
+    for (const ZoneToUpdate& zone : zonesToUpdate) {
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), zone.floorInd) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (zone.floorInd);
+        }
+    }
+
+    GS::Optional<GS::ObjectState> failure;
+    for (const short story : storiesInOrder) {
+        std::vector<ZoneToUpdate*> group;
+        GS::Array<API_Neig> groupNeigs;
+        GS::HashSet<API_Guid> groupGuids;
+        for (ZoneToUpdate& zone : zonesToUpdate) {
+            if (zone.floorInd == story) {
+                group.push_back (&zone);
+                groupNeigs.Push (API_Neig (zone.guid));
+                groupGuids.Add (zone.guid);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                const GS::UniString message = GS::UniString::Printf ("The Zone was not updated, because its story %d could not be activated in the floor plan.", static_cast<int> (story));
+                for (ZoneToUpdate* zone : group) {
+                    zone->failure = CreateFailedExecutionResult (err, message);
+                }
+                failure = CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to activate story %d in the floor plan; the Zones on it and on the stories after it were not updated.", static_cast<int> (story)));
+                break;
+            }
+            activeStory = story;
+        }
+
+        // Select exactly the zones of this story, and check that this is what Archicad
+        // selected: a selection that is refused (e.g. an element that is not shown) reports
+        // no error, and an update with a wrong selection would touch other zones.
+        err = ACAPI_Selection_Select (groupNeigs, true);
+        GS::Array<API_Neig> selectedNeigs;
+        bool selectedIsElementSelection = true;
+        if (err == NoError) {
+            err = GetSelectedNeigs (selectedNeigs, selectedIsElementSelection);
+        }
+        if (err != NoError) {
+            for (ZoneToUpdate* zone : group) {
+                zone->failure = CreateFailedExecutionResult (err, "The Zone was not updated, because it could not be selected.");
+            }
+            failure = CreateFailedExecutionResult (err, "Failed to select the Zones; the Zones that were not updated are marked.");
+            break;
+        }
+
+        GS::HashSet<API_Guid> selectedGuids;
+        bool otherElementSelected = false;
+        for (const API_Neig& selectedNeig : selectedNeigs) {
+            selectedGuids.Add (selectedNeig.guid);
+            if (!groupGuids.Contains (selectedNeig.guid)) {
+                otherElementSelected = true;
+            }
+        }
+        bool selectionMatches = !otherElementSelected;
+        for (ZoneToUpdate* zone : group) {
+            if (!selectedGuids.Contains (zone->guid)) {
+                zone->failure = CreateFailedExecutionResult (APIERR_GENERAL, "The Zone was not updated, because Archicad did not select it (is it shown in the floor plan?).");
+                selectionMatches = false;
+            }
+        }
+        if (!selectionMatches) {
+            const GS::UniString message = otherElementSelected
+                ? "The Zone was not updated, because the selection could not be reduced to the given Zones."
+                : "The Zone was not updated, because another Zone of its story could not be selected.";
+            for (ZoneToUpdate* zone : group) {
+                if (!zone->failure.HasValue ()) {
+                    zone->failure = CreateFailedExecutionResult (APIERR_GENERAL, message);
+                }
+            }
+            failure = CreateFailedExecutionResult (APIERR_GENERAL, "The selection could not be set to exactly the given Zones; the Zones that were not updated are marked.");
+            break;
+        }
+
+        err = UpdateSelectedZones (roomUpdateParams);
+        if (err != NoError) {
+            for (ZoneToUpdate* zone : group) {
+                zone->failure = CreateFailedExecutionResult (err, "Failed to update the Zone.");
+            }
+            failure = CreateFailedExecutionResult (err, "Failed to update zones.");
+            break;
+        }
+
+        for (ZoneToUpdate* zone : group) {
+            zone->updated = true;
+            double area = 0.0;
+            if (GetZoneArea (zone->guid, area)) {
+                zone->areaAfter = area;
+            }
+        }
+
+        ACAPI_Selection_Select (groupNeigs, false);
+    }
+
+    if (failure.HasValue ()) {
+        FailRemainingZones (zonesToUpdate, APIERR_GENERAL, "The Zone was not updated, because the update stopped at an earlier story (see the error of the command).");
+    }
+
+    return CreateZonesUpdateResponse (zonesToUpdate, failure);
 }
 
 GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3511,13 +3927,13 @@ GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, 
     parameters.Get ("undoTopTrim", roomUpdateParams.undoTopTrim);
     parameters.Get ("undoBottomTrim", roomUpdateParams.undoBotTrim);
 
-    GSErrCode err = NoError;
+    if (parameters.Contains ("zones")) {
+        GS::Array<GS::ObjectState> zones;
+        parameters.Get ("zones", zones);
+        return UpdateGivenZones (zones, roomUpdateParams);
+    }
 
-    ACAPI_CallUndoableCommand ("UpdateZonesCommand", [&]() {
-        err = ACAPI_Internal (APIInternal_UpdateRoomsID, &roomUpdateParams);
-
-        return err;
-    });
+    const GSErrCode err = UpdateSelectedZones (roomUpdateParams);
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
@@ -3743,37 +4159,6 @@ GS::Optional<GS::UniString> MoveElementsCommand::GetRawResponseSchema () const
             "executionResults"
         ]
     })";
-}
-
-// ACAPI_Element_Edit reports NoError for an element it is not allowed to edit
-// (hidden or locked layer, locked element, teamwork access) and leaves it
-// untouched, so the element is checked before the edit. Returns the failed
-// execution result for an element that cannot be edited, and nothing when the
-// edit may go ahead. operation is the past participle of the edit ("moved").
-static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation)
-{
-    API_Elem_Head elemHead = {};
-    if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
-        return CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
-    }
-
-    API_Attribute layerAttr = {};
-    layerAttr.header.typeID = API_LayerID;
-    layerAttr.header.index = elemHead.layer;
-    if (ACAPI_Attribute_Get (&layerAttr) == NoError) {
-        if ((layerAttr.header.flags & APILay_Locked) != 0) {
-            return CreateFailedExecutionResult (APIERR_LOCKEDLAY, GS::UniString::Printf ("The element was not %s, because its layer is locked.", operation));
-        }
-        if ((layerAttr.header.flags & APILay_Hidden) != 0) {
-            return CreateFailedExecutionResult (APIERR_HIDDENLAY, GS::UniString::Printf ("The element was not %s, because its layer is hidden.", operation));
-        }
-    }
-
-    if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because it is not editable.", operation));
-    }
-
-    return GS::NoValue;
 }
 
 static GSErrCode MoveElement (const API_Guid& elemGuid, const API_Vector3D& moveVector, bool withCopy)
