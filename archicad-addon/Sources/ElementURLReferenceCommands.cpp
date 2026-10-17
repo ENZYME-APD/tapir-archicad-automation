@@ -115,11 +115,18 @@ GS::ObjectState GetURLReferencesOfElementsCommand::Execute (const GS::ObjectStat
             continue;
         }
 
+        // The URL reference calls take a filled element header (GUID and type), so fetch
+        // it first; this also reports an unknown GUID with the error of the lookup.
         API_Elem_Head elemHead = {};
         elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            urlReferences (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
 
         API_ElemURLRef urlRef = {};
-        const GSErrCode err = ACAPI_Element_GetElementURLRef (&elemHead, &urlRef);
+        err = ACAPI_Element_GetElementURLRef (&elemHead, &urlRef);
         if (err == APIERR_NOUSERDATA) {
             urlReferences (CreateErrorResponse (err, "The element does not hold a URL reference."));
             continue;
@@ -242,8 +249,13 @@ GS::ObjectState SetURLReferencesOfElementsCommand::Execute (const GS::ObjectStat
 
             API_Elem_Head elemHead = {};
             elemHead.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find element in Archicad"));
+                continue;
+            }
 
-            const GSErrCode err = ACAPI_Element_SetElementURLRef (&elemHead, &urlRef);
+            err = ACAPI_Element_SetElementURLRef (&elemHead, &urlRef);
             if (err == APIERR_MOREUSER) {
                 executionResults (CreateFailedExecutionResult (err, "The element already holds a URL reference."));
                 continue;
