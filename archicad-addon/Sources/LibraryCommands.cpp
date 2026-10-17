@@ -457,7 +457,9 @@ static GS::Optional<GS::ObjectState> ResolveParentLibraryPart (const GS::ObjectS
 }
 
 // Builds the parameter list of the new library part from its "parameters" field; the
-// handle is the caller's to dispose with ACAPI_DisposeAddParHdl.
+// handle is the caller's to dispose with ACAPI_DisposeAddParHdl. Without parameters
+// the list is empty: a zero-size handle, or no handle at all when the allocation
+// returns none for zero bytes (A and B are not in this list, they are written apart).
 static GS::Optional<GS::ObjectState> BuildParameterDefinitions (const GS::ObjectState& libraryPartData, API_AddParType**& addPars)
 {
     GS::Array<GS::ObjectState> definitions;
@@ -465,6 +467,9 @@ static GS::Optional<GS::ObjectState> BuildParameterDefinitions (const GS::Object
 
     addPars = reinterpret_cast<API_AddParType**> (BMAllocateHandle (definitions.GetSize () * sizeof (API_AddParType), ALLOCATE_CLEAR, 0));
     if (addPars == nullptr) {
+        if (definitions.IsEmpty ()) {
+            return {};
+        }
         return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the parameter list.");
     }
 
@@ -616,7 +621,15 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     if (outputFolder.DeleteLastLocalName () != NoError || IO::fileSystem.CreateFolderTree (outputFolder) != NoError) {
         return CreateErrorResponse (APIERR_BADPARS, "The given path is not a valid relative path.");
     }
-    libPart.location = &outputFileLoc;
+
+    // The location is on the heap, like the one ACAPI_LibraryPart_Get returns: Save
+    // may replace it with its own allocation (freeing this one or not), and after
+    // Save the location it holds is deleted whichever it is.
+    libPart.location = new IO::Location (outputFileLoc);
+    const GS::OnExit deleteLocation ([&] () {
+        delete libPart.location;
+        libPart.location = nullptr;
+    });
 
     GSErrCode err = ACAPI_LibraryPart_Create (&libPart);
     if (err != NoError) {
@@ -650,15 +663,16 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     }
 
     // Save ends the creation even after a failed section, so a later call does not
-    // find a library part still under creation.
+    // find a library part still under creation. The part is then in the library
+    // without the failed section; the error item says so.
     const GSErrCode saveErr = ACAPI_LibraryPart_Save (&libPart);
-    if (libPart.location != &outputFileLoc) {
-        // Save returned its own location of the saved file.
-        delete libPart.location;
-    }
-    libPart.location = nullptr;
 
     if (err != NoError) {
+        if (saveErr == NoError) {
+            failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section: create it again with overwriteExisting to replace it, or delete it with DeleteEmbeddedLibraryItems.", relativePath.ToPrintf ());
+        } else {
+            failedStep += " Saving the incomplete library part failed too.";
+        }
         return CreateErrorResponse (err, failedStep);
     }
     if (saveErr != NoError) {
