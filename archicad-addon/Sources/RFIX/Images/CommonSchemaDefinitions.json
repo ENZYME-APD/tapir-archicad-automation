@@ -3961,6 +3961,88 @@
             "operation"
         ]
     },
+    "ElementLinkReference": {
+        "type": "object",
+        "description": "A directional link from one element to another.",
+        "properties": {
+            "fromElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link starts from."
+            },
+            "toElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link points to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fromElementId",
+            "toElementId"
+        ]
+    },
+    "ElementLinkData": {
+        "type": "object",
+        "description": "A directional link from one element to another, with the flags stored on it.",
+        "properties": {
+            "fromElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link starts from."
+            },
+            "toElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the link points to."
+            },
+            "flags": {
+                "type": "integer",
+                "description": "A 32-bit integer stored on the link, free for the script's own use (for example to tell apart the kinds of links it creates). Default is 0."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fromElementId",
+            "toElementId"
+        ]
+    },
+    "ElementLinksOrError": {
+        "type": "object",
+        "description": "The links starting from an element, or an error.",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "links": {
+                        "type": "array",
+                        "description": "The links starting from the element.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The element the link points to."
+                                },
+                                "flags": {
+                                    "type": "integer",
+                                    "description": "The flags stored on the link by LinkElements."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "flags"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "links"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "InteriorElevationData": {
         "type": "object",
         "properties": {
