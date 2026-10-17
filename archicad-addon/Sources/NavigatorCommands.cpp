@@ -1329,7 +1329,10 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
             "newName":         { "type": "string" },
-            "newId":           { "type": "string" },
+            "newId": {
+                "type": "string",
+                "description": "The new ID of the item. On a layout it is the custom layout number (customLayoutNumbering is switched on); on any other item it is the custom ID of the navigator item (customUiId becomes true)."
+            },
             "customName": {
                 "type": "boolean",
                 "description": "Set to false to drop the custom name of the item, so that it follows the name of its Project Map source again. Cannot be combined with newName."
@@ -1371,6 +1374,16 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         return CreateFailedExecutionResult (APIERR_BADPARS, "newName cannot be combined with customName false.");
     }
 
+    GS::UniString newId;
+    const bool hasNewId = parameters.Get ("newId", newId) && !newId.IsEmpty ();
+
+    // The ID of a layout is its layout number, which lives in the layout settings
+    // (API_LayoutInfo::customLayoutNumber) and not on the navigator item, so it is
+    // changed through ACAPI_Navigator_ChangeLayoutSets below. The ID of every other
+    // item is the uiId of the navigator item, changed the same way as its name.
+    const bool isLayout = navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem;
+    const bool hasNewItemId = hasNewId && !isLayout;
+
     if (hasNewName) {
         GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
         navItem.uName[GS::ArraySize (navItem.uName) - 1] = 0;
@@ -1379,15 +1392,21 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         navItem.customName = false;
     }
 
-    err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
-    if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+    if (hasNewItemId) {
+        // uiId is a char array (unlike uName), so it is copied like customLayoutNumber below.
+        CHTruncate (newId.ToCStr ().Get (), navItem.uiId, GS::ArraySize (navItem.uiId));
+        navItem.customUiId = true;
     }
 
-    // ACAPI_Navigator_ChangeNavigatorItem returns NoError even when it leaves the name
-    // untouched (e.g. Project Map schedule items, which are named by their scheme),
-    // so read the item back and report a name that was not applied as an error.
-    if (hasNewName || resetCustomName) {
+    if (hasNewName || resetCustomName || hasNewItemId) {
+        err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+        }
+
+        // ACAPI_Navigator_ChangeNavigatorItem returns NoError even when it leaves the name
+        // or the ID untouched (e.g. Project Map schedule items, which are named by their
+        // scheme), so read the item back and report a value that was not applied as an error.
         API_NavigatorItem changedItem = {};
         err = ACAPI_Navigator_GetNavigatorItem (&guid, &changedItem);
         if (err != NoError) {
@@ -1401,20 +1420,40 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not drop the custom name of this navigator item.");
         }
+        if (hasNewItemId && GS::UniString (changedItem.uiId) != GS::UniString (navItem.uiId)) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                "Archicad did not apply the new ID. The ID of this navigator item cannot be changed by this command.");
+        }
     }
 
-    // For layouts: set custom layout number (ID) via ChangeLayoutSets
-    GS::UniString newId;
-    if (parameters.Get ("newId", newId)) {
+    if (hasNewId && isLayout) {
         API_LayoutInfo layoutInfo = {};
-        BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
-        if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
-            CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
-                        GS::ArraySize (layoutInfo.customLayoutNumber));
-            layoutInfo.customLayoutNumbering = true;
-            ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
-            delete layoutInfo.customData;
-            layoutInfo.customData = nullptr;
+        err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read the layout settings of the layout.");
+        }
+        CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
+                    GS::ArraySize (layoutInfo.customLayoutNumber));
+        layoutInfo.customLayoutNumbering = true;
+        err = ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+        delete layoutInfo.customData;
+        layoutInfo.customData = nullptr;
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to change the ID of the layout.");
+        }
+
+        API_LayoutInfo changedLayoutInfo = {};
+        err = ACAPI_Navigator_GetLayoutSets (&changedLayoutInfo, &navItem.db.databaseUnId);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read back the layout settings after the change.");
+        }
+        const bool layoutIdApplied = changedLayoutInfo.customLayoutNumbering &&
+                                     GS::UniString (changedLayoutInfo.customLayoutNumber) == GS::UniString (layoutInfo.customLayoutNumber);
+        delete changedLayoutInfo.customData;
+        changedLayoutInfo.customData = nullptr;
+        if (!layoutIdApplied) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                "Archicad did not apply the new ID of the layout.");
         }
     }
 
