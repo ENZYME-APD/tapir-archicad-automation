@@ -1188,7 +1188,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
-            "Deletes navigator items from the navigator tree."
+            "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets and marker-linked worksheets and details cannot be deleted."
         );
         err |= RegisterCommand<GetNavigatorItemTreeCommand> (
             navigatorCommands, "1.1.7",
