@@ -623,11 +623,10 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfElementComponentsCommand::Ge
             },
             "filter": {
                 "type": "string",
-                "description": "Which property definitions to return. The default is All.",
+                "description": "Which property definitions to return: the user defined (Custom) ones, the built-in ones, or all. The default is All.",
                 "enum": [
                     "UserDefined",
-                    "FundamentalBuiltIn",
-                    "UserLevelBuiltIn",
+                    "BuiltIn",
                     "All"
                 ]
             }
@@ -709,13 +708,19 @@ GS::ObjectState GetPropertyDefinitionsOfElementComponentsCommand::Execute (const
     GS::UniString filterStr = "All";
     parameters.Get ("filter", filterStr);
 
+    // Before AC28 the API splits the built-in properties into two filters (FundamentalBuiltIn and
+    // UserLevelBuiltIn); since AC28 there is a single BuiltIn filter. To return the same on every
+    // version, BuiltIn requests all definitions before AC28 and drops the user defined (Custom) ones.
     API_PropertyDefinitionFilter filter = API_PropertyDefinitionFilter_All;
+    bool skipCustomDefinitions = false;
     if (filterStr == "UserDefined") {
         filter = API_PropertyDefinitionFilter_UserDefined;
-    } else if (filterStr == "FundamentalBuiltIn") {
-        filter = API_PropertyDefinitionFilter_FundamentalBuiltIn;
-    } else if (filterStr == "UserLevelBuiltIn") {
-        filter = API_PropertyDefinitionFilter_UserLevelBuiltIn;
+    } else if (filterStr == "BuiltIn") {
+#ifdef ServerMainVers_2800
+        filter = API_PropertyDefinitionFilter_BuiltIn;
+#else
+        skipCustomDefinitions = true;
+#endif
     }
 
     GS::ObjectState response;
@@ -739,6 +744,9 @@ GS::ObjectState GetPropertyDefinitionsOfElementComponentsCommand::Execute (const
         GS::ObjectState propertyDefinitionsOfElementComponent;
         const auto& propertyDefinitions = propertyDefinitionsOfElementComponent.AddList<GS::ObjectState> ("propertyDefinitions");
         for (const API_PropertyDefinition& definition : definitions) {
+            if (skipCustomDefinitions && definition.definitionType == API_PropertyCustomDefinitionType) {
+                continue;
+            }
             GS::ObjectState propertyDefinition;
             propertyDefinition.Add ("propertyId", CreateGuidObjectState (definition.guid));
             propertyDefinition.Add ("propertyName", definition.name);
