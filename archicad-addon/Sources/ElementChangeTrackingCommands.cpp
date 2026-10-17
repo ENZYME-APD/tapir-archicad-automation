@@ -1,11 +1,14 @@
 #include "ElementChangeTrackingCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <memory>
+
 namespace {
 
 // A state captured by CaptureElementState, with the generator type it was captured with:
 // ACAPI_DifferenceGenerator_GenerateDifference takes one type for both of its states, so two
 // states captured with different types cannot be compared.
+// API_ElemDifferenceGeneratorState is not copyable, so the states are stored through pointers.
 struct StoredElementState {
     API_ElemDifferenceGeneratorTypeID type = APIDiff_ModificationStampBased;
     API_ElemDifferenceGeneratorState  state {};
@@ -13,10 +16,16 @@ struct StoredElementState {
 
 // Keyed by the stateId handed out by CaptureElementState. Every command runs on the main thread
 // (CommandBase::GetExecutionPolicy) and so does the project event handler, so no lock is needed.
-GS::HashTable<API_Guid, StoredElementState>& StoredStates ()
+GS::HashTable<API_Guid, std::shared_ptr<StoredElementState>>& StoredStates ()
 {
-    static GS::HashTable<API_Guid, StoredElementState> states;
+    static GS::HashTable<API_Guid, std::shared_ptr<StoredElementState>> states;
     return states;
+}
+
+StoredElementState* FindStoredState (const API_Guid& stateId)
+{
+    const std::shared_ptr<StoredElementState>* stored = StoredStates ().GetPtr (stateId);
+    return stored == nullptr ? nullptr : stored->get ();
 }
 
 // ACAPI_DifferenceGenerator_GetState allocates the state handle; the caller frees it.
@@ -95,8 +104,8 @@ GSErrCode InstallElementStateProjectEventHandler ()
 
 void ReleaseAllElementStates ()
 {
-    StoredStates ().EnumerateValues ([] (StoredElementState& stored) {
-        FreeState (stored.state);
+    StoredStates ().EnumerateValues ([] (const std::shared_ptr<StoredElementState>& stored) {
+        FreeState (stored->state);
     });
     StoredStates ().Clear ();
 }
@@ -172,24 +181,26 @@ GS::ObjectState CaptureElementStateCommand::Execute (const GS::ObjectState& para
     GS::UniString typeStr = "ModificationStamp";
     parameters.Get ("type", typeStr);
 
-    StoredElementState stored;
-    if (!ParseStateType (typeStr, stored.type)) {
+    const std::shared_ptr<StoredElementState> stored = std::make_shared<StoredElementState> ();
+    if (!ParseStateType (typeStr, stored->type)) {
         return CreateErrorResponse (APIERR_BADPARS,
             GS::UniString::Printf ("Invalid type '%T'. Use ModificationStamp, 3DModel or Context.", typeStr.ToPrintf ()));
     }
 
-    const GSErrCode err = ACAPI_DifferenceGenerator_GetState (stored.type, &stored.state);
+    const GSErrCode err = ACAPI_DifferenceGenerator_GetState (stored->type, &stored->state);
     if (err != NoError) {
-        FreeState (stored.state);
-        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to capture the %T based element state.", StateTypeToString (stored.type).ToPrintf ()));
+        FreeState (stored->state);
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to capture the %T based element state.", StateTypeToString (stored->type).ToPrintf ()));
     }
 
-    const API_Guid stateId = GSGuid2APIGuid (GS::Guid::GenerateGuid ());
+    GS::Guid guid;
+    guid.Generate ();
+    const API_Guid stateId = GSGuid2APIGuid (guid);
     StoredStates ().Add (stateId, stored);
 
     GS::ObjectState response;
     response.Add ("stateId", CreateGuidObjectState (stateId));
-    response.Add ("type", StateTypeToString (stored.type));
+    response.Add ("type", StateTypeToString (stored->type));
     return response;
 }
 
@@ -276,7 +287,7 @@ GS::ObjectState GetElementChangesSinceCommand::Execute (const GS::ObjectState& p
         return CreateErrorResponse (APIERR_BADPARS, "stateId is required.");
     }
     const API_Guid fromStateId = GetGuidFromObjectState (*stateIdOS);
-    StoredElementState* from = StoredStates ().GetPtr (fromStateId);
+    StoredElementState* from = FindStoredState (fromStateId);
     if (from == nullptr) {
         return UnknownStateIdError ("stateId", fromStateId);
     }
@@ -288,7 +299,7 @@ GS::ObjectState GetElementChangesSinceCommand::Execute (const GS::ObjectState& p
     const GS::ObjectState* toStateIdOS = parameters.Get ("toStateId");
     if (toStateIdOS != nullptr) {
         const API_Guid toStateId = GetGuidFromObjectState (*toStateIdOS);
-        to = StoredStates ().GetPtr (toStateId);
+        to = FindStoredState (toStateId);
         if (to == nullptr) {
             return UnknownStateIdError ("toStateId", toStateId);
         }
@@ -371,7 +382,7 @@ GS::ObjectState ReleaseElementStateCommand::Execute (const GS::ObjectState& para
         return CreateFailedExecutionResult (APIERR_BADPARS, "stateId is required.");
     }
     const API_Guid stateId = GetGuidFromObjectState (*stateIdOS);
-    StoredElementState* stored = StoredStates ().GetPtr (stateId);
+    StoredElementState* stored = FindStoredState (stateId);
     if (stored == nullptr) {
         return CreateFailedExecutionResult (UnknownStateIdError ("stateId", stateId));
     }
