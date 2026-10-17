@@ -208,6 +208,21 @@ inline GSErrCode ACAPI_Rendering_PhotoRender (const API_PhotoRenderPars* photoRe
     return ACAPI_Automate (APIDo_PhotoRenderID, (void*) photoRenderPars, (void*) printPars);
 }
 
+// The rendering settings calls of AC27+ (ACAPI_Rendering.h), on the pre-27 dispatcher:
+// APIEnv_GetRenderingSetsID and APIEnv_ChangeRenderingSetsID of APIdefs_Environment.h
+// take the settings structure (API_RendImage for APIRendSet_ImageID, API_RendEffects for
+// APIRendSet_EffectsID) as par1 and the settings type as par2, by pointer; the get form
+// takes the scene name as par3, nullptr being the current scene.
+inline GSErrCode ACAPI_Rendering_GetRenderingSets (void* rendInfo, API_RendSetTypeID rendSetType, const GS::UniString* sceneName = nullptr)
+{
+    return ACAPI_Environment (APIEnv_GetRenderingSetsID, rendInfo, &rendSetType, (void*) sceneName);
+}
+
+inline GSErrCode ACAPI_Rendering_ChangeRenderingSets (const void* rendInfo, API_RendSetTypeID rendSetType)
+{
+    return ACAPI_Environment (APIEnv_ChangeRenderingSetsID, (void*) rendInfo, &rendSetType);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);

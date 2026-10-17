@@ -4,11 +4,46 @@
 
 // The rendering scenes are the entries of the Scene list of the PhotoRendering
 // Settings palette (Document > Creative Imaging). ACAPI_Rendering_GetRenderingSceneNames
-// lists their names only: the API has no call that tells which scene is the current
-// one, so GetRenderingScenes cannot report it either.
+// lists their names in the order of recent usage, the most recently used scene first
+// (so the DevKit documents it); the API has no other call that tells which scene is
+// the current one, so GetRenderingScenes reports the first name as the current scene.
 static GSErrCode GetRenderingSceneNames (GS::Array<GS::UniString>& sceneNames)
 {
     return ACAPI_Rendering_GetRenderingSceneNames (&sceneNames);
+}
+
+// The image settings of the current rendering scene (the Size and Resolution fields
+// of the PhotoRendering Settings palette, with the background): API_RendImage holds
+// the size in pixels and the resolution in dpi as shorts, hence the upper bound of
+// the PhotoRender parameters that change them.
+static const Int32 MaxImageSettingValue = 32767;
+
+static GSErrCode GetImageSettings (API_RendImage& imageSettings)
+{
+    return ACAPI_Rendering_GetRenderingSets (&imageSettings, APIRendSet_ImageID);
+}
+
+// Not const: the API takes the settings as a void* parameter.
+static GSErrCode ChangeImageSettings (API_RendImage& imageSettings)
+{
+    return ACAPI_Rendering_ChangeRenderingSets (&imageSettings, APIRendSet_ImageID);
+}
+
+// Reads one of the optional image setting parameters of PhotoRender. False, with the
+// message to answer, when the parameter is given but is not a positive integer that
+// fits the settings.
+static bool GetImageSettingParameter (const GS::ObjectState& parameters, const char* name, GS::Optional<Int32>& value, GS::UniString& errorMessage)
+{
+    Int32 givenValue = 0;
+    if (!parameters.Get (name, givenValue)) {
+        return true;
+    }
+    if (givenValue < 1 || givenValue > MaxImageSettingValue) {
+        errorMessage = GS::UniString::Printf ("%s must be between 1 and %d.", name, MaxImageSettingValue);
+        return false;
+    }
+    value = givenValue;
+    return true;
 }
 
 // Checks the name against the scene list first, so a typo gets a clear message
@@ -52,10 +87,14 @@ GS::Optional<GS::UniString> GetRenderingScenesCommand::GetRawResponseSchema () c
         "properties": {
             "sceneNames": {
                 "type": "array",
-                "description": "The names of the rendering scenes of the project, in the order of the Scene list of the PhotoRendering Settings palette. The API does not tell which one is current.",
+                "description": "The names of the rendering scenes of the project (the Scene list of the PhotoRendering Settings palette), in the order of recent usage: the most recently used scene, the current one, first.",
                 "items": {
                     "type": "string"
                 }
+            },
+            "currentSceneName": {
+                "type": "string",
+                "description": "The name of the current rendering scene, the one selected in the PhotoRendering Settings palette: the first of sceneNames. Left out when the project has no rendering scene."
             }
         },
         "additionalProperties": false,
@@ -74,6 +113,9 @@ GS::ObjectState GetRenderingScenesCommand::Execute (const GS::ObjectState& /*par
     }
 
     GS::ObjectState response;
+    if (!sceneNames.IsEmpty ()) {
+        response.Add ("currentSceneName", sceneNames.GetFirst ());
+    }
     const auto& sceneNamesAdder = response.AddList<GS::UniString> ("sceneNames");
     for (const GS::UniString& sceneName : sceneNames) {
         sceneNamesAdder (sceneName);
@@ -156,6 +198,21 @@ GS::Optional<GS::UniString> PhotoRenderCommand::GetInputParametersSchema () cons
             "sceneName": {
                 "type": "string",
                 "description": "Optional. The rendering scene to render with, one of the names GetRenderingScenes returns. It is made the current scene first, as SetCurrentRenderingScene does, and stays current afterwards. Omitted, the current scene is used."
+            },
+            "width": {
+                "type": "integer",
+                "description": "Optional. The width of the image in pixels (the Size field of the PhotoRendering Settings palette). Omitted, the width of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.",
+                "minimum": 1
+            },
+            "height": {
+                "type": "integer",
+                "description": "Optional. The height of the image in pixels (the Size field of the PhotoRendering Settings palette). Omitted, the height of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.",
+                "minimum": 1
+            },
+            "resolution": {
+                "type": "integer",
+                "description": "Optional. The resolution of the image in dpi (the Resolution field of the PhotoRendering Settings palette). Omitted, the resolution of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.",
+                "minimum": 1
             }
         },
         "additionalProperties": false,
@@ -189,6 +246,17 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
         return CreateFailedExecutionResult (APIERR_BADPARS, "format is missing and the extension of imageFilePath is not one of .png, .jpg, .jpeg, .bmp, .tif, .tiff and .gif.");
     }
 
+    GS::Optional<Int32> width;
+    GS::Optional<Int32> height;
+    GS::Optional<Int32> resolution;
+    GS::UniString errorMessage;
+    if (!GetImageSettingParameter (parameters, "width", width, errorMessage) ||
+        !GetImageSettingParameter (parameters, "height", height, errorMessage) ||
+        !GetImageSettingParameter (parameters, "resolution", resolution, errorMessage)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, errorMessage);
+    }
+    const bool changeImageSettings = width.HasValue () || height.HasValue () || resolution.HasValue ();
+
     GS::UniString sceneName;
     if (parameters.Get ("sceneName", sceneName)) {
         if (sceneName.IsEmpty ()) {
@@ -200,17 +268,51 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
         }
     }
 
-    // The size, quality and background of the image come from the current scene,
-    // as for PhotoRender Projection; the API renders the 3D model as the 3D window
-    // shows it, so the view to render has to be set up in the 3D window first.
+    // The size, quality and background of the image come from the current scene, as
+    // for PhotoRender Projection. A size or resolution given here is written into the
+    // image settings of the scene for the render, after the scene is made current, and
+    // the previous settings are written back afterwards, so the scene is not changed
+    // for good; a field left out keeps the value of the scene. API_RendImage is copied
+    // whole, so the background and every other setting go back unchanged too.
+    API_RendImage originalImageSettings = {};
+    if (changeImageSettings) {
+        const GSErrCode getErr = GetImageSettings (originalImageSettings);
+        if (getErr != NoError) {
+            return CreateFailedExecutionResult (getErr, "Failed to get the image settings of the current rendering scene.");
+        }
+        API_RendImage imageSettings = originalImageSettings;
+        if (width.HasValue ()) {
+            imageSettings.hSize = static_cast<short> (width.Get ());
+        }
+        if (height.HasValue ()) {
+            imageSettings.vSize = static_cast<short> (height.Get ());
+        }
+        if (resolution.HasValue ()) {
+            imageSettings.outResolution = static_cast<short> (resolution.Get ());
+        }
+        const GSErrCode changeErr = ChangeImageSettings (imageSettings);
+        if (changeErr != NoError) {
+            return CreateFailedExecutionResult (changeErr, "Failed to set the image size and resolution of the current rendering scene.");
+        }
+    }
+
+    // The API renders the 3D model as the 3D window shows it, so the view to render
+    // has to be set up in the 3D window first.
     API_PhotoRenderPars photoRenderPars = {};
     photoRenderPars.fileLoc = IO::Location (imageFilePath);
     photoRenderPars.fileTypeID = fileTypeID;
 
     // A print parameter would print the image too; nullptr writes only the file.
     const GSErrCode err = ACAPI_Rendering_PhotoRender (&photoRenderPars, nullptr);
+
+    // Restored whether or not the render succeeded.
+    const GSErrCode restoreErr = changeImageSettings ? ChangeImageSettings (originalImageSettings) : NoError;
+
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to render the 3D model: no project is open, the 3D model could not be generated (open the 3D window first), or the file cannot be written.");
+    }
+    if (restoreErr != NoError) {
+        return CreateFailedExecutionResult (restoreErr, "The image was rendered and written, but the image settings of the rendering scene could not be restored: the scene keeps the given size and resolution.");
     }
     return CreateSuccessfulExecutionResult ();
 }
