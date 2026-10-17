@@ -4280,10 +4280,11 @@ static bool IsSameParameterList (API_AddParType** lhs, API_AddParType** rhs)
 // independent label's default. In #742 a Flexi_Zone_Label placed that way on a zone came
 // out without its parameters while Label Selected Elements places it with all of them, so
 // the parent's type is given before the defaults are read, as Archicad itself labels. An
-// item with a favorite keeps reading the default the favorite was applied to
-// (ApplyFavoriteToElementDefaults changes the defaults with the favorite's own parentType,
-// and the restore snapshot is taken without one), so the favorite is not silently lost: the
-// favorite defines that label anyway.
+// item with a favorite reads with parentType unset, the independent label's default: that is
+// the one ApplyFavoriteToElementDefaults pushes every label favorite into (whatever parentType
+// the favorite was saved with) and the one the restore snapshot in Execute covers, so the
+// favorite is seen here, a later item without one does not inherit it, and the per-type
+// defaults are left as the user had them. The favorite defines that label anyway.
 void CreateLabelsCommand::PrepareDefaultsQuery (API_Element& element, const GS::ObjectState& parameters) const
 {
     GS::UniString favoriteName;
