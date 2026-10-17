@@ -1820,6 +1820,9 @@
             "type": {
                 "$ref": "#/HotlinkType"
             },
+            "sourceStatus": {
+                "$ref": "#/HotlinkSourceStatus"
+            },
             "children": {
                 "$ref": "#/Hotlinks",
                 "description": "The children of the hotlink node if it has any."
@@ -3502,6 +3505,16 @@
         "enum": [
             "Module",
             "XRef"
+        ]
+    },
+    "HotlinkSourceStatus": {
+        "type": "string",
+        "description": "The state of a hotlink node's source file, as the Hotlink Manager's Status column shows it. Available: the file is there and the node's cached content is up to date. Modified: the file changed since the cache was last read; UpdateHotlinks re-reads it. Missing: the file cannot be found; ChangeHotlinkNodes repoints the node, BreakHotlinkNodes keeps its content as ordinary elements, DeleteHotlinkNodes removes it. Unknown: a status this add-on does not know. Absent when the status could not be read.",
+        "enum": [
+            "Available",
+            "Modified",
+            "Missing",
+            "Unknown"
         ]
     },
     "NavigatorItemType": {

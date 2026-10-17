@@ -38,6 +38,11 @@ namespace TapirGrasshopperPlugin.Types.Project
         [JsonProperty("type")]
         public string Type { get; set; }
 
+        // Available, Modified, Missing or Unknown; null when the add-on could
+        // not read it (or predates it).
+        [JsonProperty("sourceStatus")]
+        public string SourceStatus { get; set; }
+
         [JsonProperty("children")]
         public Hotlinks Children { get; set; }
 
