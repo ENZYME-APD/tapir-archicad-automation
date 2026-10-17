@@ -50,7 +50,8 @@ builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference)
 tools/                   Version bump scripts (update_version.py), package_info.json,
-                         Add-On docs generator (generate_addon_docs.py)
+                         Add-On docs generator (generate_addon_docs.py),
+                         command scaffolder (new_command.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -107,6 +108,11 @@ sandbox/                 Experiments / scratch
   texts the same in both (test_update_mode.py checks they match).
 
 ### Adding or changing a command
+
+[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–4 for new
+commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
+the registration and a starter example. The Archicad API calls in `Execute` and any
+`Test/ExpectedOutputs/` are still written by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
