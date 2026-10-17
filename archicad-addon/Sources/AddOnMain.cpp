@@ -1132,6 +1132,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
         );
+        err |= RegisterCommand<HideElementsCommand> (
+            navigatorCommands, "1.7.2",
+            "Hides the given elements in the current window. Archicad hides the selected elements, so the command selects the given ones, hides them and restores the previous selection. ShowAllHiddenElements shows them again."
+        );
+        err |= RegisterCommand<ShowAllHiddenElementsCommand> (
+            navigatorCommands, "1.7.2",
+            "Shows every element hidden in the current window, by HideElements or in Archicad."
+        );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan."
