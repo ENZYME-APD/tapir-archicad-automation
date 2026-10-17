@@ -6,6 +6,9 @@
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
+#ifdef ServerMainVers_3000
+#include <optional>
+#endif
 
 // Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method; AC27+ replaced it with
 // a class. Kept local (rather than in the shared MigrationHelper shim) since it is only used in this file.
@@ -90,6 +93,49 @@ static GS::UniString GetAttributeName (const API_Attr_Head& header)
     DisposeAttribute (attr);
     return found ? name : GS::UniString (header.name);
 }
+
+#ifdef ServerMainVers_3000
+// Archicad 30 records how, from where, by whom and when an attribute entered the project
+// (ACAPI_Attribute_GetCreationInfo). The method names below mirror the API_AttrCreationMethod
+// enumerators; the default branch keeps a method added by a later version from breaking the response.
+static GS::UniString GetAttributeCreationMethodName (API_AttrCreationMethod method)
+{
+    switch (method) {
+        case APIAttrCreationMethod_AddOn:         return "AddOn";
+        case APIAttrCreationMethod_Merge:         return "Merge";
+        case APIAttrCreationMethod_Paste:         return "Paste";
+        case APIAttrCreationMethod_New:           return "New";
+        case APIAttrCreationMethod_Import:        return "Import";
+        case APIAttrCreationMethod_Explode:       return "Explode";
+        case APIAttrCreationMethod_Duplicate:     return "Duplicate";
+        case APIAttrCreationMethod_Hotlink:       return "Hotlink";
+        case APIAttrCreationMethod_XRef:          return "XRef";
+        case APIAttrCreationMethod_Library:       return "Library";
+        case APIAttrCreationMethod_LibraryMaster: return "LibraryMaster";
+        case APIAttrCreationMethod_Unspecified:
+        default:                                  return "Unspecified";
+    }
+}
+
+// Archicad hands back NoError with an empty optional, not an error, for an attribute it has no creation
+// record of (legacy or imported attributes), so such an attribute simply gets no creationInfo.
+static bool GetAttributeCreationInfo (const API_Attr_Head& header, GS::ObjectState& creationInfoOS)
+{
+    std::optional<API_AttributeCreationInfo> creationInfo;
+    if (ACAPI_Attribute_GetCreationInfo (header.typeID, header.index, creationInfo) != NoError || !creationInfo.has_value ()) {
+        return false;
+    }
+
+    creationInfoOS.Add ("method", GetAttributeCreationMethodName (creationInfo->methodID));
+    creationInfoOS.Add ("methodDescription", creationInfo->methodDescription);
+    creationInfoOS.Add ("source", creationInfo->source);
+    creationInfoOS.Add ("creatorUserName", creationInfo->creatorUserName);
+    // API_AttributeCreationInfo::creationTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC), the
+    // same scale as modificationTime.
+    creationInfoOS.Add ("creationTime", static_cast<Int64> (creationInfo->creationTime));
+    return true;
+}
+#endif
 
 static API_AttrTypeID ConvertAttributeTypeStringToID (const GS::UniString& typeStr)
 {
@@ -178,6 +224,12 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
         // API_Attr_Head::modiTime is a GSTime (seconds since 1970-01-01 00:00:00 UTC) in a UInt64,
         // the same stamp the Attribute Manager writes as ModiTime into its XML export.
         attributeDetails.Add ("modificationTime", static_cast<Int64> (attr.header.modiTime));
+#ifdef ServerMainVers_3000
+        GS::ObjectState creationInfo;
+        if (GetAttributeCreationInfo (attr.header, creationInfo)) {
+            attributeDetails.Add ("creationInfo", creationInfo);
+        }
+#endif
         attributes (attributeDetails);
 
         DisposeAttribute (attr);

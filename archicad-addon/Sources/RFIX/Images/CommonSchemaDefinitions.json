@@ -10257,6 +10257,9 @@
                 "modificationTime": {
                     "type": "integer",
                     "description": "The last modification time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same stamp the Attribute Manager writes as ModiTime into its XML export."
+                },
+                "creationInfo": {
+                    "$ref": "#/AttributeCreationInfo"
                 }
             },
             "additionalProperties": false,
@@ -10268,6 +10271,54 @@
             ]
 
         }
+    },
+    "AttributeCreationInfo": {
+        "type": "object",
+        "description": "How, from where, by whom and when the attribute was created. Available from Archicad 30, and only for an attribute Archicad keeps a creation record of: legacy or imported attributes may have none, and then the field is left out. Any of the texts may be empty.",
+        "properties": {
+            "method": {
+                "type": "string",
+                "description": "The creation method or workflow: AddOn (created by an Add-On), Merge (merging files), Paste (pasting from another file), New (created by the user through the UI), Import (an attribute file, IFC, DWG/DXF or another supported format), Explode (exploding a PDF or DWG), Duplicate (duplicating an attribute), Hotlink (a hotlinked file), XRef (a file attached in the Xref manager), Library (a library part), LibraryMaster (generated from GDL) or Unspecified.",
+                "enum": [
+                    "AddOn",
+                    "Merge",
+                    "Paste",
+                    "New",
+                    "Import",
+                    "Explode",
+                    "Duplicate",
+                    "Hotlink",
+                    "XRef",
+                    "Library",
+                    "LibraryMaster",
+                    "Unspecified"
+                ]
+            },
+            "methodDescription": {
+                "type": "string",
+                "description": "Human-readable description of the creation method."
+            },
+            "source": {
+                "type": "string",
+                "description": "Human-readable origin, for example the name of the file or Add-On the attribute came from."
+            },
+            "creatorUserName": {
+                "type": "string",
+                "description": "The Teamwork user name, or the OS login name in a solo project, at the time of creation."
+            },
+            "creationTime": {
+                "type": "integer",
+                "description": "The creation time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same scale as modificationTime."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "method",
+            "methodDescription",
+            "source",
+            "creatorUserName",
+            "creationTime"
+        ]
     },
     "AttributeHeadersWrapper": {
         "type": "object",
