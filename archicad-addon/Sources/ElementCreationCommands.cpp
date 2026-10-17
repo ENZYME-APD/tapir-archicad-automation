@@ -154,6 +154,22 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            // Per-item "id" support: the Element ID is written right after the creation, in
+            // the same undoable command, so the create call itself stays as it was. Without
+            // an id the element keeps the next automatic ID of its tool. An id that cannot be
+            // written leaves no half-done element behind: the new element is deleted again
+            // and the item answers with the error, so the response never names an element
+            // whose id is not the requested one.
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                err = ChangeElementId (element.header.guid, id);
+                if (err != NoError) {
+                    ACAPI_Element_Delete ({ element.header.guid });
+                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", so it was not created"));
+                    continue;
+                }
+            }
+
             notification = {};
             notification.notifID = APINotifyElement_New;
             notification.elemHead = element.header;
@@ -203,6 +219,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                         },
                         "coordinates": {
                             "type": "object",
@@ -396,6 +416,10 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "level": {
                         "type": "number",
@@ -701,6 +725,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "floorIndex": {
                         "type": "number",
                         "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
@@ -909,6 +937,10 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
@@ -1050,6 +1082,10 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1122,6 +1158,10 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "floorInd": {
                         "type": "number",
@@ -1208,6 +1248,10 @@ GS::Optional<GS::UniString> CreateCirclesCommand::GetInputParametersSchema () co
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1280,6 +1324,10 @@ GS::Optional<GS::UniString> CreateHotspotsCommand::GetInputParametersSchema () c
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "floorInd": {
                         "type": "number",
@@ -1357,6 +1405,10 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "floorInd": {
                         "type": "number",
@@ -1531,6 +1583,10 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1687,6 +1743,10 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                         }
                     },
                     "additionalProperties": false,
@@ -2648,6 +2708,10 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "floorIndex": {
                         "type": "integer"
                     },
@@ -2826,6 +2890,10 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "coordinates": {
                         "type": "array",
@@ -3272,6 +3340,10 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
@@ -4407,6 +4479,10 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
                     "coordinate": {
                         "$ref": "#/Coordinate3D",
                         "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
@@ -4568,6 +4644,10 @@ GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSche
                     "favoriteName": {
                         "type": "string",
                         "description": "Optional name of a Level Dimension favorite to base the new element on. Its settings (marker, format, text style, layer, pen) are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
                     "position": {
                         "$ref": "#/Coordinate2D",
