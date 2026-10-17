@@ -1669,6 +1669,10 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetInputParametersSchem
                             "type": "object",
                             "description": "Details of an element.",
                             "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "The Element ID (the ID field of the element's Settings dialog, shown in schedules and labels). The same string GetDetailsOfElements returns as id."
+                                },
                                 "floorIndex": {
                                     "type": "number"
                                 },
@@ -2498,6 +2502,17 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 ACAPI_DisposeElemMemoHdls (&clipMemo);
                 if (err != NoError) {
                     executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
+                    continue;
+                }
+            }
+
+            // The Element ID is a memo part of its own (elemInfoString), written separately
+            // from the element change above so it never depends on the type specific mask.
+            GS::UniString id;
+            if (details->Get ("id", id)) {
+                err = ChangeElementId (elem.header.guid, id);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to set the id of the element"));
                     continue;
                 }
             }
