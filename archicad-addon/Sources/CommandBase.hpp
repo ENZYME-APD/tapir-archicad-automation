@@ -260,10 +260,11 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
 
 // Pushes the named favorite into the tool defaults of expectedTypeId, so a subsequent
 // ACAPI_Element_GetDefaults returns the favorite's settings as the baseline for a new
-// element. Mirrors ApplyFavoritesToElementDefaultsCommand: the element state plus the
-// favorite's classifications, category values and user properties (some favorites are
-// rejected by the create call without that extra metadata). A Label favorite is pushed into
-// the independent label's default, whatever parentType it was saved with. Returns
+// element. Pushes what ApplyFavoritesToElementDefaultsCommand pushes: the element state plus
+// the favorite's classifications, category values and user properties (some favorites are
+// rejected by the create call without that extra metadata). Unlike that command, which keeps
+// the favorite's parentType, a Label favorite is pushed into the independent label's default,
+// whatever parentType it was saved with (see the comment in the definition). Returns
 // APIERR_REFUSEDPAR when the favorite belongs to a different element type. Defined in
 // ExtendedElementCommands.cpp, next to the Window/Door specific variant.
 GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API_ElemTypeID expectedTypeId);

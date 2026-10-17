@@ -3229,11 +3229,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label. Without favoriteName the label starts from the Label tool default of the parent's element type (the one Label Selected Elements uses), not from the independent label's default."
+                        "description" : "The parent element if the label is an associative label. Without favoriteName, an item that may become a Symbol label (labelClass 'Symbol', or neither labelClass nor text/runs given) starts from the Label tool default of the parent's element type (the one Label Selected Elements uses); an item that asks for a Text label (labelClass 'Text', or text/runs given without labelClass) starts from the independent label's default."
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
-                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default (of the parent's element type, see parentElementId) or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
+                        "description": "Optional; if omitted, inherits the class of the Label tool default the item starts from (see parentElementId; it may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default (of the parent's element type, see parentElementId) or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
                     },
                     "text": {
                         "type": "string",
@@ -4273,22 +4273,41 @@ static bool IsSameParameterList (API_AddParType** lhs, API_AddParType** rhs)
     return true;
 }
 
+// True when the item can only become a Text label: labelClass 'Text', or text content (text
+// or runs, meaningless on a Symbol label) given without labelClass.
+static bool ItemAsksForTextLabel (const GS::ObjectState& parameters)
+{
+    GS::UniString labelClassStr;
+    if (parameters.Get ("labelClass", labelClassStr)) {
+        return labelClassStr != "Symbol";
+    }
+    return parameters.Contains ("text") || parameters.Contains ("runs");
+}
+
 // The Label tool keeps one default per labeled element type (Label Settings' element type
 // list, the one Document > Annotation > Label Selected Elements places from) besides the one
 // of the independent label, and parentType is the field ACAPI_Element_GetDefaults has to
 // select it by. Read with parentType unset, an associative label started from the
 // independent label's default. In #742 a Flexi_Zone_Label placed that way on a zone came
 // out without its parameters while Label Selected Elements places it with all of them, so
-// the parent's type is given before the defaults are read, as Archicad itself labels. An
-// item with a favorite reads with parentType unset, the independent label's default: that is
-// the one ApplyFavoriteToElementDefaults pushes every label favorite into (whatever parentType
-// the favorite was saved with) and the one the restore snapshot in Execute covers, so the
-// favorite is seen here, a later item without one does not inherit it, and the per-type
-// defaults are left as the user had them. The favorite defines that label anyway.
+// for an item that may become a Symbol label (labelClass 'Symbol', or neither labelClass nor
+// text content given) the parent's type is given before the defaults are read, as Archicad
+// itself labels. An item that asks for a Text label keeps reading the independent label's
+// default, as every item did before: a per-type default that is a Symbol label would turn
+// an item giving only text (create_label_for_walls.py) into a symbol label with its text
+// dropped, or hand a Text label the bytes of a symbol default's u.symbol as its u.text. An
+// item with a favorite also reads with parentType unset, the independent label's default:
+// that is the one ApplyFavoriteToElementDefaults pushes every label favorite into (whatever
+// parentType the favorite was saved with) and the one the restore snapshot in Execute covers,
+// so the favorite is seen here, a later item without one does not inherit it, and the
+// per-type defaults are left as the user had them. The favorite defines that label anyway.
 void CreateLabelsCommand::PrepareDefaultsQuery (API_Element& element, const GS::ObjectState& parameters) const
 {
     GS::UniString favoriteName;
     if (parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ()) {
+        return;
+    }
+    if (ItemAsksForTextLabel (parameters)) {
         return;
     }
 
