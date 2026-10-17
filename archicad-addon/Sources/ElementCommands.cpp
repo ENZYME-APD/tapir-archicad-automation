@@ -4721,6 +4721,123 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementAtCoordinateCommand::GetName () const
+{
+    return "GetElementAtCoordinate";
+}
+
+GS::Optional<GS::UniString> GetElementAtCoordinateCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The type of the element to look for."
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point to search at, in the project's coordinates, on the floor plan of the current database."
+            },
+            "z": {
+                "type": "number",
+                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0."
+            },
+            "filters": {
+                "type": "array",
+                "description": "Optional. Only an element passing every given filter is found (the same values as FilterElements accepts).",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "coordinate"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementAtCoordinateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "found": {
+                "type": "boolean",
+                "description": "True when an element of the given type was found at the coordinate."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The identifier of the found element. Absent when nothing was found."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "found"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString elementTypeStr;
+    parameters.Get ("elementType", elementTypeStr);
+    const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    if (typeID == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+    }
+
+    const GS::ObjectState* coordinate = parameters.Get ("coordinate");
+    if (coordinate == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinate is missing");
+    }
+
+    // The same search Archicad runs for a click on the floor plan: the element of the given
+    // type at the point, restricted by the filter flags (none by default).
+    API_ElemSearchPars searchPars = {};
+#ifdef ServerMainVers_2600
+    searchPars.type = typeID;
+#else
+    searchPars.typeID = typeID;
+#endif
+    searchPars.loc = Get2DCoordinateFromObjectState (*coordinate);
+    searchPars.z = 0.0;
+    parameters.Get ("z", searchPars.z);
+
+    GS::Array<GS::UniString> filters;
+    if (parameters.Get ("filters", filters)) {
+        API_ElemFilterFlags filterFlags = APIFilt_None;
+        for (const GS::UniString& filter : filters) {
+            filterFlags |= ConvertFilterStringToFlag (filter);
+        }
+        searchPars.filterBits = static_cast<decltype (searchPars.filterBits)> (filterFlags);
+    }
+
+    API_Guid elemGuid = APINULLGuid;
+    const GSErrCode err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    if (err == APIERR_BADPARS || err == APIERR_BADDATABASE) {
+        return CreateErrorResponse (err, "Failed to search for an element at the coordinate.");
+    }
+
+    // Any other failure is Archicad's way of saying that there is nothing at the point.
+    GS::ObjectState response;
+    const bool found = (err == NoError && elemGuid != APINULLGuid);
+    response.Add ("found", found);
+    if (found) {
+        response.Add ("elementId", CreateGuidObjectState (elemGuid));
+    }
+    return response;
+}
+
 DeleteElementsCommand::DeleteElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
