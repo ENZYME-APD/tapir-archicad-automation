@@ -490,11 +490,11 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
 }
 
 // The renovation filter functions of ACAPI_Renovation.h (AC27+) are the
-// APIEnv_*RenovationFilter* environment functions and APIAny_GetRenovationFilterNameID
-// before that; the parameters are the same.
+// APIDb_*RenovationFilter* database functions (APIdefs_Database.h) and the
+// APIAny_GetRenovationFilterNameID goodie before that; the parameters are the same.
 inline GSErrCode ACAPI_Renovation_GetRenovationFilters (GS::Array<API_Guid>* renovationFilters)
 {
-    return ACAPI_Environment (APIEnv_GetRenovationFiltersID, (void*) renovationFilters);
+    return ACAPI_Database (APIDb_GetRenovationFiltersID, (void*) renovationFilters);
 }
 
 inline GSErrCode ACAPI_Renovation_GetRenovationFilterName (const API_Guid* renovationFilterGuid, GS::UniString* name)
@@ -504,12 +504,12 @@ inline GSErrCode ACAPI_Renovation_GetRenovationFilterName (const API_Guid* renov
 
 inline GSErrCode ACAPI_Renovation_GetActualRenovationFilter (API_Guid* renovationFilterGuid)
 {
-    return ACAPI_Environment (APIEnv_GetActualRenovationFilterID, (void*) renovationFilterGuid);
+    return ACAPI_Database (APIDb_GetActualRenovationFilterID, (void*) renovationFilterGuid);
 }
 
 inline GSErrCode ACAPI_Renovation_SetActualRenovationFilter (const API_Guid* renovationFilterGuid)
 {
-    return ACAPI_Environment (APIEnv_SetActualRenovationFilterID, (void*) renovationFilterGuid);
+    return ACAPI_Database (APIDb_SetActualRenovationFilterID, (void*) renovationFilterGuid);
 }
 
 #endif
