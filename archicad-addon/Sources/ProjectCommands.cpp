@@ -1677,7 +1677,7 @@ GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetRawResponseSchem
     })";
 }
 
-static bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID)
+bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTypeID)
 {
     if (format == "png") {
         fileTypeID = APIFType_PNGFile;
@@ -1695,7 +1695,7 @@ static bool ParseImageFileType (const GS::UniString& format, API_FTypeID& fileTy
     return true;
 }
 
-static bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID)
+bool ParseImageFileTypeFromExtension (const GS::UniString& imageFilePath, API_FTypeID& fileTypeID)
 {
     const UIndex dotIndex = imageFilePath.FindLast (GS::UniChar ('.'));
     if (dotIndex == MaxUIndex) {
