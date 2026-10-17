@@ -7153,10 +7153,11 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
     }
 }
 
-// Applies every field present in 'details' onto cutPlane. When mask is non-null, also sets the
+// Applies every field present in 'details' onto cutPlane. Returns an error for an attribute guid
+// that does not name an attribute of the expected type. When mask is non-null, also sets the
 // corresponding ACAPI_ELEMENT_MASK_SET bit (needed for ACAPI_Element_Change; not needed when
 // preparing a brand new element for ACAPI_Element_CreateExt, which always writes the full struct).
-static void ApplySectionElevationSettableDetails (const GS::ObjectState& details, API_CutPlaneType& cutPlane, API_Element* mask)
+static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const GS::ObjectState& details, API_CutPlaneType& cutPlane, API_Element* mask)
 {
     API_SectionSegment& seg = cutPlane.segment;
 
@@ -7178,7 +7179,9 @@ static void ApplySectionElevationSettableDetails (const GS::ObjectState& details
     {
         auto attrId = GetOptionalObjectState (details, "lineTypeId");
         if (attrId.HasValue ()) {
-            ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.ltypeInd);
+            if (!ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.ltypeInd)) {
+                return GS::UniString ("Invalid attribute reference in 'lineTypeId'.");
+            }
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.ltypeInd);
         }
     }
@@ -7262,7 +7265,9 @@ static void ApplySectionElevationSettableDetails (const GS::ObjectState& details
     {
         auto attrId = GetOptionalObjectState (details, "shadowFillId");
         if (attrId.HasValue ()) {
-            ResolveAttributeIndex (attrId.Get (), API_FilltypeID, seg.shadFill);
+            if (!ResolveAttributeIndex (attrId.Get (), API_FilltypeID, seg.shadFill)) {
+                return GS::UniString ("Invalid attribute reference in 'shadowFillId'.");
+            }
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.shadFill);
         }
     }
@@ -7275,7 +7280,9 @@ static void ApplySectionElevationSettableDetails (const GS::ObjectState& details
     {
         auto attrId = GetOptionalObjectState (details, "limitLineTypeId");
         if (attrId.HasValue ()) {
-            ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.limitLtypeInd);
+            if (!ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.limitLtypeInd)) {
+                return GS::UniString ("Invalid attribute reference in 'limitLineTypeId'.");
+            }
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.limitLtypeInd);
         }
     }
@@ -7337,7 +7344,9 @@ static void ApplySectionElevationSettableDetails (const GS::ObjectState& details
     {
         auto attrId = GetOptionalObjectState (details, "storyHandleLineTypeId");
         if (attrId.HasValue ()) {
-            ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.shLineType);
+            if (!ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.shLineType)) {
+                return GS::UniString ("Invalid attribute reference in 'storyHandleLineTypeId'.");
+            }
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.shLineType);
         }
     }
@@ -7388,7 +7397,9 @@ static void ApplySectionElevationSettableDetails (const GS::ObjectState& details
     {
         auto attrId = GetOptionalObjectState (details, "boundaryLineTypeId");
         if (attrId.HasValue ()) {
-            ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.boundaryLineType);
+            if (!ResolveAttributeIndex (attrId.Get (), API_LinetypeID, seg.boundaryLineType)) {
+                return GS::UniString ("Invalid attribute reference in 'boundaryLineTypeId'.");
+            }
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.boundaryLineType);
         }
     }
@@ -7411,6 +7422,8 @@ static void ApplySectionElevationSettableDetails (const GS::ObjectState& details
         seg.intPlanConn = StringToPlanConn (strVal);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.intPlanConn);
     }
+
+    return {};
 }
 
 CreateSectionsCommand::CreateSectionsCommand () :
@@ -7549,7 +7562,11 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
 
             const GS::ObjectState* details = data.Get ("details");
             if (details != nullptr) {
-                ApplySectionElevationSettableDetails (*details, element.cutPlane, nullptr);
+                const GS::Optional<GS::UniString> detailsError = ApplySectionElevationSettableDetails (*details, element.cutPlane, nullptr);
+                if (detailsError.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
+                    continue;
+                }
             }
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
@@ -7605,7 +7622,7 @@ GS::Optional<GS::UniString> CreateElevationsCommand::GetRawResponseSchema () con
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -7698,7 +7715,11 @@ GS::ObjectState CreateElevationsCommand::Execute (const GS::ObjectState& paramet
 
             const GS::ObjectState* details = data.Get ("details");
             if (details != nullptr) {
-                ApplySectionElevationSettableDetails (*details, element.elevation, nullptr);
+                const GS::Optional<GS::UniString> detailsError = ApplySectionElevationSettableDetails (*details, element.elevation, nullptr);
+                if (detailsError.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
+                    continue;
+                }
             }
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
@@ -7871,10 +7892,12 @@ GS::ObjectState SetSectionsAndElevationsDetailsCommand::Execute (const GS::Objec
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            if (typeID == API_CutPlaneID) {
-                ApplySectionElevationSettableDetails (*details, elem.cutPlane, &mask);
-            } else {
-                ApplySectionElevationSettableDetails (*details, elem.elevation, &mask);
+            const GS::Optional<GS::UniString> detailsError = (typeID == API_CutPlaneID)
+                ? ApplySectionElevationSettableDetails (*details, elem.cutPlane, &mask)
+                : ApplySectionElevationSettableDetails (*details, elem.elevation, &mask);
+            if (detailsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, detailsError.Get ()));
+                continue;
             }
 
             err = ACAPI_Element_Change (&elem, &mask, nullptr, 0, true);

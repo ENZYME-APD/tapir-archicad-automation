@@ -6,8 +6,9 @@ Live test for:
 - GetSectionsAndElevationsDetails / SetSectionsAndElevationsDetails (exhaustive Section/Elevation
   parameter access) + the optional 'details' field on CreateSections/CreateElevations
 """
+import os
 import sys
-sys.path.insert(0, r'D:\ONEDRIVE\Documents\CODE PLUGINS\tapir-section-elevation-fix\archicad-addon\Examples')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import aclib
 
 def run(cmd, params=None):

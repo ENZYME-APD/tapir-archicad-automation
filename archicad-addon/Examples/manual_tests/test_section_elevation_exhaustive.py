@@ -7,8 +7,9 @@ For each of the ~65 settable fields: set a non-default value, read it back, and 
 matches exactly. Run once through CreateSections(details=...) and once through
 SetSectionsAndElevationsDetails on an existing element, so both write paths are covered.
 """
+import os
 import sys
-sys.path.insert(0, r'D:\ONEDRIVE\Documents\CODE PLUGINS\tapir-section-elevation-fix\archicad-addon\Examples')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import aclib
 
 def run(cmd, params=None):
