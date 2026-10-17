@@ -2724,7 +2724,7 @@ GS::ObjectState DeselectAllCommand::Execute (const GS::ObjectState& /*parameters
 
 // The marquee of the current window is read and written through API_SelectionInfo:
 // typeID tells the marquee shape (API_MarqueeHorBox, API_MarqueeRotBox, API_MarqueePoly),
-// marquee.box/boxRotAngle hold a rectangle, marquee.coords/polygon the polygon in the
+// marquee.box/boxRotAngle hold a rectangle, marquee.coords/nCoords the polygon in the
 // usual 1-based form with the closing vertex repeated, and multiStory the "thick" marquee.
 
 static bool IsMarqueeSelectionType (API_SelTypeID typeID)
@@ -2749,8 +2749,8 @@ static void AddMarqueePolygonFromCoords (const API_Region& marquee, GS::ObjectSt
 
     const GSSize handleSize = BMhGetSize (reinterpret_cast<GSHandle> (marquee.coords)) / sizeof (API_Coord);
     GSIndex last = handleSize - 1;
-    if (marquee.polygon.nCoords > 0 && marquee.polygon.nCoords < last) {
-        last = marquee.polygon.nCoords;
+    if (marquee.nCoords > 0 && marquee.nCoords < last) {
+        last = marquee.nCoords;
     }
     if (last < 1) {
         return;
@@ -2953,9 +2953,7 @@ GS::ObjectState SetMarqueeCommand::Execute (const GS::ObjectState& parameters, G
 
         const Int32 nCoords = (Int32) nUnique + 1; // + closing duplicate vertex
         selectionInfo.typeID = API_MarqueePoly;
-        selectionInfo.marquee.polygon.nCoords = nCoords;
-        selectionInfo.marquee.polygon.nSubPolys = 1;
-        selectionInfo.marquee.polygon.nArcs = 0;
+        selectionInfo.marquee.nCoords = nCoords;
         selectionInfo.marquee.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
         if (selectionInfo.marquee.coords == nullptr) {
             return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the marquee polygon.");
