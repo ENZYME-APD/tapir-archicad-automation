@@ -202,17 +202,20 @@ GS::Optional<GS::UniString> PhotoRenderCommand::GetInputParametersSchema () cons
             "width": {
                 "type": "integer",
                 "description": "Optional. The width of the image in pixels (the Size field of the PhotoRendering Settings palette). Omitted, the width of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.",
-                "minimum": 1
+                "minimum": 1,
+                "maximum": 32767
             },
             "height": {
                 "type": "integer",
                 "description": "Optional. The height of the image in pixels (the Size field of the PhotoRendering Settings palette). Omitted, the height of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.",
-                "minimum": 1
+                "minimum": 1,
+                "maximum": 32767
             },
             "resolution": {
                 "type": "integer",
                 "description": "Optional. The resolution of the image in dpi (the Resolution field of the PhotoRendering Settings palette). Omitted, the resolution of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.",
-                "minimum": 1
+                "minimum": 1,
+                "maximum": 32767
             }
         },
         "additionalProperties": false,
@@ -308,11 +311,16 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
     // Restored whether or not the render succeeded.
     const GSErrCode restoreErr = changeImageSettings ? ChangeImageSettings (originalImageSettings) : NoError;
 
+    const GS::UniString notRestoredMessage = "the image settings of the rendering scene could not be restored: the scene keeps the given size and resolution.";
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to render the 3D model: no project is open, the 3D model could not be generated (open the 3D window first), or the file cannot be written.");
+        GS::UniString message = "Failed to render the 3D model: no project is open, the 3D model could not be generated (open the 3D window first), or the file cannot be written.";
+        if (restoreErr != NoError) {
+            message += " Also " + notRestoredMessage;
+        }
+        return CreateFailedExecutionResult (err, message);
     }
     if (restoreErr != NoError) {
-        return CreateFailedExecutionResult (restoreErr, "The image was rendered and written, but the image settings of the rendering scene could not be restored: the scene keeps the given size and resolution.");
+        return CreateFailedExecutionResult (restoreErr, "The image was rendered and written, but " + notRestoredMessage);
     }
     return CreateSuccessfulExecutionResult ();
 }
