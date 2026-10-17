@@ -189,9 +189,12 @@ inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
 }
 
-inline GSErrCode ACAPI_View_Zoom ()
+// APIDo_ZoomID: par1 is the zoom box in model coordinates, par2 the zoom rectangle in
+// pixels, par3 the transformation; all nullptr means fit in window. Same parameters and
+// defaults as ACAPI_View_Zoom from AC27 on.
+inline GSErrCode ACAPI_View_Zoom (API_Box* zoomBox = nullptr, API_Rect* zoomRect = nullptr, API_Tranmat* tranmat = nullptr)
 {
-    return ACAPI_Automate (APIDo_ZoomID);
+    return ACAPI_Automate (APIDo_ZoomID, (void*) zoomBox, (void*) zoomRect, (void*) tranmat);
 }
 
 inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)

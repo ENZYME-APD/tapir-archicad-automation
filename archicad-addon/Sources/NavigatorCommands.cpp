@@ -923,6 +923,73 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+ZoomToBoxCommand::ZoomToBoxCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ZoomToBoxCommand::GetName () const
+{
+    return "ZoomToBox";
+}
+
+GS::Optional<GS::UniString> ZoomToBoxCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zoom": {
+                "$ref": "#/Zoom",
+                "description": "The box in model coordinates of the current 2D window (floor plan, section/elevation, worksheet, layout etc.) to zoom to. Same shape as the zoom of GetView2DTransformations. The window keeps its aspect ratio, so the shown area may be larger than the box."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["zoom"]
+    })";
+}
+
+GS::Optional<GS::UniString> ZoomToBoxCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ZoomToBoxCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState zoom;
+    if (!parameters.Get ("zoom", zoom)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "zoom is missing.");
+    }
+
+    API_Box zoomBox = {};
+    if (!zoom.Get ("xMin", zoomBox.xMin) || !zoom.Get ("yMin", zoomBox.yMin) ||
+        !zoom.Get ("xMax", zoomBox.xMax) || !zoom.Get ("yMax", zoomBox.yMax)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "zoom must have xMin, yMin, xMax and yMax.");
+    }
+    if (!(zoomBox.xMin < zoomBox.xMax) || !(zoomBox.yMin < zoomBox.yMax)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "zoom must have xMin < xMax and yMin < yMax.");
+    }
+
+    // APIDo_ZoomID works on the front window, so it is checked that it is a 2D one:
+    // the box is meaningless in the 3D window.
+    API_DatabaseInfo currentDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&currentDatabase);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current database. There might be no project open.");
+    }
+    if (currentDatabase.typeID == APIWind_3DModelID) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window is the 3D window; ZoomToBox works in 2D windows only.");
+    }
+
+    err = ACAPI_View_Zoom (&zoomBox);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to zoom to the box.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CloneProjectMapItemToViewMapCommand::CloneProjectMapItemToViewMapCommand () :
     CommandBase (CommonSchema::NotUsed)
 {}
