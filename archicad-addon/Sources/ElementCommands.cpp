@@ -2824,8 +2824,10 @@ GS::ObjectState GetMarqueeCommand::Execute (const GS::ObjectState& /*parameters*
         return CreateErrorResponse (err, "Failed to retrieve the marquee.");
     }
 
+    // APIERR_NOSEL only means that no element is selected: a marquee drawn over empty space
+    // returns it too, with typeID still holding the marquee type. So typeID alone decides.
     GS::ObjectState response;
-    if (err == APIERR_NOSEL || !IsMarqueeSelectionType (selectionInfo.typeID)) {
+    if (!IsMarqueeSelectionType (selectionInfo.typeID)) {
         BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
         response.Add ("type", GS::UniString ("none"));
         return response;
