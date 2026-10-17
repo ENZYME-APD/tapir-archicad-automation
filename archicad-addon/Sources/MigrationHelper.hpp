@@ -199,6 +199,12 @@ inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
 }
 
+// APIDo_ZoomToSelectedID takes no parameters (APIdefs_Automate.h: "par1: --- par2: ---").
+inline GSErrCode ACAPI_View_ZoomToSelected ()
+{
+    return ACAPI_Automate (APIDo_ZoomToSelectedID);
+}
+
 inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniString, 3>>* autotexts, API_AutotextType autotextType)
 {
     return ACAPI_Goodies (APIAny_GetAutoTextsID, autotexts, (void*) (GS::IntPtr) autotextType);
