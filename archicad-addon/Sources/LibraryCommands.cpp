@@ -504,6 +504,29 @@ static GS::Optional<GS::ObjectState> BuildParameterDefinitions (const GS::Object
     return {};
 }
 
+// The script sections of a library part: the input field of each and its section type.
+// The master script is the 1D script section, the properties script the PR script section.
+using LibPartSectionType = decltype (API_LibPartSection::sectType);
+
+struct ScriptSectionField {
+    const char*        fieldName;
+    LibPartSectionType sectType;
+};
+
+static const ScriptSectionField scriptSectionFields[] = {
+    { "masterScript",     API_Sect1DScript },
+    { "script2D",         API_Sect2DScript },
+    { "script3D",         API_Sect3DScript },
+    { "parameterScript",  API_SectVLScript },
+    { "uiScript",         API_SectUIScript },
+    { "propertiesScript", API_SectPRScript }
+};
+
+struct ScriptSection {
+    LibPartSectionType sectType;
+    GS::UniString      script;
+};
+
 // Creates one library part in the embedded library; on success fills result with its
 // identifiers, otherwise returns the error.
 static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& libraryPartData,
@@ -520,7 +543,10 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     libPart.typeID = API_ZombieLibID;
     libPart.isTemplate = false;
     libPart.isPlaceable = true;
+#ifndef ServerMainVers_2800
+    // Archicad 28 removed the platform signature from API_LibPart.
     libPart.platformSign = GS::Act_Platform_Sign;
+#endif
     CopyToUCharArray (name, libPart.docu_UName);
 
     GS::UniString typeStr;
@@ -555,23 +581,11 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     GetNumberField (libraryPartData, "a", a);
     GetNumberField (libraryPartData, "b", b);
 
-    using SectionType = decltype (API_LibPartSection::sectType);
-    static const struct {
-        const char* fieldName;
-        SectionType sectType;
-    } scriptSections[] = {
-        { "masterScript",     API_SectMasterScript },
-        { "script2D",         API_Sect2DScript },
-        { "script3D",         API_Sect3DScript },
-        { "parameterScript",  API_SectVLScript },
-        { "uiScript",         API_SectUIScript },
-        { "propertiesScript", API_SectPropScript }
-    };
-    GS::Array<GS::Pair<SectionType, GS::UniString>> scripts;
-    for (const auto& scriptSection : scriptSections) {
+    GS::Array<ScriptSection> scripts;
+    for (const ScriptSectionField& scriptSectionField : scriptSectionFields) {
         GS::UniString script;
-        if (libraryPartData.Get (scriptSection.fieldName, script) && !script.IsEmpty ()) {
-            scripts.Push (GS::Pair<SectionType, GS::UniString> (scriptSection.sectType, script));
+        if (libraryPartData.Get (scriptSectionField.fieldName, script) && !script.IsEmpty ()) {
+            scripts.Push (ScriptSection { scriptSectionField.sectType, script });
         }
     }
 
@@ -610,10 +624,10 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     }
 
     GS::UniString failedStep;
-    for (const auto& script : scripts) {
+    for (const ScriptSection& script : scripts) {
         API_LibPartSection section = {};
-        section.sectType = script.first;
-        GS::UniString scriptText = script.second;
+        section.sectType = script.sectType;
+        GS::UniString scriptText = script.script;
         err = ACAPI_LibraryPart_AddSection (&section, nullptr, &scriptText);
         if (err != NoError) {
             failedStep = "Failed to write a script section of the library part.";
