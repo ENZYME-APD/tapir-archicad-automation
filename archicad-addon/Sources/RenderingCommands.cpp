@@ -300,10 +300,12 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
     }
 
     // The API renders the 3D model as the 3D window shows it, so the view to render
-    // has to be set up in the 3D window first.
+    // has to be set up in the 3D window first. API_PhotoRenderPars takes the output
+    // file by pointer, like API_FileSavePars of SaveWindowAsImage.
+    IO::Location imageFileLocation (imageFilePath);
     API_PhotoRenderPars photoRenderPars = {};
-    photoRenderPars.fileLoc = IO::Location (imageFilePath);
     photoRenderPars.fileTypeID = fileTypeID;
+    photoRenderPars.file = &imageFileLocation;
 
     // A print parameter would print the image too; nullptr writes only the file.
     const GSErrCode err = ACAPI_Rendering_PhotoRender (&photoRenderPars, nullptr);
