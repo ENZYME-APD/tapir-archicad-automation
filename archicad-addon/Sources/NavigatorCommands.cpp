@@ -1347,6 +1347,130 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetRawResponseSchema () 
     })";
 }
 
+template <USize N>
+static void CopyToFixedLengthString (GS::uchar_t (&target)[N], const GS::UniString& source)
+{
+    GS::ucsncpy (target, source.ToUStr (), N);
+    target[N - 1] = 0;
+}
+
+static void SetSectionSegmentNameAndId (API_SectionSegment& segment, const GS::UniString* newName, const GS::UniString* newId)
+{
+    if (newName != nullptr) {
+        CopyToFixedLengthString (segment.cutPlName, *newName);
+    }
+    if (newId != nullptr) {
+        CopyToFixedLengthString (segment.cutPlIdStr, *newId);
+    }
+}
+
+// A Project Map interior elevation item is one segment of the element: the
+// viewpoint's database links to the element and names the segment by its index in
+// the memo (intElevSegments), and the segment carries its own name and ID there.
+// The element-level segment only holds the defaults the segments were created
+// with, so it is left alone.
+static GSErrCode RenameInteriorElevationSegment (API_Element& element, Int32 segmentMemoIndex, const GS::UniString* newName, const GS::UniString* newId, GS::UniString& failureMessage)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_All);
+    if (err != NoError) {
+        failureMessage = "Failed to read the segments of the interior elevation behind the navigator item.";
+        return err;
+    }
+
+    const GSSize nSegments = memo.intElevSegments != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment)
+        : 0;
+    if (segmentMemoIndex < 0 || segmentMemoIndex >= nSegments) {
+        failureMessage = "The interior elevation segment behind the navigator item was not found.";
+        return APIERR_NOTSUPPORTED;
+    }
+
+    SetSectionSegmentNameAndId (memo.intElevSegments[segmentMemoIndex], newName, newId);
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_All, true);
+    if (err != NoError) {
+        failureMessage = "Failed to rename the interior elevation segment behind the navigator item.";
+    }
+    return err;
+}
+
+// Sections, elevations, interior elevations, details and worksheets are elements
+// first: their Project Map viewpoint only mirrors the name and ID stored on the
+// element. ACAPI_Navigator_ChangeNavigatorItem is a View Map call - it accepts such
+// an item and returns NoError without changing anything (#466, #755) - so the
+// element behind the viewpoint is what has to be changed. The element is found
+// through the viewpoint's database, which links back to it.
+static GSErrCode RenameViewpointElement (const API_DatabaseInfo& dbInfo, const GS::UniString* newName, const GS::UniString* newId, GS::UniString& failureMessage)
+{
+    API_Element element = {};
+    element.header.guid = dbInfo.linkedElement;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        failureMessage = "Failed to read the element behind the navigator item.";
+        return err;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    switch (GetElemTypeId (element.header)) {
+        case API_CutPlaneID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.cutPlane.segment.cutPlName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_CutPlaneType, segment.cutPlName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.cutPlane.segment.cutPlIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_CutPlaneType, segment.cutPlIdStr);
+            }
+            break;
+        case API_ElevationID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.elevation.segment.cutPlName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_ElevationType, segment.cutPlName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.elevation.segment.cutPlIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_ElevationType, segment.cutPlIdStr);
+            }
+            break;
+        case API_InteriorElevationID:
+            return RenameInteriorElevationSegment (element, dbInfo.linkedSegmentMemoIndex, newName, newId, failureMessage);
+        case API_DetailID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.detail.detailName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.detail.detailIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, detailIdStr);
+            }
+            break;
+        case API_WorksheetID:
+            if (newName != nullptr) {
+                CopyToFixedLengthString (element.worksheet.detailName, *newName);
+                ACAPI_ELEMENT_MASK_SET (mask, API_WorksheetType, detailName);
+            }
+            if (newId != nullptr) {
+                CopyToFixedLengthString (element.worksheet.detailIdStr, *newId);
+                ACAPI_ELEMENT_MASK_SET (mask, API_WorksheetType, detailIdStr);
+            }
+            break;
+        default:
+            failureMessage = "Renaming this kind of Project Map item is not supported.";
+            return APIERR_NOTSUPPORTED;
+    }
+
+    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        failureMessage = "Failed to rename the element behind the navigator item.";
+    }
+    return err;
+}
+
 GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     const GS::ObjectState* navIdOS = parameters.Get ("navigatorItemId");
@@ -1371,6 +1495,21 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         return CreateFailedExecutionResult (APIERR_BADPARS, "newName cannot be combined with customName false.");
     }
 
+    GS::UniString newId;
+    const bool hasNewId = parameters.Get ("newId", newId);
+
+    // Views and layouts carry their own name; Project Map viewpoints show the name
+    // of the element (or story) they stand for. A view always records the item it
+    // was made from in sourceGuid, a Project Map item never does, which tells the
+    // two apart even if the item's mapId was not filled in.
+    const bool isProjectMapItem = navItem.mapId == API_ProjectMap ||
+                                  (navItem.mapId == API_UndefinedMap && navItem.sourceGuid == APINULLGuid);
+    API_DatabaseInfo dbInfo = navItem.db;
+    const bool renameLinkedElement = (hasNewName || hasNewId) &&
+                                     isProjectMapItem &&
+                                     ACAPI_Window_GetDatabaseInfo (&dbInfo) == NoError &&
+                                     dbInfo.linkedElement != APINULLGuid;
+
     if (hasNewName) {
         GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
         navItem.uName[GS::ArraySize (navItem.uName) - 1] = 0;
@@ -1379,33 +1518,70 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         navItem.customName = false;
     }
 
-    err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
-    if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
-    }
-
-    // ACAPI_Navigator_ChangeNavigatorItem returns NoError even when it leaves the name
-    // untouched (e.g. Project Map schedule items, which are named by their scheme),
-    // so read the item back and report a name that was not applied as an error.
-    if (hasNewName || resetCustomName) {
+    // Archicad returns NoError even when it leaves the name untouched (e.g. a story,
+    // or Project Map schedule items, which are named by their scheme), so read the
+    // item back and report a name that was not applied as an error. navItem.uName
+    // holds the name truncated the way the item stores it, so a long name is not
+    // reported as a failed rename.
+    GS::UniString failureMessage;
+    const auto readBackChangedItem = [&] () -> GSErrCode {
+        if (!hasNewName && !resetCustomName) {
+            return NoError;
+        }
         API_NavigatorItem changedItem = {};
-        err = ACAPI_Navigator_GetNavigatorItem (&guid, &changedItem);
-        if (err != NoError) {
-            return CreateFailedExecutionResult (err, "Failed to read back the navigator item after the change.");
+        const GSErrCode readErr = ACAPI_Navigator_GetNavigatorItem (&guid, &changedItem);
+        if (readErr != NoError) {
+            failureMessage = "Failed to read back the navigator item after the change.";
+            return readErr;
         }
         if (hasNewName && GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
-            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
-                "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).");
+            failureMessage = "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).";
+            return APIERR_REFUSEDPAR;
         }
         if (resetCustomName && changedItem.customName) {
-            return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
-                "Archicad did not drop the custom name of this navigator item.");
+            failureMessage = "Archicad did not drop the custom name of this navigator item.";
+            return APIERR_REFUSEDPAR;
+        }
+        return NoError;
+    };
+
+    if (renameLinkedElement) {
+        // The read-back runs inside the undoable command: when the navigator item
+        // does not show the new name, the error rolls the element change back, so a
+        // failed rename never leaves the element renamed.
+        const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
+            err = RenameViewpointElement (dbInfo,
+                                          hasNewName ? &newName : nullptr,
+                                          hasNewId ? &newId : nullptr,
+                                          failureMessage);
+            if (err != NoError) {
+                return err;
+            }
+            err = readBackChangedItem ();
+            return err;
+        });
+        if (err == NoError && undoErr != NoError) {
+            // The undo scope did not open (nested undoable command, teamwork state): the lambda never ran.
+            err = undoErr;
+            failureMessage = "Failed to rename the element behind the navigator item.";
+        }
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, failureMessage);
+        }
+    } else {
+        err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+        }
+        err = readBackChangedItem ();
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, failureMessage);
         }
     }
 
-    // For layouts: set custom layout number (ID) via ChangeLayoutSets
-    GS::UniString newId;
-    if (parameters.Get ("newId", newId)) {
+    // For layouts: set custom layout number (ID) via ChangeLayoutSets. The ID of a
+    // Project Map viewpoint was already set on its element above.
+    if (hasNewId && !renameLinkedElement) {
         API_LayoutInfo layoutInfo = {};
         BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
         if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
