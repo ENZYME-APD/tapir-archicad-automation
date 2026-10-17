@@ -712,6 +712,179 @@ static bool MemoCarriesGeometry (const API_Elem_Head& header)
     }
 }
 
+// The fields of the target element that `keepFields` can copy back after the Favorite has been
+// applied (#903). A Favorite captured from a placed element carries that element's size, sill
+// height, reference line, top link and Element ID, and ACAPI_Element_ChangeParameters applies
+// them all - so swapping only the library part or the wall type of an element whose size,
+// position and ID are already right took two or three extra calls per element. The listed
+// fields are read off the target before the Favorite is applied and written back afterwards,
+// with the same calls ModifyWindows/ModifyDoors/ModifyWalls/SetDetailsOfElements use for them.
+// A field the target's type does not have is ignored.
+struct KeptFields
+{
+    bool id = false;
+    bool layerIndex = false;
+    bool width = false;
+    bool height = false;
+    bool sillHeight = false;
+    bool referenceLineLocation = false;
+    bool topOffset = false;
+    bool relativeTopStory = false;
+
+    bool Any () const
+    {
+        return id || layerIndex || width || height || sillHeight || referenceLineLocation || topOffset || relativeTopStory;
+    }
+};
+
+static GS::Optional<GS::UniString> ParseKeptFields (const GS::Array<GS::UniString>& names, KeptFields& kept)
+{
+    for (const GS::UniString& name : names) {
+        if (name == "id") {
+            kept.id = true;
+        } else if (name == "layerIndex") {
+            kept.layerIndex = true;
+        } else if (name == "width") {
+            kept.width = true;
+        } else if (name == "height") {
+            kept.height = true;
+        } else if (name == "sillHeight") {
+            kept.sillHeight = true;
+        } else if (name == "referenceLineLocation") {
+            kept.referenceLineLocation = true;
+        } else if (name == "topOffset") {
+            kept.topOffset = true;
+        } else if (name == "relativeTopStory") {
+            kept.relativeTopStory = true;
+        } else {
+            return GS::UniString::Printf ("Unknown keepFields value '%T'.", name.ToPrintf ());
+        }
+    }
+    return {};
+}
+
+// Writes the kept fields back from `elementBefore`, the target as ACAPI_Element_Get returned it
+// before the Favorite was applied, and from `memoBefore`, its memo read with
+// APIMemoMask_ElemInfoString - the Element ID lives there (see GetDetailsOfElements), not in the
+// API_Element struct. The element is read again after the apply and only the kept fields are
+// copied into it and masked, the way ModifyWindows/ModifyWalls change them, so nothing else of
+// the now stale `elementBefore` is written. The ID is restored last, with the same memo mask it
+// was read with, so the Favorite's own properties cannot overwrite it afterwards.
+static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_ElementMemo& memoBefore, const KeptFields& kept)
+{
+    API_Element element = {};
+    element.header.guid = elementBefore.header.guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    bool hasMaskedField = false;
+
+    if (kept.layerIndex) {
+        element.header.layer = elementBefore.header.layer;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+        hasMaskedField = true;
+    }
+
+    switch (GetElemTypeId (element.header)) {
+        case API_WindowID:
+        case API_DoorID:
+            if (kept.width) {
+                element.window.openingBase.width = elementBefore.window.openingBase.width;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
+                hasMaskedField = true;
+            }
+            if (kept.height) {
+                element.window.openingBase.height = elementBefore.window.openingBase.height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
+                hasMaskedField = true;
+            }
+            if (kept.sillHeight) {
+                element.window.lower = elementBefore.window.lower;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, lower);
+                hasMaskedField = true;
+            }
+            break;
+        case API_SkylightID:
+            if (kept.width) {
+                element.skylight.openingBase.width = elementBefore.skylight.openingBase.width;
+                ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
+                hasMaskedField = true;
+            }
+            if (kept.height) {
+                element.skylight.openingBase.height = elementBefore.skylight.openingBase.height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
+                hasMaskedField = true;
+            }
+            break;
+        case API_WallID:
+            if (kept.height) {
+                element.wall.height = elementBefore.wall.height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
+                hasMaskedField = true;
+            }
+            if (kept.referenceLineLocation) {
+                element.wall.referenceLineLocation = elementBefore.wall.referenceLineLocation;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WallType, referenceLineLocation);
+                hasMaskedField = true;
+            }
+            if (kept.topOffset) {
+                element.wall.topOffset = elementBefore.wall.topOffset;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WallType, topOffset);
+                hasMaskedField = true;
+            }
+            if (kept.relativeTopStory) {
+                element.wall.relativeTopStory = elementBefore.wall.relativeTopStory;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WallType, relativeTopStory);
+                hasMaskedField = true;
+            }
+            break;
+        case API_ColumnID:
+            if (kept.height) {
+                element.column.height = elementBefore.column.height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, height);
+                hasMaskedField = true;
+            }
+            if (kept.topOffset) {
+                element.column.topOffset = elementBefore.column.topOffset;
+                ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, topOffset);
+                hasMaskedField = true;
+            }
+            if (kept.relativeTopStory) {
+                element.column.relativeTopStory = elementBefore.column.relativeTopStory;
+                ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, relativeTopStory);
+                hasMaskedField = true;
+            }
+            break;
+        default:
+            break;
+    }
+
+    if (hasMaskedField) {
+        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+        if (err != NoError) {
+            return err;
+        }
+    }
+
+    if (kept.id) {
+        // An element whose ID is empty may come back without the string at all; the memo must
+        // carry one for the write, and ACAPI_DisposeElemMemoHdls frees it with the rest.
+        if (memoBefore.elemInfoString == nullptr) {
+            memoBefore.elemInfoString = new GS::UniString ();
+        }
+        err = ACAPI_Element_ChangeMemo (element.header.guid, APIMemoMask_ElemInfoString, &memoBefore);
+        if (err != NoError) {
+            return err;
+        }
+    }
+
+    return NoError;
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -762,6 +935,23 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             "applyProperties": {
                 "type": "boolean",
                 "description": "Whether to apply the Favorite's property values. Default is true."
+            },
+            "keepFields": {
+                "type": "array",
+                "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "id",
+                        "layerIndex",
+                        "width",
+                        "height",
+                        "sillHeight",
+                        "referenceLineLocation",
+                        "topOffset",
+                        "relativeTopStory"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -801,6 +991,15 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
     bool applyProperties = true;
     parameters.Get ("applyProperties", applyProperties);
 
+    KeptFields keptFields;
+    GS::Array<GS::UniString> keepFieldNames;
+    if (parameters.Get ("keepFields", keepFieldNames)) {
+        const auto parseError = ParseKeptFields (keepFieldNames, keptFields);
+        if (parseError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, parseError.Get ());
+        }
+    }
+
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
@@ -819,6 +1018,17 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to find element"));
                 continue;
+            }
+
+            // The Element ID is read off the memo before anything is applied - see RestoreKeptFields.
+            API_ElementMemo targetIdMemo = {};
+            const GS::OnExit disposeTargetIdMemo ([&targetIdMemo] () { ACAPI_DisposeElemMemoHdls (&targetIdMemo); });
+            if (keptFields.id) {
+                err = ACAPI_Element_GetMemo (targetGuid, &targetIdMemo, APIMemoMask_ElemInfoString);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to read the ID of the element"));
+                    continue;
+                }
             }
 
             API_Favorite favorite;
@@ -886,6 +1096,14 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
 
             if (applyProperties) {
                 ACAPI_Element_SetProperties (targetGuid, *favorite.properties);
+            }
+
+            if (keptFields.Any ()) {
+                err = RestoreKeptFields (targetElement, targetIdMemo, keptFields);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "The favorite was applied, but a field listed in keepFields could not be restored"));
+                    continue;
+                }
             }
 
             executionResults (CreateSuccessfulExecutionResult ());
