@@ -1880,15 +1880,15 @@ GS::ObjectState GetCurrentViewImageCommand::Execute (const GS::ObjectState& para
 #ifdef ServerMainVers_3000
     // ACAPI_View_GetCurrentImage is new in the Archicad 30 API: it gets the image of the
     // 3D window or of the PhotoRendering window, whichever API_ImageSource selects.
-    API_ImageSource imageSource = API_ImageSource::Window3D;
+    API_ImageSource imageSource = API_ImageSource::From3DWindow;
     GS::UniString windowName = "3D";
     GS::UniString sourceStr;
     if (parameters.Get ("source", sourceStr)) {
         if (sourceStr == "3DWindow") {
-            imageSource = API_ImageSource::Window3D;
+            imageSource = API_ImageSource::From3DWindow;
             windowName = "3D";
         } else if (sourceStr == "RenderingWindow") {
-            imageSource = API_ImageSource::RenderingWindow;
+            imageSource = API_ImageSource::FromRenderingWindow;
             windowName = "PhotoRendering";
         } else {
             return CreateErrorResponse (APIERR_BADPARS, "source must be 3DWindow or RenderingWindow.");
