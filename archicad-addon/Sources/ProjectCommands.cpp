@@ -1972,19 +1972,20 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
 static bool GetSunDateTimeFromObjectState (const GS::ObjectState& dateTime, API_PlaceInfo& placeInfo)
 {
     bool hasAnyField = false;
-    const auto getShortField = [&] (const char* fieldName, short& target) {
+    // The date and time fields of API_PlaceInfo are unsigned short.
+    const auto getUShortField = [&] (const char* fieldName, unsigned short& target) {
         Int32 value = 0;
         if (dateTime.Get (fieldName, value)) {
-            target = static_cast<short> (value);
+            target = static_cast<unsigned short> (value);
             hasAnyField = true;
         }
     };
-    getShortField ("year", placeInfo.year);
-    getShortField ("month", placeInfo.month);
-    getShortField ("day", placeInfo.day);
-    getShortField ("hour", placeInfo.hour);
-    getShortField ("minute", placeInfo.minute);
-    getShortField ("second", placeInfo.second);
+    getUShortField ("year", placeInfo.year);
+    getUShortField ("month", placeInfo.month);
+    getUShortField ("day", placeInfo.day);
+    getUShortField ("hour", placeInfo.hour);
+    getUShortField ("minute", placeInfo.minute);
+    getUShortField ("second", placeInfo.second);
     hasAnyField |= dateTime.Get ("daylightSaving", placeInfo.sumTime);
     return hasAnyField;
 }
