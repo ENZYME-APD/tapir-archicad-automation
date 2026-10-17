@@ -26,3 +26,23 @@ layout_databases = aclib.RunTapirCommand('GetDatabaseIdFromNavigatorItemId', {'n
 
 current_revision_changes_of_layouts = aclib.RunTapirCommand('GetCurrentRevisionChangesOfLayouts',
                                                             {'layoutDatabaseIds': layout_databases['databases']})
+
+# Modify the description of the first revision issue that is not issued yet, then restore it.
+# Only the given fields ('id', 'description', 'customSchemeData') are changed. A custom scheme
+# field is addressed by its key (see 'customScheme' in the GetRevisionIssues response) or by
+# its name: {'customSchemeName': 'Checked by', 'customSchemeValue': 'TP'}.
+not_issued_revision_issues = [issue for issue in revision_issues['revisionIssues'] if not issue['isIssued']]
+if not_issued_revision_issues:
+    revision_issue = not_issued_revision_issues[0]
+    aclib.RunTapirCommand('ModifyRevisionIssues', {
+        'revisionIssues': [{
+            'revisionIssueId': revision_issue['revisionIssueId'],
+            'description': revision_issue['description'] + ' (modified by Tapir)'
+        }]
+    })
+    aclib.RunTapirCommand('ModifyRevisionIssues', {
+        'revisionIssues': [{
+            'revisionIssueId': revision_issue['revisionIssueId'],
+            'description': revision_issue['description']
+        }]
+    })
