@@ -2089,7 +2089,7 @@ GS::ObjectState GetSunSettingsCommand::Execute (const GS::ObjectState& /*paramet
     // Report the sun position of the date, time and location just read rather than
     // the angles stored with them, so the response is consistent with itself.
     API_PlaceInfo calculatedPlaceInfo = placeInfo;
-    if (ACAPI_GeoLocation_CalcSunOnPlace (&calculatedPlaceInfo) == NoError) {
+    if (TAPIR_GeoLocation_CalcSunOnPlace (calculatedPlaceInfo) == NoError) {
         placeInfo.sunAngXY = calculatedPlaceInfo.sunAngXY;
         placeInfo.sunAngZ = calculatedPlaceInfo.sunAngZ;
     }
@@ -2170,7 +2170,7 @@ GS::ObjectState CalculateSunPositionCommand::Execute (const GS::ObjectState& par
         location.Get ("north", placeInfo.north);
     }
 
-    err = ACAPI_GeoLocation_CalcSunOnPlace (&placeInfo);
+    err = TAPIR_GeoLocation_CalcSunOnPlace (placeInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to calculate the sun position.");
     }

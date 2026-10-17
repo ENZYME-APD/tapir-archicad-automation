@@ -702,6 +702,19 @@ inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API
 }
 #endif
 
+// AC30 deprecates ACAPI_GeoLocation_CalcSunOnPlace (API_PlaceInfo*) for an overload that
+// takes a reference, and the deprecation warning is an error on Windows (C4996). AC27-29
+// have the pointer form only, and before 27 the macro above maps it onto
+// APIAny_CalcSunOnPlaceID, which takes the pointer too.
+inline GSErrCode TAPIR_GeoLocation_CalcSunOnPlace (API_PlaceInfo& placeInfo)
+{
+#ifdef ServerMainVers_3000
+    return ACAPI_GeoLocation_CalcSunOnPlace (placeInfo);
+#else
+    return ACAPI_GeoLocation_CalcSunOnPlace (&placeInfo);
+#endif
+}
+
 inline void DisposeAttribute (API_Attribute& attr)
 {
     if (attr.header.typeID == API_MaterialID) {
