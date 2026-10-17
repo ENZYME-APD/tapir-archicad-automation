@@ -595,6 +595,205 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+struct RenovationFilter {
+    API_Guid      guid;
+    GS::UniString name;
+};
+
+// Every renovation filter of the project with its name. A filter whose name cannot be
+// read is still listed, with an empty name, so its guid stays usable.
+static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
+{
+    GS::Array<API_Guid> renovationFilterGuids;
+    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& guid : renovationFilterGuids) {
+        GS::UniString name;
+        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
+            name.Clear ();
+        }
+        renovationFilters.Push ({ guid, name });
+    }
+
+    return NoError;
+}
+
+GetRenovationFiltersCommand::GetRenovationFiltersCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetRenovationFiltersCommand::GetName () const
+{
+    return "GetRenovationFilters";
+}
+
+GS::Optional<GS::UniString> GetRenovationFiltersCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "renovationFilters": {
+            "type": "array",
+            "description": "Every renovation filter of the project.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "renovationFilterId": {
+                        "$ref": "#/GuidId",
+                        "description": "Identifier of the renovation filter. The same identifier is the renovationFilterGuid of GetViewSettings and SetViewSettings."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the renovation filter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "renovationFilterId",
+                    "name"
+                ]
+            }
+        },
+        "activeRenovationFilterId": {
+            "$ref": "#/GuidId",
+            "description": "Identifier of the renovation filter of the current window. Absent when the current window has none or it could not be read."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "renovationFilters"
+    ]
+})";
+}
+
+GS::ObjectState GetRenovationFiltersCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<RenovationFilter> renovationFilters;
+    GSErrCode err = GetRenovationFilters (renovationFilters);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the renovation filters of the project.");
+    }
+
+    GS::ObjectState response;
+    const auto& renovationFilterList = response.AddList<GS::ObjectState> ("renovationFilters");
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        renovationFilterList (GS::ObjectState (
+            "renovationFilterId", CreateGuidObjectState (renovationFilter.guid),
+            "name", renovationFilter.name));
+    }
+
+    API_Guid activeRenovationFilterGuid = APINULLGuid;
+    if (ACAPI_Renovation_GetActualRenovationFilter (&activeRenovationFilterGuid) == NoError && activeRenovationFilterGuid != APINULLGuid) {
+        response.Add ("activeRenovationFilterId", CreateGuidObjectState (activeRenovationFilterGuid));
+    }
+
+    return response;
+}
+
+SetActiveRenovationFilterCommand::SetActiveRenovationFilterCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetActiveRenovationFilterCommand::GetName () const
+{
+    return "SetActiveRenovationFilter";
+}
+
+GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "renovationFilterId": {
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter, as listed by GetRenovationFilters. Takes precedence over name when both are given."
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the renovation filter. An exact match wins over a case-insensitive one.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "anyOf": [
+            { "required": ["renovationFilterId"] },
+            { "required": ["name"] }
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<RenovationFilter> renovationFilters;
+    GSErrCode err = GetRenovationFilters (renovationFilters);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the renovation filters of the project.");
+    }
+
+    API_Guid renovationFilterGuid = APINULLGuid;
+    const GS::ObjectState* renovationFilterIdOS = parameters.Get ("renovationFilterId");
+    if (renovationFilterIdOS != nullptr) {
+        renovationFilterGuid = GetGuidFromObjectState (*renovationFilterIdOS);
+        if (renovationFilterGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "renovationFilterId is corrupt or missing.");
+        }
+        bool found = false;
+        for (const RenovationFilter& renovationFilter : renovationFilters) {
+            if (renovationFilter.guid == renovationFilterGuid) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return CreateFailedExecutionResult (APIERR_BADID, "The project has no renovation filter with this renovationFilterId. List them with GetRenovationFilters.");
+        }
+    } else {
+        GS::UniString name;
+        if (!parameters.Get ("name", name)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Either renovationFilterId or name is required.");
+        }
+
+        GS::UniString availableNames;
+        API_Guid caseInsensitiveMatch = APINULLGuid;
+        for (const RenovationFilter& renovationFilter : renovationFilters) {
+            if (renovationFilter.name == name) {
+                renovationFilterGuid = renovationFilter.guid;
+                break;
+            }
+            if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
+                caseInsensitiveMatch = renovationFilter.guid;
+            }
+            if (!availableNames.IsEmpty ()) {
+                availableNames += ", ";
+            }
+            availableNames += "\"" + renovationFilter.name + "\"";
+        }
+        if (renovationFilterGuid == APINULLGuid) {
+            renovationFilterGuid = caseInsensitiveMatch;
+        }
+        if (renovationFilterGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
+        }
+    }
+
+    err = ACAPI_Renovation_SetActualRenovationFilter (&renovationFilterGuid);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the renovation filter of the current window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetView2DTransformationsCommand::GetView2DTransformationsCommand () :
     CommandBase (CommonSchema::Used)
 {}

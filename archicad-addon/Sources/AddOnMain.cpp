@@ -1134,6 +1134,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Sets the view settings of navigator items"
         );
+        err |= RegisterCommand<GetRenovationFiltersCommand> (
+            navigatorCommands, "1.7.2",
+            "Gets the renovation filters of the project, and the one the current window uses (Document > Renovation > Renovation Filter). A renovationFilterId has the same shape as the renovationFilterGuid of GetViewSettings and SetViewSettings, so a filter listed here can be set on saved views too."
+        );
+        err |= RegisterCommand<SetActiveRenovationFilterCommand> (
+            navigatorCommands, "1.7.2",
+            "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings."
+        );
         err |= RegisterCommand<GetView2DTransformationsCommand> (
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
