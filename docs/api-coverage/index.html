@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tapir Archicad API Coverage</title>
+<style>
+:root {
+    /* One reading column; a filter bar over collapsible API groups. */
+    --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --panel: #f6f8fa; --link: #0969da;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #151b23; --link: #4493f8; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #151b23; --link: #4493f8; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-size: 24px; margin: 8px 0; }
+a { color: var(--link); }
+.muted { color: var(--muted); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin: 12px 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.filters label { white-space: nowrap; }
+input[type=search], select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+input[type=search] { min-width: 0; flex: 1 1 240px; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.scroll { overflow-x: auto; }
+details { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; padding: 6px 0; font-weight: 600; }
+summary .muted { font-weight: 400; }
+ul.items { list-style: none; padding: 0 0 8px 0; margin: 0; }
+ul.items li { padding: 2px 0; overflow-wrap: anywhere; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+.tag { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Archicad API coverage</h1>
+<p class="muted">Every function of the Archicad API (Archicad 25–30: C functions with their older names and command ids, and the C++ API) and whether the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses it. Updated within minutes of every pull request, issue and push.</p>
+<div id="summary" class="panel">Loading…</div>
+<div class="panel filters">
+    <input type="search" id="search" placeholder="Search functions, e.g. Category or MEP::Pipe" aria-label="Search">
+    <select id="part" aria-label="Part of the API">
+        <option value="">All parts</option>
+        <option value="c">C functions</option>
+        <option value="old">Archicad 25/26 only</option>
+        <option value="cpp">C++ API</option>
+    </select>
+    <select id="version" aria-label="Archicad version"><option value="">Any version</option></select>
+    <span id="statuses"></span>
+</div>
+<div id="list"></div>
+</main>
+<script>
+const DATA_URL = new URLSearchParams (location.search).get ('data') ||
+    'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';
+const REPO = 'https://github.com/ENZYME-APD/tapir-archicad-automation';
+const STATUSES = [
+    ['done', '✅', 'used on main'], ['merged', '🔀', 'merged, not yet released'], ['in progress', '🚧', 'open pull request'],
+    ['claimed', '🙋', 'claimed by an open issue'], ['open', '⬜', 'open'], ['skipped', '⛔', 'skipped by a maintainer'],
+    ['not applicable', '➖', 'not applicable'],
+];
+const MARK = Object.fromEntries (STATUSES.map (s => [s[0], s[1]]));
+let data = null;
+
+function el (tag, attrs = {}, ...children) {
+    const node = document.createElement (tag);
+    for (const [k, v] of Object.entries (attrs)) {
+        if (k === 'text') node.textContent = v; else node.setAttribute (k, v);
+    }
+    for (const child of children) node.append (child);
+    return node;
+}
+
+function part (item) {
+    if (item.kind.startsWith ('C++')) return 'cpp';
+    if (item.kind === 'C function') return 'c';
+    return 'old';
+}
+
+function claimLink (item) {
+    const params = new URLSearchParams ({ template: 'archicad-api-request.yml', title: 'Expose ' + item.id, functions: item.id });
+    return el ('a', { href: REPO + '/issues/new?' + params, text: 'claim' });
+}
+
+function renderSummary () {
+    const counts = {};
+    for (const item of data.items) counts[item.status] = (counts[item.status] || 0) + 1;
+    const applicable = data.items.length - (counts['not applicable'] || 0) - (counts.skipped || 0);
+    const used = (counts.done || 0) + (counts.merged || 0);
+    const box = document.getElementById ('summary');
+    box.replaceChildren (
+        el ('strong', { text: `${used} of ${applicable} applicable items used (${Math.floor (100 * used / Math.max (applicable, 1))} %)` }),
+        ' · ' + STATUSES.filter (s => counts[s[0]]).map (s => `${s[1]} ${counts[s[0]]} ${s[2]}`).join (' · '),
+        el ('br'),
+        el ('span', { class: 'muted', text: `Updated ${data.generatedAt}. To start on an open item, ` }),
+        el ('a', { href: REPO + '/issues/new?template=archicad-api-request.yml', text: 'file an Archicad API request' }),
+        el ('span', { class: 'muted', text: ' naming it, or use the claim link next to it.' }),
+    );
+}
+
+function render () {
+    const query = document.getElementById ('search').value.trim ().toLowerCase ();
+    const wantedPart = document.getElementById ('part').value;
+    const version = Number (document.getElementById ('version').value) || 0;
+    const wanted = new Set ([...document.querySelectorAll ('#statuses input:checked')].map (i => i.value));
+    const groups = new Map ();
+    for (const item of data.items) {
+        if (!wanted.has (item.status)) continue;
+        if (wantedPart && part (item) !== wantedPart) continue;
+        if (version && !item.versions.includes (version)) continue;
+        if (query && !(item.id.toLowerCase ().includes (query) || item.brief.toLowerCase ().includes (query) ||
+            item.olderNames.some (n => n.toLowerCase ().includes (query)))) continue;
+        if (!groups.has (item.group)) groups.set (item.group, []);
+        groups.get (item.group).push (item);
+    }
+    const list = document.getElementById ('list');
+    if (!groups.size) { list.replaceChildren (el ('p', { class: 'muted', text: 'Nothing matches.' })); return; }
+    const sorted = [...groups.entries ()].sort ((a, b) => b[1].length - a[1].length || a[0].localeCompare (b[0]));
+    list.replaceChildren (...sorted.map (([group, items]) => {
+        const counts = STATUSES.filter (s => items.some (i => i.status === s[0]))
+            .map (s => `${s[1]} ${items.filter (i => i.status === s[0]).length}`).join ('  ');
+        const ul = el ('ul', { class: 'items' }, ...items.map (item => {
+            const li = el ('li', {}, MARK[item.status] + ' ', el ('code', { text: item.id }));
+            if (item.versions.length !== data.versions.length) {
+                const v = item.versions;
+                li.append (' ', el ('span', { class: 'tag', text: 'AC' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '') }));
+            }
+            if (item.brief) li.append (' – ' + item.brief);
+            if (item.olderNames.length) li.append (' ', el ('span', { class: 'tag', text: '(was ' + item.olderNames.join (', ') + ')' }));
+            for (const pr of item.pullRequests) li.append (' ', el ('a', { href: `${REPO}/pull/${pr.number}`, title: pr.title, text: '#' + pr.number }));
+            for (const issue of item.issues) li.append (' ', el ('a', { href: `${REPO}/issues/${issue.number}`, title: issue.title, text: '#' + issue.number }));
+            if (item.reason) li.append (' ', el ('em', { class: 'muted', text: '(' + item.reason + ')' }));
+            if (item.status === 'open') li.append (' · ', claimLink (item));
+            return li;
+        }));
+        const details = el ('details', {}, el ('summary', {}, group + ' ', el ('span', { class: 'muted', text: `${items.length} · ${counts}` })), ul);
+        if (query || sorted.length <= 3) details.open = true;
+        return details;
+    }));
+}
+
+async function main () {
+    const statuses = document.getElementById ('statuses');
+    for (const [value, mark, label] of STATUSES) {
+        const box = el ('input', { type: 'checkbox', value });
+        box.checked = value !== 'not applicable';
+        box.addEventListener ('change', render);
+        statuses.append (el ('label', { title: label }, box, ' ' + mark + ' ' + label), ' ');
+    }
+    for (const url of [DATA_URL, 'api-coverage.json']) {
+        try {
+            const response = await fetch (url, { cache: 'no-cache' });
+            if (response.ok) { data = await response.json (); break; }
+        } catch (error) { /* try the next source */ }
+    }
+    if (!data) {
+        document.getElementById ('summary').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
+        return;
+    }
+    const version = document.getElementById ('version');
+    for (const v of data.versions) version.append (el ('option', { value: v, text: 'Archicad ' + v }));
+    for (const id of ['search', 'part', 'version']) document.getElementById (id).addEventListener ('input', render);
+    renderSummary ();
+    render ();
+}
+main ();
+</script>
+</body>
+</html>

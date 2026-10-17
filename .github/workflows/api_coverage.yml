@@ -1,0 +1,159 @@
+# Keeps the Archicad API coverage checklist live.
+#
+# tools/generate_api_coverage.py lists every item of the Archicad API in the
+# AC25-AC30 DevKits (C functions with their older names and AC25/26 command
+# ids, and the C++ API) and marks what archicad-addon/Sources uses, what an
+# open pull request adds and what an open issue claims. This workflow reruns
+# it within minutes of any change to those:
+#   - a push to main, a published release,
+#   - a pull request opened, updated, closed or reopened,
+#   - an issue opened, edited, closed, reopened or deleted,
+#   - hourly, in case an event was missed, and by hand.
+# A newer run cancels an older one, so a burst of events costs one run.
+#
+# It publishes without touching main:
+#   - api-coverage.json, api-coverage.md and api-coverage-summary.md as one
+#     commit on the api-coverage branch (read by docs/api-coverage/index.html
+#     and readable on GitHub),
+#   - the summary in the body of the tracking issue whose number is in the
+#     API_COVERAGE_ISSUE repository variable, when it is set.
+#
+# Security: pull_request_target runs this file from main with a write token,
+# so it must never check out or run code from the pull request. It reads a
+# pull request only through the API (its title and the lines its diff adds)
+# and treats that as text. API_COVERAGE=false turns the workflow off.
+
+name: API Coverage
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed, edited]
+  issues:
+    types: [opened, edited, closed, reopened, deleted]
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: api-coverage
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+
+jobs:
+  update:
+    if: vars.API_COVERAGE != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DEVKITS: >-
+        25:25.3002 26:26.3000 27:27.3001 28:28.3001 29:29.3000 30:30.3000
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Cache the DevKits
+        id: devkits
+        uses: actions/cache@v4
+        with:
+          path: devkits
+          key: archicad-devkits-${{ env.DEVKITS }}
+
+      - name: Download the DevKits
+        if: steps.devkits.outputs.cache-hit != 'true'
+        run: |
+          set -eu
+          # The same releases the build checks use.
+          for entry in $DEVKITS; do
+            major=${entry%%:*}; version=${entry#*:}
+            mkdir -p "devkits/AC$major"
+            curl -sSfL -o devkit.zip "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$version/API.Development.Kit.WIN.$version.zip"
+            unzip -qq devkit.zip -d "devkits/AC$major"
+            rm devkit.zip
+          done
+
+      - name: Get the sources of the latest release
+        run: |
+          set -eu
+          tag=$(gh release view --json tagName --jq .tagName 2>/dev/null || true)
+          mkdir -p release
+          if [ -n "$tag" ]; then
+            git archive "$tag" archicad-addon/Sources | tar -x -C release
+          fi
+          echo "RELEASE_SOURCES=$([ -n "$tag" ] && echo release/archicad-addon/Sources || true)" >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Read the open pull requests and issues
+        run: python3 tools/fetch_api_coverage_github_data.py "$GITHUB_REPOSITORY" github.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Generate the checklist
+        run: |
+          set -eu
+          args=""
+          for entry in $DEVKITS; do
+            major=${entry%%:*}
+            args="$args --devkit $major=devkits/AC$major/Support"
+          done
+          release_arg=""
+          [ -n "$RELEASE_SOURCES" ] && release_arg="--release-sources $RELEASE_SOURCES"
+          python3 tools/generate_api_coverage.py $args \
+            --sources archicad-addon/Sources $release_arg \
+            --github-data github.json \
+            --rules tools/api_coverage_rules.json \
+            --out-dir out
+
+      - name: Publish to the api-coverage branch
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git fetch -q origin api-coverage; then
+            git worktree add -q publish FETCH_HEAD
+          else
+            git worktree add -q --detach publish
+            git -C publish checkout -q --orphan api-coverage
+            git -C publish rm -rq .
+          fi
+          cp out/api-coverage.json out/api-coverage.md out/api-coverage-summary.md publish/
+          cd publish
+          git add api-coverage.json api-coverage.md api-coverage-summary.md
+          if git diff --cached --quiet; then
+            echo "The checklist did not change."
+            exit 0
+          fi
+          git commit -q -m "Update the Archicad API coverage checklist"
+          # A newer run may have pushed meanwhile: it had newer data, so give way.
+          git push -q origin HEAD:api-coverage || echo "::notice::api-coverage moved meanwhile; a newer run published."
+
+      - name: Update the tracking issue
+        if: vars.API_COVERAGE_ISSUE != ''
+        run: |
+          set -eu
+          {
+            echo '# Archicad API coverage'
+            echo
+            echo 'Every function of the Archicad API and whether Tapir uses it, kept up to date within minutes by `.github/workflows/api_coverage.yml`.'
+            echo
+            echo "- **Full list, searchable:** https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/"
+            echo "- **As Markdown:** https://github.com/$GITHUB_REPOSITORY/blob/api-coverage/api-coverage.md"
+            echo '- **Start on an open item:** file an "Archicad API request" issue that names its functions; that marks them as claimed here, and the issue bot builds them.'
+            echo
+            cat out/api-coverage-summary.md
+          } > issue-body.md
+          gh issue edit "${{ vars.API_COVERAGE_ISSUE }}" --body-file issue-body.md
+        env:
+          GH_TOKEN: ${{ github.token }}
