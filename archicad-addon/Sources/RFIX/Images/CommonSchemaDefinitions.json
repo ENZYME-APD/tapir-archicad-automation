@@ -12784,5 +12784,449 @@
             }
         },
         "additionalProperties": false
+    },
+    "SectionElevationSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable setting of a Section or Elevation element (API_SectionSegment / API_CutPlaneType). Shared by CreateSections, CreateElevations and SetSectionsAndElevationsDetails; all fields are optional.",
+        "properties": {
+            "name": { "type": "string", "description": "Name of the section/elevation. Taken into account by CreateSections and CreateElevations only: SetSectionsAndElevationsDetails reports success but Archicad keeps the old name." },
+            "referenceId": { "type": "string", "description": "The reference ID text. If it contains a '/' character, the text is split between the beginning and end marks. Taken into account by CreateSections and CreateElevations only: SetSectionsAndElevationsDetails reports success but Archicad keeps the old reference ID." },
+            "linePenIndex": { "type": "integer", "description": "Pen index of the section/elevation line." },
+            "textPenIndex": { "type": "integer", "description": "Pen index of the marker text." },
+            "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the section/elevation line." },
+            "sectionLinePenIndex": { "type": "integer", "description": "Pen index used for cut contours (when useElementPens is false)." },
+            "sectionFillPenIndex": { "type": "integer", "description": "Pen index used for cut fills (when useElementPens is false)." },
+            "sectionFillBackgroundPenIndex": { "type": "integer", "description": "Background pen index of the cut fills (when useElementPens is false)." },
+            "horizontalRange": { "type": "string", "enum": ["Infinite", "Limited", "ZeroDepth"], "description": "Horizontal range of the segment." },
+            "verticalRange": { "type": "string", "enum": ["Infinite", "Limited", "FitToZoneRange"], "description": "Vertical range of the segment. FitToZoneRange is for interior elevations only." },
+            "verticalRangeStoryBaseNumber": { "type": "integer", "description": "The story vertMin/vertMax are relative to, when relativeToStory is true." },
+            "relativeToStory": { "type": "boolean", "description": "Vertical limited range is relative to the home story (true) or absolute to project zero (false)." },
+            "verticalRangeMin": { "type": "number", "description": "Vertical limitation - minimum height." },
+            "verticalRangeMax": { "type": "number", "description": "Vertical limitation - maximum height." },
+            "markerSize": { "type": "number", "description": "Marker size." },
+            "showMarkerAtBeginning": { "type": "boolean", "description": "Put marker on the beginning point." },
+            "showMarkerAtEnd": { "type": "boolean", "description": "Put marker on the end point." },
+            "useElementPens": { "type": "boolean", "description": "Use the pens defined in the cut elements instead of sectionLinePenIndex/sectionFillPenIndex/sectionFillBackgroundPenIndex." },
+            "showLineAtBeginning": { "type": "boolean", "description": "Show line at the beginning point." },
+            "showLineAtMiddle": { "type": "boolean", "description": "Show line at the middle point." },
+            "showLineAtEnd": { "type": "boolean", "description": "Show line at the end point." },
+            "textSize": { "type": "number", "description": "Text size [mm] of the marker text." },
+            "fontIndex": { "type": "integer", "description": "Font index of the marker text." },
+            "effectVectorHatch": { "type": "boolean", "description": "Create vectorial 3D hatching." },
+            "effectVectorShadow": { "type": "boolean", "description": "Create vectorial Sun shadows." },
+            "effectSunFrom3D": { "type": "boolean", "description": "Use the same Sun parameters as in the 3D window." },
+            "shadowFillId": { "$ref": "#/AttributeId", "description": "Fill attribute of the shadow's fill." },
+            "shadowFillPenIndex": { "type": "integer", "description": "Pen index of the shadow's fill." },
+            "shadowFillBackgroundPenIndex": { "type": "integer", "description": "Background pen index of the shadow's fill." },
+            "limitLineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the horizontal limit line." },
+            "limitLinePenIndex": { "type": "integer", "description": "Pen index of the horizontal limit line." },
+            "continuous": { "type": "boolean", "description": "Continuous line if true, otherwise segmented." },
+            "sunAzimuth": { "type": "number", "description": "Custom sun azimuth relative to the cut plane." },
+            "sunAltitude": { "type": "number", "description": "Custom sun altitude relative to the cut plane." },
+            "useOneModelPen": { "type": "boolean", "description": "Use one pen for all elements in the Section/Elevation view (Model Effects)." },
+            "modelPenIndex": { "type": "integer", "description": "Foreground pen of model uncut surface fill." },
+            "modelUncutSurfaceFillType": { "type": "string", "enum": ["PenColor", "MaterialColorShaded", "MaterialColorNonShaded"], "description": "Method for displaying fills of uncut surfaces (Model Effects), effective if useUncutSurfaceFill is true." },
+            "modelUncutSurfaceFillBackgroundPenIndex": { "type": "integer", "description": "Pencolor for uncut surface fills (Model Effects) if a uniform pencolor is selected." },
+            "useUncutSurfaceFill": { "type": "boolean", "description": "Apply fills to uncut surfaces displayed in the Section/Elevation (Model Effects)." },
+            "transparent": { "type": "boolean", "description": "Set transparency of the Section/Elevation." },
+            "markedDistantArea": { "type": "boolean", "description": "Mark distant area." },
+            "useOneDistantAreaPen": { "type": "boolean", "description": "Use one pen for all elements in the distant area." },
+            "distantAreaPenIndex": { "type": "integer", "description": "Pen index of elements in the distant area." },
+            "distantAreaUncutSurfaceFillBackgroundPenIndex": { "type": "integer", "description": "Pencolor for uncut surface fills in the distant area if a uniform pencolor is selected." },
+            "useUncutSurfaceFillInDistantArea": { "type": "boolean", "description": "Apply fills to uncut surfaces displayed in the distant area." },
+            "storyHandleAppearance": { "type": "string", "enum": ["None", "DisplayOnly", "All"], "description": "Options for displaying story lines on the Section/Elevation." },
+            "storyHandleLineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the Story Level lines." },
+            "storyHandleLinePenIndex": { "type": "integer", "description": "Pencolor index of the Story Level lines." },
+            "storyHandleMarkerPenIndex": { "type": "integer", "description": "Pencolor index of the Story Handle Markers (when not overridden by storyHandleUseSymbolPens)." },
+            "storyHandleUseSymbolPens": { "type": "boolean", "description": "Use the Story Handle Marker object's own colors instead of storyHandleMarkerPenIndex." },
+            "storyHandleLeftMarkerVisible": { "type": "boolean", "description": "Display the Story Handle Markers on the left side." },
+            "storyHandleRightMarkerVisible": { "type": "boolean", "description": "Display the Story Handle Markers on the right side." },
+            "storyHandleLineVisible": { "type": "boolean", "description": "Story handle line is on or off." },
+            "storyHandleLeftMarkerOffset": { "type": "number", "description": "Offset of the Story Level line beyond the limits of the Section/Elevation, left side." },
+            "storyHandleRightMarkerOffset": { "type": "number", "description": "Offset of the Story Level line beyond the limits of the Section/Elevation, right side." },
+            "storyHandleMarkerFontIndex": { "type": "integer", "description": "Font index of the Story Handle Marker." },
+            "storyHandleMarkerTextSize": { "type": "number", "description": "Text size [mm] of the Story Handle Marker." },
+            "storyHandleMarkerSize": { "type": "number", "description": "Size [mm] of the Story Handle Marker." },
+            "boundaryDisplayMode": { "type": "string", "enum": ["UncutContours", "NoContours", "OverrideContours"], "description": "Boundary contour display mode." },
+            "boundaryPenIndex": { "type": "integer", "description": "Boundary contour pen index." },
+            "boundaryLineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the boundary contour." },
+            "showOnStories": { "type": "string", "enum": ["All", "OneStory", "InRange", "PartRange"], "description": "Which stories to show the cut plane on." },
+            "storyToShowOn": { "type": "integer", "description": "Story index to show the cut plane on, if showOnStories is 'OneStory'." },
+            "markerShowType": { "type": "string", "enum": ["MiddleMarker", "WingMarkers"], "description": "Show side (wing) markers or a single middle marker." },
+            "intendedPlanConnectivity": { "type": "string", "enum": ["Online", "Offline", "Drawing"], "description": "Intended plan connectivity: whether the Section/Elevation is automatically rebuilt from the model (Online), rebuilt only on demand (Offline), or exploded into unlinked 2D drawing elements (Drawing)." }
+        },
+        "additionalProperties": false
+    },
+    "SectionElevationDetails": {
+        "type": "object",
+        "description": "Full readable state of a Section or Elevation element: every field of SectionElevationSettableDetails plus read-only/informational fields.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Name of the section/elevation. Taken into account by CreateSections and CreateElevations only: SetSectionsAndElevationsDetails reports success but Archicad keeps the old name."
+            },
+            "referenceId": {
+                "type": "string",
+                "description": "The reference ID text. If it contains a '/' character, the text is split between the beginning and end marks. Taken into account by CreateSections and CreateElevations only: SetSectionsAndElevationsDetails reports success but Archicad keeps the old reference ID."
+            },
+            "linePenIndex": {
+                "type": "integer",
+                "description": "Pen index of the section/elevation line."
+            },
+            "textPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the marker text."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type attribute of the section/elevation line."
+            },
+            "sectionLinePenIndex": {
+                "type": "integer",
+                "description": "Pen index used for cut contours (when useElementPens is false)."
+            },
+            "sectionFillPenIndex": {
+                "type": "integer",
+                "description": "Pen index used for cut fills (when useElementPens is false)."
+            },
+            "sectionFillBackgroundPenIndex": {
+                "type": "integer",
+                "description": "Background pen index of the cut fills (when useElementPens is false)."
+            },
+            "horizontalRange": {
+                "type": "string",
+                "enum": [
+                    "Infinite",
+                    "Limited",
+                    "ZeroDepth"
+                ],
+                "description": "Horizontal range of the segment."
+            },
+            "verticalRange": {
+                "type": "string",
+                "enum": [
+                    "Infinite",
+                    "Limited",
+                    "FitToZoneRange"
+                ],
+                "description": "Vertical range of the segment. FitToZoneRange is for interior elevations only."
+            },
+            "verticalRangeStoryBaseNumber": {
+                "type": "integer",
+                "description": "The story vertMin/vertMax are relative to, when relativeToStory is true."
+            },
+            "relativeToStory": {
+                "type": "boolean",
+                "description": "Vertical limited range is relative to the home story (true) or absolute to project zero (false)."
+            },
+            "verticalRangeMin": {
+                "type": "number",
+                "description": "Vertical limitation - minimum height."
+            },
+            "verticalRangeMax": {
+                "type": "number",
+                "description": "Vertical limitation - maximum height."
+            },
+            "markerSize": {
+                "type": "number",
+                "description": "Marker size."
+            },
+            "showMarkerAtBeginning": {
+                "type": "boolean",
+                "description": "Put marker on the beginning point."
+            },
+            "showMarkerAtEnd": {
+                "type": "boolean",
+                "description": "Put marker on the end point."
+            },
+            "useElementPens": {
+                "type": "boolean",
+                "description": "Use the pens defined in the cut elements instead of sectionLinePenIndex/sectionFillPenIndex/sectionFillBackgroundPenIndex."
+            },
+            "showLineAtBeginning": {
+                "type": "boolean",
+                "description": "Show line at the beginning point."
+            },
+            "showLineAtMiddle": {
+                "type": "boolean",
+                "description": "Show line at the middle point."
+            },
+            "showLineAtEnd": {
+                "type": "boolean",
+                "description": "Show line at the end point."
+            },
+            "textSize": {
+                "type": "number",
+                "description": "Text size [mm] of the marker text."
+            },
+            "fontIndex": {
+                "type": "integer",
+                "description": "Font index of the marker text."
+            },
+            "effectVectorHatch": {
+                "type": "boolean",
+                "description": "Create vectorial 3D hatching."
+            },
+            "effectVectorShadow": {
+                "type": "boolean",
+                "description": "Create vectorial Sun shadows."
+            },
+            "effectSunFrom3D": {
+                "type": "boolean",
+                "description": "Use the same Sun parameters as in the 3D window."
+            },
+            "shadowFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill attribute of the shadow's fill."
+            },
+            "shadowFillPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the shadow's fill."
+            },
+            "shadowFillBackgroundPenIndex": {
+                "type": "integer",
+                "description": "Background pen index of the shadow's fill."
+            },
+            "limitLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type attribute of the horizontal limit line."
+            },
+            "limitLinePenIndex": {
+                "type": "integer",
+                "description": "Pen index of the horizontal limit line."
+            },
+            "continuous": {
+                "type": "boolean",
+                "description": "Continuous line if true, otherwise segmented."
+            },
+            "sunAzimuth": {
+                "type": "number",
+                "description": "Custom sun azimuth relative to the cut plane."
+            },
+            "sunAltitude": {
+                "type": "number",
+                "description": "Custom sun altitude relative to the cut plane."
+            },
+            "useOneModelPen": {
+                "type": "boolean",
+                "description": "Use one pen for all elements in the Section/Elevation view (Model Effects)."
+            },
+            "modelPenIndex": {
+                "type": "integer",
+                "description": "Foreground pen of model uncut surface fill."
+            },
+            "modelUncutSurfaceFillType": {
+                "type": "string",
+                "enum": [
+                    "PenColor",
+                    "MaterialColorShaded",
+                    "MaterialColorNonShaded"
+                ],
+                "description": "Method for displaying fills of uncut surfaces (Model Effects), effective if useUncutSurfaceFill is true."
+            },
+            "modelUncutSurfaceFillBackgroundPenIndex": {
+                "type": "integer",
+                "description": "Pencolor for uncut surface fills (Model Effects) if a uniform pencolor is selected."
+            },
+            "useUncutSurfaceFill": {
+                "type": "boolean",
+                "description": "Apply fills to uncut surfaces displayed in the Section/Elevation (Model Effects)."
+            },
+            "transparent": {
+                "type": "boolean",
+                "description": "Set transparency of the Section/Elevation."
+            },
+            "markedDistantArea": {
+                "type": "boolean",
+                "description": "Mark distant area."
+            },
+            "useOneDistantAreaPen": {
+                "type": "boolean",
+                "description": "Use one pen for all elements in the distant area."
+            },
+            "distantAreaPenIndex": {
+                "type": "integer",
+                "description": "Pen index of elements in the distant area."
+            },
+            "distantAreaUncutSurfaceFillBackgroundPenIndex": {
+                "type": "integer",
+                "description": "Pencolor for uncut surface fills in the distant area if a uniform pencolor is selected."
+            },
+            "useUncutSurfaceFillInDistantArea": {
+                "type": "boolean",
+                "description": "Apply fills to uncut surfaces displayed in the distant area."
+            },
+            "storyHandleAppearance": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "DisplayOnly",
+                    "All"
+                ],
+                "description": "Options for displaying story lines on the Section/Elevation."
+            },
+            "storyHandleLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type attribute of the Story Level lines."
+            },
+            "storyHandleLinePenIndex": {
+                "type": "integer",
+                "description": "Pencolor index of the Story Level lines."
+            },
+            "storyHandleMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pencolor index of the Story Handle Markers (when not overridden by storyHandleUseSymbolPens)."
+            },
+            "storyHandleUseSymbolPens": {
+                "type": "boolean",
+                "description": "Use the Story Handle Marker object's own colors instead of storyHandleMarkerPenIndex."
+            },
+            "storyHandleLeftMarkerVisible": {
+                "type": "boolean",
+                "description": "Display the Story Handle Markers on the left side."
+            },
+            "storyHandleRightMarkerVisible": {
+                "type": "boolean",
+                "description": "Display the Story Handle Markers on the right side."
+            },
+            "storyHandleLineVisible": {
+                "type": "boolean",
+                "description": "Story handle line is on or off."
+            },
+            "storyHandleLeftMarkerOffset": {
+                "type": "number",
+                "description": "Offset of the Story Level line beyond the limits of the Section/Elevation, left side."
+            },
+            "storyHandleRightMarkerOffset": {
+                "type": "number",
+                "description": "Offset of the Story Level line beyond the limits of the Section/Elevation, right side."
+            },
+            "storyHandleMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the Story Handle Marker."
+            },
+            "storyHandleMarkerTextSize": {
+                "type": "number",
+                "description": "Text size [mm] of the Story Handle Marker."
+            },
+            "storyHandleMarkerSize": {
+                "type": "number",
+                "description": "Size [mm] of the Story Handle Marker."
+            },
+            "boundaryDisplayMode": {
+                "type": "string",
+                "enum": [
+                    "UncutContours",
+                    "NoContours",
+                    "OverrideContours"
+                ],
+                "description": "Boundary contour display mode."
+            },
+            "boundaryPenIndex": {
+                "type": "integer",
+                "description": "Boundary contour pen index."
+            },
+            "boundaryLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type attribute of the boundary contour."
+            },
+            "showOnStories": {
+                "type": "string",
+                "enum": [
+                    "All",
+                    "OneStory",
+                    "InRange",
+                    "PartRange"
+                ],
+                "description": "Which stories to show the cut plane on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "Story index to show the cut plane on, if showOnStories is 'OneStory'."
+            },
+            "markerShowType": {
+                "type": "string",
+                "enum": [
+                    "MiddleMarker",
+                    "WingMarkers"
+                ],
+                "description": "Show side (wing) markers or a single middle marker."
+            },
+            "intendedPlanConnectivity": {
+                "type": "string",
+                "enum": [
+                    "Online",
+                    "Offline",
+                    "Drawing"
+                ],
+                "description": "Intended plan connectivity: whether the Section/Elevation is automatically rebuilt from the model (Online), rebuilt only on demand (Offline), or exploded into unlinked 2D drawing elements (Drawing)."
+            },
+            "distantAreaShadowFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Read-only: fill attribute for shadow polygons in the distant area. Confirmed live on Archicad 27: this always mirrors shadowFillId and cannot be set independently through the API (ACAPI_Element_CreateExt/ACAPI_Element_Change silently ignore an explicit value here and copy it from shadowFillId instead)."
+            },
+            "distantAreaShadowFillPenIndex": {
+                "type": "integer",
+                "description": "Read-only: fill pen index for shadow polygons in the distant area. Confirmed live on Archicad 27: always mirrors shadowFillPenIndex, cannot be set independently (see distantAreaShadowFillId)."
+            },
+            "distantAreaShadowFillBackgroundPenIndex": {
+                "type": "integer",
+                "description": "Read-only: fill background pen index for shadow polygons in the distant area. Confirmed live on Archicad 27: always mirrors shadowFillBackgroundPenIndex, cannot be set independently (see distantAreaShadowFillId)."
+            },
+            "distantAreaUncutSurfaceFillType": {
+                "type": "string",
+                "enum": [
+                    "PenColor",
+                    "MaterialColorShaded",
+                    "MaterialColorNonShaded"
+                ],
+                "description": "Read-only: method for displaying fills of uncut surfaces in the distant area. Confirmed live on Archicad 27: cannot be set independently through the API, always reads back as PenColor regardless of the value written (see distantAreaShadowFillId)."
+            },
+            "currentPlanConnectivity": {
+                "type": "string",
+                "enum": [
+                    "Online",
+                    "Offline",
+                    "Drawing"
+                ],
+                "description": "Read-only: current plan connectivity state of the open Section/Elevation window."
+            },
+            "isWindowOpened": {
+                "type": "boolean",
+                "description": "Read-only: whether the Section/Elevation window is currently opened."
+            },
+            "isActive": {
+                "type": "boolean",
+                "description": "Read-only: whether the segment is turned off or active."
+            },
+            "isSourceMarker": {
+                "type": "boolean",
+                "description": "Read-only: whether this segment is a source marker."
+            },
+            "isInDrawingMode": {
+                "type": "boolean",
+                "description": "Read-only: whether the section is in drawing mode."
+            },
+            "beginMarkerElementId": {
+                "$ref": "#/ElementIdArrayItem",
+                "description": "Read-only: the Section Marker object at the starting point of the section line."
+            },
+            "middleMarkerElementId": {
+                "$ref": "#/ElementIdArrayItem",
+                "description": "Read-only: the Section Marker object at the center point of the section line."
+            },
+            "endMarkerElementId": {
+                "$ref": "#/ElementIdArrayItem",
+                "description": "Read-only: the Section Marker object at the end point of the section line."
+            }
+        },
+        "additionalProperties": false
+    },
+    "SectionElevationDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            { "$ref": "#/SectionElevationDetails" },
+            { "$ref": "#/ErrorItem" }
+        ]
     }
 }
