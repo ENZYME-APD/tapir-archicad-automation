@@ -12675,7 +12675,7 @@
     },
     "GraphicOverrideCriterion": {
         "type": "object",
-        "description": "A structured graphical override rule criterion (alternative to a raw criterionXML string). Provide exactly one property. 'and'/'or' combine a FLAT list of other criteria (they cannot be nested inside one another - see their own description); 'elementType' filters by the tool an element was created with; 'classification'/'classificationNot' filter by an Archicad Classification System item ID (e.g. 'Slab', as shown in the Classification Manager); 'all3DTypes'/'all2DTypes' match every 3D resp. 2D element type; the remaining properties filter by the 'Model View' criteria category (layer and its attributes).",
+        "description": "Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property. 'and'/'or' combine a flat list of other conditions (no nesting, see their description). 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: the renovation status of an element, and the shape, limits and orientation of an Opening.",
         "properties": {
             "and": {
                 "type": "array",
