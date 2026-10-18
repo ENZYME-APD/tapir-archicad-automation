@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 16:52 UTC",
+ "generatedAt": "2026-10-18 20:06 UTC",
  "versions": [
   25,
   26,
@@ -7436,6 +7436,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -7737,6 +7741,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    },
     {
      "number": 827,
      "title": "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"
@@ -11017,7 +11025,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11040,7 +11053,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": [
     {
      "number": 561,
@@ -11087,7 +11105,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11110,7 +11133,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": [
     {
      "number": 561,
@@ -11134,7 +11162,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11157,7 +11190,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11180,7 +11218,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": [
     {
      "number": 561,
@@ -11204,7 +11247,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11266,7 +11314,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": [
     {
      "number": 942,
@@ -11294,7 +11347,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11317,7 +11375,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11336,7 +11399,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11392,6 +11460,10 @@
     {
      "number": 1068,
      "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
+    },
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -11420,6 +11492,10 @@
     {
      "number": 1068,
      "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
+    },
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
    "issues": []
@@ -11444,7 +11520,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11486,7 +11567,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11502,7 +11588,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1011,
+     "title": "Support Archicad 29 and 30 in ModifyOpenings"
+    }
+   ],
    "issues": [
     {
      "number": 942,
