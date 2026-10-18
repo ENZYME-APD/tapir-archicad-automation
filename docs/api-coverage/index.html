@@ -234,9 +234,32 @@ function plural (count, word) {
     return `${count.toLocaleString ()} ${word}${count === 1 ? '' : 's'}`;
 }
 
+// The issue a "claim" link opens. Its body is written here in the layout of the
+// "Archicad API request" form rather than through the form itself: the GitHub
+// mobile app ignores issue forms (the issue then had a title and no body), and
+// the form cannot carry the declaration the issue bot needs, having no DevKit.
+function claimBody (item) {
+    const v = item.versions;
+    const versions = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    const declaration = [`// ${item.header || 'DevKit'} (${versions})`];
+    if (item.brief) declaration.push ('// ' + item.brief);
+    if (item.olderNames.length) declaration.push ('// Older names: ' + item.olderNames.join (', '));
+    if (item.declaration) declaration.push (item.declaration);
+    return [
+        '### API functions', '', item.id, '',
+        '### What should Tapir let you do?', '',
+        `Expose \`${item.id}\` (${item.kind}, ${item.group}) through a Tapir JSON command, in the command group it belongs to: ` +
+            'a new option of an existing command where one fits, otherwise a new command. Its parameters become the command\'s ' +
+            'input and its result the response.', '',
+        '<!-- Add what you would use it for, and anything the command should do around it. -->', '',
+        '### Declarations from the DevKit (optional)', '', '```cpp', ...declaration, '```', '',
+        '### Archicad versions you need it in', '', v.join (', '),
+    ].join ('\n');
+}
+
 function claimLink (item) {
-    const params = new URLSearchParams ({ template: 'archicad-api-request.yml', title: 'Expose ' + item.id, functions: item.id });
-    return el ('a', { href: REPO + '/issues/new?' + params, text: 'claim' });
+    const params = new URLSearchParams ({ title: 'Expose ' + item.id, body: claimBody (item) });
+    return el ('a', { href: REPO + '/issues/new?' + params, text: 'claim', title: 'Open an "Archicad API request" issue for this item' });
 }
 
 function renderOverview () {
