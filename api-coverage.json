@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:14 UTC",
+ "generatedAt": "2026-10-18 21:20 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1507,
+  "open": 1502,
   "not applicable": 468,
-  "in progress": 123,
+  "in progress": 126,
   "done": 491,
-  "claimed": 42,
+  "claimed": 44,
   "merged": 252
  },
  "items": [
@@ -5413,10 +5413,15 @@
    "olderNames": [
     "APIDb_GetContainingDatabaseID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1103,
+     "title": "Expose ACAPI_Database_GetContainingDatabase and ACAPI_Element_GetElementFromAnywhere (find and read an element without switching windows)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetCurrentDatabase",
@@ -8623,10 +8628,15 @@
    "olderNames": [
     "APIDb_GetElementFromAnywhereID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1103,
+     "title": "Expose ACAPI_Database_GetContainingDatabase and ACAPI_Element_GetElementFromAnywhere (find and read an element without switching windows)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElementInfoString",
@@ -8700,9 +8710,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1101,
+     "title": "Add GetElementsByClassification command"
+    }
+   ],
    "issues": [
     {
      "number": 1098,
@@ -12345,10 +12360,15 @@
    "olderNames": [
     "APIAny_GetContainingHotlinkGuidID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1104,
+     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_GetHotLinkOwner",
@@ -12368,10 +12388,15 @@
    "olderNames": [
     "APIDb_GetHotLinkOwnerID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1104,
+     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkInstances",
@@ -15386,9 +15411,14 @@
    "olderNames": [
     "APIEnv_ChangeStructureDisplayID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1102,
+     "title": "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"
+    }
+   ],
    "issues": [
     {
      "number": 1099,
@@ -15519,7 +15549,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1105,
+     "title": "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_DeleteNavigatorVPItem",
@@ -16032,9 +16067,14 @@
    "olderNames": [
     "APIEnv_GetStructureDisplayID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1102,
+     "title": "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"
+    }
+   ],
    "issues": [
     {
      "number": 1099,
@@ -16060,10 +16100,15 @@
    "olderNames": [
     "APIDb_GetSubSetID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1105,
+     "title": "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetSubSetDefault",
@@ -16086,7 +16131,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1105,
+     "title": "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetViewOptions",
@@ -19678,6 +19728,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 314,
+     "title": "Bug: ChangeSelectionOfElements is really slow"
+    },
     {
      "number": 314,
      "title": "Bug: ChangeSelectionOfElements is really slow"
