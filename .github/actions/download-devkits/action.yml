@@ -1,0 +1,45 @@
+name: Download the Archicad DevKit headers
+description: >-
+  Downloads the AC25-AC30 Archicad API DevKits into archicad-addon/Build/DevKits,
+  keeping only what the Claude jobs read: the headers of every version, and the
+  Examples folder of the newest. Used by claude_issue_triage.yml,
+  claude_bot_pr_steward.yml and claude_pr_review.yml, before Claude starts.
+
+# The list below is the one the Claude jobs use. Keep it on the same releases
+# as archicad_addon_build_check.yml and archicad_addon.yml, so the bots check
+# against the headers the builds compile with.
+#
+# This runs from a trusted commit only (the workflow's own, never a pull
+# request's branch): the jobs that check out a pull request load this action
+# from a separate checkout of github.workflow_sha. It runs no code from the
+# repository, only curl and unzip.
+
+inputs:
+  path:
+    description: Folder that receives one AC<major> folder per DevKit.
+    default: archicad-addon/Build/DevKits
+
+runs:
+  using: composite
+  steps:
+    - name: Download the DevKits
+      shell: bash
+      env:
+        DEVKITS: >-
+          25:25.3002 26:26.3000 27:27.3001 28:28.3001 29:29.3000 30:30.3000
+        DEST: ${{ inputs.path }}
+      run: |
+        set -euf  # -f: the unzip patterns are for unzip, not the shell
+        newest=${DEVKITS##* }; newest=${newest%%:*}
+        zip="$RUNNER_TEMP/devkit.zip"
+        for entry in $DEVKITS; do
+          major=${entry%%:*}; version=${entry#*:}
+          mkdir -p "$DEST/AC$major"
+          curl -sSfL --retry 3 -o "$zip" "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$version/API.Development.Kit.WIN.$version.zip"
+          patterns="Support/Inc/* Support/Modules/*.h Support/Modules/*.hpp"
+          [ "$major" = "$newest" ] && patterns="$patterns Examples/*"
+          unzip -qq -o "$zip" $patterns -d "$DEST/AC$major"
+          rm "$zip"
+        done
+        ls "$DEST/AC$newest/Support/Inc/APIdefs_Elements.h"
+        du -sh "$DEST"

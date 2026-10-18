@@ -255,6 +255,14 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   opened once the change or the discussion settles them. On the issue bot's PRs it
   also records its verdict as the `claude-review` commit status (set by a job
   without a model, from a nonce-tagged marker in the review).
+- The Claude jobs of `claude_issue_triage.yml` (`fix`, `reply`),
+  `claude_bot_pr_steward.yml` (`fix`) and `claude_pr_review.yml` get the AC25–AC30
+  DevKit headers, and the AC30 DevKit's Examples, in `archicad-addon/Build/DevKits/`
+  before Claude starts, from
+  [.github/actions/download-devkits](.github/actions/download-devkits/action.yml).
+  Keep its DevKit list on the releases the build checks use. The steward and the
+  review load that action from a checkout of the workflow's own commit, never
+  from a pull request's branch.
 - `claude_bot_pr_steward.yml` — drives the issue bot's PRs to mergeable without a
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
