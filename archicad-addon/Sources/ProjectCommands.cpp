@@ -3203,3 +3203,98 @@ GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& param
 
     return response;
 }
+
+GetHotlinkOwnersOfElementsCommand::GetHotlinkOwnersOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkOwnersOfElementsCommand::GetName () const
+{
+    return "GetHotlinkOwnersOfElements";
+}
+
+GS::Optional<GS::UniString> GetHotlinkOwnersOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkOwnersOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkOwners": {
+                "type": "array",
+                "description": "The hotlink each element comes from, aligned with the input.",
+                "items": {
+                    "$ref": "#/HotlinkOwnersOfElementOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkOwners"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkOwnersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& hotlinkOwners = response.AddList<GS::ObjectState> ("hotlinkOwners");
+
+    for (const GS::ObjectState& elementOS : elements) {
+        const GS::ObjectState* elementId = elementOS.Get ("elementId");
+        if (elementId == nullptr) {
+            hotlinkOwners (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        // Reading the header first tells a wrong id apart from an element
+        // that is simply not in a hotlink.
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            hotlinkOwners (CreateErrorResponse (APIERR_BADID, "Failed to find the element."));
+            continue;
+        }
+
+        // An element outside every hotlink gets no guid back (or an error),
+        // so either case leaves the id out.
+        GS::ObjectState ownersOS;
+        API_Guid hotlinkElemGuid = APINULLGuid;
+        const bool hasHotlinkElement = ACAPI_Hotlink_GetContainingHotlinkGuid (&elemHead.guid, &hotlinkElemGuid) == NoError && hotlinkElemGuid != APINULLGuid;
+        if (hasHotlinkElement) {
+            ownersOS.Add ("hotlinkElementId", CreateGuidObjectState (hotlinkElemGuid));
+        }
+        API_Guid hotlinkInstanceGuid = APINULLGuid;
+        const bool hasHotlinkInstance = ACAPI_Hotlink_GetHotLinkOwner (&elemHead.guid, &hotlinkInstanceGuid) == NoError && hotlinkInstanceGuid != APINULLGuid;
+        if (hasHotlinkInstance) {
+            ownersOS.Add ("hotlinkInstanceId", CreateGuidObjectState (hotlinkInstanceGuid));
+        }
+        ownersOS.Add ("isInHotlink", hasHotlinkElement || hasHotlinkInstance);
+        hotlinkOwners (ownersOS);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetHotlinkOwnersOfElements requires Archicad 27 or newer.");
+#endif
+}
