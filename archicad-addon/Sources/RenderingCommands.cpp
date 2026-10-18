@@ -295,6 +295,7 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
         }
         const GSErrCode changeErr = ChangeImageSettings (imageSettings);
         if (changeErr != NoError) {
+            delete originalImageSettings.bkgPictFile;
             return CreateFailedExecutionResult (changeErr, "Failed to set the image size and resolution of the current rendering scene.");
         }
     }
@@ -306,12 +307,20 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
     API_PhotoRenderPars photoRenderPars = {};
     photoRenderPars.fileTypeID = fileTypeID;
     photoRenderPars.file = &imageFileLocation;
+    // Zero would be APIColorDepth_BW: a black and white image.
+#if defined (macintosh)
+    photoRenderPars.colorDepth = APIColorDepth_MiC;
+#else
+    photoRenderPars.colorDepth = APIColorDepth_TC24;
+#endif
 
     // A print parameter would print the image too; nullptr writes only the file.
     const GSErrCode err = ACAPI_Rendering_PhotoRender (&photoRenderPars, nullptr);
 
     // Restored whether or not the render succeeded.
     const GSErrCode restoreErr = changeImageSettings ? ChangeImageSettings (originalImageSettings) : NoError;
+    // GetRenderingSets allocates the background picture location; nullptr when not read.
+    delete originalImageSettings.bkgPictFile;
 
     const GS::UniString notRestoredMessage = "the image settings of the rendering scene could not be restored: the scene keeps the given size and resolution.";
     if (err != NoError) {
