@@ -131,8 +131,9 @@ static void CollectAttributeFolderPaths (const API_AttributeFolder& folder, GS::
     if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
         return;
     }
-    for (const API_Guid& attributeId : content.attributeIds) {
-        folderPathsByAttribute.Put (attributeId, folder.path);
+    // API_AttributeFolderContent::attributeIds holds GS::Guid values, API_Attr_Head::guid is an API_Guid.
+    for (const GS::Guid& attributeId : content.attributeIds) {
+        folderPathsByAttribute.Put (GSGuid2APIGuid (attributeId), folder.path);
     }
     for (const API_AttributeFolder& subFolder : content.subFolders) {
         CollectAttributeFolderPaths (subFolder, folderPathsByAttribute);
@@ -144,7 +145,7 @@ static GS::HashTable<API_Guid, GS::Array<GS::UniString>> GetAttributeFolderPaths
     GS::HashTable<API_Guid, GS::Array<GS::UniString>> folderPathsByAttribute;
     API_AttributeFolder rootFolder;
     rootFolder.typeID = typeID;
-    rootFolder.guid = APINULLGuid;
+    rootFolder.guid = GS::NULLGuid;
     if (ACAPI_Attribute_GetFolder (rootFolder) == NoError) {
         CollectAttributeFolderPaths (rootFolder, folderPathsByAttribute);
     }
