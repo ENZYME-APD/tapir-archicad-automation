@@ -803,6 +803,15 @@ namespace TapirGrasshopperPlugin.Components
             return null;
         }
 
+        // Called with the response of a command that succeeded, before the
+        // created elements are stamped and the outputs are set, so a derived
+        // component can report what the response carries besides the created
+        // elements (e.g. warnings).
+        protected virtual void OnResponse(
+            JObject response)
+        {
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -1001,6 +1010,8 @@ namespace TapirGrasshopperPlugin.Components
             {
                 return;
             }
+
+            OnResponse(response);
 
             if (embedMetadata)
             {

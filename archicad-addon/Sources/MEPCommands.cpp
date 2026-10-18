@@ -65,6 +65,88 @@ static API_Guid MEPUniqueIDToAPIGuid (const ACAPI::MEP::UniqueID& id)
     return GSGuid2APIGuid (id.GetGuid ());
 }
 
+// Sets the layer of one element through the classic element API; the MEP API has no layer setter.
+static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_AttributeIndex& layerIndex)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+    element.header.layer = layerIndex;
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+// The layer given for a new routing element has to exist and must not be locked, since an element
+// on a locked layer cannot be changed. Returns the error response for a layer that cannot be used.
+static GS::Optional<GS::ObjectState> GetErrorIfLayerNotUsable (Int32 layerIndex)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = ACAPI_CreateAttributeIndex (layerIndex);
+    if (ACAPI_Attribute_Get (&layerAttr) != NoError) {
+        return CreateErrorResponse (APIERR_BADINDEX, "The 'layerIndex' parameter does not refer to an existing layer.");
+    }
+    if ((layerAttr.header.flags & APILay_Locked) != 0) {
+        return CreateErrorResponse (APIERR_LOCKEDLAY, "The layer given by the 'layerIndex' parameter is locked.");
+    }
+    return GS::NoValue;
+}
+
+// Sets the layer of a routing element and of all its parts: routing segments, rigid segments,
+// elbows (bends in Archicad 28) and transitions. Changing only the routing element did not
+// always move the parts that carry the geometry. Runs inside the caller's undoable command. Every
+// part is tried; the first error is returned.
+static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingElementId, const API_AttributeIndex& layerIndex)
+{
+    GSErrCode firstErr = NoError;
+    const auto setLayer = [&] (const ACAPI::MEP::UniqueID& id) {
+        const GSErrCode err = SetLayerOfElement (MEPUniqueIDToAPIGuid (id), layerIndex);
+        if (firstErr == NoError) {
+            firstErr = err;
+        }
+    };
+
+    setLayer (routingElementId);
+    auto routingElement = RoutingElement::Get (routingElementId);
+    if (routingElement.IsErr ()) {
+        return firstErr != NoError ? firstErr : routingElement.UnwrapErr ().kind;
+    }
+    for (const auto& segmentId : routingElement->GetRoutingSegmentIds ()) {
+        setLayer (segmentId);
+        auto segment = RoutingSegment::Get (segmentId);
+        if (segment.IsOk ()) {
+            for (const auto& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+                setLayer (rigidSegmentId);
+            }
+        }
+    }
+    for (const auto& nodeId : routingElement->GetRoutingNodeIds ()) {
+        setLayer (nodeId);
+        auto node = RoutingNode::Get (nodeId);
+        if (node.IsOk ()) {
+#ifdef ServerMainVers_2900
+            for (const auto& elbowId : node->GetElbowIds ()) {
+                setLayer (elbowId);
+            }
+#else
+            // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
+            for (const auto& bendId : node->GetBendIds ()) {
+                setLayer (bendId);
+            }
+#endif
+            for (const auto& transitionId : node->GetTransitionIds ()) {
+                setLayer (transitionId);
+            }
+        }
+    }
+    return firstErr;
+}
+
 static GS::UniString DomainToString (Domain domain)
 {
     switch (domain) {
@@ -648,6 +730,10 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                         "mepSystemId": {
                             "$ref": "#/AttributeId",
                             "description": "Optional MEP system attribute."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
                         }
                     },
                     "additionalProperties": false,
@@ -706,6 +792,18 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             if (!routingElementData.Get ("nodeCoordinates", nodeCoordinates) || nodeCoordinates.GetSize () < 2) {
                 elements (CreateErrorResponse (APIERR_BADPARS, "The 'nodeCoordinates' parameter must contain at least 2 coordinates."));
                 continue;
+            }
+
+            // The layer is checked before anything is placed, so a missing or locked layer does not
+            // leave a route on the routing tool's default layer.
+            Int32 layerIndex = 0;
+            const bool hasLayerIndex = routingElementData.Get ("layerIndex", layerIndex) && layerIndex > 0;
+            if (hasLayerIndex) {
+                const GS::Optional<GS::ObjectState> layerError = GetErrorIfLayerNotUsable (layerIndex);
+                if (layerError.HasValue ()) {
+                    elements (layerError.Get ());
+                    continue;
+                }
             }
 
             ACAPI::Result<RoutingElementDefault> routingElementDefault = CreateRoutingElementDefault (domain.value ());
@@ -771,8 +869,20 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                 elements (CreateErrorResponse (newElementId.UnwrapErr ().kind, "Failed to place the routing element."));
                 continue;
             }
+            const ACAPI::MEP::UniqueID placedId = newElementId.Unwrap ();
 
-            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (newElementId.Unwrap ())));
+            if (hasLayerIndex) {
+                const GSErrCode layerErr = SetLayerOfRoutingElement (placedId, ACAPI_CreateAttributeIndex (layerIndex));
+                if (layerErr != NoError) {
+                    // The route stays placed, so its guid is given in the message to let the caller find it.
+                    elements (CreateErrorResponse (layerErr, GS::UniString::Printf (
+                        "The routing element with guid %T was placed, but the layer of it or of some of its parts could not be set.",
+                        APIGuidToString (MEPUniqueIDToAPIGuid (placedId)).ToPrintf ())));
+                    continue;
+                }
+            }
+
+            elements (CreateElementIdObjectState (MEPUniqueIDToAPIGuid (placedId)));
         }
         return NoError;
     });
