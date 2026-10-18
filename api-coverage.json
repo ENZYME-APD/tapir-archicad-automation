@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 11:12 UTC",
+ "generatedAt": "2026-10-18 11:13 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1527,
+  "open": 1524,
   "not applicable": 468,
-  "in progress": 116,
+  "in progress": 117,
   "done": 491,
-  "claimed": 31,
+  "claimed": 33,
   "merged": 250
  },
  "items": [
@@ -6548,10 +6548,15 @@
    "olderNames": [
     "APIDb_DrawStoryControlID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1070,
+     "title": "Expose ACAPI_DrawingPrimitive_DrawStoryControl"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawingPrimitive_ShapePrims",
@@ -6567,10 +6572,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1069,
+     "title": "Expose ACAPI_DrawingPrimitive_ShapePrims"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawingPrimitive_ShapePrimsExt",
@@ -11282,9 +11292,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1068,
+     "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
+    }
+   ],
    "issues": [
     {
      "number": 1063,
@@ -11308,7 +11323,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1068,
+     "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11327,7 +11347,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1068,
+     "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
+    }
+   ],
    "issues": []
   },
   {
@@ -22927,6 +22952,10 @@
    ],
    "issues": [
     {
+     "number": 1070,
+     "title": "Expose ACAPI_DrawingPrimitive_DrawStoryControl"
+    },
+    {
      "number": 1015,
      "title": "Get and set the drawing scale of the current window"
     },
@@ -24974,10 +25003,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1071,
+     "title": "Expose APIEnv_GetMainWindowHWNDID"
+    }
+   ]
   },
   {
    "id": "APIEnv_GetPreferencesID",
