@@ -79,6 +79,25 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetStructureDisplayCommand : public CommandBase
+{
+public:
+    GetStructureDisplayCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetStructureDisplayCommand : public CommandBase
+{
+public:
+    SetStructureDisplayCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetView2DTransformationsCommand : public CommandBase
 {
 public:
