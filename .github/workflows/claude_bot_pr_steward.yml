@@ -27,13 +27,16 @@ name: Claude Bot PR Steward
 #
 # Bounds:
 # - At most BOT_PR_MAX_FIX_ROUNDS fix runs per pull request (repository
-#   variable, default 3), counted from this workflow's own runs, which nothing
+#   variable, default 6), counted from this workflow's own runs, which nothing
 #   a model writes can change. After that, and after ten reviews of one pull
 #   request without a recorded verdict, the pull request gets the
-#   `needs-maintainer` label and the steward leaves it alone.
+#   `needs-maintainer` label and the steward leaves it alone. Removing the
+#   label hands it back with both counts reset: they count only the runs
+#   since the label was last removed.
 # - A review or fix run whose model call failed (an API error, a spent usage
 #   limit) did nothing, so it is not a round: the next one waits for the next
-#   hourly sweep, and only ten failures within a day hand the pull request over.
+#   hourly sweep, and only ten failures within a day (and since the label was
+#   last removed) hand the pull request over.
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
 # - A sweep starts new work (builds, a review or a fix) on at most
@@ -86,13 +89,13 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
-      MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '3' }}
+      MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '6' }}
       BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '5' }}
     steps:
       - name: Sweep the bot's pull requests
         run: |
           set -euo pipefail
-          case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=3 ;; esac
+          case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=6 ;; esac
           case "$BATCH" in ''|*[!0-9]*) BATCH=5 ;; esac
           busy=0
 
@@ -113,9 +116,9 @@ jobs:
           reviewRuns=$(gh run list --repo "$REPO" --workflow claude_pr_review.yml --limit 400 --json displayTitle,status)
           stewardRuns=$(gh run list --repo "$REPO" --workflow claude_bot_pr_steward.yml --limit 400 --json displayTitle,status)
 
-          # How many dispatched runs of a workflow carry this title since the
-          # pull request was opened - its fix rounds or reviews, over its
-          # whole life, not only within the latest page of runs.
+          # How many dispatched runs of a workflow carry this title since $3 -
+          # its fix rounds or reviews since the pull request was opened or
+          # handed back, not only within the latest page of runs.
           # $4 narrows it to one conclusion: a run whose model call failed
           # (an API error, a spent usage limit) did no review or fix, so only
           # successful runs count as rounds; failed ones - "failure" also takes
@@ -231,20 +234,26 @@ jobs:
               echo "left for a later sweep (this one started work on $BATCH already)"
               echo "::endgroup::"; continue
             fi
+            # Rounds and reviews count from when the pull request was opened,
+            # or from when a person last removed `needs-maintainer` - that
+            # hands it back with fresh counts. If the events cannot be read,
+            # it counts from the opening, which at worst hands it over again.
+            handedBack=$(gh api --paginate "repos/$REPO/issues/$pr/events?per_page=100" \
+              --jq '.[] | select(.event == "unlabeled" and .label.name == "needs-maintainer") | .created_at' \
+              | sort | tail -n 1) || handedBack=""
+            since=$created
+            if [[ "$handedBack" > "$since" ]]; then
+              since=$handedBack
+            fi
             # Failed runs count over the last day only: with a sweep's wait
             # after each, ten of them mean a lasting problem, not an outage.
-            # A person removing needs-maintainer hands the pull request back
-            # with a clean count, so only failures after that count.
             failSince=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
-            if [[ "$created" > "$failSince" ]]; then failSince=$created; fi
-            handedBack=$(gh api --paginate "repos/$REPO/issues/$pr/events?per_page=100" \
-              --jq '.[] | select(.event == "unlabeled" and .label.name == "needs-maintainer") | .created_at' | tail -n 1 || true)
-            if [[ -n "$handedBack" && "$handedBack" > "$failSince" ]]; then failSince=$handedBack; fi
+            if [[ "$since" > "$failSince" ]]; then failSince=$since; fi
 
             # 0. A conflict with main: building the branch proves nothing, so
             # fix merges main in first.
             if [ "$mergeable" = "CONFLICTING" ]; then
-              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$created" success)
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since" success)
               failed=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$failSince" failure)
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
@@ -312,7 +321,7 @@ jobs:
             if [ -z "$review" ] && [ "$buildFailed" = false ]; then
               reviewTitle="Claude review of PR #$pr"
               active=$(jq --arg t "$reviewTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$reviewRuns")
-              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$created" success)
+              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$since" success)
               failed=$(countRuns claude_pr_review.yml "$reviewTitle" "$failSince" failure)
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
@@ -332,7 +341,7 @@ jobs:
 
             # 3. Something to fix.
             if [ "$buildFailed" = true ] || [ "$review" = "failure" ] || [ "$review" = "error" ]; then
-              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$created" success)
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since" success)
               failed=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$failSince" failure)
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
