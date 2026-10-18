@@ -502,9 +502,11 @@ GSErrCode StoreElementUserData (API_Elem_Head& elemHead, const UserDataPairs& pa
     API_UserData userData = {};
     userData.dataVersion = ElementUserDataLayoutVersion;
     userData.platformSign = GS::Act_Platform_Sign;
-    // Undoable only: the data is script state (ids, timestamps), not a setting of the element, so
-    // it must not travel with parameter pick-up or injection into the tool defaults.
-    userData.flags = APIUserDataFlag_UndoAble;
+    // No flags: the data is script state (ids, timestamps), not a setting of the element, so it must
+    // not travel with parameter pick-up or injection into the tool defaults (the FillWith and Pickup
+    // flags). Undo comes from the undoable command scope the Set command runs in; the API has no
+    // separate flag for it.
+    userData.flags = 0;
     userData.dataHdl = SerializeElementUserData (pairs);
     if (userData.dataHdl == nullptr) {
         return APIERR_MEMFULL;
