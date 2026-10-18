@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 20:11 UTC",
+ "generatedAt": "2026-10-18 20:56 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1515,
+  "open": 1512,
   "not applicable": 468,
   "in progress": 120,
   "done": 491,
-  "claimed": 37,
+  "claimed": 40,
   "merged": 252
  },
  "items": [
@@ -3894,10 +3894,15 @@
    "olderNames": [
     "APIAny_GetAutoTextKeysID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1091,
+     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
+    }
+   ]
   },
   {
    "id": "ACAPI_AutoText_GetAutoTexts",
@@ -4004,7 +4009,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1091,
+     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
+    }
+   ]
   },
   {
    "id": "ACAPI_AutoText_InterpretAutoText",
@@ -4024,10 +4034,15 @@
    "olderNames": [
     "APIAny_InterpretAutoTextID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1091,
+     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
+    }
+   ]
   },
   {
    "id": "ACAPI_AutoText_SetAnAutoText",
@@ -4381,6 +4396,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1092,
+     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
+    },
     {
      "number": 1048,
      "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
@@ -7513,10 +7532,15 @@
    "olderNames": [
     "APIAny_ChangeContentID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1092,
+     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeDefaults",
@@ -23797,6 +23821,14 @@
     }
    ],
    "issues": [
+    {
+     "number": 1092,
+     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
+    },
+    {
+     "number": 1091,
+     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
+    },
     {
      "number": 1083,
      "title": "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"
