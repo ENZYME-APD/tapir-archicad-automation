@@ -12,7 +12,9 @@ them archicad-addon/Sources uses:
   function when the match is unambiguous, and as their own rows otherwise.
 - The C++ API (ACAPI:: and IFCAPI:: namespaces in Support/Modules/*/ACAPI):
   every exported class and its public member functions, and exported free
-  functions.
+  functions. A member of a class renamed between two DevKits (MEP's Bend,
+  Elbow from Archicad 29) is one row under its new name, with the old one as
+  an older name.
 
 Every item carries its declaration and header from the newest DevKit that has
 it, so the page's "claim" link can put them into the issue it opens.
@@ -209,6 +211,59 @@ def read_cpp_api (support):
                 statement += ch
             i += 1
     return items
+
+
+def cpp_renames (cpp_items):
+    """Old key -> new key for C++ items whose class was renamed between two DevKits.
+
+    A class that ends in one DevKit and a class of the same module that starts
+    in the next are taken as one renamed class when they share at least two
+    member functions and half of all their member functions, and neither has
+    another such candidate (MEP's Bend in AC27-28 is Elbow from AC29). Their
+    shared members, and free functions whose names differ only by the class
+    names (CreateBendDefault, CreateElbowDefault), become older names of the
+    new ones.
+    """
+    classes = collections.defaultdict (lambda: {'versions': set (), 'members': set (), 'module': ''})
+    for item in cpp_items.values ():
+        if item['class']:
+            entry = classes[item['class']]
+            entry['versions'] |= item['versions']
+            entry['members'].add (item['name'])
+            entry['module'] = item['module']
+    successors, predecessors = collections.defaultdict (set), collections.defaultdict (set)
+    for old, a in classes.items ():
+        for new, b in classes.items ():
+            common = a['members'] & b['members']
+            if (old != new and a['module'] == b['module'] and max (a['versions']) + 1 == min (b['versions'])
+                    and len (common) >= 2 and len (common) * 2 >= len (a['members'] | b['members'])):
+                successors[old].add (new)
+                predecessors[new].add (old)
+    renamed = {old: next (iter (news)) for old, news in successors.items ()
+               if len (news) == 1 and len (predecessors[next (iter (news))]) == 1}
+
+    renames = {}
+    for old, new in renamed.items ():
+        for member in classes[old]['members'] & classes[new]['members']:
+            renames[f'{old}::{member}'] = f'{new}::{member}'
+    # Free functions named after a renamed class, longest class names first.
+    short_names = sorted (((old.split ('::')[-1], new.split ('::')[-1]) for old, new in renamed.items ()),
+                          key=lambda pair: -len (pair[0]))
+    for key, item in cpp_items.items ():
+        if item['class']:
+            continue
+        for old_short, new_short in short_names:
+            if old_short in item['name']:
+                new_key = key[:-len (item['name'])] + item['name'].replace (old_short, new_short)
+                new_item = cpp_items.get (new_key)
+                if new_item and not new_item['class'] and max (item['versions']) + 1 == min (new_item['versions']):
+                    renames[key] = new_key
+                break
+    # A name renamed twice (A, then B, then C) points at its newest name.
+    for old in renames:
+        while renames[old] in renames:
+            renames[old] = renames[renames[old]]
+    return renames
 
 
 def record_statement (items, stack, statement, module, header_name, path):
@@ -464,12 +519,22 @@ def build (args):
         add (name, 'AC25/26 command id', group, old_ids[name]['comment'], old_ids[name]['versions'],
              [name], is_used, released, [name], old_ids[name])
 
+    # A C++ item of a renamed class is listed under its new name, with the old one as an older name.
+    renames = cpp_renames (cpp_items)
+    cpp_aliases = collections.defaultdict (list)
+    for old, new in renames.items ():
+        cpp_aliases[new].append (old)
     for key, item in sorted (cpp_items.items ()):
-        is_used = cpp_used (item, files)
-        released = None if release_files is None else cpp_used (item, release_files)
+        if key in renames:
+            continue
+        names = [key] + sorted (cpp_aliases.get (key, []))
+        named = [cpp_items[name] for name in names]
+        is_used = any (cpp_used (i, files) for i in named)
+        released = None if release_files is None else any (cpp_used (i, release_files) for i in named)
+        search_names = [n for name, i in zip (names, named) for n in (name, i['class'] + '::' + i['name'] if i['class'] else name)]
         group = 'C++ ' + item['module']
         add (key, 'C++ member function' if item['class'] else 'C++ function', group, item['brief'],
-             item['versions'], [key], is_used, released, [key, item['class'] + '::' + item['name'] if item['class'] else key],
+             set ().union (*(i['versions'] for i in named)), names, is_used, released, search_names,
              {'declaration': item['declaration'], 'header': item['path']})
 
     return versions, items, github.get ('generatedAt', '')
