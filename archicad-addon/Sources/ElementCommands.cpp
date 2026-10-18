@@ -5140,6 +5140,46 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     return GS::ObjectState ("roomImage", str);
 }
 
+// GetModelExtent
+
+GetModelExtentCommand::GetModelExtentCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetModelExtentCommand::GetName () const
+{
+    return "GetModelExtent";
+}
+
+GS::Optional<GS::UniString> GetModelExtentCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/BoundingBox3D"
+    })";
+}
+
+GS::ObjectState GetModelExtentCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    // The region Fit in Window would show in the current database, vertical range included.
+    // It follows the current view settings (hidden layers, current story, ...).
+    API_Box3D extent3D = {};
+    const GSErrCode err = ACAPI_Element_GetExtent3D (&extent3D);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the model extent");
+    }
+
+    return GS::ObjectState ("xMin", extent3D.xMin,
+                            "xMax", extent3D.xMax,
+                            "yMin", extent3D.yMin,
+                            "yMax", extent3D.yMax,
+                            "zMin", extent3D.zMin,
+                            "zMax", extent3D.zMax);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
 
 // GetQuantitiesOfElements
 
