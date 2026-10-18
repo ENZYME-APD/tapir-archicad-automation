@@ -465,6 +465,113 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
     })";
 }
 
+GetElementTypeNamesCommand::GetElementTypeNamesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementTypeNamesCommand::GetName () const
+{
+    return "GetElementTypeNames";
+}
+
+GS::Optional<GS::UniString> GetElementTypeNamesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types to get the localized names of.",
+                "items": {
+                    "$ref": "#/ElementType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementTypeNamesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The localized name of each element type, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the element type in the language of the running Archicad (for example \"Wand\" for Wall in German Archicad)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementType",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "names"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementTypeNamesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::ObjectState response;
+    const auto& names = response.AddList<GS::ObjectState> ("names");
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeId = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeId == API_ZombieElemID) {
+            names (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        GS::UniString name;
+        const GSErrCode err = ACAPI_Element_GetElemTypeName (API_ElemType (typeId), name);
+        if (err != NoError) {
+            names (CreateErrorResponse (err,
+                GS::UniString::Printf ("Failed to get the name of elementType '%T'.", elementTypeStr.ToPrintf ())));
+            continue;
+        }
+
+        names (GS::ObjectState ("elementType", elementTypeStr, "name", name));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GetDetailsOfElementsCommand::GetDetailsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

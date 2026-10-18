@@ -356,6 +356,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering."
         );
+        err |= RegisterCommand<GetElementTypeNamesCommand> (
+            elementCommands, "1.7.2",
+            "Gets the localized names of the given element types, as the running Archicad shows them (for example \"Wand\" for Wall in German Archicad). The output is aligned with the input array of element types. Available from Archicad 27."
+        );
         err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
             elementCommands, "1.0.7",
             "Adds/removes a number of elements to/from the current selection."

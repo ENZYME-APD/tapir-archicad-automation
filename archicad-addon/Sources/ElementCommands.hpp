@@ -19,6 +19,16 @@ public:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
 };
 
+class GetElementTypeNamesCommand : public CommandBase
+{
+public:
+    GetElementTypeNamesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetDetailsOfElementsCommand : public CommandBase
 {
 public:
