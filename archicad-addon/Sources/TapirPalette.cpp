@@ -1308,7 +1308,23 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         constexpr bool redirectStandardInput = false;
         constexpr bool redirectStandardError = true;
         runningCommand = command;
-        process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+        {
+#if defined (WINDOWS)
+            // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese
+            // Windows), while the output is read as UTF-8. PYTHONIOENCODING makes the script's standard
+            // streams UTF-8, so non-ASCII output stays readable. It is set in Archicad's environment only
+            // while the process is started, and only when the user has not set it.
+            const wchar_t* pythonIOEncodingName = L"PYTHONIOENCODING";
+            const bool setPythonIOEncoding = GetEnvironmentVariableW (pythonIOEncodingName, nullptr, 0) == 0 &&
+                SetEnvironmentVariableW (pythonIOEncodingName, L"utf-8") != 0;
+            const GS::OnExit restorePythonIOEncoding ([&] () {
+                if (setPythonIOEncoding) {
+                    SetEnvironmentVariableW (pythonIOEncodingName, nullptr);
+                }
+            });
+#endif
+            process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+        }
         if (!process.IsValid ()) {
             WriteReport (DG_ERROR, "Failed to start uv process. Ensure it is installed and executable.");
         }
