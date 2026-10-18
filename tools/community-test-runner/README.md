@@ -5,6 +5,9 @@ the pull request. It needs Archicad, Python 3.10+ and a GitHub account. No Claud
 the checks are plain JSON, run against the Tapir API. Claude Code can drive it too, cheaply
 (see [For Claude Code](#for-claude-code)).
 
+**New to this? Read [GUIDE.md](GUIDE.md)**: a step-by-step guide without the command line
+(install Python, download, double-click `Start Tapir Test Runner.bat`).
+
 ## Quick start
 
 ```

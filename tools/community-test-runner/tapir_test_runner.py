@@ -765,6 +765,27 @@ def list_pulls(cfg: dict, every_open: bool = True) -> list[str]:
             for p in pull_rows(cfg, every_open)]
 
 
+def uninstall(config_path: Path) -> int:
+    """Everything the runner put on this computer goes, after the tester's own add-on is back."""
+    if config_path.exists():
+        cfg = dict(DEFAULTS, **json.loads(config_path.read_text(encoding="utf-8")))
+        if any(Installation(ac).pending() and archicad_running(ac["archicadExe"]) for ac in cfg["archicads"]):
+            raise RuntimeError("a test build is still loaded in an open Archicad; close Archicad, then uninstall again")
+        restore_all(cfg)
+    print("GitHub token removed from Credential Manager" if rw.delete_token() else "no stored GitHub token")
+    if os.name == "nt":
+        task = subprocess.run(["schtasks", "/delete", "/f", "/tn", "TapirTestRunner"], capture_output=True, text=True)
+        print("logon task removed" if task.returncode == 0 else "no logon task")
+    folder = rw.state_dir()
+    shutil.rmtree(folder, ignore_errors=True)
+    print(f"removed {folder}")
+    if config_path.exists() and folder not in config_path.parents:
+        config_path.unlink()
+        print(f"removed {config_path}")
+    print("Done. You can delete the runner's folder too. Revoke the token on https://github.com/settings/tokens")
+    return 0
+
+
 def expand(patterns: list[str]) -> list[Path]:
     return [Path(f) for pattern in patterns for f in sorted(glob.glob(pattern))]
 
@@ -807,6 +828,7 @@ def main(argv: list[str] | None = None) -> int:
     p = with_config(sub.add_parser("prs", help="one line per open pull request: checks, builds, last results"))
     p.add_argument("--labelled", action="store_true", help="only those labelled for testing")
     with_config(sub.add_parser("restore", help="put your own add-on back after a test that did not finish"))
+    with_config(sub.add_parser("uninstall", help="put your add-on back, then remove the token, the logon task and the runner's files"))
     for name in ("once", "poll"):
         o = with_config(sub.add_parser(name))
         o.add_argument("--no-post", action="store_true", help="print the report instead of commenting")
@@ -835,6 +857,8 @@ def main(argv: list[str] | None = None) -> int:
         print((brief if args.brief else report)(rows, archicad_version(tapir), version, "local"))
         return 0 if all(r["ok"] is not False for r in rows) else 1
 
+    if args.mode == "uninstall":
+        return uninstall(Path(args.config) if args.config else default_config_path())
     cfg = load_config(args.config)
     if args.mode == "gui":
         import runner_gui

@@ -6,10 +6,13 @@ library). The runner never touches an Archicad that is open: close it and the ne
 from __future__ import annotations
 
 import queue
+import subprocess
+import sys
 import threading
 import time
 import tkinter as tk
 import webbrowser
+from pathlib import Path
 from tkinter import ttk
 
 import tapir_test_runner as r
@@ -62,8 +65,12 @@ class RunnerWindow:
             button.pack(side="left", padx=(0, 6))
         self.stop_button = ttk.Button(buttons, text="Stop after this test", command=self.request_stop, state="disabled")
         self.stop_button.pack(side="left")
-        ttk.Checkbutton(buttons, text="Post results on GitHub", variable=self.post).pack(side="right")
-        ttk.Checkbutton(buttons, text="Run every check", variable=self.every).pack(side="right", padx=8)
+        ttk.Button(buttons, text="Help", command=self.help).pack(side="right", padx=(6, 0))
+        ttk.Button(buttons, text="Settings", command=self.settings).pack(side="right", padx=(6, 0))
+        options = ttk.Frame(root, padding=(10, 0, 10, 6))
+        options.pack(fill="x")
+        ttk.Checkbutton(options, text="Post results on GitHub", variable=self.post).pack(side="left")
+        ttk.Checkbutton(options, text="Run every check, not only the change's own", variable=self.every).pack(side="left", padx=12)
 
         self.log_box = tk.Text(root, height=9, wrap="word", state="disabled", padx=6, pady=4)
         self.log_box.pack(fill="both", padx=10, pady=(0, 10))
@@ -85,7 +92,10 @@ class RunnerWindow:
             try:
                 job()
             except Exception as exc:  # noqa: BLE001 - shown to the tester instead of a silent thread
-                self.events.put(("log", f"stopped: {exc}"))
+                text = str(exc)
+                if "no GitHub token" in text or "request limit" in text:
+                    text = "No working GitHub token. Click Settings and paste a token (see Help, step 3)."
+                self.events.put(("log", f"stopped: {text}"))
             finally:
                 self.events.put(("done", None))
         threading.Thread(target=target, daemon=True).start()
@@ -166,6 +176,19 @@ class RunnerWindow:
         if automatic:
             self.next_pass = time.monotonic() + self.cfg.get("pollMinutes", 15) * 60
         self.run(None)
+
+    def settings(self) -> None:
+        """Runs 'setup' in a console window of its own (it asks questions); the window reads the result on restart."""
+        python = Path(sys.executable)
+        if python.name.lower() == "pythonw.exe":  # pythonw has no console to answer in
+            python = python.with_name("python.exe")
+        subprocess.Popen([str(python), str(Path(r.__file__).resolve()), "setup", "--config", self.cfg["_path"]],
+                         creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0))
+        self.log("Settings opened in a new window. Close and reopen this window afterwards to use them.")
+
+    def help(self) -> None:
+        # GitHub shows the guide formatted; a local .md often opens as plain text in Notepad
+        webbrowser.open(f"https://github.com/{self.cfg['repo']}/blob/main/tools/community-test-runner/GUIDE.md")
 
     def open_selected(self) -> None:
         for number in self.table.selection():
