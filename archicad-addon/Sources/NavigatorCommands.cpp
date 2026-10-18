@@ -599,6 +599,179 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+// The graphic override combination applied to the current (front) window, as
+// opposed to the one stored in a saved view (SetViewSettings). The two API
+// functions below are new in Archicad 30; the combinations themselves are
+// reached through the ACAPI_GraphicalOverride_* functions of Archicad 27+.
+
+GetActiveGraphicalOverrideCombinationCommand::GetActiveGraphicalOverrideCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetActiveGraphicalOverrideCombinationCommand::GetName () const
+{
+    return "GetActiveGraphicalOverrideCombination";
+}
+
+GS::Optional<GS::UniString> GetActiveGraphicalOverrideCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The graphic override combination applied to the current window. Empty when the current window has no combination applied.",
+        "properties": {
+            "combinationId": {
+                "type": "object",
+                "description": "The identifier of the graphic override combination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination. Missing when the combination cannot be read, e.g. it was deleted."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetActiveGraphicalOverrideCombinationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    API_Guid combinationGuid = APINULLGuid;
+    GSErrCode err = ACAPI_GraphicalOverride_GetActualOverrideCombination (combinationGuid);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the graphic override combination of the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...).");
+    }
+
+    GS::ObjectState response;
+    if (combinationGuid == APINULLGuid) {
+        return response;
+    }
+
+    response.Add ("combinationId", CreateGuidObjectState (combinationGuid));
+
+    API_OverrideCombination combination = {};
+    combination.guid = combinationGuid;
+    if (ACAPI_GraphicalOverride_GetOverrideCombination (combination) == NoError) {
+        response.Add ("name", combination.name);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
+}
+
+SetActiveGraphicalOverrideCombinationCommand::SetActiveGraphicalOverrideCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetActiveGraphicalOverrideCombinationCommand::GetName () const
+{
+    return "SetActiveGraphicalOverrideCombination";
+}
+
+GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The graphic override combination to apply, given by id or by name.",
+        "properties": {
+            "combinationId": {
+                "type": "object",
+                "description": "The identifier of the graphic override combination, as returned by GetActiveGraphicalOverrideCombination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
+            }
+        },
+        "additionalProperties": false,
+        "oneOf": [
+            {
+                "required": [
+                    "combinationId"
+                ]
+            },
+            {
+                "required": [
+                    "name"
+                ]
+            }
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    API_Guid combinationGuid = APINULLGuid;
+
+    const GS::ObjectState* combinationIdOS = parameters.Get ("combinationId");
+    GS::UniString name;
+    if (combinationIdOS != nullptr) {
+        combinationGuid = GetGuidFromObjectState (*combinationIdOS);
+        if (combinationGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "combinationId is corrupt or missing.");
+        }
+    } else if (parameters.Get ("name", name)) {
+        GS::Array<API_Guid> combinationGuids;
+        GSErrCode err = ACAPI_GraphicalOverride_GetOverrideCombinationList (combinationGuids);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to get the list of graphic override combinations.");
+        }
+
+        for (const API_Guid& guid : combinationGuids) {
+            API_OverrideCombination combination = {};
+            combination.guid = guid;
+            if (ACAPI_GraphicalOverride_GetOverrideCombination (combination) == NoError && combination.name == name) {
+                combinationGuid = guid;
+                break;
+            }
+        }
+
+        if (combinationGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADNAME, "No graphic override combination is named '" + name + "'.");
+        }
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Either combinationId or name is required.");
+    }
+
+    GSErrCode err = ACAPI_GraphicalOverride_SetActualOverrideCombination (combinationGuid);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to apply the graphic override combination to the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...) and the combination must exist.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
+}
+
 GetView2DTransformationsCommand::GetView2DTransformationsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -953,11 +1126,11 @@ GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetInputParamet
                         },
                         "parentNavigatorItemId": {
                             "$ref": "#/NavigatorItemId",
-                            "description": "Navigator item ID of the View Map folder to place the clone in. Optional; defaults to the View Map root."
+                            "description": "Navigator item ID of the View Map folder to place the clone in. Required - Archicad's CloneProjectMapItemToViewMap API leaves a clone created directly at the View Map root in a broken state (it cannot be deleted or moved afterwards, by API or by hand), so Tapir refuses to fall back to the root on your behalf. Create a View Map folder (CreateViewMapFolder) first if you don't already have one to target."
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["navigatorItemId"]
+                    "required": ["navigatorItemId", "parentNavigatorItemId"]
                 }
             }
         },
@@ -983,6 +1156,19 @@ GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetRawResponseS
     })";
 }
 
+// Shared by CloneProjectMapItemToViewMapCommand and CreateViewsInViewMapCommand: a caller
+// can also reach the undeletable-orphan state (#658) by passing the View Map root's own
+// guid as parentNavigatorItemId explicitly - e.g. one read back from GetNavigatorItemTree,
+// whose root item IS the View Map root. Requiring the field non-empty only closes the
+// omission path; this closes the explicit one too.
+static bool IsViewMapRootGuid (const API_Guid& guid)
+{
+    API_NavigatorSet viewMapSet = {};
+    viewMapSet.mapId = API_PublicViewMap;
+    Int32 idx = 0;
+    return ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError && guid == viewMapSet.rootGuid;
+}
+
 GS::ObjectState CloneProjectMapItemToViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> viewsData;
@@ -1004,19 +1190,20 @@ GS::ObjectState CloneProjectMapItemToViewMapCommand::Execute (const GS::ObjectSt
             continue;
         }
 
-        API_Guid parentGuid = APINULLGuid;
         const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
-        if (parentOS != nullptr) {
-            parentGuid = GetGuidFromObjectState (*parentOS);
+        if (parentOS == nullptr) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is missing. Cloning to the View Map root is refused because Archicad's API leaves such a clone impossible to delete or move afterwards - target a real View Map folder instead."));
+            continue;
         }
 
+        API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
         if (parentGuid == APINULLGuid) {
-            API_NavigatorSet viewMapSet = {};
-            viewMapSet.mapId = API_PublicViewMap;
-            Int32 idx = 0;
-            if (ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError) {
-                parentGuid = viewMapSet.rootGuid;
-            }
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is corrupt or missing."));
+            continue;
+        }
+        if (IsViewMapRootGuid (parentGuid)) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is the View Map root itself. Cloning directly onto it is refused because Archicad's API leaves such a clone impossible to delete or move afterwards - target a real folder instead."));
+            continue;
         }
 
         API_Guid createdGuid = APINULLGuid;
@@ -1058,7 +1245,7 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchem
                         },
                         "parentNavigatorItemId": {
                             "$ref": "#/NavigatorItemId",
-                            "description": "View Map folder to place the new view in. Optional; defaults to View Map root."
+                            "description": "View Map folder to place the new view in. Required - the underlying Archicad API used to create the item leaves it undeletable and unmovable afterwards when it is attached directly to the View Map root, so Tapir refuses to fall back to the root on your behalf. Create a View Map folder (CreateViewMapFolder) first if you don't already have one to target."
                         },
                         "name": {
                             "type": "string",
@@ -1066,7 +1253,7 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchem
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["navigatorItemId"]
+                    "required": ["navigatorItemId", "parentNavigatorItemId"]
                 }
             }
         },
@@ -1113,18 +1300,20 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
             continue;
         }
 
-        API_Guid parentGuid = APINULLGuid;
         const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
-        if (parentOS != nullptr) {
-            parentGuid = GetGuidFromObjectState (*parentOS);
+        if (parentOS == nullptr) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is missing. Creating the view directly at the View Map root is refused because it becomes impossible to delete or move afterwards - target a real View Map folder instead."));
+            continue;
         }
+
+        API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
         if (parentGuid == APINULLGuid) {
-            API_NavigatorSet viewMapSet = {};
-            viewMapSet.mapId = API_PublicViewMap;
-            Int32 idx = 0;
-            if (ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError) {
-                parentGuid = viewMapSet.rootGuid;
-            }
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is corrupt or missing."));
+            continue;
+        }
+        if (IsViewMapRootGuid (parentGuid)) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId is the View Map root itself. Creating a view directly at it is refused because it becomes impossible to delete or move afterwards - target a real folder instead."));
+            continue;
         }
 
         // Step 1: clone from Project Map (only reliable way to create a
