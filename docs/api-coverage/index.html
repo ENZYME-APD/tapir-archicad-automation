@@ -25,7 +25,7 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-main { max-width: 1100px; margin: 0 auto; padding-block: 16px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 16px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 h1 { font-size: 26px; margin: 8px 0 4px; }
 h2 { font-size: 18px; margin: 28px 0 10px; }
 a { color: var(--link); }
@@ -34,6 +34,21 @@ p { margin: 0 0 8px; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
 :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 button { font: inherit; color: inherit; cursor: pointer; }
+
+/* Sidebar: section links, filters and every group. A drawer on narrow screens. */
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1100px); justify-content: center; }
+.sidebar { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 8px 32px 16px; font-size: 14px; border-right: 1px solid var(--line); }
+.sidebar-title { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 6px; }
+.sidebar-title:first-child { margin-top: 0; }
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.sidebar-link { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 3px 8px; border: 0; border-radius: 6px; background: none; color: inherit; text-align: left; text-decoration: none; font: inherit; }
+.sidebar-link:hover { background: var(--panel); }
+.sidebar-link[aria-current] { background: var(--panel); font-weight: 600; box-shadow: inset 2px 0 0 var(--fg); }
+.sidebar-link .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+.options { display: flex; flex-wrap: wrap; gap: 4px; }
+.option { font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
+.option[aria-pressed="true"] { background: var(--panel); border-color: var(--link); color: var(--fg); }
+.sections-button { display: none; }
 
 /* Headline */
 .hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px 24px; align-items: center; margin-top: 16px; }
@@ -72,8 +87,8 @@ td .sub { display: block; font-size: 12px; color: var(--muted); }
 .table-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; font-size: 14px; }
 
 /* Sticky filters */
-.toolbar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.toolbar input, .toolbar select, .toolbar .chip { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+.toolbar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar input, .toolbar .chip, .toolbar .sections-button { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
 .toolbar input[type=search] { flex: 1 1 220px; min-width: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); }
@@ -91,11 +106,17 @@ ul.items { list-style: none; padding: 0 0 10px 0; margin: 0; }
 ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 .tag { font-size: 12px; color: var(--muted); }
 
+@media (max-width: 1100px) {
+    .layout { display: block; }
+    .sidebar { position: fixed; z-index: 3; top: 0; bottom: 0; left: 0; width: min(300px, 85vw); max-height: none; align-self: stretch;
+        background: var(--bg); box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); transform: translateX(-105%); visibility: hidden; transition: transform 0.2s, visibility 0.2s; }
+    body.sidebar-open .sidebar { transform: none; visibility: visible; }
+    .sections-button { display: inline-block; }
+}
 @media (max-width: 640px) {
     .hero { grid-template-columns: 1fr; }
     .hero-number { font-size: 44px; }
     td.barcell { width: 30%; min-width: 80px; }
-    .toolbar select { flex: 1 1 40%; }
     /* Icons only, so the sticky bar stays short; the label is the button's name and tooltip. */
     .chip-label { display: none; }
     .chips { flex: 1 1 100%; }
@@ -104,11 +125,13 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
+<div class="layout">
+<nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
 <main>
 <h1>Archicad API coverage</h1>
 <p class="muted">Which parts of the Archicad API (Archicad 25–30: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every pull request, issue and push. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
-<section aria-label="Overview">
+<section aria-label="Overview" id="overview">
     <div class="hero">
         <div>
             <div class="hero-number" id="hero-percent">…</div>
@@ -120,37 +143,32 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
     <div class="legend" id="legend"></div>
 </section>
 
-<h2>By part of the API</h2>
+<h2 id="by-part">By part of the API</h2>
 <div class="scroll"><table id="parts"></table></div>
 
-<h2>By group</h2>
+<h2 id="by-group">By group</h2>
 <div class="table-actions">
-    <label>Sort by
-        <select id="group-sort">
-            <option value="open">most open items</option>
-            <option value="coverage">lowest coverage</option>
-            <option value="name">name</option>
-        </select>
-    </label>
+    <span class="muted">Sort by</span>
+    <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
+        <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
+        <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
+        <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
+    </div>
     <span class="muted">Select a group to list its items below.</span>
 </div>
 <div class="scroll"><table id="groups"></table></div>
 <div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
 
+<h2 id="checklist">Checklist</h2>
 <div class="toolbar" id="toolbar">
+    <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
-    <select id="part" aria-label="Part of the API">
-        <option value="">All parts</option>
-        <option value="c">C functions</option>
-        <option value="old">Archicad 25/26 only</option>
-        <option value="cpp">C++ API</option>
-    </select>
-    <select id="version" aria-label="Archicad version"><option value="">Any version</option></select>
     <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
     <span class="filter-status" id="filter-status" aria-live="polite"></span>
 </div>
 <div id="list"></div>
 </main>
+</div>
 <script>
 const DATA_URL = new URLSearchParams (location.search).get ('data') ||
     'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';
@@ -167,6 +185,9 @@ const PARTS = [['c', 'C functions', ''], ['old', 'Archicad 25/26 only', 'older C
 const GROUPS_SHOWN = 12;
 let data = null;
 let groupFilter = '';
+let partFilter = '';
+let versionFilter = 0;
+let groupSort = 'open';
 let showAllGroups = false;
 
 function el (tag, attrs = {}, ...children) {
@@ -244,7 +265,7 @@ function renderOverview () {
     for (const [key, name, note] of PARTS) {
         const c = tally (data.items.filter (i => part (i) === key));
         const button = el ('button', { type: 'button', class: 'linkbutton', text: name });
-        button.addEventListener ('click', () => { document.getElementById ('part').value = key; groupFilter = ''; render (); scrollToList (); });
+        button.addEventListener ('click', () => { setPart (key); groupFilter = ''; render (); scrollToList (); });
         const nameCell = el ('td', {}, button);
         if (note) nameCell.append (el ('span', { class: 'sub', text: note }));
         body.append (el ('tr', {}, nameCell, usedCell (c), el ('td', { class: 'barcell' }, bar (c)), el ('td', { class: 'num', text: String (c.open) })));
@@ -263,14 +284,13 @@ function groupStats () {
 }
 
 function renderGroupTable () {
-    const sort = document.getElementById ('group-sort').value;
     const groups = groupStats ();
     const sorters = {
         open: (a, b) => b.counts.open - a.counts.open || a.name.localeCompare (b.name),
         coverage: (a, b) => a.counts.percent - b.counts.percent || b.counts.applicable - a.counts.applicable,
         name: (a, b) => a.name.localeCompare (b.name),
     };
-    groups.sort (sorters[sort]);
+    groups.sort (sorters[groupSort]);
     const shown = showAllGroups ? groups : groups.slice (0, GROUPS_SHOWN);
     const table = document.getElementById ('groups');
     table.replaceChildren (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Group' }), el ('th', { class: 'num', text: 'Used' }),
@@ -295,7 +315,7 @@ function scrollToList () {
 function showGroup (name) {
     groupFilter = name;
     document.getElementById ('search').value = '';
-    document.getElementById ('part').value = '';
+    setPart ('');
     render ();
     scrollToList ();
 }
@@ -329,8 +349,8 @@ function itemRow (item) {
 
 function render () {
     const query = document.getElementById ('search').value.trim ().toLowerCase ();
-    const wantedPart = document.getElementById ('part').value;
-    const version = Number (document.getElementById ('version').value) || 0;
+    const wantedPart = partFilter;
+    const version = versionFilter;
     const wanted = new Set ([...document.querySelectorAll ('#statuses .chip[aria-pressed="true"]')].map (b => b.dataset.status));
     for (const tile of document.querySelectorAll ('.tile')) {
         tile.setAttribute ('aria-pressed', String (wanted.size === 1 && wanted.has (tile.dataset.status)));
@@ -355,6 +375,9 @@ function render () {
         clear.addEventListener ('click', () => { groupFilter = ''; render (); });
         status.append (clear);
     }
+    for (const link of document.querySelectorAll ('#sidebar-groups .sidebar-link')) {
+        if (link.dataset.group === groupFilter) link.setAttribute ('aria-current', 'true'); else link.removeAttribute ('aria-current');
+    }
 
     const list = document.getElementById ('list');
     if (!groups.size) { list.replaceChildren (el ('p', { class: 'muted', text: 'Nothing matches.' })); return; }
@@ -373,6 +396,53 @@ function render () {
         if (query || groupFilter || sorted.length <= 3) { fill (); details.open = true; }
         return details;
     }));
+}
+
+function options (container, values, current, onSelect) {
+    // A row of toggle buttons where exactly one is pressed.
+    container.replaceChildren (...values.map (([value, label, title]) => {
+        const button = el ('button', { type: 'button', class: 'option', 'data-value': String (value), 'aria-pressed': String (value === current), text: label });
+        if (title) button.title = title;
+        button.addEventListener ('click', () => {
+            for (const other of container.children) other.setAttribute ('aria-pressed', String (other === button));
+            onSelect (value);
+        });
+        return button;
+    }));
+}
+
+function setPart (key) {
+    partFilter = key;
+    for (const button of document.querySelectorAll ('#sidebar-parts .option')) {
+        button.setAttribute ('aria-pressed', String (button.dataset.value === key));
+    }
+}
+
+function renderSidebar () {
+    const sidebar = document.getElementById ('sidebar');
+    const sections = el ('ul');
+    for (const [id, label] of [['overview', 'Overview'], ['by-part', 'By part of the API'], ['by-group', 'By group'], ['checklist', 'Checklist']]) {
+        sections.append (el ('li', {}, el ('a', { class: 'sidebar-link', href: '#' + id, text: label })));
+    }
+    const parts = el ('div', { class: 'options', id: 'sidebar-parts', role: 'group', 'aria-label': 'Part of the API' });
+    options (parts, [['', 'All'], ['c', 'C'], ['old', 'AC25/26 only'], ['cpp', 'C++']], partFilter, key => { setPart (key); render (); });
+    const versions = el ('div', { class: 'options', role: 'group', 'aria-label': 'Archicad version' });
+    options (versions, [[0, 'Any']].concat (data.versions.map (v => [v, String (v), 'Items in Archicad ' + v])), versionFilter, v => { versionFilter = v; render (); });
+    const groups = el ('ul', { id: 'sidebar-groups' });
+    for (const group of groupStats ().sort ((a, b) => a.name.localeCompare (b.name))) {
+        const link = el ('button', { type: 'button', class: 'sidebar-link', 'data-group': group.name, title: `${group.counts.open} open of ${group.counts.applicable}` },
+            el ('span', { text: group.name }), el ('span', { class: 'count', text: String (group.counts.open) }));
+        link.addEventListener ('click', () => showGroup (group.name));
+        groups.append (el ('li', {}, link));
+    }
+    sidebar.replaceChildren (el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
+        el ('div', { class: 'sidebar-title', text: 'Part of the API' }), parts,
+        el ('div', { class: 'sidebar-title', text: 'Archicad version' }), versions,
+        el ('div', { class: 'sidebar-title', text: 'Groups · open items' }), groups);
+    // Close the drawer after choosing a section or group on narrow screens.
+    sidebar.addEventListener ('click', event => {
+        if (event.target.closest ('a, #sidebar-groups button')) document.body.classList.remove ('sidebar-open');
+    });
 }
 
 function updateToolbarHeight () {
@@ -397,11 +467,20 @@ async function main () {
         document.getElementById ('hero-caption').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
         return;
     }
-    const version = document.getElementById ('version');
-    for (const v of data.versions) version.append (el ('option', { value: v, text: 'Archicad ' + v }));
     document.getElementById ('search').addEventListener ('input', render);
-    for (const id of ['part', 'version']) document.getElementById (id).addEventListener ('change', render);
-    document.getElementById ('group-sort').addEventListener ('change', renderGroupTable);
+    for (const button of document.querySelectorAll ('#group-sort .option')) {
+        button.addEventListener ('click', () => {
+            groupSort = button.dataset.sort;
+            for (const other of document.querySelectorAll ('#group-sort .option')) other.setAttribute ('aria-pressed', String (other === button));
+            renderGroupTable ();
+        });
+    }
+    document.getElementById ('sections-button').addEventListener ('click', () => document.body.classList.toggle ('sidebar-open'));
+    document.addEventListener ('keydown', event => { if (event.key === 'Escape') document.body.classList.remove ('sidebar-open'); });
+    document.addEventListener ('click', event => {
+        if (!event.target.closest ('#sidebar, #sections-button')) document.body.classList.remove ('sidebar-open');
+    });
+    renderSidebar ();
     document.getElementById ('groups-more').addEventListener ('click', () => { showAllGroups = !showAllGroups; renderGroupTable (); });
     renderOverview ();
     render ();
