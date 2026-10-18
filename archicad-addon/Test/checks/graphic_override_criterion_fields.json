@@ -359,6 +359,29 @@
           "name": "rejected"
         }
       ]
+    },
+    {
+      "id": "empty classification item",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck field 102",
+            "ruleGroupName": "TapirCheck criterion fields",
+            "criterion": {
+              "classification": ""
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "rejected"
+        }
+      ]
     }
   ],
   "teardown": [

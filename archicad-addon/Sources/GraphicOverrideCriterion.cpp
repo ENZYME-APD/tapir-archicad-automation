@@ -31,14 +31,11 @@ static const char* kDrawingElemClassGuid = "FD699EDF-F0A1-4728-87B8-092C09E4DE71
 
 struct ElemTypeInfo { const char* name; const char* refId; const char* mainGuid; const char* revGuid; };
 
-// Only element types created with a fixed, non-library-part tool are listed here: their
-// ElemCreatorToolUnID guids are all-zero (no GDL library part backs them), so ElemRegistryRefId
-// alone identifies the type reliably. Library-part-based tools (Door, Window, Object, Lamp, Zone,
-// Label, Grid, and most MEP part types) were confirmed THIS session to use a real MainGuid/RevGuid
-// pointing at Archicad's built-in library part - and that guid was confirmed to differ between the
-// DevKit's own sample (an older Archicad build) and this live project for the exact same tool
-// (Door), meaning it is not a portable constant. Hardcoding it here would only work on the Archicad
-// version/build it was captured from, so those types are intentionally left unsupported for now.
+// Every element type is identified by its ElemRegistryRefId alone, with an all-zero
+// ElemCreatorToolUnID. For library part based tools (Door, Window, Object, Lamp, Zone, Label, Grid,
+// MEP parts) the criteria editor also writes the tool's library subtype, whose revision differs
+// between library versions; the registry code alone still matches every element of the tool, see
+// the comment above the library part based entries.
 static const ElemTypeInfo kElemTypeTable[] = {
     { "Wall",              "1463897138", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
     { "Column",            "1129270357", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
@@ -147,14 +144,11 @@ static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info)
          + "</ElemTypeCriterion>";
 }
 
-// CriteriaOperatorEnum values were confirmed live by creating one rule per operator in ArchiCAD's
-// own criteria editor and reading back which value each produced: 1 = "is not" (plain), 10 = "has
-// value", 11 = "has no value", 12 = "is" (confirmed identical to "is in the branch of" - ArchiCAD
-// treats them as the same operator for a hierarchical Classification property), 13 = "is the
-// direct child of", 14 = "is not in the branch of", 15 = "is not the direct child of". 12/"is" is
-// what the built-in "Classification - X" system rules use; 14 (not just 11 - "has no value" is a
-// different, unrelated operator) is its natural negation, matching an item and all its descendants
-// resp. excluding all of them.
+// CriteriaOperatorEnum values, read in the criteria editor and checked on classified elements:
+// 0 is (this item exactly), 1 is not, 10 has a value, 11 has no value (both ignore the item but
+// need one), 12 is in the branch of (the item and its descendants, what the built-in
+// "Classification - X" rules use), 13 is a direct child of, 14 is not in the branch of, 15 is not a
+// direct child of.
 //
 // The classification SYSTEM is named, not identified by guid (HasNameId, like every custom
 // property), and a mismatched name silently discards the whole criterion. The criteria editor
@@ -233,9 +227,7 @@ static GS::UniString FirstClassificationItemId (const GS::UniString& systemLabel
     return GS::UniString ();
 }
 
-// op: 0 is, 1 is not, 10 has a value, 11 has no value (the item is ignored), 12 is in the branch of,
-// 13 is a direct child of, 14 is not in the branch of, 15 is not a direct child of (labels read in
-// the criteria editor, checked on classified elements).
+// op: see the operator comment above ClassificationSystemLabel.
 static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, int op, const GS::UniString& systemName)
 {
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
@@ -1279,6 +1271,10 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
             GS::UniString itemId;
             if (!node.Get (kClassificationFields[i], itemId)) {
                 continue;
+            }
+            if (itemId.IsEmpty ()) {
+                outError = GS::UniString ("'") + kClassificationFields[i] + "' needs a Classification System item ID. Use classificationHasValue or classificationHasNoValue to test any item of a system.";
+                return false;
             }
             GS::UniString requestedSystem, classificationSystem;
             node.Get ("classificationSystem", requestedSystem);
