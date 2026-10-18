@@ -12,7 +12,12 @@ them archicad-addon/Sources uses:
   function when the match is unambiguous, and as their own rows otherwise.
 - The C++ API (ACAPI:: and IFCAPI:: namespaces in Support/Modules/*/ACAPI):
   every exported class and its public member functions, and exported free
-  functions.
+  functions. A member of a class renamed between two DevKits (MEP's Bend,
+  Elbow from Archicad 29) is one row under its new name, with the old one as
+  an older name.
+
+Every item carries its declaration and header from the newest DevKit that has
+it, so the page's "claim" link can put them into the issue it opens.
 
 Status of an item: done (used on main), merged (used on main but not in the
 latest release), in progress (added by an open pull request), claimed (named
@@ -96,6 +101,13 @@ def brief_before (text, position):
     return ' '.join (found.group (1).replace ('*', ' ').split ()) if found else ''
 
 
+def declaration_at (text, start):
+    """The declaration starting at start, up to its ';', on one line (long ones are cut)."""
+    end = text.find (';', start)
+    declaration = ' '.join (text[start:end if end != -1 else start + 600].split ())
+    return declaration if len (declaration) <= 600 else declaration[:597] + '...'
+
+
 def strip_comments (text):
     text = re.sub (r'/\*.*?\*/', lambda m: '\n' * m.group (0).count ('\n'), text, flags=re.S)
     return re.sub (r'//[^\n]*', '', text)
@@ -104,17 +116,23 @@ def strip_comments (text):
 # --------------------------------------------------------------------- C API --
 
 def read_c_api (support):
-    """Exported ACAPI_* functions and the AC25/26 command ids of one DevKit."""
+    """Exported ACAPI_* functions and the AC25/26 command ids of one DevKit,
+    each with its brief (or comment), declaration and header."""
     functions, old_ids = {}, {}
     headers = list ((support / 'Inc').rglob ('*.h')) + list ((support / 'Modules').glob ('*API/*.h*'))
     for header in sorted (headers):
         text = read_text (header)
+        path = header.relative_to (support).as_posix ()
         for match in C_EXPORT_RE.finditer (text):
-            functions.setdefault (match.group (1), brief_before (text, match.start ()))
+            functions.setdefault (match.group (1), {'brief': brief_before (text, match.start ()),
+                                                    'declaration': declaration_at (text, match.start ()), 'header': path})
         for match in OLD_ID_RE.finditer (text):
+            line_start = text.rfind ('\n', 0, match.start ()) + 1
             line_end = text.find ('\n', match.end ())
             comment = text[match.end ():line_end]
-            old_ids.setdefault (match.group (1), ' '.join (comment.split ('//', 1)[-1].split ()) if '//' in comment else '')
+            old_ids.setdefault (match.group (1), {
+                'comment': ' '.join (comment.split ('//', 1)[-1].split ()) if '//' in comment else '',
+                'declaration': ' '.join (text[line_start:line_end].split ('//', 1)[0].split ()).rstrip (','), 'header': path})
     return functions, old_ids
 
 
@@ -136,6 +154,7 @@ def read_cpp_api (support):
     headers += sorted ((support / 'Modules').glob ('*API/ACAPI_*.hpp'))
     for header in headers:
         module = header.relative_to (support / 'Modules').parts[0]
+        path = header.relative_to (support).as_posix ()
         raw = read_text (header)
         text = strip_comments (raw)
         # Walk the braces, keeping a stack of (kind, name, exported, access).
@@ -165,7 +184,7 @@ def read_cpp_api (support):
                     continue
                 elif re.search (r'\)\s*(const)?\s*(noexcept)?\s*(override)?\s*(final)?\s*(->[^{]*)?$', head) or head.endswith ('='):
                     kind = 'body'
-                record_statement (items, stack, head + ';', module, header.name, raw) if kind == 'body' else None
+                record_statement (items, stack, head + ';', module, header.name, path) if kind == 'body' else None
                 stack.append ([kind, name, False, 'public'])
                 statement = ''
             elif ch == '}':
@@ -173,7 +192,7 @@ def read_cpp_api (support):
                     stack.pop ()
                 statement = ''
             elif ch == ';':
-                record_statement (items, stack, statement + ';', module, header.name, raw)
+                record_statement (items, stack, statement + ';', module, header.name, path)
                 statement = ''
             elif ch == ':' and stack and stack[-1][0] == 'class':
                 label = statement.strip ()
@@ -194,7 +213,60 @@ def read_cpp_api (support):
     return items
 
 
-def record_statement (items, stack, statement, module, header_name, raw):
+def cpp_renames (cpp_items):
+    """Old key -> new key for C++ items whose class was renamed between two DevKits.
+
+    A class that ends in one DevKit and a class of the same module that starts
+    in the next are taken as one renamed class when they share at least two
+    member functions and half of all their member functions, and neither has
+    another such candidate (MEP's Bend in AC27-28 is Elbow from AC29). Their
+    shared members, and free functions whose names differ only by the class
+    names (CreateBendDefault, CreateElbowDefault), become older names of the
+    new ones.
+    """
+    classes = collections.defaultdict (lambda: {'versions': set (), 'members': set (), 'module': ''})
+    for item in cpp_items.values ():
+        if item['class']:
+            entry = classes[item['class']]
+            entry['versions'] |= item['versions']
+            entry['members'].add (item['name'])
+            entry['module'] = item['module']
+    successors, predecessors = collections.defaultdict (set), collections.defaultdict (set)
+    for old, a in classes.items ():
+        for new, b in classes.items ():
+            common = a['members'] & b['members']
+            if (old != new and a['module'] == b['module'] and max (a['versions']) + 1 == min (b['versions'])
+                    and len (common) >= 2 and len (common) * 2 >= len (a['members'] | b['members'])):
+                successors[old].add (new)
+                predecessors[new].add (old)
+    renamed = {old: next (iter (news)) for old, news in successors.items ()
+               if len (news) == 1 and len (predecessors[next (iter (news))]) == 1}
+
+    renames = {}
+    for old, new in renamed.items ():
+        for member in classes[old]['members'] & classes[new]['members']:
+            renames[f'{old}::{member}'] = f'{new}::{member}'
+    # Free functions named after a renamed class, longest class names first.
+    short_names = sorted (((old.split ('::')[-1], new.split ('::')[-1]) for old, new in renamed.items ()),
+                          key=lambda pair: -len (pair[0]))
+    for key, item in cpp_items.items ():
+        if item['class']:
+            continue
+        for old_short, new_short in short_names:
+            if old_short in item['name']:
+                new_key = key[:-len (item['name'])] + item['name'].replace (old_short, new_short)
+                new_item = cpp_items.get (new_key)
+                if new_item and not new_item['class'] and max (item['versions']) + 1 == min (new_item['versions']):
+                    renames[key] = new_key
+                break
+    # A name renamed twice (A, then B, then C) points at its newest name.
+    for old in renames:
+        while renames[old] in renames:
+            renames[old] = renames[renames[old]]
+    return renames
+
+
+def record_statement (items, stack, statement, module, header_name, path):
     if any (frame[0] == 'body' for frame in stack):
         return
     statement = ' '.join (statement.split ())
@@ -222,12 +294,13 @@ def record_statement (items, stack, statement, module, header_name, raw):
             return  # constructors: covered by the class row
         key = f'{namespace}::{class_path}::{name}'
         items.setdefault (key, {'module': module, 'header': header_name, 'class': f'{namespace}::{class_path}',
-                                'name': name, 'brief': ''})
+                                'name': name, 'brief': '', 'declaration': declaration_at (statement, 0), 'path': path})
     else:
         if not EXPORT_MACRO_RE.search (before_paren) and 'inline' not in before_paren and 'template' not in before_paren:
             return
         key = f'{namespace}::{name}'
-        items.setdefault (key, {'module': module, 'header': header_name, 'class': '', 'name': name, 'brief': ''})
+        items.setdefault (key, {'module': module, 'header': header_name, 'class': '', 'name': name, 'brief': '',
+                                'declaration': declaration_at (statement, 0), 'path': path})
 
 
 # --------------------------------------------------------------- Tapir usage --
@@ -323,22 +396,25 @@ def cpp_used (item, files):
 
 def build (args):
     versions = sorted (args.devkit)
-    c_functions = {}  # name -> {versions, brief}
-    old_ids = {}      # id -> {versions, comment}
+    c_functions = {}  # name -> {versions, brief, declaration, header}
+    old_ids = {}      # id -> {versions, comment, declaration, header}
     cpp_items = {}
     for version in versions:
         support = args.devkit[version]
         functions, ids = read_c_api (support)
-        for name, brief in functions.items ():
+        # The declaration and header of the newest DevKit that has the item.
+        for name, found in functions.items ():
             entry = c_functions.setdefault (name, {'versions': set (), 'brief': ''})
             entry['versions'].add (version)
-            entry['brief'] = brief or entry['brief']
-        for name, comment in ids.items ():
-            entry = old_ids.setdefault (name, {'versions': set (), 'comment': comment})
+            entry.update (brief=found['brief'] or entry['brief'], declaration=found['declaration'], header=found['header'])
+        for name, found in ids.items ():
+            entry = old_ids.setdefault (name, {'versions': set (), 'comment': found['comment']})
             entry['versions'].add (version)
+            entry.update (declaration=found['declaration'], header=found['header'])
         for key, item in read_cpp_api (support).items ():
             entry = cpp_items.setdefault (key, dict (item, versions=set ()))
             entry['versions'].add (version)
+            entry.update (declaration=item['declaration'], path=item['path'])
 
     latest = versions[-1]
     current = {n for n, e in c_functions.items () if latest in e['versions']}
@@ -397,7 +473,7 @@ def build (args):
 
     items = []
 
-    def add (item_id, kind, group, brief, item_versions, names, is_used, was_released, search_names):
+    def add (item_id, kind, group, brief, item_versions, names, is_used, was_released, search_names, source):
         status, reason = rule_for (item_id, group)
         prs = mentioned (search_names, pr_text)
         issues = mentioned (search_names, issue_text)
@@ -412,6 +488,7 @@ def build (args):
                 status = 'open'
         items.append ({
             'id': item_id, 'kind': kind, 'group': group, 'brief': brief,
+            'declaration': source['declaration'], 'header': source['header'],
             'versions': sorted (item_versions), 'olderNames': [n for n in names if n != item_id],
             'status': status, 'reason': reason or '',
             'pullRequests': prs, 'issues': issues,
@@ -425,28 +502,40 @@ def build (args):
         is_used = any (n in used for n in names)
         released = None if release_used is None else any (n in release_used for n in names)
         group = name.split ('_')[1] if name.count ('_') >= 2 else 'General'
-        add (name, 'C function', group, c_functions[name]['brief'], item_versions, names, is_used, released, names)
+        add (name, 'C function', group, c_functions[name]['brief'], item_versions, names, is_used, released, names,
+             c_functions[name])
 
     for name in standalone_old:
         is_used = name in used
         released = None if release_used is None else name in release_used
         group = name.split ('_')[1] if name.count ('_') >= 2 else 'General'
         add (name, 'C function (older versions only)', group, c_functions[name]['brief'],
-             c_functions[name]['versions'], [name], is_used, released, [name])
+             c_functions[name]['versions'], [name], is_used, released, [name], c_functions[name])
 
     for name in unmatched_ids:
         is_used = name in used
         released = None if release_used is None else name in release_used
         group = 'AC25/26 command ids (' + name.split ('_')[0] + ')'
         add (name, 'AC25/26 command id', group, old_ids[name]['comment'], old_ids[name]['versions'],
-             [name], is_used, released, [name])
+             [name], is_used, released, [name], old_ids[name])
 
+    # A C++ item of a renamed class is listed under its new name, with the old one as an older name.
+    renames = cpp_renames (cpp_items)
+    cpp_aliases = collections.defaultdict (list)
+    for old, new in renames.items ():
+        cpp_aliases[new].append (old)
     for key, item in sorted (cpp_items.items ()):
-        is_used = cpp_used (item, files)
-        released = None if release_files is None else cpp_used (item, release_files)
+        if key in renames:
+            continue
+        names = [key] + sorted (cpp_aliases.get (key, []))
+        named = [cpp_items[name] for name in names]
+        is_used = any (cpp_used (i, files) for i in named)
+        released = None if release_files is None else any (cpp_used (i, release_files) for i in named)
+        search_names = [n for name, i in zip (names, named) for n in (name, i['class'] + '::' + i['name'] if i['class'] else name)]
         group = 'C++ ' + item['module']
         add (key, 'C++ member function' if item['class'] else 'C++ function', group, item['brief'],
-             item['versions'], [key], is_used, released, [key, item['class'] + '::' + item['name'] if item['class'] else key])
+             set ().union (*(i['versions'] for i in named)), names, is_used, released, search_names,
+             {'declaration': item['declaration'], 'header': item['path']})
 
     return versions, items, github.get ('generatedAt', '')
 
