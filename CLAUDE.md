@@ -174,6 +174,11 @@ python test_examples.py
   [Examples/](archicad-addon/Examples/), and diffs against `ExpectedOutputs/`.
 - Example scripts talk to the Add-On via `ExecuteAddOnCommand(AddOnCommandId('TapirCommand', <CommandName>), params)`.
 - `aclib/` under `Examples/` is a small shared helper used by the example scripts.
+- Pull requests and local builds are tested on real Archicad with
+  [tools/community-test-runner/](tools/community-test-runner/) (JSON checks in
+  `archicad-addon/Test/checks/`). Use its `--brief` output (`prs`, `test … --brief --no-post`,
+  `trial … --brief`, `check --brief`) rather than reading reports or its source; its skill is
+  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`.
 
 ## Grasshopper plugin
 
