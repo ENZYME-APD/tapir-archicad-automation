@@ -33,12 +33,15 @@ github.json (optional, written by the workflow from the GitHub API):
      "openPullRequests": [{"number": 1, "title": "...", "addedText": "..."}],
      "openIssues": [{"number": 2, "title": "...", "body": "..."}]}
 
-Writes out/api-coverage.json, out/api-coverage.md and out/api-coverage-summary.md.
+Writes out/api-coverage.json, out/api-coverage.md, out/api-coverage-summary.md
+and, for the README, out/api-coverage-badge.json (a shields.io endpoint badge)
+and out/api-coverage.svg / out/api-coverage-dark.svg (the summary as an image).
 """
 
 import argparse
 import collections
 import datetime
+import html
 import json
 import pathlib
 import re
@@ -63,6 +66,21 @@ STATUS_MARK = {
     'done': '✅', 'merged': '🔀', 'in progress': '🚧', 'claimed': '🙋',
     'open': '⬜', 'skipped': '⛔', 'not applicable': '➖',
 }
+# The parts of the API in the summary: name, short name for the image, test.
+PARTS = [
+    ('C functions', 'C functions', lambda i: i['kind'] == 'C function'),
+    ('C functions of Archicad 25/26 only, and their command ids', 'Archicad 25/26 only',
+     lambda i: i['kind'] in ('C function (older versions only)', 'AC25/26 command id')),
+    ('C++ API (ACAPI::, IFCAPI::)', 'C++ API', lambda i: i['kind'].startswith ('C++')),
+]
+# The colors of docs/api-coverage/index.html: one blue ramp, open is the track.
+SVG_THEMES = {
+    'light': {'bg': '#f6f8fa', 'line': '#d1d9e0', 'fg': '#1f2328', 'muted': '#59636e', 'track': '#e6e8eb',
+              'done': '#1c5cab', 'merged': '#3987e5', 'in progress': '#86b6ef', 'claimed': '#86b6ef'},
+    'dark': {'bg': '#22262c', 'line': '#3d444d', 'fg': '#e6edf3', 'muted': '#9198a1', 'track': '#33373d',
+             'done': '#9ec5f4', 'merged': '#5598e7', 'in progress': '#256abf', 'claimed': '#256abf'},
+}
+BAR_STATUSES = ['done', 'merged', 'in progress', 'claimed']
 
 
 def read_text (path):
@@ -440,12 +458,84 @@ def link (kind, entry):
     return f'[#{entry["number"]}]({REPO_URL}/{path}/{entry["number"]} "{entry["title"].replace(chr(34), "")}")'
 
 
+def coverage (counts):
+    """The used and the applicable item count of a Counter of statuses."""
+    return counts['done'] + counts['merged'], sum (counts.values ()) - counts['not applicable'] - counts['skipped']
+
+
+def percent (used, applicable):
+    return 100 * used // max (applicable, 1)
+
+
+def svg_bar (x, y, width, height, counts, theme):
+    """A stacked bar of the used and coming items over the track of the open ones."""
+    applicable = coverage (counts)[1]
+    shapes = [f'<rect x="{x}" y="{y}" width="{width}" height="{height}" rx="{height / 2}" fill="{theme["track"]}"/>']
+    clip = f'<clipPath id="bar{y}"><rect x="{x}" y="{y}" width="{width}" height="{height}" rx="{height / 2}"/></clipPath>'
+    position = x
+    for status in BAR_STATUSES:
+        part = width * counts[status] / max (applicable, 1)
+        if part > 0:
+            fill = 'url(#claimed)' if status == 'claimed' else theme[status]
+            shapes.append (f'<rect x="{position:.1f}" y="{y}" width="{part:.1f}" height="{height}" fill="{fill}" clip-path="url(#bar{y})"/>')
+        position += part
+    return [clip] + shapes
+
+
+def write_svg (path, versions, counts, part_counts, now, theme):
+    """The summary as an image for the README, which cannot run scripts or read data."""
+    width, pad = 760, 24
+    used, applicable = coverage (counts)
+    text = f'font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Helvetica, Arial, sans-serif" fill="{theme["fg"]}"'
+    out = [
+        '<defs>',
+        f'<pattern id="claimed" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+        f'<rect width="6" height="6" fill="{theme["track"]}"/><rect width="3" height="6" fill="{theme["claimed"]}"/></pattern>',
+        '</defs>',
+        f'<text x="{pad}" y="34" font-size="15" font-weight="600" {text}>Archicad API coverage of Tapir</text>',
+        f'<text x="{pad}" y="84" font-size="44" font-weight="600" {text}>{percent (used, applicable)} %</text>',
+        f'<text x="168" y="64" font-size="15" {text}><tspan font-weight="600">{used} of {applicable}</tspan> applicable Archicad API items are used</text>',
+        f'<text x="168" y="85" font-size="13" {text} style="fill:{theme["muted"]}">'
+        f'{counts["in progress"]} more in open pull requests, {counts["claimed"]} claimed by open issues, {counts["open"]} open</text>',
+    ]
+    out += svg_bar (pad, 104, width - 2 * pad, 14, counts, theme)
+    legend = [('done', 'used on main'), ('merged', 'not yet released'), ('in progress', 'in a pull request'),
+              ('claimed', 'claimed in an issue'), ('open', 'open')]
+    # Each entry as wide as its text (about 0.6 em a character) and the same gap after each.
+    widths = [15 + 7 * len (f'{label} {counts[status]}') for status, label in legend]
+    gap = (width - 2 * pad - sum (widths)) / (len (legend) - 1)
+    x = pad
+    for (status, label), entry_width in zip (legend, widths):
+        fill = 'url(#claimed)' if status == 'claimed' else theme['track' if status == 'open' else status]
+        out.append (f'<rect x="{x:.1f}" y="134" width="10" height="10" rx="2" fill="{fill}" stroke="{theme["line"]}"/>')
+        out.append (f'<text x="{x + 15:.1f}" y="143" font-size="12" {text} style="fill:{theme["muted"]}">{html.escape (label)} '
+                    f'<tspan style="fill:{theme["fg"]}">{counts[status]}</tspan></text>')
+        x += entry_width + gap
+    y = 176
+    for (_, short, _), c in zip (PARTS, part_counts):
+        part_used, part_applicable = coverage (c)
+        out.append (f'<text x="{pad}" y="{y + 11}" font-size="13" {text}>{html.escape (short)}</text>')
+        out += svg_bar (180, y, 400, 12, c, theme)
+        out.append (f'<text x="{width - pad}" y="{y + 11}" font-size="13" text-anchor="end" {text}>'
+                    f'<tspan font-weight="600">{percent (part_used, part_applicable)} %</tspan>'
+                    f'<tspan style="fill:{theme["muted"]}"> of {part_applicable}</tspan></text>')
+        y += 28
+    out.append (f'<text x="{pad}" y="{y + 16}" font-size="12" {text} style="fill:{theme["muted"]}">'
+                f'Archicad {versions[0]}–{versions[-1]} DevKits; not applicable and skipped items are left out. '
+                f'Updated {html.escape (now)}.</text>')
+    height = y + 32
+    path.write_text (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" '
+        f'role="img" aria-label="Archicad API coverage of Tapir: {used} of {applicable} items ({percent (used, applicable)} %)">\n'
+        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="8" fill="{theme["bg"]}" stroke="{theme["line"]}"/>\n'
+        + '\n'.join (out) + '\n</svg>\n', encoding='utf-8')
+
+
 def write_outputs (versions, items, generated_at, out_dir):
     out_dir.mkdir (parents=True, exist_ok=True)
     now = generated_at or datetime.datetime.now (datetime.timezone.utc).strftime ('%Y-%m-%d %H:%M UTC')
     counts = collections.Counter (i['status'] for i in items)
-    applicable = len (items) - counts['not applicable'] - counts['skipped']
-    covered = counts['done'] + counts['merged']
+    covered, applicable = coverage (counts)
     (out_dir / 'api-coverage.json').write_text (json.dumps (
         {'generatedAt': now, 'versions': versions, 'counts': counts, 'items': items}, indent=1, ensure_ascii=False), encoding='utf-8')
 
@@ -456,24 +546,27 @@ def write_outputs (versions, items, generated_at, out_dir):
 
     summary = [
         f'**{covered} of {applicable}** applicable Archicad API items are used by Tapir '
-        f'({100 * covered // max (applicable, 1)} %): '
+        f'({percent (covered, applicable)} %): '
         + ', '.join (f'{STATUS_MARK[s]} {counts[s]} {s}' for s in STATUS_ORDER if counts[s]) + '.',
         '',
         '| Part of the API | Used | Applicable | ' + ' | '.join (STATUS_MARK[s] for s in STATUS_ORDER) + ' |',
         '|---|---|---|' + '---|' * len (STATUS_ORDER),
     ]
-    parts = collections.OrderedDict ([
-        ('C functions', lambda i: i['kind'] == 'C function'),
-        ('C functions of Archicad 25/26 only, and their command ids', lambda i: i['kind'] in ('C function (older versions only)', 'AC25/26 command id')),
-        ('C++ API (ACAPI::, IFCAPI::)', lambda i: i['kind'].startswith ('C++')),
-    ])
-    for part, test in parts.items ():
-        c = collections.Counter (i['status'] for i in items if test (i))
-        part_applicable = sum (c.values ()) - c['not applicable'] - c['skipped']
-        summary.append (f'| {part} | {100 * (c["done"] + c["merged"]) // max (part_applicable, 1)} % | {part_applicable} | '
+    part_counts = [collections.Counter (i['status'] for i in items if test (i)) for _, _, test in PARTS]
+    for (part, _, _), c in zip (PARTS, part_counts):
+        part_used, part_applicable = coverage (c)
+        summary.append (f'| {part} | {percent (part_used, part_applicable)} % | {part_applicable} | '
                         + ' | '.join (str (c[s] or '') for s in STATUS_ORDER) + ' |')
     summary += ['', f'Archicad {versions[0]}–{versions[-1]} DevKits; updated {now}.']
     (out_dir / 'api-coverage-summary.md').write_text ('\n'.join (summary) + '\n', encoding='utf-8')
+
+    # For the README: https://img.shields.io/endpoint?url=<raw URL of this file>
+    (out_dir / 'api-coverage-badge.json').write_text (json.dumps ({
+        'schemaVersion': 1, 'label': 'Archicad API coverage',
+        'message': f'{percent (covered, applicable)} % ({covered}/{applicable})', 'color': '1c5cab',
+    }), encoding='utf-8')
+    for name, theme in (('api-coverage.svg', 'light'), ('api-coverage-dark.svg', 'dark')):
+        write_svg (out_dir / name, versions, counts, part_counts, now, SVG_THEMES[theme])
 
     lines = [
         '# Archicad API coverage',

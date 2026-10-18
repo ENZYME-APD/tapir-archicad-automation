@@ -14,7 +14,10 @@
 # It publishes without touching main:
 #   - api-coverage.json, api-coverage.md and api-coverage-summary.md as one
 #     commit on the api-coverage branch (read by docs/api-coverage/index.html
-#     and readable on GitHub),
+#     and readable on GitHub), with api-coverage-badge.json (a shields.io
+#     endpoint badge) and api-coverage.svg / api-coverage-dark.svg (the summary
+#     as an image): the README shows those two from the branch, so it never
+#     changes when the coverage does,
 #   - the summary in the body of the tracking issue whose number is in the
 #     API_COVERAGE_ISSUE repository variable, when it is set.
 #
@@ -120,6 +123,7 @@ jobs:
       - name: Publish to the api-coverage branch
         run: |
           set -eu
+          files="api-coverage.json api-coverage.md api-coverage-summary.md api-coverage-badge.json api-coverage.svg api-coverage-dark.svg"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if git fetch -q origin api-coverage; then
@@ -127,11 +131,12 @@ jobs:
           else
             git worktree add -q --detach publish
             git -C publish checkout -q --orphan api-coverage
-            git -C publish rm -rq .
+            # -f: on the new orphan branch the files of main are staged, not committed.
+            git -C publish rm -rqf .
           fi
-          cp out/api-coverage.json out/api-coverage.md out/api-coverage-summary.md publish/
+          for file in $files; do cp "out/$file" publish/; done
           cd publish
-          git add api-coverage.json api-coverage.md api-coverage-summary.md
+          git add $files
           if git diff --cached --quiet; then
             echo "The checklist did not change."
             exit 0
