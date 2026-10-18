@@ -285,7 +285,10 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   and marks each item used on `main`, merged but not released, in an open PR,
   claimed by an open issue (the "Archicad API request" issue form), open, skipped
   or not applicable. It publishes `api-coverage.json`/`.md` to the `api-coverage`
-  branch (never to `main`), read by `docs/api-coverage/index.html`, and writes the
+  branch (never to `main`), read by `docs/api-coverage/index.html`, with the
+  README's badge (`api-coverage-badge.json`, a shields.io endpoint) and summary
+  image (`api-coverage.svg`, `api-coverage-dark.svg`), so the README never needs
+  an edit when the coverage changes; it also writes the
   summary into the issue numbered in the `API_COVERAGE_ISSUE` repository variable
   when set; `API_COVERAGE=false` turns it off. It uses `pull_request_target`, so it
   must never check out or run pull request code. Maintainers mark items skipped,
