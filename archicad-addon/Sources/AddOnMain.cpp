@@ -835,7 +835,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAttributeFoldersCommand> (
             attributeCommands, "1.7.2",
-            "Deletes attribute folders, each given by attribute type and path. The root folder cannot be deleted. Available from Archicad 26."
+            "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26."
         );
         err |= RegisterCommand<RenameAttributeFoldersCommand> (
             attributeCommands, "1.7.2",
