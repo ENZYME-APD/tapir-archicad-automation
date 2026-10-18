@@ -2928,5 +2928,29 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap CreateGridElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGridElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGridElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGridElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGridElementDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGridElementDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
