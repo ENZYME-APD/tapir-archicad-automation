@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 10:13 UTC",
+ "generatedAt": "2026-10-18 10:26 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1535,
+  "open": 1534,
   "not applicable": 468,
   "in progress": 113,
   "done": 491,
-  "claimed": 26,
+  "claimed": 27,
   "merged": 250
  },
  "items": [
@@ -24342,10 +24342,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1059,
+     "title": "Expose ACAPI_Override_GetOverrideRule"
+    }
+   ]
   },
   {
    "id": "ACAPI_Preferences_OldVersion",
