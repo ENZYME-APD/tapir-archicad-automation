@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:21 UTC",
+ "generatedAt": "2026-10-18 21:26 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1502,
+  "open": 1496,
   "not applicable": 468,
-  "in progress": 127,
+  "in progress": 128,
   "done": 491,
-  "claimed": 43,
+  "claimed": 48,
   "merged": 252
  },
  "items": [
@@ -4429,6 +4429,10 @@
    ],
    "issues": [
     {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    },
+    {
      "number": 1092,
      "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
     },
@@ -5413,9 +5417,14 @@
    "olderNames": [
     "APIDb_GetContainingDatabaseID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1107,
+     "title": "Add GetContainingDatabases command to find an element's database"
+    }
+   ],
    "issues": [
     {
      "number": 1103,
@@ -22680,6 +22689,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1107,
+     "title": "Add GetContainingDatabases command to find an element's database"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -23227,6 +23240,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1107,
+     "title": "Add GetContainingDatabases command to find an element's database"
+    },
     {
      "number": 1085,
      "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
@@ -26408,10 +26425,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::GetStatus",
@@ -26426,10 +26448,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly",
@@ -26491,10 +26518,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::SetStandardCombination",
@@ -26508,10 +26540,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination",
@@ -26746,10 +26783,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetDesignOptionCombinations",
@@ -51342,10 +51384,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1108,
+     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelViews::View::GetGuid",
