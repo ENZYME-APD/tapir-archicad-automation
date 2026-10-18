@@ -43,6 +43,9 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GraphicOverrideCommands.hpp"
+#include "GridElementCommands.hpp"
+#include "GraphicalOverrideCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -549,6 +552,18 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.7",
             "Creates Lamp elements based on the given parameters."
         );
+        err |= RegisterCommand<GetGridElementDefaultsCommand> (
+            elementCommands, "1.7.2",
+            "Returns the Grid Tool defaults: library part, size and GDL parameters of a new grid element. Needs Archicad 26 or later."
+        );
+        err |= RegisterCommand<GetGridElementsCommand> (
+            elementCommands, "1.7.2",
+            "Lists the grid elements (placed with the Grid Tool or created by CreateGridElements) with their position, angle, size, library part and optionally GDL parameters. Needs Archicad 26 or later."
+        );
+        err |= RegisterCommand<CreateGridElementsCommand> (
+            elementCommands, "1.7.2",
+            "Creates grid elements, the elements the Grid Tool places, from begin and end coordinates, with optional story, layer and GDL parameters. Needs Archicad 26 or later."
+        );
         err |= RegisterCommand<CreateMeshesCommand> (
             elementCommands, "1.1.9",
             "Creates Mesh elements based on the given parameters."
@@ -909,6 +924,42 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Returns the details of the given Building Material attributes."
         );
+        err |= RegisterCommand<GetGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Creates graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. The rule group is created when no rule group has the given name. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ModifyGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Modifies the name, criterion or style of graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. A given style replaces the whole style of the rule. Available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteGraphicOverrideRulesCommand> (
+            attributeCommands, "1.7.2",
+            "Deletes graphic override rules. They are also removed from the combinations that contain them. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.2",
+            "Gets all graphic override combinations of the project with the rules they contain. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.2",
+            "Creates graphic override combinations from existing rules. Available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.2",
+            "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.2",
+            "Gets all graphic override rule groups of the project with the rules they contain, empty groups included. Available from Archicad 27."
+        );
+        err |= RegisterCommand<DeleteGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.2",
+            "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27."
+        );
         AddCommandGroup (attributeCommands);
     }
 
@@ -1084,6 +1135,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Sets the view settings of navigator items"
         );
+        err |= RegisterCommand<GetActiveGraphicalOverrideCombinationCommand> (
+            navigatorCommands, "1.7.2",
+            "Gets the graphic override combination applied to the current window, with its id and name. The response is empty when no combination is applied. This is the combination of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 30."
+        );
+        err |= RegisterCommand<SetActiveGraphicalOverrideCombinationCommand> (
+            navigatorCommands, "1.7.2",
+            "Applies a graphic override combination, given by id or by name, to the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...). To remove the overrides, apply the project's 'No Overrides' combination. The saved view is not changed (see SetViewSettings for that). Available from Archicad 30."
+        );
         err |= RegisterCommand<GetView2DTransformationsCommand> (
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
@@ -1145,6 +1204,23 @@ GSErrCode Initialize (void)
             "Returns the full navigator item tree for the specified map."
         );
         AddCommandGroup (navigatorCommands);
+    }
+
+    { // Graphic Override Commands
+        CommandGroup graphicOverrideCommands ("Graphic Override Commands");
+        err |= RegisterCommand<CreateGraphicalOverrideRuleCommand> (
+            graphicOverrideCommands, "1.7.2",
+            "Creates or overwrites a graphic override rule in a rule group: name, criterion XML, surface color and line pen. Needs Archicad 27 or later."
+        );
+        err |= RegisterCommand<GetGraphicalOverrideRulesCommand> (
+            graphicOverrideCommands, "1.7.2",
+            "Returns every graphic override rule with its criterion XML. Needs Archicad 27 or later."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideCombinationCommand> (
+            graphicOverrideCommands, "1.7.2",
+            "Creates a graphic override combination from rule names, or replaces the rules of an existing one. Needs Archicad 27 or later."
+        );
+        AddCommandGroup (graphicOverrideCommands);
     }
 
     { // Issue Management Commands
@@ -1351,7 +1427,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id) and MEP system. Available from Archicad 28."
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data (shape, size, preference table and reference id), MEP system and layer (also set on the segments, elbows and transitions). Available from Archicad 28."
         );
         err |= RegisterCommand<CreateMEPElementsCommand> (
             mepCommands, "1.5.6",
