@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             OutTextTree(
                 "Types",
-                "What reduces the area in each polygon (Wall, Column, Hatch, Gable, LowArea or Rest), " +
+                "What reduces the area in each polygon (Wall, Column, Hatch, Gable, Rest or Unknown), " +
                 "one branch per Zone.");
 
             OutNumbers(

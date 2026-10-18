@@ -2,7 +2,7 @@ import aclib
 
 # GetZoneReductions returns the area reductions of Zones as the Zone Stamp's area calculation
 # uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs
-# (Gable) and low ceilings (LowArea), each with the percentage it is reduced by and its area.
+# (Gable) and low ceilings (reported as Unknown), each with the percentage it is reduced by and its area.
 # GetQuantitiesOfElements only gives the reduced totals; the parts are needed for area
 # calculations by local standards.
 

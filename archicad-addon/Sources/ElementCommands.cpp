@@ -3511,14 +3511,13 @@ GS::Optional<GS::UniString> GetZoneReductionsCommand::GetRawResponseSchema () co
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "description": "What reduces the area in the polygon, as the DevKit's API_RoomReductionPolyTypeID: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (the part under a sloping Roof), LowArea (the part below the low ceiling height), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not know.",
+                                                "description": "What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (the part under a sloping Roof), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name, such as the part below the low ceiling height.",
                                                 "enum": [
                                                     "Rest",
                                                     "Wall",
                                                     "Column",
                                                     "Hatch",
                                                     "Gable",
-                                                    "LowArea",
                                                     "Unknown"
                                                 ]
                                             },
@@ -3578,20 +3577,21 @@ GS::Optional<GS::UniString> GetZoneReductionsCommand::GetRawResponseSchema () co
     })";
 }
 
-static GS::UniString RoomReductionPolyTypeToString (API_RoomReductionPolyTypeID type)
+// API_RoomReductionPolyType::type is a short holding an APIRoomReduction_* value.
+static GS::UniString RoomReductionPolyTypeToString (short type)
 {
     switch (type) {
-        case APIRoomReduction_Rest:    return "Rest";
-        case APIRoomReduction_Wall:    return "Wall";
-        case APIRoomReduction_Column:  return "Column";
-        case APIRoomReduction_Hatch:   return "Hatch";
-        case APIRoomReduction_Gable:   return "Gable";
-        case APIRoomReduction_LowArea: return "LowArea";
-        default:                       return "Unknown";
+        case APIRoomReduction_Rest:   return "Rest";
+        case APIRoomReduction_Wall:   return "Wall";
+        case APIRoomReduction_Column: return "Column";
+        case APIRoomReduction_Hatch:  return "Hatch";
+        case APIRoomReduction_Gable:  return "Gable";
+        default:                      return "Unknown";
     }
 }
 
-// ACAPI_Element_RoomReductions hands every reduction polygon to a plain callback without a user
+// ACAPI_Element_RoomReductions (ACAPI_Database with APIDb_RoomReductionsID before Archicad 27,
+// see MigrationHelper.hpp) hands every reduction polygon to a plain callback without a user
 // data parameter, so the list under construction is reached through a thread local pointer, the
 // same way the floor plan primitive collector above does it.
 static thread_local GS::Array<GS::ObjectState>* tl_roomReductions = nullptr;
@@ -3631,10 +3631,10 @@ static void AddRoomReductionSubPolygon (GS::ObjectState& os, const API_RoomReduc
 // coordinates of subpolygon k run from subPolys[k - 1] + 1 to subPolys[k] (both 1 based), the
 // first subpolygon is the outline and the rest are holes, every subpolygon repeats its first
 // coordinate as its last one, and the arcs index into the whole coordinate array.
-static GSErrCode CollectRoomReduction (const API_RoomReductionPolyType* roomReduction)
+static void CollectRoomReduction (const API_RoomReductionPolyType* roomReduction)
 {
     if (tl_roomReductions == nullptr || roomReduction == nullptr) {
-        return NoError;
+        return;
     }
 
     GS::ObjectState reductionOS;
@@ -3677,7 +3677,6 @@ static GSErrCode CollectRoomReduction (const API_RoomReductionPolyType* roomRedu
     }
 
     tl_roomReductions->Push (reductionOS);
-    return NoError;
 }
 
 static GS::ObjectState GetReductionsOfZone (const API_Guid& zoneGuid)

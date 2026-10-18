@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Types.Element
 
     public class ZoneReduction
     {
-        // Wall, Column, Hatch, Gable, LowArea, Rest or Unknown.
+        // Wall, Column, Hatch, Gable, Rest or Unknown.
         [JsonProperty("type")]
         public string Type;
 
