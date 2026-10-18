@@ -239,6 +239,18 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "type": "number",
                             "description": "Optional column rotation angle in radians."
                         },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Optional slant angle in radians. A non-zero value also makes the column slanted, unless isSlanted is given explicitly."
+                        },
+                        "isSlanted": {
+                            "type": "boolean",
+                            "description": "Optional explicit slanted state. By default it is derived from slantAngle."
+                        },
+                        "slantDirectionAngle": {
+                            "type": "number",
+                            "description": "Optional rotation angle of the slanted column on the horizontal plane in radians."
+                        },
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the column. Applied to all segments.",
@@ -306,6 +318,22 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     GS::UniString coreAnchor;
     if (parameters.Get ("coreAnchor", coreAnchor)) {
         element.column.coreAnchor = ParseAnchorPointString (coreAnchor);
+    }
+
+    // Same rule as CreateBeams and SetDetailsOfElements: without isSlanted the column is created
+    // vertical and the angle is discarded.
+    double slantAngle = 0.0;
+    if (parameters.Get ("slantAngle", slantAngle)) {
+        element.column.slantAngle = slantAngle;
+        element.column.isSlanted = (slantAngle != 0.0);
+    }
+    bool isSlanted = false;
+    if (parameters.Get ("isSlanted", isSlanted)) {
+        element.column.isSlanted = isSlanted;
+    }
+    double slantDirectionAngle = 0.0;
+    if (parameters.Get ("slantDirectionAngle", slantDirectionAngle)) {
+        element.column.slantDirectionAngle = slantDirectionAngle;
     }
 
     double width = 0.0;
@@ -381,9 +409,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "exclusiveMinimum": 0.0
                     },
                     "structureType": {
-                        "type": "string",
-                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
-                        "enum": ["Basic", "Composite"]
+                        "$ref": "#/SlabStructureType",
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept."
                     },
                     "buildingMaterialId": {
                         "$ref": "#/AttributeId",
@@ -2717,11 +2744,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             const bool explicitContent = item.Get ("text", explicitContentTextCheck) || item.Get ("runs", explicitContentRunsCheck);
             if (explicitContent || styleChanged) {
                 // Start from a BLANK memo, not one fetched via ACAPI_Element_GetMemo first: confirmed
-                // live (by cross-checking against Archicad's own official fix, commit a2a111b/54cbd36
-                // upstream) that ACAPI_Element_Change only persists memo-based text content when fed a
-                // from-scratch API_ElementMemo{} together with the NON-Uni memomask below - fetching
-                // the existing memo first (as this used to do, with the *Uni masks) silently failed to
-                // persist despite ApplyTextContent replacing textContent/paragraphs correctly.
+                // live on Archicad 28 (by cross-checking against Archicad's own official fix, commit
+                // a2a111b/54cbd36 upstream) that ACAPI_Element_Change only persists memo-based text
+                // content when fed a from-scratch API_ElementMemo{} - fetching the existing memo first
+                // silently failed to persist despite ApplyTextContent replacing textContent/paragraphs
+                // correctly. The memo mask is version dependent, see TextContentMemoMask.
                 GS::ObjectState contentParams = item;
                 if (!explicitContent) {
                     // Style-only change on an existing multistyle element: re-fetch the current
@@ -2752,7 +2779,7 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 
             // withdel=false was tried and made things WORSE (even the style fields stopped
             // applying) - confirmed live. withdel=true is required here.
-            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? (APIMemoMask_TextContent | APIMemoMask_Paragraph) : 0, true);
+            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Text."));
         }
         return NoError;
@@ -2931,7 +2958,7 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             }
 
             // withdel=true required - see ModifyTexts.
-            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? (APIMemoMask_TextContent | APIMemoMask_Paragraph) : 0, true);
+            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Label."));
         }
         return NoError;
@@ -2973,6 +3000,10 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                     "skirtLevel": {
                         "type": "number",
                         "description": "The height of the skirt."
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface."
                     },
                     "ridges": {
                         "$ref": "#/MeshRidges"
@@ -3095,6 +3126,21 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     GS::Array<GS::ObjectState> sublines;
     parameters.Get ("sublines", sublines);
     BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
+
+    // Building material of the mesh. Its top, side and bottom surface overrides are cleared, so the
+    // mesh shows the building material's own surface and follows later changes of it; an override
+    // left in the Mesh tool defaults would otherwise keep showing the old color.
+    const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
+    if (buildingMaterialIdOS != nullptr) {
+        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*buildingMaterialIdOS, API_BuildingMaterialID, buildingMaterialIndex)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
+        }
+        element.mesh.buildingMaterial = buildingMaterialIndex;
+        element.mesh.topMat = API_OverriddenAttribute ();
+        element.mesh.sideMat = API_OverriddenAttribute ();
+        element.mesh.botMat = API_OverriddenAttribute ();
+    }
 
     return {};
 }
@@ -4737,6 +4783,10 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     "floorIndex": {
                         "type": "integer",
                         "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
                     }
                 },
                 "additionalProperties": false,
@@ -4771,6 +4821,11 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     } else {
         const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
         element.header.floorInd = floorIndexAndOffset.first;
+    }
+
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+        element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
     element.text.loc.x = apiCoordinate.x;
