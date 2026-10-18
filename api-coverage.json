@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:46 UTC",
+ "generatedAt": "2026-10-18 21:48 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1474,
+  "open": 1468,
   "not applicable": 468,
   "in progress": 132,
   "done": 491,
-  "claimed": 66,
+  "claimed": 72,
   "merged": 252
  },
  "items": [
@@ -8797,10 +8797,15 @@
    "olderNames": [
     "APIDb_GetExtent3DID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1118,
+     "title": "Expose ACAPI_Element_GetExtent3D (the \"Fit in Window\" extent of the current database)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetHeader",
@@ -9418,10 +9423,15 @@
    "olderNames": [
     "APIAny_GetTextLineLengthID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1119,
+     "title": "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetTextSizeFactor",
@@ -9441,10 +9451,15 @@
    "olderNames": [
     "APIAny_GetTextSizeFactorID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1119,
+     "title": "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetUserData",
@@ -21449,10 +21464,15 @@
    "olderNames": [
     "APIEnv_Change3DStyleID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1120,
+     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Change3DWindowSets",
@@ -21667,10 +21687,15 @@
    "olderNames": [
     "APIEnv_Create3DStyleID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1120,
+     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_CreateGhostRecord",
@@ -21825,10 +21850,15 @@
    "olderNames": [
     "APIEnv_Get3DStyleID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1120,
+     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Get3DStyleList",
@@ -21857,6 +21887,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1120,
+     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
+    },
     {
      "number": 921,
      "title": "Add 3D style commands and show selection / all in 3D"
@@ -22328,6 +22362,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1120,
+     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
+    },
     {
      "number": 921,
      "title": "Add 3D style commands and show selection / all in 3D"
