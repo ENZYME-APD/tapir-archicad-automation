@@ -7664,7 +7664,12 @@
         "type": "object",
         "properties": {
             "height": {
-                "type": "number"
+                "type": "number",
+                "description": "The height setting stored on the curtain wall element."
+            },
+            "actualHeight": {
+                "type": "number",
+                "description": "The height of the curtain wall as calculated by Archicad (ACAPI_CurtainWall_GetCWHeight). Omitted when Archicad cannot calculate it."
             },
             "flipped": {
                 "type": "boolean"
@@ -7676,7 +7681,9 @@
         },
         "additionalProperties": false,
         "required": [
-            "begCoordinate"
+            "height",
+            "flipped",
+            "angle"
         ]
     },
     "CurtainWallSegmentDetails": {
