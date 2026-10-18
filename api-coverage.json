@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 11:15 UTC",
+ "generatedAt": "2026-10-18 11:18 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1520,
   "not applicable": 468,
-  "in progress": 117,
+  "in progress": 118,
   "done": 491,
-  "claimed": 37,
+  "claimed": 36,
   "merged": 250
  },
  "items": [
@@ -4259,6 +4259,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1075,
+     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
+    },
     {
      "number": 1035,
      "title": "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"
@@ -11345,6 +11349,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1075,
+     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
+    },
+    {
      "number": 1068,
      "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
     }
@@ -11368,6 +11376,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1075,
+     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
+    },
     {
      "number": 1068,
      "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
@@ -11499,9 +11511,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1075,
+     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
+    }
+   ],
    "issues": [
     {
      "number": 1064,
