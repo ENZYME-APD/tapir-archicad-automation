@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 11:14 UTC",
+ "generatedAt": "2026-10-18 11:15 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1524,
+  "open": 1520,
   "not applicable": 468,
   "in progress": 117,
   "done": 491,
-  "claimed": 33,
+  "claimed": 37,
   "merged": 250
  },
  "items": [
@@ -4474,10 +4474,15 @@
    "olderNames": [
     "ACAPI_Element_GetCategoryValueDefault"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1076,
+     "title": "Expose ACAPI_Category_GetCategoryValueDefault"
+    }
+   ]
   },
   {
    "id": "ACAPI_Category_GetElementCategories",
@@ -6479,10 +6484,15 @@
    "olderNames": [
     "APIDb_DrawOrderInitID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1074,
+     "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderTerm",
@@ -6502,10 +6512,15 @@
    "olderNames": [
     "APIDb_DrawOrderTermID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1073,
+     "title": "Expose ACAPI_DrawOrder_DrawOrderTerm"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawOrder_InitCreationOrderTable",
@@ -6525,10 +6540,15 @@
    "olderNames": [
     "APIDb_InitCreationOrderTableID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1072,
+     "title": "Expose ACAPI_DrawOrder_InitCreationOrderTable"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawingPrimitive_DrawStoryControl",
@@ -22951,6 +22971,18 @@
     }
    ],
    "issues": [
+    {
+     "number": 1074,
+     "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
+    },
+    {
+     "number": 1073,
+     "title": "Expose ACAPI_DrawOrder_DrawOrderTerm"
+    },
+    {
+     "number": 1072,
+     "title": "Expose ACAPI_DrawOrder_InitCreationOrderTable"
+    },
     {
      "number": 1070,
      "title": "Expose ACAPI_DrawingPrimitive_DrawStoryControl"
