@@ -407,9 +407,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "exclusiveMinimum": 0.0
                     },
                     "structureType": {
-                        "type": "string",
-                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
-                        "enum": ["Basic", "Composite"]
+                        "$ref": "#/SlabStructureType",
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept."
                     },
                     "buildingMaterialId": {
                         "$ref": "#/AttributeId",
