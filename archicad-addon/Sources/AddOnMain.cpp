@@ -883,6 +883,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.2.4",
             "Returns the details of layer combination attributes."
         );
+        err |= RegisterCommand<GetCurrentLayerCombinationCommand> (
+            attributeCommands, "1.7.2",
+            "Returns the layer combination in effect in the current window. No layer combination is returned when the current state of the layers matches none."
+        );
         err |= RegisterCommand<GetLinesCommand> (
             attributeCommands, "1.5.4",
             "Returns the details of the given Line attributes."

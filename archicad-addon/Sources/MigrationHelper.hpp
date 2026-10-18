@@ -101,6 +101,7 @@
 #define ACAPI_Database_GetLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetLayoutDatabasesID, par1, par2)
 #define ACAPI_Database_GetMasterLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetMasterLayoutDatabasesID, par1, par2)
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
+#define ACAPI_Navigator_GetCurrLayerComb(par1) ACAPI_Environment (APIEnv_GetCurrLayerCombID, par1)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
 
 inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutInfo, API_DatabaseUnId* databaseUnId)
