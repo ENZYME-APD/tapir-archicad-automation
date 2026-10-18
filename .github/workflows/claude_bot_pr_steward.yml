@@ -33,6 +33,13 @@ name: Claude Bot PR Steward
 #   `needs-maintainer` label and the steward leaves it alone. Removing the
 #   label hands it back with both counts reset: they count only the runs
 #   since the label was last removed.
+# - A review or fix run whose model call failed (an API error, a spent usage
+#   limit) did nothing, so it is not a round: the next one waits for the next
+#   hourly sweep, and only ten failures within a day (and since the label was
+#   last removed) hand the pull request over.
+#   A fix run also waits for a model slot first and reports a run the API
+#   refused in its job summary (#977, see the header of
+#   claude_issue_triage.yml).
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
 # - A sweep starts new work (builds, a review or a fix) on at most
@@ -126,9 +133,29 @@ jobs:
           # How many dispatched runs of a workflow carry this title since $3 -
           # its fix rounds or reviews since the pull request was opened or
           # handed back, not only within the latest page of runs.
+          # $4 narrows it to one conclusion: a run whose model call failed
+          # (an API error, a spent usage limit) did no review or fix, so only
+          # successful runs count as rounds; failed ones - "failure" also takes
+          # in a time-out, a startup failure and a cancelled run (a job past its
+          # timeout-minutes can end as cancelled; the steward starts a review or
+          # fix only when none is running, so nothing else replaces one) - have
+          # a cap of their own.
           countRuns() {
             gh api --paginate "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&created=%3E%3D$3&per_page=100" \
-              --jq "[.workflow_runs[] | select(.display_title == \"$2\")] | length" | jq -s 'add // 0'
+              --jq "[.workflow_runs[] | select(.display_title == \"$2\" and (\"$4\" == \"\" or .conclusion == \"$4\"
+                     or (\"$4\" == \"failure\" and (.conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\"))))] | length" | jq -s 'add // 0'
+          }
+          # Whether a run with this title failed within the last 50 minutes:
+          # then wait for the next hourly sweep instead of starting another
+          # one minutes later, so an outage does not burn every attempt within
+          # the hour. Under the cron period, so a run that failed just after
+          # one hourly sweep is retried by the next one, not the one after.
+          failedRecently() {
+            local last
+            last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)" \
+              --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0]
+                     | select(.conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\") | .updated_at")
+            [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 3000 ]
           }
 
           # Starts fix round $3 + 1 on the pull request. The last round before
@@ -234,7 +261,6 @@ jobs:
               echo "left for a later sweep (this one started work on $BATCH already)"
               echo "::endgroup::"; continue
             fi
-
             # Rounds and reviews count from when the pull request was opened,
             # or from when a person last removed `needs-maintainer` - that
             # hands it back with fresh counts. If the events cannot be read,
@@ -246,13 +272,22 @@ jobs:
             if [[ "$handedBack" > "$since" ]]; then
               since=$handedBack
             fi
+            # Failed runs count over the last day only: with a sweep's wait
+            # after each, ten of them mean a lasting problem, not an outage.
+            failSince=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+            if [[ "$since" > "$failSince" ]]; then failSince=$since; fi
 
             # 0. A conflict with main: building the branch proves nothing, so
             # fix merges main in first.
             if [ "$mergeable" = "CONFLICTING" ]; then
-              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since")
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since" success)
+              failed=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$failSince" failure)
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
+              elif [ "$failed" -ge 10 ]; then
+                handOver "$pr" "its fix run failed $failed times (see the runs' logs)"
+              elif failedRecently claude_bot_pr_steward.yml "$fixTitle"; then
+                echo "the last fix run failed less than 50 minutes ago - waiting"
               else
                 startFix "$pr" "$head" "$rounds"
                 echo "started fix round $((rounds + 1)) (conflicts with main)"
@@ -313,11 +348,16 @@ jobs:
             if [ -z "$review" ] && [ "$buildFailed" = false ]; then
               reviewTitle="Claude review of PR #$pr"
               active=$(jq --arg t "$reviewTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$reviewRuns")
-              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$since")
+              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$since" success)
+              failed=$(countRuns claude_pr_review.yml "$reviewTitle" "$failSince" failure)
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
               elif [ "$total" -ge 10 ]; then
                 handOver "$pr" "ten reviews recorded no verdict"
+              elif [ "$failed" -ge 10 ]; then
+                handOver "$pr" "its review failed $failed times (see the runs' logs)"
+              elif failedRecently claude_pr_review.yml "$reviewTitle"; then
+                echo "the last review failed less than 50 minutes ago - waiting"
               else
                 gh workflow run claude_pr_review.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
                 echo "started the review"
@@ -328,9 +368,14 @@ jobs:
 
             # 3. Something to fix.
             if [ "$buildFailed" = true ] || [ "$review" = "failure" ] || [ "$review" = "error" ]; then
-              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since")
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since" success)
+              failed=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$failSince" failure)
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
+              elif [ "$failed" -ge 10 ]; then
+                handOver "$pr" "its fix run failed $failed times (see the runs' logs)"
+              elif failedRecently claude_bot_pr_steward.yml "$fixTitle"; then
+                echo "the last fix run failed less than 50 minutes ago - waiting"
               else
                 startFix "$pr" "$head" "$rounds"
                 echo "started fix round $((rounds + 1)) (build failed: $buildFailed, review: ${review:-none})"
@@ -349,7 +394,8 @@ jobs:
       vars.BOT_PR_STEWARD != 'false' &&
       github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 60 minutes of work after up to two hours of waiting for a model slot.
+    timeout-minutes: 180
     concurrency:
       group: bot-pr-fix-${{ inputs.pr_number }}
       cancel-in-progress: false
@@ -441,6 +487,41 @@ jobs:
           ref: ${{ steps.pr.outputs.branch }}
           fetch-depth: 0
 
+      # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
+      # started before this one are in progress (see the header of claude_issue_triage.yml).
+      - name: Wait for a model slot
+        if: steps.pr.outputs.superseded != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+        run: |
+          set -euo pipefail
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
+          deadline=$((SECONDS + 7200))
+          while :; do
+            # In-progress runs of the three Claude workflows started before this
+            # one, except the sweeps and the hourly retry, which run no model.
+            ahead=$(gh api "repos/$REPO/actions/runs?status=in_progress&per_page=100" \
+              | jq --arg me "$me" --argjson id "$GITHUB_RUN_ID" '[.workflow_runs[]
+                  | select((.path | test("claude_(issue_triage|pr_review|bot_pr_steward)[.]yml$"))
+                           and .event != "schedule" and .display_title != "Bot PR sweep" and .id != $id
+                           and (.created_at < $me or (.created_at == $me and .id < $id)))] | length')
+            if [ "$ahead" -lt "$MAX_RUNS" ]; then
+              echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - going ahead."
+              break
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Waited two hours for a model slot ($ahead earlier Claude runs in progress). The run did nothing."
+              exit 1
+            fi
+            # Further back in the queue, poll less often: every poll is an API call.
+            wait=$((60 + 30 * ahead)); [ "$wait" -le 600 ] || wait=600
+            echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - waiting ${wait}s."
+            sleep "$wait"
+          done
+
       - name: Fix the pull request
         if: steps.pr.outputs.superseded != 'true'
         id: fix
@@ -522,6 +603,49 @@ jobs:
             --model ${{ inputs.escalate && (vars.CLAUDE_ESCALATION_MODEL || 'best') || (vars.CLAUDE_MODEL || 'opus') }}
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch origin:*),Bash(git merge origin/main),Bash(git merge --abort),Bash(git push origin ${{ steps.pr.outputs.branch }}),Bash(gh pr view ${{ inputs.pr_number }}:*),Bash(gh pr diff ${{ inputs.pr_number }}:*),Bash(gh pr comment ${{ inputs.pr_number }}:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./archicad-addon/Installer/**),Edit(./tools/**)"
+
+      # What the run came to, in the job summary: the result message of its
+      # execution file, with the error text of a failed run, so a failure can be
+      # told apart without the hidden model output. A run the API refused on its
+      # first turn - a used-up usage limit or an API error: an error, one turn, no
+      # cost - is marked as such by the next step.
+      - name: Report the Claude result
+        id: result
+        if: always() && steps.fix.outcome != 'skipped'
+        env:
+          EXECUTION_FILE: ${{ steps.fix.outputs.execution_file }}
+        run: |
+          result='{}'
+          if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
+            result=$(jq -c '[.[] | select(.type == "result")] | last // {}' "$EXECUTION_FILE" 2>/dev/null || echo '{}')
+          fi
+          turns=$(jq -r '.num_turns // 0' <<<"$result")
+          case "$turns" in ''|*[!0-9]*) turns=0 ;; esac
+          isError=$(jq -r '.is_error // false' <<<"$result")
+          {
+            echo "### Claude result"
+            jq -r '"subtype: \(.subtype // "none"), is_error: \(.is_error // false), turns: \(.num_turns // 0), cost: \(.total_cost_usd // 0) USD"' <<<"$result"
+            if [ "$isError" = true ]; then
+              echo
+              echo '```'
+              jq -r '.result // "(no error text)" | tostring' <<<"$result" | head -c 2000 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          refused=false
+          if [ "$isError" = true ] && [ "$turns" -le 1 ] && jq -e '(.total_cost_usd // 0) == 0' <<<"$result" >/dev/null; then
+            refused=true
+          fi
+          echo "Turns: $turns, refused: $refused"
+          echo "turns=$turns" >> "$GITHUB_OUTPUT"
+          echo "refused=$refused" >> "$GITHUB_OUTPUT"
+
+      - name: Stop on a refused run
+        if: always() && steps.result.outputs.refused == 'true'
+        run: |
+          echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
+          exit 1
 
       # A run that pushed nothing leaves the head, the failures and the
       # findings as they were, so another round would see the same inputs:
