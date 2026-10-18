@@ -3,10 +3,9 @@ import aclib
 # Creates a wall with an opening in it, then changes the opening's size and position with
 # ModifyOpenings and reads the result back through its 3D bounding box. ModifyOpenings takes
 # the fields CreateOpenings takes: width, height and basePoint (the bottom left corner of the
-# opening in world space). A new height keeps the bottom edge where it is.
-#
-# It needs Archicad 28 or earlier: in Archicad 29 and later the command reports that it is not
-# supported there yet.
+# opening in world space). A new height keeps the bottom edge where it is. The output is the same
+# on every Archicad version: up to Archicad 28 the command writes API_OpeningType, from Archicad 29
+# it goes through ACAPI::Element::Opening::Modify.
 
 walls = aclib.RunTapirCommand ('CreateWalls', {
     'wallsData': [
