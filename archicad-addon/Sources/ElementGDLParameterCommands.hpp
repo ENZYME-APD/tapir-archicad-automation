@@ -48,7 +48,7 @@ private:
         ArrayParameterChange& change);
 
     static GSErrCode ApplyArrayParameterChanges (
-        const API_GetParamsType& getParams,
+        API_GetParamsType& getParams,
         const GS::Array<ArrayParameterChange>& changes,
         const API_Guid& elemGuid,
         GS::UniString& errMessage);
