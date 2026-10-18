@@ -1,0 +1,167 @@
+{
+  "title": "DeleteElements with a nonexistent guid (#749)",
+  "minTapir": "1.6.0",
+  "steps": [
+    {
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 700,
+              "y": 700
+            },
+            "endCoordinate": {
+              "x": 703,
+              "y": 700
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "id": "real wall",
+      "save": {
+        "w1": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "bogus alone",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "00000000-0000-0000-0000-00000000BEEF"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "nonexistent guid is reported as failed"
+        }
+      ]
+    },
+    {
+      "id": "[real, bogus]",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${w1}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "00000000-0000-0000-0000-00000000BEEF"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "real element deleted"
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": false,
+          "name": "nonexistent guid failed"
+        }
+      ]
+    },
+    {
+      "id": "count after [real, bogus]",
+      "command": "GetElementsByType",
+      "params": {
+        "elementType": "Wall"
+      },
+      "creates": false,
+      "expect": [
+        {
+          "path": "elements",
+          "len": 0,
+          "name": "0 walls left"
+        }
+      ]
+    },
+    {
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 710,
+              "y": 700
+            },
+            "endCoordinate": {
+              "x": 713,
+              "y": 700
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "id": "second wall",
+      "save": {
+        "w2": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "[bogus, real]",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "00000000-0000-0000-0000-00000000BEEF"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${w2}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "nonexistent guid failed"
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": true,
+          "name": "real element deleted"
+        }
+      ]
+    },
+    {
+      "id": "count after [bogus, real]",
+      "command": "GetElementsByType",
+      "params": {
+        "elementType": "Wall"
+      },
+      "creates": false,
+      "expect": [
+        {
+          "path": "elements",
+          "len": 0,
+          "name": "0 walls left"
+        }
+      ]
+    }
+  ]
+}
