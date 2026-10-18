@@ -45,6 +45,13 @@ name: Claude Bot PR Steward
 #   (claude_issue_triage.yml, whose header describes what they do and do not
 #   bound). The jobs that hold actions: write run plain shell.
 #
+# Models (#991): fix rounds run on the repository variable CLAUDE_MODEL
+# (default `opus`). The last round before the hand-over, which only a pull
+# request the earlier rounds could not fix reaches, runs on
+# CLAUDE_ESCALATION_MODEL (default `best`, the most capable and most
+# expensive model). Aliases, not pinned ids, so each tier moves on to new
+# models by itself.
+#
 # Authenticates like the issue bot: CLAUDE_CODE_OAUTH_TOKEN.
 
 on:
@@ -60,6 +67,10 @@ on:
         description: The head commit the sweep saw; a fix for an older head is skipped
         type: string
         default: ''
+      escalate:
+        description: Run the fix on CLAUDE_ESCALATION_MODEL instead of CLAUDE_MODEL (the sweep sets it for the last round)
+        type: boolean
+        default: false
 
 run-name: "${{ inputs.pr_number && format('Fix bot PR #{0}', inputs.pr_number) || 'Bot PR sweep' }}"
 
@@ -118,6 +129,19 @@ jobs:
           countRuns() {
             gh api --paginate "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&created=%3E%3D$3&per_page=100" \
               --jq "[.workflow_runs[] | select(.display_title == \"$2\")] | length" | jq -s 'add // 0'
+          }
+
+          # Starts fix round $3 + 1 on the pull request. The last round before
+          # the hand-over runs on the escalation model: the earlier rounds,
+          # on the regular one, did not get it right.
+          startFix() {
+            local escalate=false
+            if [ $(($3 + 1)) -ge "$MAX_ROUNDS" ]; then
+              escalate=true
+              echo "the last round: on the escalation model"
+            fi
+            gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main \
+              -f pr_number="$1" -f head_sha="$2" -f escalate="$escalate" || echo "::warning::could not start it for #$1"
           }
 
           handOver() {
@@ -230,7 +254,7 @@ jobs:
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
+                startFix "$pr" "$head" "$rounds"
                 echo "started fix round $((rounds + 1)) (conflicts with main)"
                 busy=$((busy + 1))
               fi
@@ -308,7 +332,7 @@ jobs:
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
+                startFix "$pr" "$head" "$rounds"
                 echo "started fix round $((rounds + 1)) (build failed: $buildFailed, review: ${review:-none})"
                 busy=$((busy + 1))
               fi
@@ -495,7 +519,7 @@ jobs:
 
           claude_args: |
             --max-turns 120
-            --model best
+            --model ${{ inputs.escalate && (vars.CLAUDE_ESCALATION_MODEL || 'best') || (vars.CLAUDE_MODEL || 'opus') }}
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch origin:*),Bash(git merge origin/main),Bash(git merge --abort),Bash(git push origin ${{ steps.pr.outputs.branch }}),Bash(gh pr view ${{ inputs.pr_number }}:*),Bash(gh pr diff ${{ inputs.pr_number }}:*),Bash(gh pr comment ${{ inputs.pr_number }}:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./archicad-addon/Installer/**),Edit(./tools/**)"
 

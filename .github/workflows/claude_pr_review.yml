@@ -40,6 +40,14 @@ name: Claude PR Review
 # resolves them in plain shell, and only threads this bot opened on this pull
 # request - so no text in a comment can get anything else resolved.
 #
+# Models (#991): the first review of a pull request - the main safeguard
+# before an automatic merge - runs on the repository variable CLAUDE_MODEL
+# (default `opus`). A re-review, which mostly checks whether the findings of
+# the earlier reviews were addressed, runs on CLAUDE_LIGHT_MODEL (default
+# `sonnet`); set that variable to `opus` if re-reviews turn out too shallow.
+# A review counts as a re-review once a summary of an earlier one (its
+# resolve marker) is on the pull request.
+#
 # Decided and not open: any human's comment re-runs the review, not only the
 # author's or a maintainer's, so any GitHub account can spend review runs on
 # the subscription by commenting on an open pull request. To narrow it to the
@@ -168,6 +176,17 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
           echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          # Whether an earlier review finished here: every summary ends with
+          # the resolve marker. If the comments cannot be read, it counts as
+          # a first review, which only costs the stronger model.
+          earlier=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- claude-review-resolve:")))] | length' \
+            | jq -s 'add // 0') || earlier=0
+          if [ "$earlier" -gt 0 ]; then
+            echo "re_review=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "re_review=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Checkout the base commit
         if: steps.pr.outputs.skip != 'true'
@@ -376,7 +395,7 @@ jobs:
 
           claude_args: |
             --max-turns 120
-            --model best
+            --model ${{ steps.pr.outputs.re_review == 'true' && (vars.CLAUDE_LIGHT_MODEL || 'sonnet') || (vars.CLAUDE_MODEL || 'opus') }}
             --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
 
       # Resolves what the review listed as settled - in shell, and only threads
