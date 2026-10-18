@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 16:43 UTC",
+ "generatedAt": "2026-10-18 16:52 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1515,
   "not applicable": 468,
-  "in progress": 116,
+  "in progress": 120,
   "done": 491,
-  "claimed": 41,
+  "claimed": 37,
   "merged": 252
  },
  "items": [
@@ -5036,9 +5036,14 @@
    "olderNames": [
     "APIAny_GetCWAbsoluteBottomID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1087,
+     "title": "Add GetCurtainWallAbsoluteBottoms command"
+    }
+   ],
    "issues": [
     {
      "number": 1083,
@@ -5064,9 +5069,14 @@
    "olderNames": [
     "APIAny_GetCWHeightID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1084,
+     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
+    }
+   ],
    "issues": [
     {
      "number": 1080,
@@ -5092,9 +5102,14 @@
    "olderNames": [
     "APIAny_GetCWSubElemParamsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1086,
+     "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
+    }
+   ],
    "issues": [
     {
      "number": 1081,
@@ -5120,9 +5135,14 @@
    "olderNames": [
     "APIDb_IsCWPanelDegenerateID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1085,
+     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
+    }
+   ],
    "issues": [
     {
      "number": 1082,
@@ -6191,6 +6211,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1086,
+     "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
+    },
     {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
@@ -8074,6 +8098,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1086,
+     "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -8660,6 +8688,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1087,
+     "title": "Add GetCurtainWallAbsoluteBottoms command"
+    },
     {
      "number": 1038,
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
@@ -22952,6 +22984,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1085,
+     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
+    },
+    {
      "number": 1036,
      "title": "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"
     },
@@ -23640,6 +23676,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1087,
+     "title": "Add GetCurtainWallAbsoluteBottoms command"
+    },
+    {
+     "number": 1086,
+     "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
+    },
+    {
+     "number": 1084,
+     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
+    },
     {
      "number": 967,
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
