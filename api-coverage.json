@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 16:42 UTC",
+ "generatedAt": "2026-10-18 16:43 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1517,
+  "open": 1515,
   "not applicable": 468,
   "in progress": 116,
   "done": 491,
-  "claimed": 39,
+  "claimed": 41,
   "merged": 252
  },
  "items": [
@@ -5036,10 +5036,15 @@
    "olderNames": [
     "APIAny_GetCWAbsoluteBottomID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1083,
+     "title": "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"
+    }
+   ]
   },
   {
    "id": "ACAPI_CurtainWall_GetCWHeight",
@@ -5115,10 +5120,15 @@
    "olderNames": [
     "APIDb_IsCWPanelDegenerateID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1082,
+     "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
+    }
+   ]
   },
   {
    "id": "ACAPI_CuttingPlane_GetCutPolygonInfo",
@@ -22984,6 +22994,10 @@
    ],
    "issues": [
     {
+     "number": 1082,
+     "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
+    },
+    {
      "number": 1074,
      "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
     },
@@ -23644,6 +23658,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1083,
+     "title": "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"
+    },
     {
      "number": 1081,
      "title": "Expose ACAPI_CurtainWall_GetCWSubElemParams"
