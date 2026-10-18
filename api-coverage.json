@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 11:08 UTC",
+ "generatedAt": "2026-10-18 11:12 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1529,
+  "open": 1527,
   "not applicable": 468,
-  "in progress": 113,
+  "in progress": 116,
   "done": 491,
-  "claimed": 32,
+  "claimed": 31,
   "merged": 250
  },
  "items": [
@@ -3724,7 +3724,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1066,
+     "title": "Add GetFontsByName command exposing ACAPI_Font_SearchFont"
+    }
+   ],
    "issues": []
   },
   {
@@ -10487,9 +10492,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1066,
+     "title": "Add GetFontsByName command exposing ACAPI_Font_SearchFont"
+    }
+   ],
    "issues": [
     {
      "number": 1061,
@@ -11666,9 +11676,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1065,
+     "title": "Add GetUserDataOfGroups command (ACAPI_Grouping_GetUserData)"
+    }
+   ],
    "issues": [
     {
      "number": 1062,
@@ -22512,10 +22527,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1067,
+     "title": "Expose ACAPI_3D_GetNum"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnIntegration_InstallAttrManagerImportMethod",
@@ -23063,9 +23083,14 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1065,
+     "title": "Add GetUserDataOfGroups command (ACAPI_Grouping_GetUserData)"
+    }
+   ],
    "issues": []
   },
   {
