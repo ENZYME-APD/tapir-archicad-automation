@@ -4530,6 +4530,7 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
 
         // The hotspots are the element's neigs with their 3D position: the same points the
         // cursor snaps to on the floor plan and the dimension tool attaches to.
+        // API_ElementHotspot is a GS::Pair<API_Neig, API_Coord3D>: first is the neig, second the point.
         GS::Array<API_ElementHotspot> elementHotspots;
         err = ACAPI_Element_GetHotspots (elemHead.guid, &elementHotspots);
         if (err != NoError) {
@@ -4540,10 +4541,12 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
         GS::ObjectState hotspotsOfElement;
         const auto& hotspots = hotspotsOfElement.AddList<GS::ObjectState> ("hotspots");
         for (const API_ElementHotspot& elementHotspot : elementHotspots) {
+            const API_Neig& neig = elementHotspot.first;
+            const API_Coord3D& coord3D = elementHotspot.second;
             GS::ObjectState hotspot;
-            hotspot.Add ("coordinate", Create3DCoordinateObjectState (elementHotspot.coord3D));
-            hotspot.Add ("neigId", static_cast<Int32> (elementHotspot.neig.neigID));
-            hotspot.Add ("inIndex", static_cast<Int32> (elementHotspot.neig.inIndex));
+            hotspot.Add ("coordinate", Create3DCoordinateObjectState (coord3D));
+            hotspot.Add ("neigId", static_cast<Int32> (neig.neigID));
+            hotspot.Add ("inIndex", static_cast<Int32> (neig.inIndex));
             hotspots (hotspot);
         }
         hotspotsOfElements (hotspotsOfElement);
