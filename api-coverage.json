@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 10:35 UTC",
+ "generatedAt": "2026-10-18 11:05 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1533,
+  "open": 1532,
   "not applicable": 468,
   "in progress": 113,
   "done": 491,
-  "claimed": 28,
+  "claimed": 29,
   "merged": 250
  },
  "items": [
@@ -10487,10 +10487,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1061,
+     "title": "Expose ACAPI_Font_SearchFont"
+    }
+   ]
   },
   {
    "id": "ACAPI_FreeCWContourPtr",
