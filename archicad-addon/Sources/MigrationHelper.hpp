@@ -449,6 +449,11 @@ inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
     return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
 }
 
+inline GSErrCode ACAPI_Database_GetContainingDatabase (const API_Guid* elemGuid, API_DatabaseInfo* dbInfo)
+{
+    return ACAPI_Database (APIDb_GetContainingDatabaseID, const_cast<API_Guid*> (elemGuid), dbInfo);
+}
+
 inline GSErrCode ACAPI_Navigator_SearchNavigatorItem (API_NavigatorItem* item, GS::Array<API_NavigatorItem>* items)
 {
     return ACAPI_Navigator (APINavigator_SearchNavigatorItemID, item, nullptr, items);

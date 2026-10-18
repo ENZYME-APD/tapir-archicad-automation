@@ -432,6 +432,116 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         : CreateErrorResponse (err, "Failed to change the window!");
 }
 
+GetContainingDatabasesCommand::GetContainingDatabasesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetContainingDatabasesCommand::GetName () const
+{
+    return "GetContainingDatabases";
+}
+
+GS::Optional<GS::UniString> GetContainingDatabasesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetContainingDatabasesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "description": "The database of each element, in the order of the input elements. Pass windowType and databaseId to ChangeWindow to open it.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "databaseId": {
+                                    "$ref": "#/DatabaseId"
+                                },
+                                "windowType": {
+                                    "$ref": "#/WindowType"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the database (for example the name of the layout). Empty for databases without a name, like the floor plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "databaseId",
+                                "windowType",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databases"
+        ]
+    })";
+}
+
+GS::ObjectState GetContainingDatabasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& databases = response.AddList<GS::ObjectState> ("databases");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+        if (elemGuid == APINULLGuid) {
+            databases (CreateErrorResponse (APIERR_BADPARS, "elementId is corrupt or missing."));
+            continue;
+        }
+
+        API_DatabaseInfo dbInfo = {};
+        GSErrCode err = ACAPI_Database_GetContainingDatabase (&elemGuid, &dbInfo);
+        if (err != NoError) {
+            databases (CreateErrorResponse (err, "Failed to get the containing database of the element."));
+            continue;
+        }
+
+        // Fills in the type and the name of the database from its id, the same
+        // way ChangeWindow resolves a databaseId.
+        API_DatabaseInfo fullDbInfo = dbInfo;
+        if (ACAPI_Window_GetDatabaseInfo (&fullDbInfo) == NoError) {
+            dbInfo = fullDbInfo;
+        }
+
+        GS::ObjectState database = CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo));
+        database.Add ("windowType", ConvertWindowTypeToString (dbInfo.typeID));
+        database.Add ("name", GS::UniString (dbInfo.name));
+        databases (database);
+    }
+
+    return response;
+}
+
 
 
 ShowAlertCommand::ShowAlertCommand () :
