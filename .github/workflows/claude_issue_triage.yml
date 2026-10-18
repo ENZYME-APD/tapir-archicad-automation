@@ -394,9 +394,10 @@ jobs:
             Rules that matter here:
 
             - THE DEVKIT HEADERS ARE ON THIS RUNNER, under
-              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/)
-              for AC25 to AC30, and AC30 also has the DevKit's Examples folder
-              (archicad-addon/Build/DevKits/AC30/Examples). The folder is
+              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/),
+              one folder per Archicad version in archicad-addon/devkits.json,
+              and the newest also has the DevKit's Examples folder
+              (archicad-addon/Build/DevKits/AC<NN>/Examples). The folder is
               gitignored, so a search of the whole repository skips it: give
               Grep and Glob that path explicitly. Before you use a struct
               member, function, API ID or enum value, find its declaration
@@ -824,9 +825,10 @@ jobs:
             Rules that matter here:
 
             - THE DEVKIT HEADERS ARE ON THIS RUNNER, under
-              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/)
-              for AC25 to AC30, and AC30 also has the DevKit's Examples folder
-              (archicad-addon/Build/DevKits/AC30/Examples). The folder is
+              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/),
+              one folder per Archicad version in archicad-addon/devkits.json,
+              and the newest also has the DevKit's Examples folder
+              (archicad-addon/Build/DevKits/AC<NN>/Examples). The folder is
               gitignored, so a search of the whole repository skips it: give
               Grep and Glob that path explicitly. Before you use a struct
               member, function, API ID or enum value, find its declaration

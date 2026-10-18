@@ -1,10 +1,10 @@
 # Keeps the Archicad API coverage checklist live.
 #
 # tools/generate_api_coverage.py lists every item of the Archicad API in the
-# AC25-AC30 DevKits (C functions with their older names and AC25/26 command
-# ids, and the C++ API) and marks what archicad-addon/Sources uses, what an
-# open pull request adds and what an open issue claims. This workflow reruns
-# it within minutes of any change to those:
+# DevKits of every supported version (C functions with their older names and
+# AC25/26 command ids, and the C++ API) and marks what archicad-addon/Sources
+# uses, what an open pull request adds and what an open issue claims. This
+# workflow reruns it within minutes of any change to those:
 #   - a push to main, a published release,
 #   - a pull request opened, updated, closed or reopened,
 #   - an issue opened, edited, closed, reopened or deleted,
@@ -55,9 +55,6 @@ jobs:
     if: vars.API_COVERAGE != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      DEVKITS: >-
-        25:25.3002 26:26.3000 27:27.3001 28:28.3001 29:29.3000 30:30.3000
     steps:
       - name: Check out main
         uses: actions/checkout@v4
@@ -65,6 +62,10 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: true
+
+      # Every supported Archicad version, from archicad-addon/devkits.json.
+      - name: Read the DevKit list
+        run: echo "DEVKITS=$(python3 tools/devkits.py pairs)" >> "$GITHUB_ENV"
 
       - name: Cache the DevKits
         id: devkits

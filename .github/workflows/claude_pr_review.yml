@@ -23,12 +23,12 @@ name: Claude PR Review
 # is never checked out or executed. The checkout below pins the base commit,
 # and the review reads the change through `gh pr diff` - text, not code.
 #
-# The Archicad DevKit headers (AC25-AC30, and the newest DevKit's Examples)
-# are downloaded before the review by .github/actions/download-devkits, so item
-# 1 of the checklist is checked against the API itself (#976). That action is
-# loaded from a separate checkout of this workflow's own commit, never from the
-# pull request, and runs only curl and unzip. It keeps the DevKit list for all
-# three Claude workflows in one place.
+# The Archicad DevKit headers (every version in archicad-addon/devkits.json,
+# and the newest DevKit's Examples) are downloaded before the review by
+# .github/actions/download-devkits, so item 1 of the checklist is checked
+# against the API itself (#976). That action is loaded from a separate checkout
+# of this workflow's own commit, never from the pull request, and runs only jq,
+# curl and unzip. Of the pull request it reads only devkits.json, as data.
 #
 # Re-reviews. Every push re-runs the review (synchronize), and so does every
 # new human comment on the pull request - a conversation comment or a reply on
@@ -216,12 +216,31 @@ jobs:
         with:
           ref: ${{ github.workflow_sha }}
           path: archicad-addon/Build/workflow-actions
-          sparse-checkout: .github/actions
+          sparse-checkout: |
+            .github/actions
+            archicad-addon/devkits.json
           persist-credentials: false
+
+      # The pull request's DevKit list, so a pull request that adds an Archicad
+      # version is reviewed against its headers too. Only the JSON is read, as
+      # data, and the action accepts nothing but version and release numbers.
+      - name: Read the pull request's DevKit list
+        if: steps.pr.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          gh api "repos/$REPO/contents/archicad-addon/devkits.json?ref=$HEAD_SHA" --jq '.content' \
+            | base64 -d > "$RUNNER_TEMP/pr-devkits.json" && jq -e '.devkits | length > 0' "$RUNNER_TEMP/pr-devkits.json" >/dev/null \
+            && echo "PR_DEVKITS=$RUNNER_TEMP/pr-devkits.json" >> "$GITHUB_ENV" \
+            || echo "The pull request has no readable DevKit list; using the base branch's."
 
       - name: Download the DevKit headers
         if: steps.pr.outputs.skip != 'true'
         uses: ./archicad-addon/Build/workflow-actions/.github/actions/download-devkits
+        with:
+          devkits: ${{ env.PR_DEVKITS }}
 
       # What the earlier reviews said, and what started this run, as files the
       # review reads. Fetched here in shell so the model needs no GraphQL
@@ -337,10 +356,12 @@ jobs:
 
             1. Correctness against the Archicad API. THE DEVKIT HEADERS ARE ON
                THIS RUNNER, under archicad-addon/Build/DevKits/AC<NN>/Support
-               (Inc/ and Modules/) for AC25 to AC30, with the DevKit's Examples
-               folder in archicad-addon/Build/DevKits/AC30/Examples. The folder
-               is gitignored, so a search of the whole repository skips it:
-               give Grep and Glob that path explicitly. Look up every struct
+               (Inc/ and Modules/), one folder per Archicad version in
+               archicad-addon/devkits.json (the pull request's own list, so a
+               version it adds is there too), and the newest also has the
+               DevKit's Examples folder. The folder is gitignored, so a search
+               of the whole repository skips it: give Grep and Glob that path
+               explicitly. Look up every struct
                member, function, API ID and enum value the change uses there,
                and report one that does not exist, or has another name or type,
                in a version the change builds it for - also when it compiles,
@@ -352,9 +373,9 @@ jobs:
 
             2. Version gating. Anything version specific must be guarded with
                ServerMainVers_* or the AC_VERSION checks, because this builds
-               against AC25 through AC30. A field or function that only exists
-               in newer DevKits will break the older build checks; the headers
-               of each version above show which.
+               against every version in archicad-addon/devkits.json. A field or
+               function that only exists in newer DevKits will break the older
+               build checks; the headers of each version above show which.
 
             3. Consistency across the three surfaces. A new or changed command
                should keep its input schema, its C++ implementation, its

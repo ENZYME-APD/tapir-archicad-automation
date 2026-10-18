@@ -497,7 +497,9 @@ jobs:
         with:
           ref: ${{ github.workflow_sha }}
           path: archicad-addon/Build/workflow-actions
-          sparse-checkout: .github/actions
+          sparse-checkout: |
+            .github/actions
+            archicad-addon/devkits.json
           persist-credentials: false
 
       - name: Download the DevKit headers
@@ -606,9 +608,9 @@ jobs:
             Rules that matter here:
             - You cannot build the add-on or run Archicad; the build logs are
               the compiler's word. THE DEVKIT HEADERS ARE ON THIS RUNNER, under
-              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/)
-              for AC25 to AC30, with the DevKit's Examples folder in
-              archicad-addon/Build/DevKits/AC30/Examples. The folder is
+              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/),
+              one folder per Archicad version in archicad-addon/devkits.json,
+              and the newest also has the DevKit's Examples folder. The folder is
               gitignored, so a search of the whole repository skips it: give
               Grep and Glob that path explicitly. Look up every struct member,
               function, API ID and enum value a failure or finding is about

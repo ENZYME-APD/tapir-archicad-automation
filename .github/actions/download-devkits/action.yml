@@ -1,22 +1,29 @@
 name: Download the Archicad DevKit headers
 description: >-
-  Downloads the AC25-AC30 Archicad API DevKits into archicad-addon/Build/DevKits,
-  keeping only what the Claude jobs read: the headers of every version, and the
-  Examples folder of the newest. Used by claude_issue_triage.yml,
-  claude_bot_pr_steward.yml and claude_pr_review.yml, before Claude starts.
+  Downloads the DevKit of every Archicad version in archicad-addon/devkits.json
+  into archicad-addon/Build/DevKits, keeping only what the Claude jobs read: the
+  headers of every version, and the Examples folder of the newest. Used by
+  claude_issue_triage.yml, claude_bot_pr_steward.yml and claude_pr_review.yml,
+  before Claude starts.
 
-# The list below is the one the Claude jobs use. Keep it on the same releases
-# as archicad_addon_build_check.yml and archicad_addon.yml, so the bots check
-# against the headers the builds compile with.
-#
 # This runs from a trusted commit only (the workflow's own, never a pull
 # request's branch): the jobs that check out a pull request load this action
 # from a separate checkout of github.workflow_sha. It runs no code from the
-# repository, only curl and unzip.
+# repository, only jq, curl and unzip. The list it reads may come from a pull
+# request (so the bots see the headers of a version that pull request adds),
+# which is safe because it is data: every entry must be an Archicad version
+# and a release number of that version, and the download URL is always a
+# GRAPHISOFT/archicad-api-devkit release. tools/devkits.py checks the same.
 
 inputs:
+  devkits:
+    description: >-
+      The devkits.json to read. Default: archicad-addon/devkits.json of the
+      workspace, or of the commit this action comes from when the workspace has
+      none (a base commit older than the file).
+    default: ''
   path:
-    description: Folder that receives one AC<major> folder per DevKit.
+    description: Folder that receives one AC<version> folder per DevKit.
     default: archicad-addon/Build/DevKits
 
 runs:
@@ -25,20 +32,33 @@ runs:
     - name: Download the DevKits
       shell: bash
       env:
-        DEVKITS: >-
-          25:25.3002 26:26.3000 27:27.3001 28:28.3001 29:29.3000 30:30.3000
+        LIST: ${{ inputs.devkits }}
         DEST: ${{ inputs.path }}
+        OWN_LIST: ${{ github.action_path }}/../../../archicad-addon/devkits.json
       run: |
         set -euf  # -f: the unzip patterns are for unzip, not the shell
-        newest=${DEVKITS##* }; newest=${newest%%:*}
+        for candidate in "$LIST" archicad-addon/devkits.json "$OWN_LIST"; do
+          if [ -n "$candidate" ] && [ -f "$candidate" ]; then LIST=$candidate; break; fi
+        done
+        echo "DevKit list: $LIST"
+        pairs=$(jq -r '.devkits[] | "\(.archicad):\(.release)"' "$LIST")
+        newest=""
+        for entry in $pairs; do
+          if ! [[ "$entry" =~ ^([2-9][0-9]):([2-9][0-9])\.[0-9]{4}$ ]] || [ "${BASH_REMATCH[1]}" != "${BASH_REMATCH[2]}" ]; then
+            echo "::error::not an Archicad version and DevKit release: $entry"
+            exit 1
+          fi
+          if [ -z "$newest" ] || [ "${entry%%:*}" -gt "$newest" ]; then newest=${entry%%:*}; fi
+        done
+        [ -n "$newest" ] || { echo "::error::$LIST lists no DevKit"; exit 1; }
         zip="$RUNNER_TEMP/devkit.zip"
-        for entry in $DEVKITS; do
-          major=${entry%%:*}; version=${entry#*:}
-          mkdir -p "$DEST/AC$major"
-          curl -sSfL --retry 3 -o "$zip" "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$version/API.Development.Kit.WIN.$version.zip"
+        for entry in $pairs; do
+          version=${entry%%:*}; release=${entry#*:}
+          mkdir -p "$DEST/AC$version"
+          curl -sSfL --retry 3 -o "$zip" "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$release/API.Development.Kit.WIN.$release.zip"
           patterns="Support/Inc/* Support/Modules/*.h Support/Modules/*.hpp"
-          [ "$major" = "$newest" ] && patterns="$patterns Examples/*"
-          unzip -qq -o "$zip" $patterns -d "$DEST/AC$major"
+          [ "$version" = "$newest" ] && patterns="$patterns Examples/*"
+          unzip -qq -o "$zip" $patterns -d "$DEST/AC$version"
           rm "$zip"
         done
         ls "$DEST/AC$newest/Support/Inc/APIdefs_Elements.h"
