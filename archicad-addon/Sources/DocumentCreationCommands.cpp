@@ -157,6 +157,22 @@ GS::Optional<API_Guid> FindNewLayoutSubsetGuid (const GS::Array<API_Guid>& befor
     return {};
 }
 
+// Sets the paper size (in mm) of a master layout. Its margins are kept.
+GSErrCode SetMasterLayoutSize (const API_DatabaseUnId& databaseUnId, double widthMm, double heightMm)
+{
+    API_LayoutInfo info = {};
+    GSErrCode err = ACAPI_Navigator_GetLayoutSets (&info, const_cast<API_DatabaseUnId*> (&databaseUnId));
+    if (err != NoError) {
+        return err;
+    }
+    info.sizeX = widthMm;
+    info.sizeY = heightMm;
+    err = ACAPI_Navigator_ChangeLayoutSets (&info, const_cast<API_DatabaseUnId*> (&databaseUnId));
+    delete info.customData;
+    info.customData = nullptr;
+    return err;
+}
+
 }
 
 CreateDetailsCommand::CreateDetailsCommand () :
@@ -311,6 +327,8 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
                         "masterNavigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "layoutName":            { "type": "string", "minLength": 1 },
                         "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
+                        "paperWidth":            { "type": "number", "description": "Optional paper width in mm, used together with paperHeight. Sets the size of the new layout, and of the master layout when this command creates it from masterLayoutName: a new master starts with the template's default size, which layoutParameters cannot change. An existing master keeps its size. Wins over layoutParameters.horizontalSize." },
+                        "paperHeight":           { "type": "number", "description": "Optional paper height in mm, used together with paperWidth. See paperWidth. Wins over layoutParameters.verticalSize." },
                         "layoutParameters": {
                             "type": "object",
                             "properties": {
@@ -385,6 +403,20 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
                     databases.Push (CreateErrorResponse (createMasterErr, "Failed to create master layout."));
                     continue;
                 }
+
+                // A master created here starts with the template's default size (A1 in the
+                // Japanese template); with paperWidth/paperHeight it gets that size instead. An
+                // existing master keeps its size, as the layouts already on it depend on it.
+                double paperWidth = 0.0, paperHeight = 0.0;
+                if (item.Get ("paperWidth", paperWidth) && item.Get ("paperHeight", paperHeight) &&
+                        paperWidth > 0.0 && paperHeight > 0.0) {
+                    // Reported per item, as the layout would otherwise get a size its new master does not have.
+                    const GSErrCode sizeErr = SetMasterLayoutSize (masterLayoutDbInfo.databaseUnId, paperWidth, paperHeight);
+                    if (sizeErr != NoError) {
+                        databases.Push (CreateErrorResponse (sizeErr, "The master layout was created, but its paper size could not be set; no layout was created."));
+                        continue;
+                    }
+                }
             }
         }
 
@@ -418,6 +450,16 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
             layoutParamsOS->Get ("customLayoutNumbering",    layoutInfo.customLayoutNumbering);
             layoutParamsOS->Get ("doNotIncludeInNumbering",  layoutInfo.doNotIncludeInNumbering);
             layoutParamsOS->Get ("displayMasterLayoutBelow", layoutInfo.showMasterBelow);
+        }
+
+        // paperWidth/paperHeight are also set on the new layout directly. Reading the size back
+        // from a master that was just created or resized in the same call can still return the
+        // old size (measured: the A1 default), so it is not taken from the master here.
+        double reqWidth = 0.0, reqHeight = 0.0;
+        if (item.Get ("paperWidth", reqWidth) && item.Get ("paperHeight", reqHeight) &&
+                reqWidth > 0.0 && reqHeight > 0.0) {
+            layoutInfo.sizeX = reqWidth;
+            layoutInfo.sizeY = reqHeight;
         }
 
         API_Guid parentNavGuid = APINULLGuid;

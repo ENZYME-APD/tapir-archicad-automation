@@ -2216,7 +2216,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
-                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            memoMask = TextContentMemoMask;
                             hasMemoChanges = true;
                         } else if (heightChanged) {
                             // A multistyle Text (which every UI-placed or Tapir-created Text is) takes
@@ -2244,7 +2244,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
-                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            memoMask = TextContentMemoMask;
                             hasMemoChanges = true;
                         }
                     } break;
@@ -2261,7 +2261,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.width);
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
-                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            memoMask = TextContentMemoMask;
                             hasMemoChanges = true;
                         }
                     } break;
