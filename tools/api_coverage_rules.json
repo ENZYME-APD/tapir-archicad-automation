@@ -1,0 +1,51 @@
+{
+    "notApplicable": {
+        "groups": {
+            "AddOnIntegration": "add-on registration and menus",
+            "AddOnAddOnCommunication": "communication between add-ons",
+            "AddOnIdentification": "add-on infrastructure",
+            "Dialog": "user interface",
+            "MenuItem": "user interface",
+            "Notification": "event handlers, not commands",
+            "Licensing": "add-on licensing",
+            "ProcessWindow": "progress window of the add-on",
+            "UserInput": "interactive input from the user",
+            "Resource": "add-on resources",
+            "Toolbox": "user interface",
+            "Command": "add-on infrastructure",
+            "OldListing": "deprecated listing API",
+            "C++ UserInterfaceAPI": "user interface"
+        },
+        "items": {
+            "ACAPI_CallUndoableCommand": "add-on infrastructure",
+            "ACAPI_CallCommand": "add-on infrastructure",
+            "ACAPI_KeepInMemory": "add-on infrastructure",
+            "ACAPI_SetDllTermHookProc": "add-on infrastructure",
+            "ACAPI_GetOwnLocation": "add-on infrastructure",
+            "ACAPI_GetOwnResModule": "add-on infrastructure",
+            "ACAPI_GetMainWindow": "user interface",
+            "ACAPI_GetToken": "add-on infrastructure",
+            "ACAPI_GetExtensionInstance": "add-on infrastructure",
+            "ACAPI_GetPreferences": "add-on preferences",
+            "ACAPI_SetPreferences": "add-on preferences",
+            "ACAPI_RegisterModelessWindow": "user interface",
+            "ACAPI_UnregisterModelessWindow": "user interface",
+            "ACAPI_WriteReport": "report window of the add-on"
+        },
+        "patterns": {
+            "^ACAPI_(Dispose|Free)": "memory management",
+            "^ACAPI_(Install|Register|Notify)_": "event handlers and add-on registration (Archicad 25/26 names)",
+            "^ACAPI_(Register|Unregister|Refresh)TeamworkReserveInterface$": "event handlers, not commands",
+            "_(Install|Register)[A-Za-z]*Handler$": "event handlers, not commands",
+            "_Catch[A-Za-z]*$": "event handlers, not commands",
+            "^ACAPI::(.*::)?(Object|Result|Impl[A-Za-z]*|AbstractFactory|Error)::": "C++ API infrastructure",
+            "::(Notification|Observer|Callback|InputHandler|AddonNotification|EditNotification)[A-Za-z]*::": "event handlers, not commands",
+            "^APIEnv_(Get|Set)(Prefs|Preferences)ID$": "add-on preferences"
+        }
+    },
+    "skip": {
+        "groups": {},
+        "items": {},
+        "patterns": {}
+    }
+}
