@@ -7730,6 +7730,10 @@
                 "type": "boolean",
                 "description": "Indicates if the panel is hidden (deleted panels remain in the database)."
             },
+            "isDegenerate": {
+                "type": "boolean",
+                "description": "Indicates if the panel is degenerate. Omitted when Archicad cannot tell."
+            },
             "segmentIndex": {
                 "type": "number",
                 "description": "The index of the curtain wall segment to which this panel belongs."

@@ -1467,6 +1467,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     }
                 }
                 typeSpecificDetails.Add ("isHidden", elem.cwPanel.hidden);
+                bool isDegenerate = false;
+                if (ACAPI_CurtainWall_IsCWPanelDegenerate (&elem.header.guid, &isDegenerate) == NoError) {
+                    typeSpecificDetails.Add ("isDegenerate", isDegenerate);
+                }
                 typeSpecificDetails.Add ("segmentIndex", elem.cwPanel.segmentID);
                 typeSpecificDetails.Add ("className", GS::UniString (elem.cwPanel.className));
             } break;

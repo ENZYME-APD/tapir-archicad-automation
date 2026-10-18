@@ -489,6 +489,11 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bool* isDegenerate)
+{
+    return ACAPI_Database (APIDb_IsCWPanelDegenerateID, const_cast<API_Guid*> (guid), isDegenerate);
+}
+
 #endif
 
 #ifndef ServerMainVers_2600
