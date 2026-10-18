@@ -219,6 +219,17 @@ inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
     return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
 }
 
+// Before Archicad 27 the text measuring functions are Goodies: par1 the input, par2 the result.
+inline GSErrCode ACAPI_Element_GetTextLineLength (API_TextLinePars* textLinePars, double* length)
+{
+    return ACAPI_Goodies (APIAny_GetTextLineLengthID, textLinePars, length);
+}
+
+inline GSErrCode ACAPI_Element_GetTextSizeFactor (short* fontIndex, double* textSizeFactor)
+{
+    return ACAPI_Goodies (APIAny_GetTextSizeFactorID, fontIndex, textSizeFactor);
+}
+
 // APIAny_GetPropertyAutoTextKeyTableID exists in APIdefs_Goodies.h from AC25 on: par1 is the
 // element guid (APINULLGuid for the keys common to every element), par2 the name -> key table.
 inline GSErrCode ACAPI_AutoText_GetPropertyAutoTextKeyTable (API_Guid* guid, GS::HashTable<GS::UniString, GS::UniString>* keyGuidTable)
