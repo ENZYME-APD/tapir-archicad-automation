@@ -155,6 +155,7 @@ function RenderCommand(parentElement, command, schemaDefinitions) {
 
 function RenderOverview(parentElement, commands, groupElements) {
     let overview = CreateElement(parentElement, 'div', 'overview', null);
+    overview.id = 'overview';
     let total = commands.reduce((sum, group) => sum + group.commands.length, 0);
     CreateTextElement(overview, 'div', 'overview_title', total + ' commands in ' + commands.length + ' groups');
     let table = CreateElement(overview, 'table', 'overview_table', null);
@@ -174,33 +175,97 @@ function RenderOverview(parentElement, commands, groupElements) {
     }
 }
 
-function RenderToolbar(parentElement, commands, onChange) {
-    let toolbar = CreateElement(parentElement, 'div', 'toolbar', null);
-
-    let search = CreateElement(toolbar, 'input', 'toolbar_search', null);
-    search.type = 'search';
-    search.placeholder = 'Search commands, e.g. zone, layout, property';
-    search.setAttribute('aria-label', 'Search commands');
-
-    let groupSelect = CreateElement(toolbar, 'select', 'toolbar_group', null);
-    groupSelect.setAttribute('aria-label', 'Jump to group');
-    CreateTextElement(groupSelect, 'option', null, 'Jump to group…').value = '';
+function RenderSidebar(sidebar, commands, groupElements, onVersionChange) {
+    // Section links (with live counts) and the version filter. On narrow
+    // screens the same element is a drawer opened from the toolbar.
+    CreateTextElement(sidebar, 'div', 'sidebar_title', 'Sections');
+    let list = CreateElement(sidebar, 'ul', 'sidebar_list', null);
+    let overviewLink = CreateTextElement(CreateElement(list, 'li', null, null), 'a', 'sidebar_link', 'Overview');
+    overviewLink.href = '#overview';
     for (let group of commands) {
-        CreateTextElement(groupSelect, 'option', null, group.name).value = GroupId(group);
+        let link = CreateElement(CreateElement(list, 'li', null, null), 'a', 'sidebar_link', null);
+        link.href = '#' + GroupId(group);
+        CreateTextElement(link, 'span', null, group.name.replace(/ Commands$/, ''));
+        let groupElement = groupElements.get(group);
+        groupElement.sidebarCount = CreateTextElement(link, 'span', 'sidebar_count', String(group.commands.length));
+        groupElement.sidebarLink = link;
     }
 
-    let versionSelect = CreateElement(toolbar, 'select', 'toolbar_version', null);
-    versionSelect.setAttribute('aria-label', 'Filter by version');
-    CreateTextElement(versionSelect, 'option', null, 'Any version').value = '';
+    CreateTextElement(sidebar, 'div', 'sidebar_title', 'Added in');
+    let versions = CreateElement(sidebar, 'div', 'sidebar_versions', null);
+    versions.setAttribute('role', 'group');
+    versions.setAttribute('aria-label', 'Show commands added in this version or later');
     let minors = new Set();
     for (let group of commands) {
         for (let command of group.commands) {
             minors.add(MinorVersion(command.version));
         }
     }
-    for (let minor of [...minors].sort((a, b) => CompareVersions(b, a))) {
-        CreateTextElement(versionSelect, 'option', null, 'Added in ' + minor + ' or later').value = minor;
+    let buttons = [];
+    for (let minor of [''].concat([...minors].sort((a, b) => CompareVersions(b, a)))) {
+        let button = CreateTextElement(versions, 'button', 'sidebar_version', minor ? minor + '+' : 'Any');
+        button.type = 'button';
+        button.title = minor ? 'Added in ' + minor + ' or later' : 'Any version';
+        button.setAttribute('aria-pressed', String(minor === ''));
+        button.addEventListener('click', function () {
+            for (let other of buttons) {
+                other.setAttribute('aria-pressed', String(other === button));
+            }
+            onVersionChange(minor);
+        });
+        buttons.push(button);
     }
+
+    // Close the drawer after following a link on narrow screens.
+    sidebar.addEventListener('click', function (event) {
+        if (event.target.closest('a')) {
+            document.body.classList.remove('sidebar_open');
+        }
+    });
+
+    // Highlight the section being read.
+    if ('IntersectionObserver' in window) {
+        let linkOf = new Map([...groupElements.values()].map(g => [g.section, g.sidebarLink]));
+        let visible = new Set();
+        let observer = new IntersectionObserver(function (observed) {
+            for (let entry of observed) {
+                if (entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target);
+            }
+            let current = [...linkOf.keys()].find(section => visible.has(section));
+            for (let [section, link] of linkOf) {
+                if (section === current) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current');
+            }
+        }, { rootMargin: '-80px 0px -60% 0px' });
+        for (let section of linkOf.keys()) {
+            observer.observe(section);
+        }
+    }
+}
+
+function RenderToolbar(parentElement, onChange) {
+    let toolbar = CreateElement(parentElement, 'div', 'toolbar', null);
+
+    let sectionsButton = CreateTextElement(toolbar, 'button', 'toolbar_button toolbar_sections', '☰ Sections');
+    sectionsButton.type = 'button';
+    sectionsButton.setAttribute('aria-controls', 'sidebar');
+    sectionsButton.addEventListener('click', function () {
+        document.body.classList.toggle('sidebar_open');
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            document.body.classList.remove('sidebar_open');
+        }
+    });
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('#sidebar, .toolbar_sections')) {
+            document.body.classList.remove('sidebar_open');
+        }
+    });
+
+    let search = CreateElement(toolbar, 'input', 'toolbar_search', null);
+    search.type = 'search';
+    search.placeholder = 'Search commands, e.g. zone, layout, property';
+    search.setAttribute('aria-label', 'Search commands');
 
     let expandButton = CreateTextElement(toolbar, 'button', 'toolbar_button', 'Expand all');
     expandButton.type = 'button';
@@ -216,21 +281,13 @@ function RenderToolbar(parentElement, commands, onChange) {
     window.addEventListener('resize', UpdateToolbarHeight);
 
     search.addEventListener('input', onChange);
-    versionSelect.addEventListener('change', onChange);
-    groupSelect.addEventListener('change', function () {
-        let target = groupSelect.value && document.getElementById(groupSelect.value);
-        if (target) {
-            target.scrollIntoView();
-            history.replaceState(null, '', window.location.pathname + '#' + groupSelect.value);
-        }
-        groupSelect.value = '';
-    });
-    return { search, versionSelect, expandButton, collapseButton, status };
+    return { search, expandButton, collapseButton, status };
 }
 
 function RenderCommands(parentElement, commands, schemaDefinitions) {
     let groupElements = new Map();
-    let controls = RenderToolbar(parentElement, commands, ApplyFilters);
+    let minVersion = '';
+    let controls = RenderToolbar(parentElement, ApplyFilters);
     let overviewParent = CreateElement(parentElement, 'div', null, null);
 
     for (let group of commands) {
@@ -255,10 +312,16 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
         groupElements.set(group, { section, count, entries });
     }
     RenderOverview(overviewParent, commands, groupElements);
+    let sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        RenderSidebar(sidebar, commands, groupElements, function (minor) {
+            minVersion = minor;
+            ApplyFilters();
+        });
+    }
 
     function ApplyFilters() {
         let words = controls.search.value.toLowerCase().split(/\s+/).filter(word => word.length > 0);
-        let minVersion = controls.versionSelect.value;
         let shown = 0;
         for (let groupElement of groupElements.values()) {
             let groupShown = 0;
@@ -273,6 +336,10 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
             let countText = groupShown === total ? String(total) : groupShown + ' of ' + total;
             groupElement.count.textContent = countText;
             groupElement.overviewCount.textContent = countText;
+            if (groupElement.sidebarCount) {
+                groupElement.sidebarCount.textContent = groupShown === total ? String(total) : String(groupShown);
+                groupElement.sidebarLink.classList.toggle('sidebar_empty', groupShown === 0);
+            }
             shown += groupShown;
         }
         let filtering = words.length > 0 || minVersion;
