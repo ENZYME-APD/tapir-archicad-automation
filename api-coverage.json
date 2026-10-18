@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:49 UTC",
+ "generatedAt": "2026-10-18 21:54 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1468,
+  "open": 1467,
   "not applicable": 468,
   "in progress": 132,
   "done": 491,
-  "claimed": 72,
+  "claimed": 73,
   "merged": 252
  },
  "items": [
@@ -6928,10 +6928,15 @@
    "olderNames": [
     "APIDb_GetFullDrawingContentBoxID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1122,
+     "title": "Expose ACAPI_Drawing_GetFullDrawingContentBox (full content box of a placed drawing)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_GetNumberingGridLines",
