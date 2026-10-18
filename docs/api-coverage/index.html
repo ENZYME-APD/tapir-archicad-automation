@@ -6,44 +6,139 @@
 <title>Tapir Archicad API Coverage</title>
 <style>
 :root {
-    /* One reading column; a filter bar over collapsible API groups. */
-    --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --panel: #f6f8fa; --link: #0969da;
+    /* An overview (headline, parts, groups) over a sticky filter bar and the
+       full checklist. Progress uses one blue ordinal ramp: used on main is the
+       strongest step, open is the neutral track. */
+    --bg: #fcfcfb; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --panel: #f6f8fa; --link: #0969da;
+    --track: #e6e8eb; --done: #1c5cab; --merged: #3987e5; --progress: #86b6ef; --claimed: #86b6ef;
 }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #151b23; --link: #4493f8; color-scheme: dark; }
+    :root:not([data-theme="light"]) {
+        --bg: #1a1a19; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #22262c; --link: #4493f8;
+        --track: #33373d; --done: #9ec5f4; --merged: #5598e7; --progress: #256abf; --claimed: #256abf; color-scheme: dark;
+    }
 }
-:root[data-theme="dark"] { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #151b23; --link: #4493f8; color-scheme: dark; }
+:root[data-theme="dark"] {
+    --bg: #1a1a19; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #22262c; --link: #4493f8;
+    --track: #33373d; --done: #9ec5f4; --merged: #5598e7; --progress: #256abf; --claimed: #256abf; color-scheme: dark;
+}
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-main { max-width: 1100px; margin: 0 auto; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-h1 { font-size: 24px; margin: 8px 0; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding-block: 16px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-size: 26px; margin: 8px 0 4px; }
+h2 { font-size: 18px; margin: 28px 0 10px; }
 a { color: var(--link); }
 .muted { color: var(--muted); }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin: 12px 0; }
-.filters { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
-.filters label { white-space: nowrap; }
-input[type=search], select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
-input[type=search] { min-width: 0; flex: 1 1 240px; }
-:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
-table { border-collapse: collapse; width: 100%; }
-th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.scroll { overflow-x: auto; }
-details { border-bottom: 1px solid var(--line); }
-summary { cursor: pointer; padding: 6px 0; font-weight: 600; }
-summary .muted { font-weight: 400; }
-ul.items { list-style: none; padding: 0 0 8px 0; margin: 0; }
-ul.items li { padding: 2px 0; overflow-wrap: anywhere; }
+p { margin: 0 0 8px; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+/* Headline */
+.hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px 24px; align-items: center; margin-top: 16px; }
+.hero-number { font-size: 56px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hero-caption { color: var(--muted); margin-top: 6px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px; }
+.tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.tile:hover { border-color: var(--muted); }
+.tile[aria-pressed="true"] { border-color: var(--link); box-shadow: inset 0 0 0 1px var(--link); }
+.tile .value { display: block; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .label { display: block; font-size: 13px; color: var(--muted); }
+
+/* Stacked progress bars: 2px surface gaps between segments, rounded ends. */
+.bar { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); min-width: 60px; }
+.bar.large { height: 16px; margin: 16px 0 8px; }
+.bar span { display: block; height: 100%; min-width: 2px; }
+.bar .done { background: var(--done); }
+.bar .merged { background: var(--merged); }
+.bar .progress { background: var(--progress); }
+.bar .claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px); }
+.bar .open { background: var(--track); flex-grow: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.swatch.done { background: var(--done); } .swatch.merged { background: var(--merged); } .swatch.progress { background: var(--progress); }
+.swatch.claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px); } .swatch.open { background: var(--track); }
+
+/* Overview tables */
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-weight: normal; font-size: 13px; color: var(--muted); }
+td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.barcell { width: 40%; min-width: 120px; }
+td .sub { display: block; font-size: 12px; color: var(--muted); }
+.linkbutton { background: none; border: 0; padding: 0; color: var(--link); text-align: left; text-decoration: underline; }
+.table-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; font-size: 14px; }
+
+/* Sticky filters */
+.toolbar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar input, .toolbar select, .toolbar .chip { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+.toolbar input[type=search] { flex: 1 1 220px; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); }
+.chip[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
+.filter-status { font-size: 14px; color: var(--muted); }
+.filter-status button { margin-left: 6px; font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; }
+
+/* Checklist */
+details.group { border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--toolbar-height, 60px) + 8px); }
+details.group > summary { cursor: pointer; padding: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+details.group > summary .name { font-weight: 600; }
+details.group > summary .counts { font-size: 13px; color: var(--muted); }
+details.group > summary .bar { flex: 1 1 160px; max-width: 320px; margin-left: auto; }
+ul.items { list-style: none; padding: 0 0 10px 0; margin: 0; }
+ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 .tag { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 640px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-number { font-size: 44px; }
+    td.barcell { width: 30%; min-width: 80px; }
+    .toolbar select { flex: 1 1 40%; }
+    /* Icons only, so the sticky bar stays short; the label is the button's name and tooltip. */
+    .chip-label { display: none; }
+    .chips { flex: 1 1 100%; }
+    details.group > summary .bar { flex-basis: 100%; max-width: none; margin-left: 0; }
+}
 </style>
 </head>
 <body>
 <main>
 <h1>Archicad API coverage</h1>
-<p class="muted">Every function of the Archicad API (Archicad 25–30: C functions with their older names and command ids, and the C++ API) and whether the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses it. Updated within minutes of every pull request, issue and push.</p>
-<div id="summary" class="panel">Loading…</div>
-<div class="panel filters">
-    <input type="search" id="search" placeholder="Search functions, e.g. Category or MEP::Pipe" aria-label="Search">
+<p class="muted">Which parts of the Archicad API (Archicad 25–30: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every pull request, issue and push. See also the <a href="../archicad-addon/">command reference</a>.</p>
+
+<section aria-label="Overview">
+    <div class="hero">
+        <div>
+            <div class="hero-number" id="hero-percent">…</div>
+            <div class="hero-caption" id="hero-caption">Loading the checklist…</div>
+        </div>
+        <div class="tiles" id="tiles"></div>
+    </div>
+    <div class="bar large" id="overall-bar" role="img"></div>
+    <div class="legend" id="legend"></div>
+</section>
+
+<h2>By part of the API</h2>
+<div class="scroll"><table id="parts"></table></div>
+
+<h2>By group</h2>
+<div class="table-actions">
+    <label>Sort by
+        <select id="group-sort">
+            <option value="open">most open items</option>
+            <option value="coverage">lowest coverage</option>
+            <option value="name">name</option>
+        </select>
+    </label>
+    <span class="muted">Select a group to list its items below.</span>
+</div>
+<div class="scroll"><table id="groups"></table></div>
+<div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
+
+<div class="toolbar" id="toolbar">
+    <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
     <select id="part" aria-label="Part of the API">
         <option value="">All parts</option>
         <option value="c">C functions</option>
@@ -51,7 +146,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
         <option value="cpp">C++ API</option>
     </select>
     <select id="version" aria-label="Archicad version"><option value="">Any version</option></select>
-    <span id="statuses"></span>
+    <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
+    <span class="filter-status" id="filter-status" aria-live="polite"></span>
 </div>
 <div id="list"></div>
 </main>
@@ -59,18 +155,24 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 const DATA_URL = new URLSearchParams (location.search).get ('data') ||
     'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';
 const REPO = 'https://github.com/ENZYME-APD/tapir-archicad-automation';
+// status, mark, label, bar class (null: not counted as applicable)
 const STATUSES = [
-    ['done', '✅', 'used on main'], ['merged', '🔀', 'merged, not yet released'], ['in progress', '🚧', 'open pull request'],
-    ['claimed', '🙋', 'claimed by an open issue'], ['open', '⬜', 'open'], ['skipped', '⛔', 'skipped by a maintainer'],
-    ['not applicable', '➖', 'not applicable'],
+    ['done', '✅', 'used on main', 'done'], ['merged', '🔀', 'merged, not yet released', 'merged'],
+    ['in progress', '🚧', 'in an open pull request', 'progress'], ['claimed', '🙋', 'claimed by an open issue', 'claimed'],
+    ['open', '⬜', 'open', 'open'], ['skipped', '⛔', 'skipped by a maintainer', null],
+    ['not applicable', '➖', 'not applicable', null],
 ];
 const MARK = Object.fromEntries (STATUSES.map (s => [s[0], s[1]]));
+const PARTS = [['c', 'C functions', ''], ['old', 'Archicad 25/26 only', 'older C functions and command ids'], ['cpp', 'C++ API', 'ACAPI:: and IFCAPI::']];
+const GROUPS_SHOWN = 12;
 let data = null;
+let groupFilter = '';
+let showAllGroups = false;
 
 function el (tag, attrs = {}, ...children) {
     const node = document.createElement (tag);
     for (const [k, v] of Object.entries (attrs)) {
-        if (k === 'text') node.textContent = v; else node.setAttribute (k, v);
+        if (k === 'text') node.textContent = v; else if (k === 'class') node.className = v; else node.setAttribute (k, v);
     }
     for (const child of children) node.append (child);
     return node;
@@ -82,75 +184,208 @@ function part (item) {
     return 'old';
 }
 
+function tally (items) {
+    const counts = Object.fromEntries (STATUSES.map (s => [s[0], 0]));
+    for (const item of items) counts[item.status] = (counts[item.status] || 0) + 1;
+    counts.applicable = items.length - counts['not applicable'] - counts.skipped;
+    counts.used = counts.done + counts.merged;
+    counts.percent = counts.applicable ? Math.floor (100 * counts.used / counts.applicable) : 0;
+    return counts;
+}
+
+function bar (counts, large) {
+    const node = el ('div', { class: 'bar' + (large ? ' large' : ''), role: 'img' });
+    const parts = STATUSES.filter (s => s[3] && counts[s[0]]);
+    node.setAttribute ('aria-label', parts.map (s => `${counts[s[0]]} ${s[2]}`).join (', '));
+    for (const [status, mark, label, cls] of parts) {
+        const segment = el ('span', { class: cls, title: `${mark} ${counts[status]} ${label} (${Math.round (100 * counts[status] / counts.applicable)} %)` });
+        if (cls !== 'open') segment.style.width = (100 * counts[status] / counts.applicable) + '%';
+        node.append (segment);
+    }
+    return node;
+}
+
+function usedCell (counts) {
+    return el ('td', { class: 'num' }, `${counts.percent} %`, el ('span', { class: 'sub', text: `${counts.used} of ${counts.applicable}` }));
+}
+
+function plural (count, word) {
+    return `${count.toLocaleString ()} ${word}${count === 1 ? '' : 's'}`;
+}
+
 function claimLink (item) {
     const params = new URLSearchParams ({ template: 'archicad-api-request.yml', title: 'Expose ' + item.id, functions: item.id });
     return el ('a', { href: REPO + '/issues/new?' + params, text: 'claim' });
 }
 
-function renderSummary () {
-    const counts = {};
-    for (const item of data.items) counts[item.status] = (counts[item.status] || 0) + 1;
-    const applicable = data.items.length - (counts['not applicable'] || 0) - (counts.skipped || 0);
-    const used = (counts.done || 0) + (counts.merged || 0);
-    const box = document.getElementById ('summary');
-    box.replaceChildren (
-        el ('strong', { text: `${used} of ${applicable} applicable items used (${Math.floor (100 * used / Math.max (applicable, 1))} %)` }),
-        ' · ' + STATUSES.filter (s => counts[s[0]]).map (s => `${s[1]} ${counts[s[0]]} ${s[2]}`).join (' · '),
-        el ('br'),
-        el ('span', { class: 'muted', text: `Updated ${data.generatedAt}. To start on an open item, ` }),
-        el ('a', { href: REPO + '/issues/new?template=archicad-api-request.yml', text: 'file an Archicad API request' }),
-        el ('span', { class: 'muted', text: ' naming it, or use the claim link next to it.' }),
-    );
+function renderOverview () {
+    const counts = tally (data.items);
+    document.getElementById ('hero-percent').textContent = counts.percent + ' %';
+    document.getElementById ('hero-caption').replaceChildren (
+        `of the ${counts.applicable.toLocaleString ()} applicable items are used (${counts.used.toLocaleString ()}). `,
+        `${(counts['not applicable'] + counts.skipped).toLocaleString ()} more are not applicable or skipped. Updated ${data.generatedAt}.`);
+    const tiles = document.getElementById ('tiles');
+    tiles.replaceChildren (...STATUSES.filter (s => s[3]).map (([status, mark, label]) => {
+        const tile = el ('button', { type: 'button', class: 'tile', 'data-status': status, 'aria-pressed': 'false', title: 'Show only: ' + label },
+            el ('span', { class: 'value', text: `${mark} ${counts[status].toLocaleString ()}` }), el ('span', { class: 'label', text: label }));
+        tile.addEventListener ('click', () => soloStatus (status));
+        return tile;
+    }));
+    const overall = bar (counts, true);
+    overall.id = 'overall-bar';
+    document.getElementById ('overall-bar').replaceWith (overall);
+    document.getElementById ('legend').replaceChildren (...STATUSES.filter (s => s[3]).map (([status, , label, cls]) =>
+        el ('span', {}, el ('span', { class: 'swatch ' + cls }), label)));
+
+    const parts = document.getElementById ('parts');
+    parts.replaceChildren (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Part' }), el ('th', { class: 'num', text: 'Used' }),
+        el ('th', { text: 'Progress' }), el ('th', { class: 'num', text: 'Open' }))));
+    const body = el ('tbody');
+    for (const [key, name, note] of PARTS) {
+        const c = tally (data.items.filter (i => part (i) === key));
+        const button = el ('button', { type: 'button', class: 'linkbutton', text: name });
+        button.addEventListener ('click', () => { document.getElementById ('part').value = key; groupFilter = ''; render (); scrollToList (); });
+        const nameCell = el ('td', {}, button);
+        if (note) nameCell.append (el ('span', { class: 'sub', text: note }));
+        body.append (el ('tr', {}, nameCell, usedCell (c), el ('td', { class: 'barcell' }, bar (c)), el ('td', { class: 'num', text: String (c.open) })));
+    }
+    parts.append (body);
+    renderGroupTable ();
+}
+
+function groupStats () {
+    const groups = new Map ();
+    for (const item of data.items) {
+        if (!groups.has (item.group)) groups.set (item.group, []);
+        groups.get (item.group).push (item);
+    }
+    return [...groups.entries ()].map (([name, items]) => ({ name, counts: tally (items) })).filter (g => g.counts.applicable > 0);
+}
+
+function renderGroupTable () {
+    const sort = document.getElementById ('group-sort').value;
+    const groups = groupStats ();
+    const sorters = {
+        open: (a, b) => b.counts.open - a.counts.open || a.name.localeCompare (b.name),
+        coverage: (a, b) => a.counts.percent - b.counts.percent || b.counts.applicable - a.counts.applicable,
+        name: (a, b) => a.name.localeCompare (b.name),
+    };
+    groups.sort (sorters[sort]);
+    const shown = showAllGroups ? groups : groups.slice (0, GROUPS_SHOWN);
+    const table = document.getElementById ('groups');
+    table.replaceChildren (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Group' }), el ('th', { class: 'num', text: 'Used' }),
+        el ('th', { text: 'Progress' }), el ('th', { class: 'num', text: 'Open' }))));
+    const body = el ('tbody');
+    for (const group of shown) {
+        const button = el ('button', { type: 'button', class: 'linkbutton', text: group.name });
+        button.addEventListener ('click', () => showGroup (group.name));
+        body.append (el ('tr', {}, el ('td', {}, button), usedCell (group.counts),
+            el ('td', { class: 'barcell' }, bar (group.counts)), el ('td', { class: 'num', text: String (group.counts.open) })));
+    }
+    table.append (body);
+    const more = document.getElementById ('groups-more');
+    more.hidden = groups.length <= GROUPS_SHOWN;
+    more.textContent = showAllGroups ? `Show the first ${GROUPS_SHOWN} groups` : `Show all ${groups.length} groups`;
+}
+
+function scrollToList () {
+    document.getElementById ('toolbar').scrollIntoView ({ block: 'start' });
+}
+
+function showGroup (name) {
+    groupFilter = name;
+    document.getElementById ('search').value = '';
+    document.getElementById ('part').value = '';
+    render ();
+    scrollToList ();
+}
+
+function soloStatus (status) {
+    const boxes = [...document.querySelectorAll ('#statuses .chip')];
+    const alreadySolo = boxes.every (b => (b.dataset.status === status) === (b.getAttribute ('aria-pressed') === 'true'));
+    for (const box of boxes) {
+        // Clicking the tile of the only shown status shows the default set again.
+        const on = alreadySolo ? box.dataset.status !== 'not applicable' : box.dataset.status === status;
+        box.setAttribute ('aria-pressed', String (on));
+    }
+    render ();
+    scrollToList ();
+}
+
+function itemRow (item) {
+    const li = el ('li', {}, MARK[item.status] + ' ', el ('code', { text: item.id }));
+    if (item.versions.length !== data.versions.length) {
+        const v = item.versions;
+        li.append (' ', el ('span', { class: 'tag', text: 'AC' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '') }));
+    }
+    if (item.brief) li.append (' – ' + item.brief);
+    if (item.olderNames.length) li.append (' ', el ('span', { class: 'tag', text: '(was ' + item.olderNames.join (', ') + ')' }));
+    for (const pr of item.pullRequests) li.append (' ', el ('a', { href: `${REPO}/pull/${pr.number}`, title: pr.title, text: '#' + pr.number }));
+    for (const issue of item.issues) li.append (' ', el ('a', { href: `${REPO}/issues/${issue.number}`, title: issue.title, text: '#' + issue.number }));
+    if (item.reason) li.append (' ', el ('em', { class: 'muted', text: '(' + item.reason + ')' }));
+    if (item.status === 'open') li.append (' · ', claimLink (item));
+    return li;
 }
 
 function render () {
     const query = document.getElementById ('search').value.trim ().toLowerCase ();
     const wantedPart = document.getElementById ('part').value;
     const version = Number (document.getElementById ('version').value) || 0;
-    const wanted = new Set ([...document.querySelectorAll ('#statuses input:checked')].map (i => i.value));
+    const wanted = new Set ([...document.querySelectorAll ('#statuses .chip[aria-pressed="true"]')].map (b => b.dataset.status));
+    for (const tile of document.querySelectorAll ('.tile')) {
+        tile.setAttribute ('aria-pressed', String (wanted.size === 1 && wanted.has (tile.dataset.status)));
+    }
     const groups = new Map ();
+    let total = 0;
     for (const item of data.items) {
         if (!wanted.has (item.status)) continue;
+        if (groupFilter && item.group !== groupFilter) continue;
         if (wantedPart && part (item) !== wantedPart) continue;
         if (version && !item.versions.includes (version)) continue;
         if (query && !(item.id.toLowerCase ().includes (query) || item.brief.toLowerCase ().includes (query) ||
             item.olderNames.some (n => n.toLowerCase ().includes (query)))) continue;
         if (!groups.has (item.group)) groups.set (item.group, []);
         groups.get (item.group).push (item);
+        total++;
     }
+    const status = document.getElementById ('filter-status');
+    status.replaceChildren (`${plural (total, 'item')} in ${plural (groups.size, 'group')}`);
+    if (groupFilter) {
+        const clear = el ('button', { type: 'button', text: `Group: ${groupFilter} ✕`, title: 'Show all groups' });
+        clear.addEventListener ('click', () => { groupFilter = ''; render (); });
+        status.append (clear);
+    }
+
     const list = document.getElementById ('list');
     if (!groups.size) { list.replaceChildren (el ('p', { class: 'muted', text: 'Nothing matches.' })); return; }
     const sorted = [...groups.entries ()].sort ((a, b) => b[1].length - a[1].length || a[0].localeCompare (b[0]));
+    const all = new Map (groupStats ().map (g => [g.name, g.counts]));
     list.replaceChildren (...sorted.map (([group, items]) => {
-        const counts = STATUSES.filter (s => items.some (i => i.status === s[0]))
-            .map (s => `${s[1]} ${items.filter (i => i.status === s[0]).length}`).join ('  ');
-        const ul = el ('ul', { class: 'items' }, ...items.map (item => {
-            const li = el ('li', {}, MARK[item.status] + ' ', el ('code', { text: item.id }));
-            if (item.versions.length !== data.versions.length) {
-                const v = item.versions;
-                li.append (' ', el ('span', { class: 'tag', text: 'AC' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '') }));
-            }
-            if (item.brief) li.append (' – ' + item.brief);
-            if (item.olderNames.length) li.append (' ', el ('span', { class: 'tag', text: '(was ' + item.olderNames.join (', ') + ')' }));
-            for (const pr of item.pullRequests) li.append (' ', el ('a', { href: `${REPO}/pull/${pr.number}`, title: pr.title, text: '#' + pr.number }));
-            for (const issue of item.issues) li.append (' ', el ('a', { href: `${REPO}/issues/${issue.number}`, title: issue.title, text: '#' + issue.number }));
-            if (item.reason) li.append (' ', el ('em', { class: 'muted', text: '(' + item.reason + ')' }));
-            if (item.status === 'open') li.append (' · ', claimLink (item));
-            return li;
-        }));
-        const details = el ('details', {}, el ('summary', {}, group + ' ', el ('span', { class: 'muted', text: `${items.length} · ${counts}` })), ul);
-        if (query || sorted.length <= 3) details.open = true;
+        const counts = all.get (group) || tally (items);
+        const summary = el ('summary', {}, el ('span', { class: 'name', text: group }),
+            el ('span', { class: 'counts', text: `${items.length} shown · ${counts.percent} % used` }));
+        if (counts.applicable) summary.append (bar (counts));
+        const details = el ('details', { class: 'group' }, summary);
+        // Items are rendered when a group is opened; some groups have a thousand.
+        let filled = false;
+        const fill = () => { if (!filled) { filled = true; details.append (el ('ul', { class: 'items' }, ...items.map (itemRow))); } };
+        details.addEventListener ('toggle', () => { if (details.open) fill (); });
+        if (query || groupFilter || sorted.length <= 3) { fill (); details.open = true; }
         return details;
     }));
+}
+
+function updateToolbarHeight () {
+    document.documentElement.style.setProperty ('--toolbar-height', document.getElementById ('toolbar').offsetHeight + 'px');
 }
 
 async function main () {
     const statuses = document.getElementById ('statuses');
     for (const [value, mark, label] of STATUSES) {
-        const box = el ('input', { type: 'checkbox', value });
-        box.checked = value !== 'not applicable';
-        box.addEventListener ('change', render);
-        statuses.append (el ('label', { title: label }, box, ' ' + mark + ' ' + label), ' ');
+        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label, 'aria-label': label },
+            mark, el ('span', { class: 'chip-label', text: ' ' + label }));
+        chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
+        statuses.append (chip);
     }
     for (const url of [DATA_URL, 'api-coverage.json']) {
         try {
@@ -159,14 +394,19 @@ async function main () {
         } catch (error) { /* try the next source */ }
     }
     if (!data) {
-        document.getElementById ('summary').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
+        document.getElementById ('hero-caption').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
         return;
     }
     const version = document.getElementById ('version');
     for (const v of data.versions) version.append (el ('option', { value: v, text: 'Archicad ' + v }));
-    for (const id of ['search', 'part', 'version']) document.getElementById (id).addEventListener ('input', render);
-    renderSummary ();
+    document.getElementById ('search').addEventListener ('input', render);
+    for (const id of ['part', 'version']) document.getElementById (id).addEventListener ('change', render);
+    document.getElementById ('group-sort').addEventListener ('change', renderGroupTable);
+    document.getElementById ('groups-more').addEventListener ('click', () => { showAllGroups = !showAllGroups; renderGroupTable (); });
+    renderOverview ();
     render ();
+    updateToolbarHeight ();
+    window.addEventListener ('resize', updateToolbarHeight);
 }
 main ();
 </script>
