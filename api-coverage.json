@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:12 UTC",
+ "generatedAt": "2026-10-18 21:13 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1508,
+  "open": 1507,
   "not applicable": 468,
   "in progress": 123,
   "done": 491,
-  "claimed": 41,
+  "claimed": 42,
   "merged": 252
  },
  "items": [
@@ -8595,10 +8595,15 @@
     "ACAPI_Goodies_GetElemTypeName",
     "APIAny_GetElemTypeNameID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1100,
+     "title": "Expose ACAPI_Element_GetElemTypeName (localized element type names)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElementFromAnywhere",
