@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:28 UTC",
+ "generatedAt": "2026-10-18 21:46 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1477,
+  "open": 1474,
   "not applicable": 468,
-  "in progress": 131,
+  "in progress": 132,
   "done": 491,
-  "claimed": 64,
+  "claimed": 66,
   "merged": 252
  },
  "items": [
@@ -4303,6 +4303,14 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1115,
+     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
+    },
+    {
+     "number": 1113,
+     "title": "Add Get/SetDesignOptionCombinationOfViews commands"
+    },
+    {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     },
@@ -5685,10 +5693,15 @@
    "olderNames": [
     "APIDb_GetLocOrigoID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1117,
+     "title": "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetMasterLayoutDatabases",
@@ -8184,6 +8197,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1115,
+     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
+    },
     {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
@@ -12481,6 +12498,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1115,
+     "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
+    },
+    {
      "number": 956,
      "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
     }
@@ -15733,10 +15754,15 @@
    "olderNames": [
     "APIEnv_GetCurrLayerCombID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1116,
+     "title": "Expose ACAPI_Navigator_GetCurrLayerComb (which layer combination the current window uses)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetLayoutBook",
@@ -18186,10 +18212,15 @@
    "olderNames": [
     "APIDb_GetOffsetID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1117,
+     "title": "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_GetPreferences",
@@ -51506,9 +51537,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1113,
+     "title": "Add Get/SetDesignOptionCombinationOfViews commands"
+    }
+   ],
    "issues": [
     {
      "number": 1108,
