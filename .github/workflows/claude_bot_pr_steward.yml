@@ -37,6 +37,9 @@ name: Claude Bot PR Steward
 #   limit) did nothing, so it is not a round: the next one waits for the next
 #   hourly sweep, and only ten failures within a day (and since the label was
 #   last removed) hand the pull request over.
+#   A fix run also waits for a model slot first and reports a run the API
+#   refused in its job summary (#977, see the header of
+#   claude_issue_triage.yml).
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
 # - A sweep starts new work (builds, a review or a fix) on at most
@@ -391,7 +394,8 @@ jobs:
       vars.BOT_PR_STEWARD != 'false' &&
       github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 60 minutes of work after up to two hours of waiting for a model slot.
+    timeout-minutes: 180
     concurrency:
       group: bot-pr-fix-${{ inputs.pr_number }}
       cancel-in-progress: false
@@ -483,6 +487,41 @@ jobs:
           ref: ${{ steps.pr.outputs.branch }}
           fetch-depth: 0
 
+      # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
+      # started before this one are in progress (see the header of claude_issue_triage.yml).
+      - name: Wait for a model slot
+        if: steps.pr.outputs.superseded != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+        run: |
+          set -euo pipefail
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
+          deadline=$((SECONDS + 7200))
+          while :; do
+            # In-progress runs of the three Claude workflows started before this
+            # one, except the sweeps and the hourly retry, which run no model.
+            ahead=$(gh api "repos/$REPO/actions/runs?status=in_progress&per_page=100" \
+              | jq --arg me "$me" --argjson id "$GITHUB_RUN_ID" '[.workflow_runs[]
+                  | select((.path | test("claude_(issue_triage|pr_review|bot_pr_steward)[.]yml$"))
+                           and .event != "schedule" and .display_title != "Bot PR sweep" and .id != $id
+                           and (.created_at < $me or (.created_at == $me and .id < $id)))] | length')
+            if [ "$ahead" -lt "$MAX_RUNS" ]; then
+              echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - going ahead."
+              break
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Waited two hours for a model slot ($ahead earlier Claude runs in progress). The run did nothing."
+              exit 1
+            fi
+            # Further back in the queue, poll less often: every poll is an API call.
+            wait=$((60 + 30 * ahead)); [ "$wait" -le 600 ] || wait=600
+            echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - waiting ${wait}s."
+            sleep "$wait"
+          done
+
       - name: Fix the pull request
         if: steps.pr.outputs.superseded != 'true'
         id: fix
@@ -564,6 +603,49 @@ jobs:
             --model ${{ inputs.escalate && (vars.CLAUDE_ESCALATION_MODEL || 'best') || (vars.CLAUDE_MODEL || 'opus') }}
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch origin:*),Bash(git merge origin/main),Bash(git merge --abort),Bash(git push origin ${{ steps.pr.outputs.branch }}),Bash(gh pr view ${{ inputs.pr_number }}:*),Bash(gh pr diff ${{ inputs.pr_number }}:*),Bash(gh pr comment ${{ inputs.pr_number }}:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./archicad-addon/Installer/**),Edit(./tools/**)"
+
+      # What the run came to, in the job summary: the result message of its
+      # execution file, with the error text of a failed run, so a failure can be
+      # told apart without the hidden model output. A run the API refused on its
+      # first turn - a used-up usage limit or an API error: an error, one turn, no
+      # cost - is marked as such by the next step.
+      - name: Report the Claude result
+        id: result
+        if: always() && steps.fix.outcome != 'skipped'
+        env:
+          EXECUTION_FILE: ${{ steps.fix.outputs.execution_file }}
+        run: |
+          result='{}'
+          if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
+            result=$(jq -c '[.[] | select(.type == "result")] | last // {}' "$EXECUTION_FILE" 2>/dev/null || echo '{}')
+          fi
+          turns=$(jq -r '.num_turns // 0' <<<"$result")
+          case "$turns" in ''|*[!0-9]*) turns=0 ;; esac
+          isError=$(jq -r '.is_error // false' <<<"$result")
+          {
+            echo "### Claude result"
+            jq -r '"subtype: \(.subtype // "none"), is_error: \(.is_error // false), turns: \(.num_turns // 0), cost: \(.total_cost_usd // 0) USD"' <<<"$result"
+            if [ "$isError" = true ]; then
+              echo
+              echo '```'
+              jq -r '.result // "(no error text)" | tostring' <<<"$result" | head -c 2000 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          refused=false
+          if [ "$isError" = true ] && [ "$turns" -le 1 ] && jq -e '(.total_cost_usd // 0) == 0' <<<"$result" >/dev/null; then
+            refused=true
+          fi
+          echo "Turns: $turns, refused: $refused"
+          echo "turns=$turns" >> "$GITHUB_OUTPUT"
+          echo "refused=$refused" >> "$GITHUB_OUTPUT"
+
+      - name: Stop on a refused run
+        if: always() && steps.result.outputs.refused == 'true'
+        run: |
+          echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
+          exit 1
 
       # A run that pushed nothing leaves the head, the failures and the
       # findings as they were, so another round would see the same inputs:

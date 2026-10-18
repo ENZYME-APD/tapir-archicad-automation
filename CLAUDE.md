@@ -272,6 +272,14 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   for issue fixes, first reviews and steward fix rounds, and
   `CLAUDE_ESCALATION_MODEL` (default `best`) only for the last steward fix round
   and one retry of an issue fix that did work but left no comment or PR.
+- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 4)
+  Claude runs of these workflows call the model at a time, oldest first; a run
+  the API refuses on its first turn fails in its "Stop on a refused run" step
+  with the error in its job summary; the hourly `retry` job of
+  `claude_issue_triage.yml` starts refused issue fixes again (`CLAUDE_RETRY_BATCH`
+  per hour, `CLAUDE_RETRY=false` turns it off), and the steward neither counts
+  failed review or fix runs as rounds nor starts one within 50 minutes of a
+  failure.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
