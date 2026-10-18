@@ -103,6 +103,103 @@ GS::ObjectState GetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
     return response;
 }
 
+GetElementsByClassificationCommand::GetElementsByClassificationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsByClassificationCommand::GetName () const
+{
+    return "GetElementsByClassification";
+}
+
+GS::Optional<GS::UniString> GetElementsByClassificationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsByClassificationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsOfClassificationItems": {
+                "type": "array",
+                "description": "The elements classified with each classification item, aligned with the input, or an error for a non-existing classification item.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsOfClassificationItems"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementsByClassificationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    GS::ObjectState response;
+    const auto& elementsOfClassificationItems = response.AddList<GS::ObjectState> ("elementsOfClassificationItems");
+
+    for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+        const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+        if (itemId == nullptr) {
+            elementsOfClassificationItems (CreateErrorResponse (APIERR_BADPARS, "classificationItemId is missing"));
+            continue;
+        }
+
+        const API_Guid itemGuid = GetGuidFromObjectState (*itemId);
+
+        GS::Array<API_Guid> elemGuids;
+        GSErrCode err = ACAPI_Element_GetElementsWithClassification (itemGuid, elemGuids);
+        if (err != NoError) {
+            elementsOfClassificationItems (CreateErrorResponse (err, "Failed to get the elements of the classification item"));
+            continue;
+        }
+
+        GS::ObjectState elementsOfClassificationItem;
+        const auto& elements = elementsOfClassificationItem.AddList<GS::ObjectState> ("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements (CreateElementIdObjectState (elemGuid));
+        }
+        elementsOfClassificationItems (elementsOfClassificationItem);
+    }
+
+    return response;
+}
+
 SetClassificationsOfElementsCommand::SetClassificationsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
