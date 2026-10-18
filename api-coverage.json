@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 20:58 UTC",
+ "generatedAt": "2026-10-18 20:59 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1511,
   "not applicable": 468,
-  "in progress": 120,
+  "in progress": 122,
   "done": 491,
-  "claimed": 41,
+  "claimed": 39,
   "merged": 252
  },
  "items": [
@@ -3894,9 +3894,14 @@
    "olderNames": [
     "APIAny_GetAutoTextKeysID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1094,
+     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
+    }
+   ],
    "issues": [
     {
      "number": 1091,
@@ -4034,9 +4039,14 @@
    "olderNames": [
     "APIAny_InterpretAutoTextID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1094,
+     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
+    }
+   ],
    "issues": [
     {
      "number": 1091,
@@ -23796,6 +23806,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1094,
+     "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
+    },
     {
      "number": 1087,
      "title": "Add GetCurtainWallAbsoluteBottoms command"
