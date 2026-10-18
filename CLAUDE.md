@@ -48,10 +48,13 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
   TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/
 builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
-docs/                    Generated docs (archicad-addon command reference)
+docs/                    Generated docs (archicad-addon command reference),
+                         api-coverage/ page of the Archicad API coverage checklist
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
-                         command scaffolder (new_command.py)
+                         command scaffolder (new_command.py),
+                         API coverage generator (generate_api_coverage.py,
+                         fetch_api_coverage_github_data.py, api_coverage_rules.json)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -258,10 +261,25 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   review on each new head, links the built add-on in a comment asking the
   issue's author to test it in Archicad, and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main` (which it merges in), at most
-  `BOT_PR_MAX_FIX_ROUNDS` (default 3) times, on at most `BOT_PR_SWEEP_BATCH`
+  `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
   (default 5) PRs per sweep. Then
-  it labels the PR `needs-maintainer` and stops. `BOT_PR_STEWARD=false` turns it
+  it labels the PR `needs-maintainer` and stops; removing the label hands the PR
+  back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
+- Model tiers of these three Claude workflows, from repository variables
+  (aliases, so each tier follows new models): `CLAUDE_LIGHT_MODEL` (default
+  `sonnet`) for issue replies and PR re-reviews, `CLAUDE_MODEL` (default `opus`)
+  for issue fixes, first reviews and steward fix rounds, and
+  `CLAUDE_ESCALATION_MODEL` (default `best`) only for the last steward fix round
+  and one retry of an issue fix that did work but left no comment or PR.
+- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 4)
+  Claude runs of these workflows call the model at a time, oldest first; a run
+  the API refuses on its first turn fails in its "Stop on a refused run" step
+  with the error in its job summary; the hourly `retry` job of
+  `claude_issue_triage.yml` starts refused issue fixes again (`CLAUDE_RETRY_BATCH`
+  per hour, `CLAUDE_RETRY=false` turns it off), and the steward neither counts
+  failed review or fix runs as rounds nor starts one within 50 minutes of a
+  failure.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
@@ -274,6 +292,22 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
   no workflow on their own; see
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
+- `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
+  to `main`, a release, pull request and issue events, hourly and by hand, it runs
+  `tools/generate_api_coverage.py` over the AC25–AC30 DevKits (C functions with
+  their older names and AC25/26 command ids, and the C++ `ACAPI::`/`IFCAPI::` API)
+  and marks each item used on `main`, merged but not released, in an open PR,
+  claimed by an open issue (the "Archicad API request" issue form), open, skipped
+  or not applicable. It publishes `api-coverage.json`/`.md` to the `api-coverage`
+  branch (never to `main`), read by `docs/api-coverage/index.html`, with the
+  README's badge (`api-coverage-badge.json`, a shields.io endpoint) and summary
+  image (`api-coverage.svg`, `api-coverage-dark.svg`), so the README never needs
+  an edit when the coverage changes; it also writes the
+  summary into the issue numbered in the `API_COVERAGE_ISSUE` repository variable
+  when set; `API_COVERAGE=false` turns it off. It uses `pull_request_target`, so it
+  must never check out or run pull request code. Maintainers mark items skipped,
+  with a reason, in the `skip` section of `tools/api_coverage_rules.json`; the
+  `notApplicable` section lists what cannot be a JSON command.
 
 ## Installation (end users)
 
@@ -305,6 +339,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 ## Documentation & links
 
 - Add-On JSON command reference: <https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon>
+- Archicad API coverage checklist: <https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/>
+  (data on the `api-coverage` branch, generated by `.github/workflows/api_coverage.yml`)
 - Developer docs (wiki): <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki>
 - Add-On development guide: <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development>
 - Roadmap: <https://github.com/orgs/ENZYME-APD/projects/4/views/1>
