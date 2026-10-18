@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:04 UTC",
+ "generatedAt": "2026-10-18 21:12 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1511,
+  "open": 1508,
   "not applicable": 468,
   "in progress": 123,
   "done": 491,
-  "claimed": 38,
+  "claimed": 41,
   "merged": 252
  },
  "items": [
@@ -3796,6 +3796,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1097,
+     "title": "ModifyTexts/ModifyLabels: handle autotext keys like CreateTexts"
+    },
+    {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     }
@@ -3879,6 +3883,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1097,
+     "title": "ModifyTexts/ModifyLabels: handle autotext keys like CreateTexts"
+    },
     {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
@@ -8687,10 +8695,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1098,
+     "title": "Expose ACAPI_Element_GetElementsWithClassification (all elements of one classification item in one call)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetExtent",
@@ -15368,10 +15381,15 @@
    "olderNames": [
     "APIEnv_ChangeStructureDisplayID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1099,
+     "title": "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_ChangeViewOptions",
@@ -16009,10 +16027,15 @@
    "olderNames": [
     "APIEnv_GetStructureDisplayID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1099,
+     "title": "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetSubSet",
