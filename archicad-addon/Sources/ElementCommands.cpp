@@ -142,14 +142,14 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
 }
 
 // The status ACAPI_Drawing_CheckDrawingStatus reports is the Drawing Manager's Status column:
-// 1 is OK (the drawing is up to date with its source), 2 is Modified (the source changed since
-// the drawing was last updated). Anything else - e.g. a source that cannot be checked, like a
-// missing external file - is reported as Unknown.
+// 1 is OK (the drawing is up to date with its source), 0 is Modified (the source changed since
+// the drawing was last updated). Anything else (-1, e.g. a source that cannot be checked, like
+// a missing external file) is reported as Unknown.
 static GS::UniString DrawingStatusToString (Int32 status)
 {
     switch (status) {
         case 1:  return "UpToDate";
-        case 2:  return "Modified";
+        case 0:  return "Modified";
         default: return "Unknown";
     }
 }
@@ -183,15 +183,19 @@ static void AddDrawingManagerDetails (const API_Guid& drawingGuid, GS::ObjectSta
     }
 
     API_DrawingLinkInfo linkInfo = {};
-    if (ACAPI_Drawing_GetDrawingLink (&drawingGuid, &linkInfo) != NoError) {
-        return;
-    }
-    // linkPath and viewPath are allocated by the API and owned by the caller - released the
-    // same way as in the DevKit's Database_Control example.
+    const GSErrCode linkErr = ACAPI_Drawing_GetDrawingLink (&drawingGuid, &linkInfo);
+    // linkPath (an IO::Location) and viewPath (a GSPtr) are allocated by the API and owned by
+    // the caller - released the same way as in the DevKit's Database_Control example, also
+    // when the call fails.
     const GS::OnExit linkInfoGuard ([&linkInfo] () {
         delete linkInfo.linkPath;
-        delete linkInfo.viewPath;
+        if (linkInfo.viewPath != nullptr) {
+            BMKillPtr (&linkInfo.viewPath);
+        }
     });
+    if (linkErr != NoError) {
+        return;
+    }
 
     os.Add ("linkType", DrawingLinkTypeToString (linkInfo.linkTypeID));
     if (linkInfo.linkPath != nullptr) {
