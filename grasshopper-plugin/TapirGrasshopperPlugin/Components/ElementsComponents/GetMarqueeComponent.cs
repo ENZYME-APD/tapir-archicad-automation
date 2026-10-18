@@ -63,7 +63,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             da.SetData(
                 0,
-                response.Type ?? MarqueeResponse.None);
+                response.Type ?? MarqueeResponse.NoneType);
 
             if (!response.HasMarquee)
             {

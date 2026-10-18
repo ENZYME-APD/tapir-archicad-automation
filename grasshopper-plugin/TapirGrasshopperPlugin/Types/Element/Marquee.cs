@@ -25,10 +25,11 @@ namespace TapirGrasshopperPlugin.Types.Element
     // are only given for the rectangle shapes.
     public class MarqueeResponse
     {
-        public const string None = "none";
-        public const string Rectangle = "rectangle";
-        public const string RotatedRectangle = "rotatedRectangle";
-        public const string Polygon = "polygon";
+        // Values of Type; suffixed so they do not clash with the fields below.
+        public const string NoneType = "none";
+        public const string RectangleType = "rectangle";
+        public const string RotatedRectangleType = "rotatedRectangle";
+        public const string PolygonType = "polygon";
 
         [JsonProperty("type")]
         public string Type;
@@ -45,7 +46,7 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("polygon")]
         public List<Point2D> Polygon;
 
-        public bool HasMarquee => Type != null && Type != None;
+        public bool HasMarquee => Type != null && Type != NoneType;
     }
 
     // Parameters of the SetMarquee command. Either polygon or box is sent,
