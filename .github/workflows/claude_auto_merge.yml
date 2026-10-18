@@ -61,10 +61,11 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
-# One merge pass at a time, so two runs cannot race on the same PR.
-concurrency:
-  group: auto-merge
-  cancel-in-progress: false
+# No concurrency group: with one, every finished build queued a run that the
+# next one replaced, and each replaced run showed as cancelled on main. A run
+# instead steps aside for a newer one (first step). Two passes that still
+# overlap cannot double-merge: the merge is pinned to the head commit, and a
+# refused merge only skips that pull request.
 
 jobs:
   merge:
@@ -76,9 +77,24 @@ jobs:
       issues: write          # close a split issue once its last part merged
       checks: read
       statuses: read
+      actions: read          # see whether a newer run is waiting
 
     steps:
+      - name: Leave the pass to a newer run
+        id: newer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          newer=$(gh api "repos/$REPO/actions/workflows/claude_auto_merge.yml/runs?per_page=50" \
+            --jq "[.workflow_runs[] | select(.id > $RUN_ID and .status != \"completed\")] | length")
+          echo "Newer runs waiting or running: $newer"
+          echo "count=$newer" >> "$GITHUB_OUTPUT"
+
       - name: Merge everything that qualifies
+        if: steps.newer.outputs.count == '0'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -247,7 +263,10 @@ jobs:
             # Gate 2: every check has to have passed. Pending, failing or
             # cancelled all stop the merge; skipped checks are fine, and a pull
             # request with no checks at all is not merged either.
-            checks=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket 2>/dev/null || echo '[]')
+            # The latest run of each check counts: a build started again
+            # replaces the run it superseded (cancelled) on the same commit.
+            raw=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket,workflow,startedAt 2>/dev/null || true)
+            checks=$(jq 'group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
             total=$(printf '%s' "$checks" | jq 'length')
             if [ "$total" -eq 0 ]; then
               echo "skip: no checks have reported yet"
