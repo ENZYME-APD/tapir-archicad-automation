@@ -42,14 +42,108 @@ div.header {
 
 div.header_frame {
     padding: 25px;
-    width: 920px;
+    max-width: 1188px;
     margin: 0px auto;
 }
 
 div.frame {
     padding: 0px 20px;
-    width: 920px;
-    margin: 0px auto;
+}
+
+/* A sidebar of sections next to the content on wide screens. */
+div.layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 920px);
+    gap: 8px;
+    justify-content: center;
+    padding: 0 20px 0 0;
+}
+
+div.layout div.frame {
+    width: auto;
+    margin: 0;
+}
+
+nav.sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 0.6em 0.5em 2em 20px;
+    font-size: 0.9em;
+}
+
+div.sidebar_title {
+    color: var(--gray-70);
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.2em 0 0.4em;
+}
+
+div.sidebar_title:first-child {
+    margin-top: 0.4em;
+}
+
+ul.sidebar_list {
+    list-style: none;
+    padding: 0;
+}
+
+a.sidebar_link {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5em;
+    padding: 0.25em 0.5em;
+    border-radius: 5px;
+    color: inherit;
+    text-decoration: none;
+}
+
+a.sidebar_link:hover {
+    background: var(--gray-10);
+}
+
+a.sidebar_link[aria-current] {
+    background: var(--gray-10);
+    font-weight: bold;
+    box-shadow: inset 2px 0 0 var(--text-color);
+}
+
+a.sidebar_link.sidebar_empty {
+    opacity: 0.45;
+}
+
+span.sidebar_count {
+    color: var(--gray-70);
+    font-variant-numeric: tabular-nums;
+}
+
+div.sidebar_versions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em;
+}
+
+button.sidebar_version {
+    font: inherit;
+    font-size: 0.9em;
+    color: inherit;
+    background: var(--background);
+    border: 1px solid var(--gray-30);
+    border-radius: 5px;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+}
+
+button.sidebar_version[aria-pressed="true"] {
+    background: var(--gray-10);
+    border-color: var(--text-color);
+}
+
+button.toolbar_sections {
+    display: none;
 }
 
 div.title {
@@ -71,12 +165,100 @@ div.group_name {
     margin-top: 2.0em;
 }
 
+section.group,
+details.command_container {
+    /* Keep the target clear of the sticky toolbar when jumping to it;
+       renderer.js sets --toolbar-height from the toolbar's real height. */
+    scroll-margin-top: calc(var(--toolbar-height, 4em) + 0.5em);
+}
+
+span.group_count {
+    color: var(--gray-70);
+    font-size: 0.6em;
+    margin-left: 0.6em;
+}
+
+div.toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.6em 0;
+    background: var(--background);
+    border-bottom: 1px solid var(--gray-30);
+}
+
+div.toolbar input,
+div.toolbar button {
+    font: inherit;
+    font-size: 0.9em;
+    color: inherit;
+    background: var(--background);
+    border: 1px solid var(--gray-30);
+    border-radius: 5px;
+    padding: 0.35em 0.6em;
+}
+
+input.toolbar_search {
+    flex: 1 1 14em;
+    min-width: 0;
+}
+
+button.toolbar_button {
+    cursor: pointer;
+}
+
+button.toolbar_button:hover {
+    background: var(--gray-10);
+}
+
+span.toolbar_status {
+    color: var(--gray-70);
+    font-size: 0.9em;
+}
+
+div.overview {
+    margin: 1.5em 0 0;
+}
+
+div.overview_title {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+table.overview_table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.overview_table th,
+table.overview_table td {
+    text-align: left;
+    padding: 0.3em 0.6em;
+    border-bottom: 1px solid var(--gray-10);
+}
+
+table.overview_table th {
+    color: var(--gray-70);
+    font-weight: normal;
+    font-size: 0.85em;
+}
+
+table.overview_table .number {
+    text-align: right;
+    white-space: nowrap;
+}
+
+table.overview_table a {
+    color: inherit;
+}
+
 summary.command_header {
     padding: 0.5em 0.6em;
     border-radius: 5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
     cursor: pointer;
     transition: background 0.1s;
 
@@ -97,6 +279,27 @@ details summary.command_header:hover {
 
 span.command_name {
     display: inline-block;
+    word-break: break-word;
+}
+
+span.command_summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    /* Muted on every header background, hovered or not. */
+    opacity: 0.75;
+    font-size: 0.85em;
+    line-height: 1.4em;
+    margin-top: 0.2em;
+    /* Line up with the name, after the disclosure marker. */
+    padding-left: 1.1em;
+}
+
+details[open] span.command_summary {
+    /* The full description is in the opened content. */
+    display: none;
 }
 
 span.command_version {
@@ -138,27 +341,51 @@ code.language-python.hljs {
     color: var(--schema-blue) !important;
 }
 
-@media only screen and (max-width: 1000px) {
+/* Below this width the sidebar is a drawer opened by "Sections". */
+@media only screen and (max-width: 1150px) {
 
-    div.header_frame {
-        width: auto;
+    div.layout {
+        display: block;
+        padding: 0;
     }
 
-    div.frame {
-        width: auto;
+    div.layout div.frame {
+        margin: 0 auto;
+        max-width: 920px;
     }
 
-    /* Long command names (e.g. GetSubelementsOfHierarchicalElements) were
-       clipped to invisibility by the nowrap + hidden overflow of the header
-       on narrow screens - let them wrap instead. */
-    summary.command_header {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+    nav.sidebar {
+        position: fixed;
+        z-index: 3;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(300px, 85vw);
+        max-height: none;
+        /* align-self: start from the wide layout would shrink the drawer to its content. */
+        align-self: stretch;
+        background: var(--background);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        transform: translateX(-105%);
+        visibility: hidden;
+        transition: transform 0.2s, visibility 0.2s;
     }
 
-    span.command_name {
-        word-break: break-word;
+    body.sidebar_open nav.sidebar {
+        transform: none;
+        visibility: visible;
+    }
+
+    button.toolbar_sections {
+        display: inline-block;
+    }
+
+}
+
+@media only screen and (max-width: 640px) {
+
+    div.toolbar button {
+        flex: 1 1 auto;
     }
 
 }
