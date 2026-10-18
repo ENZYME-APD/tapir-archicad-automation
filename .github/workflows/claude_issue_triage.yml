@@ -67,6 +67,40 @@ name: Claude Issue Triage
 # Discord message the bot files - one per issue at a time but in parallel
 # across issues.
 #
+# Models (#991), from repository variables so they change without a pull
+# request; aliases, not pinned ids, so each tier moves on to new models:
+#   reply - CLAUDE_LIGHT_MODEL, default `sonnet`: mostly answering questions
+#           and pointing to pull requests.
+#   fix   - CLAUDE_MODEL, default `opus`: writing C++ against the Archicad API
+#           without the DevKit or a compiler.
+#   A fix run that did work (more than one turn) but left nothing on the
+#   issue - no comment, no pull request, for example because it hit
+#   --max-turns - is started once more on CLAUDE_ESCALATION_MODEL, default
+#   `best` (the most capable and most expensive model), by the `escalate` job.
+#   A run that failed on its first turn is not retried there: that is the
+#   subscription's quota running out, which a stronger model only spends
+#   again.
+#
+# The subscription's usage limit (#977). All Claude runs of this repository -
+# fix and reply here, the review (claude_pr_review.yml) and the steward's fix
+# (claude_bot_pr_steward.yml) - draw on the one subscription, and a burst of
+# about 40 issues once spent it within the hour, after which every run failed
+# on its first turn and nothing ever started them again. So:
+# - At most CLAUDE_MAX_RUNS (repository variable, default 4) of them call the
+#   model at a time. Each waits in its "Wait for a model slot" step, oldest
+#   first, until fewer than that many runs started before it are in progress,
+#   for at most two hours. It is a soft limit: runs that start in the same
+#   second, or a run still in progress after its model call, can pass it by a
+#   little. A run that waited in vain does nothing.
+# - A run the API refuses on its first turn (an error, one turn, no cost: a
+#   used-up usage limit or an API error) fails in its "Stop on a refused run"
+#   step, posts nothing, and its job summary shows the error text, which the
+#   action otherwise hides.
+# - The hourly `retry` job starts `fix` again on the issues whose fix run was
+#   refused or waited in vain; claude_bot_pr_steward.yml does the same for the
+#   reviews and fixes of the bot's pull requests and does not count them as
+#   rounds.
+#
 # Authenticates with a Claude Code OAuth token from a Pro or Max subscription:
 # run `claude setup-token` locally and store the result as the repository
 # secret CLAUDE_CODE_OAUTH_TOKEN. Runs then draw on the subscription instead of
@@ -81,6 +115,9 @@ on:
     types: [opened, labeled]
   issue_comment:
     types: [created]
+  # The `retry` job only.
+  schedule:
+    - cron: '43 * * * *'
   # Starts `fix` on an existing issue. discord_issue_bot.yml dispatches it for
   # every issue it files: those are created with its GITHUB_TOKEN, and events
   # caused by that token start no workflow run, so `opened` never arrives for
@@ -92,6 +129,10 @@ on:
         description: Number of the open issue to answer and, where possible, fix
         type: string
         required: true
+      escalate:
+        description: Run on CLAUDE_ESCALATION_MODEL instead of CLAUDE_MODEL (the escalate job sets it for its one retry)
+        type: boolean
+        default: false
 
 # Anyone who can open an issue or comment on one can start a run, and a run
 # spends the maintainer's subscription, so runs on one issue go one at a time.
@@ -105,6 +146,10 @@ on:
 # anyway) without ever displacing a fix. A reply may therefore run alongside
 # the fix run on the same issue; the reply prompt defers to a fix still in
 # progress rather than opening a second pull request.
+
+# Names each run after its issue, so the retry job can tell which issue a
+# failed run was for.
+run-name: "${{ github.event_name == 'schedule' && 'Retry refused fix runs' || format('Issue #{0}: {1}', github.event.issue.number || inputs.issue_number, github.event.issue.title || 'dispatched') }}"
 
 jobs:
   # ------------------------------------------------------------------- fix --
@@ -127,7 +172,8 @@ jobs:
        (github.event.action == 'opened' ||
         (github.event.action == 'labeled' && github.event.label.name == 'claude-fix')))
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 60 minutes of work after up to two hours of waiting for a model slot.
+    timeout-minutes: 180
     concurrency:
       group: claude-issue-${{ github.event.issue.number || inputs.issue_number }}
       cancel-in-progress: false
@@ -135,8 +181,11 @@ jobs:
       contents: write        # to push a fix branch
       issues: write          # to report back on the issue
       pull-requests: write   # to open the fix as a PR
+      actions: read          # the runs in progress, for the model slot
     outputs:
       parts_before: ${{ steps.parts.outputs.count }}
+      started_at: ${{ steps.parts.outputs.started_at }}
+      turns: ${{ steps.result.outputs.turns }}
 
     steps:
       - name: Check the dispatched issue
@@ -173,13 +222,50 @@ jobs:
                    | .headRefName | capture(\"^claude/issue-${ISSUE_NUMBER}-part(?<k>[0-9]+)-\") | .k] | unique | length")
           echo "Parts with a pull request: $count"
           echo "count=$count" >> "$GITHUB_OUTPUT"
+          # What this run leaves on the issue is what appears after this.
+          echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
+      # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
+      # started before this one are in progress (see the header of claude_issue_triage.yml).
+      - name: Wait for a model slot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+        run: |
+          set -euo pipefail
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
+          deadline=$((SECONDS + 7200))
+          while :; do
+            # In-progress runs of the three Claude workflows started before this
+            # one, except the sweeps and the hourly retry, which run no model.
+            ahead=$(gh api "repos/$REPO/actions/runs?status=in_progress&per_page=100" \
+              | jq --arg me "$me" --argjson id "$GITHUB_RUN_ID" '[.workflow_runs[]
+                  | select((.path | test("claude_(issue_triage|pr_review|bot_pr_steward)[.]yml$"))
+                           and .event != "schedule" and .display_title != "Bot PR sweep" and .id != $id
+                           and (.created_at < $me or (.created_at == $me and .id < $id)))] | length')
+            if [ "$ahead" -lt "$MAX_RUNS" ]; then
+              echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - going ahead."
+              break
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Waited two hours for a model slot ($ahead earlier Claude runs in progress). The run did nothing."
+              exit 1
+            fi
+            # Further back in the queue, poll less often: every poll is an API call.
+            wait=$((60 + 30 * ahead)); [ "$wait" -le 600 ] || wait=600
+            echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - waiting ${wait}s."
+            sleep "$wait"
+          done
+
       - name: Write the fix
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -329,9 +415,118 @@ jobs:
 
           claude_args: |
             --max-turns 120
-            --model best
+            --model ${{ inputs.escalate && (vars.CLAUDE_ESCALATION_MODEL || 'best') || (vars.CLAUDE_MODEL || 'opus') }}
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number || inputs.issue_number }}:*),Bash(gh issue comment ${{ github.event.issue.number || inputs.issue_number }}:*),Bash(gh issue close ${{ github.event.issue.number || inputs.issue_number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
+
+      # Its turn count is also what the escalate job reads: 0 when the model
+      # never ran.
+      # What the run came to, in the job summary: the result message of its
+      # execution file, with the error text of a failed run, so a failure can be
+      # told apart without the hidden model output. A run the API refused on its
+      # first turn - a used-up usage limit or an API error: an error, one turn, no
+      # cost - is marked as such by the next step.
+      - name: Report the Claude result
+        id: result
+        if: always() && steps.claude.outcome != 'skipped'
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          result='{}'
+          if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
+            result=$(jq -c '[.[] | select(.type == "result")] | last // {}' "$EXECUTION_FILE" 2>/dev/null || echo '{}')
+          fi
+          turns=$(jq -r '.num_turns // 0' <<<"$result")
+          case "$turns" in ''|*[!0-9]*) turns=0 ;; esac
+          isError=$(jq -r '.is_error // false' <<<"$result")
+          {
+            echo "### Claude result"
+            jq -r '"subtype: \(.subtype // "none"), is_error: \(.is_error // false), turns: \(.num_turns // 0), cost: \(.total_cost_usd // 0) USD"' <<<"$result"
+            if [ "$isError" = true ]; then
+              echo
+              echo '```'
+              jq -r '.result // "(no error text)" | tostring' <<<"$result" | head -c 2000 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          refused=false
+          if [ "$isError" = true ] && [ "$turns" -le 1 ] && jq -e '(.total_cost_usd // 0) == 0' <<<"$result" >/dev/null; then
+            refused=true
+          fi
+          echo "Turns: $turns, refused: $refused"
+          echo "turns=$turns" >> "$GITHUB_OUTPUT"
+          echo "refused=$refused" >> "$GITHUB_OUTPUT"
+
+      - name: Stop on a refused run
+        if: always() && steps.result.outputs.refused == 'true'
+        run: |
+          echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
+          exit 1
+
+  # -------------------------------------------------------------- escalate --
+  # Starts `fix` once more on the escalation model when a run on the regular
+  # model did work but left nothing on the issue: no comment and no pull
+  # request for it since the run started (every outcome of `fix` is meant to
+  # leave one of the two, except a split issue whose parts all have a pull
+  # request). Plain shell, no model. The retry itself is never retried, and a
+  # run that failed on its first turn (the quota, see the header) is left to
+  # the `retry` job, which starts it again on the regular model.
+  escalate:
+    needs: fix
+    if: >
+      always() && !inputs.escalate &&
+      (needs.fix.result == 'success' || needs.fix.result == 'failure') &&
+      needs.fix.outputs.turns != '' && needs.fix.outputs.turns != '0' && needs.fix.outputs.turns != '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: read
+      pull-requests: read
+      actions: write         # dispatch this workflow for the retry
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+      STARTED_AT: ${{ needs.fix.outputs.started_at }}
+    steps:
+      - name: Retry on the escalation model if the run left nothing
+        run: |
+          set -euo pipefail
+          case "$ISSUE_NUMBER" in
+            ''|*[!0-9]*) echo "::error::'$ISSUE_NUMBER' is not an issue number."; exit 1 ;;
+          esac
+          case "$STARTED_AT" in
+            ''|*[!0-9TZ:-]*) echo "::error::'$STARTED_AT' is not a time."; exit 1 ;;
+          esac
+          if [ "$(gh api "repos/$REPO/issues/$ISSUE_NUMBER" --jq '.state')" != "open" ]; then
+            echo "The issue is closed."
+            exit 0
+          fi
+          botComments=$(gh api --paginate "repos/$REPO/issues/$ISSUE_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]") | {created_at, body}' | jq -s '.')
+          left=$(jq --arg t "$STARTED_AT" '[.[] | select(.created_at >= $t)] | length' <<<"$botComments")
+          prs=$(gh pr list --repo "$REPO" --state all --limit 500 --json headRefName,author,updatedAt \
+            --jq "[.[] | select((.author.login == \"app/github-actions\" or .author.login == \"github-actions[bot]\" or .author.login == \"github-actions\")
+                   and (.headRefName | startswith(\"claude/issue-${ISSUE_NUMBER}-\")))]")
+          touched=$(jq --arg t "$STARTED_AT" '[.[] | select(.updatedAt >= $t)] | length' <<<"$prs")
+          echo "Since $STARTED_AT: $left comment(s) and $touched pull request(s) of the bot"
+          if [ "$left" -gt 0 ] || [ "$touched" -gt 0 ]; then
+            echo "The run left a result."
+            exit 0
+          fi
+          # A split issue whose parts all have a pull request: posting nothing
+          # is what the run is told to do there.
+          planned=$(jq -r '.[].body' <<<"$botComments" | grep -oE 'claude-split-plan: parts=[0-9]+' | tail -n 1 | grep -oE '[0-9]+$' || true)
+          if [ -n "$planned" ]; then
+            parts=$(jq "[.[].headRefName | capture(\"^claude/issue-${ISSUE_NUMBER}-part(?<k>[0-9]+)-\") | .k] | unique | length" <<<"$prs")
+            if [ "$parts" -ge "$planned" ] || [ "$parts" -ge 6 ]; then
+              echo "Every part of the split issue has a pull request."
+              exit 0
+            fi
+          fi
+          gh workflow run claude_issue_triage.yml --repo "$REPO" --ref main -f issue_number="$ISSUE_NUMBER" -f escalate=true
+          echo "Started the run again on the escalation model."
 
   # ------------------------------------------------------------- next-part --
   # Starts the fix job again for the next part of a split issue. Plain shell,
@@ -406,7 +601,18 @@ jobs:
       REPO: ${{ github.repository }}
     steps:
       - name: Start the bot pull request steward
-        run: gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main
+        run: |
+          set -euo pipefail
+          # Only when no sweep is waiting yet: a queued sweep already sees
+          # this change, and every further start would only replace it, each
+          # replaced run showing as cancelled on main.
+          waiting=$(gh api "repos/$REPO/actions/workflows/claude_bot_pr_steward.yml/runs?event=workflow_dispatch&per_page=50" \
+            --jq '[.workflow_runs[] | select(.display_title == "Bot PR sweep" and (.status == "queued" or .status == "pending" or .status == "waiting" or .status == "requested"))] | length')
+          if [ "$waiting" -eq 0 ]; then
+            gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main
+          else
+            echo "A sweep is already waiting to run."
+          fi
 
   # ----------------------------------------------------------------- reply --
   # Runs on every new human comment on an issue, from anyone, with write access
@@ -425,7 +631,8 @@ jobs:
       !github.event.issue.pull_request &&
       github.event.comment.user.type != 'Bot'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 60 minutes of work after up to two hours of waiting for a model slot.
+    timeout-minutes: 180
     concurrency:
       group: claude-issue-${{ github.event.issue.number }}-reply
       cancel-in-progress: false
@@ -433,6 +640,7 @@ jobs:
       contents: write        # to push a fix branch
       issues: write          # to answer on the issue
       pull-requests: write   # to open the fix as a PR
+      actions: read          # the runs in progress, for the model slot
     outputs:
       parts_before: ${{ steps.parts.outputs.count }}
 
@@ -457,7 +665,42 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
+      # started before this one are in progress (see the header of claude_issue_triage.yml).
+      - name: Wait for a model slot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+        run: |
+          set -euo pipefail
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
+          deadline=$((SECONDS + 7200))
+          while :; do
+            # In-progress runs of the three Claude workflows started before this
+            # one, except the sweeps and the hourly retry, which run no model.
+            ahead=$(gh api "repos/$REPO/actions/runs?status=in_progress&per_page=100" \
+              | jq --arg me "$me" --argjson id "$GITHUB_RUN_ID" '[.workflow_runs[]
+                  | select((.path | test("claude_(issue_triage|pr_review|bot_pr_steward)[.]yml$"))
+                           and .event != "schedule" and .display_title != "Bot PR sweep" and .id != $id
+                           and (.created_at < $me or (.created_at == $me and .id < $id)))] | length')
+            if [ "$ahead" -lt "$MAX_RUNS" ]; then
+              echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - going ahead."
+              break
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Waited two hours for a model slot ($ahead earlier Claude runs in progress). The run did nothing."
+              exit 1
+            fi
+            # Further back in the queue, poll less often: every poll is an API call.
+            wait=$((60 + 30 * ahead)); [ "$wait" -le 600 ] || wait=600
+            echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - waiting ${wait}s."
+            sleep "$wait"
+          done
+
       - name: Respond to the comment
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -609,6 +852,137 @@ jobs:
 
           claude_args: |
             --max-turns 120
-            --model best
+            --model ${{ vars.CLAUDE_LIGHT_MODEL || 'sonnet' }}
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch origin:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
+
+      # What the run came to, in the job summary: the result message of its
+      # execution file, with the error text of a failed run, so a failure can be
+      # told apart without the hidden model output. A run the API refused on its
+      # first turn - a used-up usage limit or an API error: an error, one turn, no
+      # cost - is marked as such by the next step.
+      - name: Report the Claude result
+        id: result
+        if: always() && steps.claude.outcome != 'skipped'
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          result='{}'
+          if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
+            result=$(jq -c '[.[] | select(.type == "result")] | last // {}' "$EXECUTION_FILE" 2>/dev/null || echo '{}')
+          fi
+          turns=$(jq -r '.num_turns // 0' <<<"$result")
+          case "$turns" in ''|*[!0-9]*) turns=0 ;; esac
+          isError=$(jq -r '.is_error // false' <<<"$result")
+          {
+            echo "### Claude result"
+            jq -r '"subtype: \(.subtype // "none"), is_error: \(.is_error // false), turns: \(.num_turns // 0), cost: \(.total_cost_usd // 0) USD"' <<<"$result"
+            if [ "$isError" = true ]; then
+              echo
+              echo '```'
+              jq -r '.result // "(no error text)" | tostring' <<<"$result" | head -c 2000 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          refused=false
+          if [ "$isError" = true ] && [ "$turns" -le 1 ] && jq -e '(.total_cost_usd // 0) == 0' <<<"$result" >/dev/null; then
+            refused=true
+          fi
+          echo "Turns: $turns, refused: $refused"
+          echo "turns=$turns" >> "$GITHUB_OUTPUT"
+          echo "refused=$refused" >> "$GITHUB_OUTPUT"
+
+      - name: Stop on a refused run
+        if: always() && steps.result.outputs.refused == 'true'
+        run: |
+          echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
+          exit 1
+
+  # ----------------------------------------------------------------- retry --
+  # Hourly: starts `fix` again on an open issue whose last fix run the Claude
+  # API refused on its first turn (a used-up usage limit or an API error) or
+  # that waited two hours for a model slot in vain - those runs did nothing,
+  # and nothing else would ever start them again. Plain shell, no model.
+  #
+  # An issue is started again only when nothing came of it since the failed
+  # run (no comment and no pull request of the bot), no run of it is queued or
+  # in progress, and fewer than five such failures of it happened within the
+  # last day, so a lasting outage stops retrying an issue until its older
+  # failures age out. At most CLAUDE_RETRY_BATCH issues per hour (default 3),
+  # oldest failure first, so a recovered limit is not spent again at once.
+  # A refused reply is not started again: a new comment starts one. Reviews of
+  # the issue bot's pull requests are started again by
+  # claude_bot_pr_steward.yml. CLAUDE_RETRY=false turns this off.
+  retry:
+    if: github.event_name == 'schedule' && vars.CLAUDE_RETRY != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: write         # read the failed runs, dispatch this workflow
+      issues: read
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      BATCH: ${{ vars.CLAUDE_RETRY_BATCH || '3' }}
+    steps:
+      - name: Start the refused fix runs again
+        run: |
+          set -euo pipefail
+          case "$BATCH" in ''|*[!0-9]*) BATCH=3 ;; esac
+          since=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          dayAgo=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          # The runs of the last three days that belong to an issue (run-name
+          # "Issue #<n>: ..."), with the issue number.
+          runs=$(gh api --paginate "repos/$REPO/actions/workflows/claude_issue_triage.yml/runs?created=%3E%3D$since&per_page=100" \
+            --jq '.workflow_runs[] | select(.display_title | test("^Issue #[0-9]+:"))
+                  | {id, status, conclusion, created_at, issue: (.display_title | capture("^Issue #(?<n>[0-9]+):").n | tonumber)}' \
+            | jq -s '.')
+          # The failed ones whose fix job stopped before the model did anything.
+          refused='[]'
+          for id in $(jq -r '.[] | select(.conclusion == "failure") | .id' <<<"$runs"); do
+            if gh api "repos/$REPO/actions/runs/$id/jobs?per_page=100" \
+                 --jq '.jobs[] | select(.name == "fix") | .steps[]? | select((.name == "Stop on a refused run" or .name == "Wait for a model slot") and .conclusion == "failure") | .name' \
+                 | grep -q .; then
+              refused=$(jq --argjson id "$id" '. + [$id]' <<<"$refused")
+            fi
+          done
+          echo "Refused fix runs in the last three days: $(jq length <<<"$refused")"
+
+          started=0
+          for issue in $(jq -r --argjson refused "$refused" \
+              '[.[] | select(.id as $id | $refused | index($id))] | group_by(.issue) | map(max_by(.created_at)) | sort_by(.created_at)[] | .issue' <<<"$runs"); do
+            if [ "$started" -ge "$BATCH" ]; then
+              echo "The rest waits for the next hour (started $BATCH)."
+              break
+            fi
+            last=$(jq -r --argjson n "$issue" --argjson refused "$refused" \
+              '[.[] | select(.issue == $n and (.id as $id | $refused | index($id)))] | max_by(.created_at) | .created_at' <<<"$runs")
+            if jq -e --argjson n "$issue" 'any(.[]; .issue == $n and .status != "completed")' <<<"$runs" >/dev/null; then
+              echo "#$issue: a run is queued or in progress"; continue
+            fi
+            failures=$(jq --argjson n "$issue" --argjson refused "$refused" --arg t "$dayAgo" \
+              '[.[] | select(.issue == $n and .created_at >= $t and (.id as $id | $refused | index($id)))] | length' <<<"$runs")
+            if [ "$failures" -ge 5 ]; then
+              echo "#$issue: $failures refused runs within a day - left alone for now"; continue
+            fi
+            info=$(gh api "repos/$REPO/issues/$issue" --jq '{state, pr: (.pull_request != null)}')
+            if ! jq -e '.state == "open" and (.pr | not)' <<<"$info" >/dev/null; then
+              echo "#$issue: not an open issue"; continue
+            fi
+            comments=$(gh api --paginate "repos/$REPO/issues/$issue/comments" \
+              --jq ".[] | select(.user.login == \"github-actions[bot]\" and .created_at >= \"$last\") | .id" | wc -l)
+            prs=$(gh pr list --repo "$REPO" --state all --limit 500 --json headRefName,author,updatedAt \
+              --jq "[.[] | select((.author.login == \"app/github-actions\" or .author.login == \"github-actions[bot]\" or .author.login == \"github-actions\")
+                     and (.headRefName | startswith(\"claude/issue-${issue}-\")) and .updatedAt >= \"$last\")] | length")
+            if [ "$comments" -gt 0 ] || [ "$prs" -gt 0 ]; then
+              echo "#$issue: the bot has answered since"; continue
+            fi
+            if gh workflow run claude_issue_triage.yml --repo "$REPO" --ref main -f issue_number="$issue"; then
+              echo "#$issue: started again (its run of $last was refused)"
+              started=$((started + 1))
+            else
+              echo "::warning::could not start it for #$issue"
+            fi
+          done

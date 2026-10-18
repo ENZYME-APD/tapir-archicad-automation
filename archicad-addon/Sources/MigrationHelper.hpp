@@ -178,6 +178,12 @@ inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePa
     return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
 }
 
+// Pre-27 Save-As: APIDo_SaveID takes the target file as par1 (API_FileSavePars*).
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
 {
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
@@ -636,6 +642,18 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
     return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.type, properties);
 #else
     return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.typeID, elemHead.variationID, properties);
+#endif
+}
+
+// API_OverriddenAttribute accepts an API_AttributeIndex directly since AC27;
+// before that it is a plain struct { attributeIndex, overridden }.
+inline void SetOverriddenAttribute (API_OverriddenAttribute& target, const API_AttributeIndex& index)
+{
+#ifdef ServerMainVers_2700
+    target = index;
+#else
+    target.attributeIndex = index;
+    target.overridden = true;
 #endif
 }
 
