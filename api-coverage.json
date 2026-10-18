@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 10:26 UTC",
+ "generatedAt": "2026-10-18 10:35 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1534,
+  "open": 1533,
   "not applicable": 468,
   "in progress": 113,
   "done": 491,
-  "claimed": 27,
+  "claimed": 28,
   "merged": 250
  },
  "items": [
@@ -5142,10 +5142,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1060,
+     "title": "Expose ACAPI_CuttingPlane_GetCutPolygonInfo_New"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_BuildWindowValidator",
