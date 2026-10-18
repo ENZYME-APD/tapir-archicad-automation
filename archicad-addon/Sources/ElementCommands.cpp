@@ -5544,3 +5544,126 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
 
     return response;
 }
+
+GetCurtainWallAbsoluteBottomsCommand::GetCurtainWallAbsoluteBottomsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurtainWallAbsoluteBottomsCommand::GetName () const
+{
+    return "GetCurtainWallAbsoluteBottoms";
+}
+
+GS::Optional<GS::UniString> GetCurtainWallAbsoluteBottomsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetCurtainWallAbsoluteBottomsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "absoluteBottoms": {
+                "type": "array",
+                "description": "The absolute bottom of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "absoluteBottom": {
+                                    "type": "number",
+                                    "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "absoluteBottom"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "absoluteBottoms"
+        ]
+    })";
+}
+
+static bool IsCurtainWallOrItsSubelement (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_CurtainWallID:
+        case API_CurtainWallSegmentID:
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_CurtainWallJunctionID:
+        case API_CurtainWallAccessoryID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& absoluteBottoms = response.AddList<GS::ObjectState> ("absoluteBottoms");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            absoluteBottoms (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            absoluteBottoms (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // Only a Curtain Wall or one of its subelements is passed on to Archicad.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (!IsCurtainWallOrItsSubelement (typeID)) {
+            absoluteBottoms (CreateErrorResponse (APIERR_BADELEMENTTYPE,
+                GS::UniString::Printf ("Element type '%T' is not supported. Supported types: CurtainWall, CurtainWallSegment, CurtainWallFrame, CurtainWallPanel, CurtainWallJunction, CurtainWallAccessory.",
+                    GetElementTypeNonLocalizedName (typeID).ToPrintf ())));
+            continue;
+        }
+
+        double bottom = 0.0;
+        err = ACAPI_CurtainWall_GetCWAbsoluteBottom (&elemHead.guid, &bottom);
+        if (err != NoError) {
+            absoluteBottoms (CreateErrorResponse (err, "Failed to get the absolute bottom of the curtain wall"));
+            continue;
+        }
+
+        absoluteBottoms (GS::ObjectState ("absoluteBottom", bottom));
+    }
+
+    return response;
+}
