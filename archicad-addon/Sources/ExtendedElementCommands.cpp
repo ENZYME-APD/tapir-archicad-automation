@@ -3649,16 +3649,8 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
-                            "type": "object",
-                            "description": "Mode of linking the wall to its home story.",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": {
-                                    "type": "boolean",
-                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings",
+                            "description": "When newCreationMode is true, homeStoryDifference overrides the home story selected by floorIndex or derived from zCoordinate."
                         },
                         "inheritEndSurface": {
                             "type": "boolean",
@@ -5735,16 +5727,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
-                            "type": "object",
-                            "description": "Mode of linking the wall to its home story.",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": {
-                                    "type": "boolean",
-                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "inheritEndSurface": {
                             "type": "boolean",
@@ -5866,17 +5849,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Replaces all holes currently placed on the beam.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "type": { "type": "string", "enum": ["Rectangular", "Circular"] },
-                                    "showContour": { "type": "boolean" },
-                                    "centerX": { "type": "number" },
-                                    "centerZ": { "type": "number" },
-                                    "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                                    "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Only used for the Rectangular type." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["type", "centerX", "centerZ", "width"]
+                                "$ref": "#/BeamHoleModification"
                             }
                         },
                         "cutFillPen": { "$ref": "#/OverriddenPen" },
@@ -7554,65 +7527,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
                         "$ref": "#/ElementId"
                     },
                     "meshData": {
-                        "type": "object",
-                        "description": "The fields to modify on the Mesh. Only provided fields are changed; omitted fields are left as-is.",
-                        "properties": {
-                            "floorIndex": {
-                                "type": "integer"
-                            },
-                            "level": {
-                                "type": "number",
-                                "description": "The Z reference level of coordinates."
-                            },
-                            "skirtType": {
-                                "$ref": "#/MeshSkirtType"
-                            },
-                            "skirtLevel": {
-                                "type": "number",
-                                "description": "The height of the skirt."
-                            },
-                            "ridges": {
-                                "$ref": "#/MeshRidges"
-                            },
-                            "showLines": {
-                                "type": "boolean",
-                                "description": "Whether to show secondary mesh lines on plan."
-                            },
-                            "contourPen": {
-                                "type": "integer",
-                                "description": "Pen attribute index for the mesh contour line."
-                            },
-                            "levelPen": {
-                                "type": "integer",
-                                "description": "Pen attribute index for the mesh level lines."
-                            },
-                            "lineTypeIndex": {
-                                "type": "integer",
-                                "description": "Line type attribute index for the mesh contour."
-                            },
-                            "polygonCoordinates": {
-                                "type": "array",
-                                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
-                                "items": { "$ref": "#/Coordinate3D" },
-                                "minItems": 3
-                            },
-                            "polygonArcs": {
-                                "type": "array",
-                                "description": "Polygon outline arcs of the mesh.",
-                                "items": { "$ref": "#/PolyArc" }
-                            },
-                            "holes": {
-                                "$ref": "#/Holes3D"
-                            },
-                            "sublines": {
-                                "type": "array",
-                                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
-                                "items": {
-                                    "$ref": "#/MeshSubline"
-                                }
-                            }
-                        },
-                        "additionalProperties": false
+                        "$ref": "#/MeshModificationData"
                     }
                 },
                 "additionalProperties": false,
