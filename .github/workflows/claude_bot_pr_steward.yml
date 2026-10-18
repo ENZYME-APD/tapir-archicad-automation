@@ -27,16 +27,19 @@ name: Claude Bot PR Steward
 #
 # Bounds:
 # - At most BOT_PR_MAX_FIX_ROUNDS fix runs per pull request (repository
-#   variable, default 3), counted from this workflow's own runs, which nothing
+#   variable, default 6), counted from this workflow's own runs, which nothing
 #   a model writes can change. After that, and after ten reviews of one pull
 #   request without a recorded verdict, the pull request gets the
-#   `needs-maintainer` label and the steward leaves it alone.
+#   `needs-maintainer` label and the steward leaves it alone. Removing the
+#   label hands it back with both counts reset: they count only the runs
+#   since the label was last removed.
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
-# - A sweep starts work (builds, a review or a fix) on at most
+# - A sweep starts new work (builds, a review or a fix) on at most
 #   BOT_PR_SWEEP_BATCH pull requests (repository variable, default 5), so a
 #   backlog is worked through over several hourly sweeps instead of
-#   flooding the runners.
+#   flooding the runners. Work already running does not count: a pull
+#   request still building must not hold back one that only needs a fix.
 # - Setting the repository variable BOT_PR_STEWARD to `false` stops it.
 # - Only `fix` runs a model, with the same tool restrictions as the issue bot
 #   (claude_issue_triage.yml, whose header describes what they do and do not
@@ -51,6 +54,10 @@ on:
     inputs:
       pr_number:
         description: Fix this bot pull request; empty runs the sweep
+        type: string
+        default: ''
+      head_sha:
+        description: The head commit the sweep saw; a fix for an older head is skipped
         type: string
         default: ''
 
@@ -78,13 +85,13 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
-      MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '3' }}
+      MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '6' }}
       BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '5' }}
     steps:
       - name: Sweep the bot's pull requests
         run: |
           set -euo pipefail
-          case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=3 ;; esac
+          case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=6 ;; esac
           case "$BATCH" in ''|*[!0-9]*) BATCH=5 ;; esac
           busy=0
 
@@ -105,9 +112,9 @@ jobs:
           reviewRuns=$(gh run list --repo "$REPO" --workflow claude_pr_review.yml --limit 400 --json displayTitle,status)
           stewardRuns=$(gh run list --repo "$REPO" --workflow claude_bot_pr_steward.yml --limit 400 --json displayTitle,status)
 
-          # How many dispatched runs of a workflow carry this title since the
-          # pull request was opened - its fix rounds or reviews, over its
-          # whole life, not only within the latest page of runs.
+          # How many dispatched runs of a workflow carry this title since $3 -
+          # its fix rounds or reviews since the pull request was opened or
+          # handed back, not only within the latest page of runs.
           countRuns() {
             gh api --paginate "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&created=%3E%3D$3&per_page=100" \
               --jq "[.workflow_runs[] | select(.display_title == \"$2\")] | length" | jq -s 'add // 0'
@@ -197,22 +204,33 @@ jobs:
             fixActive=$(jq --arg t "$fixTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$stewardRuns")
             if [ "$fixActive" -ne 0 ]; then
               echo "a fix run is queued or running"
-              busy=$((busy + 1))
               echo "::endgroup::"; continue
             fi
             if [ "$busy" -ge "$BATCH" ]; then
-              echo "left for a later sweep ($BATCH pull requests in work)"
+              echo "left for a later sweep (this one started work on $BATCH already)"
               echo "::endgroup::"; continue
+            fi
+
+            # Rounds and reviews count from when the pull request was opened,
+            # or from when a person last removed `needs-maintainer` - that
+            # hands it back with fresh counts. If the events cannot be read,
+            # it counts from the opening, which at worst hands it over again.
+            handedBack=$(gh api --paginate "repos/$REPO/issues/$pr/events?per_page=100" \
+              --jq '.[] | select(.event == "unlabeled" and .label.name == "needs-maintainer") | .created_at' \
+              | sort | tail -n 1) || handedBack=""
+            since=$created
+            if [[ "$handedBack" > "$since" ]]; then
+              since=$handedBack
             fi
 
             # 0. A conflict with main: building the branch proves nothing, so
             # fix merges main in first.
             if [ "$mergeable" = "CONFLICTING" ]; then
-              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$created")
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since")
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not resolve its conflict with main"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
+                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (conflicts with main)"
                 busy=$((busy + 1))
               fi
@@ -255,7 +273,6 @@ jobs:
             fi
             if jq -e 'any(.[]; .status != "completed")' <<<"$checks" >/dev/null; then
               echo "builds still running"
-              busy=$((busy + 1))
               echo "::endgroup::"; continue
             fi
             buildFailed=false
@@ -272,10 +289,9 @@ jobs:
             if [ -z "$review" ] && [ "$buildFailed" = false ]; then
               reviewTitle="Claude review of PR #$pr"
               active=$(jq --arg t "$reviewTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$reviewRuns")
-              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$created")
+              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$since")
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
-                busy=$((busy + 1))
               elif [ "$total" -ge 10 ]; then
                 handOver "$pr" "ten reviews recorded no verdict"
               else
@@ -288,11 +304,11 @@ jobs:
 
             # 3. Something to fix.
             if [ "$buildFailed" = true ] || [ "$review" = "failure" ] || [ "$review" = "error" ]; then
-              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$created")
+              rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since")
               if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
                 handOver "$pr" "$rounds fix rounds did not make the builds and the review pass"
               else
-                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
+                gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main -f pr_number="$pr" -f head_sha="$head" || echo "::warning::could not start it for #$pr"
                 echo "started fix round $((rounds + 1)) (build failed: $buildFailed, review: ${review:-none})"
                 busy=$((busy + 1))
               fi
@@ -327,6 +343,8 @@ jobs:
     steps:
       - name: Check the pull request
         id: pr
+        env:
+          SEEN_HEAD: ${{ inputs.head_sha }}
         run: |
           set -euo pipefail
           case "$PR_NUMBER" in
@@ -346,11 +364,20 @@ jobs:
             echo "head=$(jq -r '.headRefOid' <<<"$info")"
             echo "mergeable=$(jq -r '.mergeable' <<<"$info")"
           } >> "$GITHUB_OUTPUT"
+          # Queued behind other work, this run can start after the pull
+          # request moved on (a push by a person or an earlier fix): its
+          # failures and findings belong to the old head, so leave the new
+          # one to the next sweep instead of spending a round on it.
+          if [ -n "$SEEN_HEAD" ] && [ "$SEEN_HEAD" != "$(jq -r '.headRefOid' <<<"$info")" ]; then
+            echo "The head moved since the sweep started this fix; the next sweep looks at the new one."
+            echo "superseded=true" >> "$GITHUB_OUTPUT"
+          fi
 
       # What to fix, as files the model reads: written here in shell so the
       # model needs no API access beyond its own pull request. Everything in
       # them is data.
       - name: Collect the failures and findings
+        if: steps.pr.outputs.superseded != 'true'
         env:
           HEAD: ${{ steps.pr.outputs.head }}
           CONTEXT: ${{ runner.temp }}/fix-context
@@ -384,12 +411,14 @@ jobs:
           ls -l "$CONTEXT"
 
       - name: Checkout the pull request's branch
+        if: steps.pr.outputs.superseded != 'true'
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr.outputs.branch }}
           fetch-depth: 0
 
       - name: Fix the pull request
+        if: steps.pr.outputs.superseded != 'true'
         id: fix
         uses: anthropics/claude-code-action@v1
         with:
