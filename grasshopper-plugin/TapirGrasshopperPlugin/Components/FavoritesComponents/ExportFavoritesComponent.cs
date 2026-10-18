@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Commands;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
@@ -31,6 +32,13 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             SetOptionality(1);
         }
 
+        protected override void AddOutputs()
+        {
+            OutText(
+                nameof(ExecutionResult.Message),
+                ExecutionResult.Doc);
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -53,10 +61,24 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 input.Names = names;
             }
 
-            SetCadValues(
-                CommandName,
-                input,
-                ToAddOn);
+            // The command answers with an ExecutionResult: the export fails as a
+            // whole or not at all, so there is nothing per item to hand out.
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            if (!response.Success)
+            {
+                this.AddError(response.Message());
+            }
+
+            da.SetData(0, response.Message());
         }
 
         protected override System.Drawing.Bitmap Icon =>
