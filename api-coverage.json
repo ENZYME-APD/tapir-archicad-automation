@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:26 UTC",
+ "generatedAt": "2026-10-18 21:27 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1496,
+  "open": 1477,
   "not applicable": 468,
   "in progress": 128,
   "done": 491,
-  "claimed": 48,
+  "claimed": 67,
   "merged": 252
  },
  "items": [
@@ -26303,10 +26303,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1111,
+     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOption::SetId",
@@ -26390,10 +26395,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1111,
+     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombination::SetName",
@@ -26579,10 +26589,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1111,
+     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::CreateDesignOption",
@@ -26890,10 +26905,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetHotlinkInstanceDesignOptionTable",
@@ -26907,10 +26927,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetTWID",
@@ -27043,10 +27068,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionSet::GetGuid",
@@ -27094,10 +27124,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1111,
+     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionSet::SetName",
@@ -27179,10 +27214,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::ActivateOptionInSet",
@@ -27196,10 +27236,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateCombination",
@@ -27213,10 +27258,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateOptionsInSet",
@@ -27230,10 +27280,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetActiveCombination",
@@ -27247,10 +27302,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetActiveOptionInSet",
@@ -27264,10 +27324,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetCombinationsNames",
@@ -27281,10 +27346,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetFilterMode",
@@ -27298,10 +27368,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetNodeGuid",
@@ -27315,10 +27390,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetOptionsNamesOfSet",
@@ -27332,10 +27412,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetSetsNames",
@@ -27349,10 +27434,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::SetFilterMode",
@@ -27366,10 +27456,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1109,
+     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::Modify",
