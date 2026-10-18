@@ -3505,13 +3505,13 @@ GS::Optional<GS::UniString> GetZoneReductionsCommand::GetRawResponseSchema () co
                             "properties": {
                                 "reductions": {
                                     "type": "array",
-                                    "description": "The reduction polygons of the Zone, as its Zone Stamp's area calculation uses them: the parts of the Zone polygon covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with the percentage it is reduced by and its area. Empty when nothing reduces the Zone's area.",
+                                    "description": "The reduction polygons of the Zone, as its Zone Stamp's area calculation uses them: the parts of the Zone polygon covered by Walls, Columns and reducing Fills, and the parts under a low ceiling (for example under a sloping Roof), each with the percentage it is reduced by and its area. Empty when nothing reduces the Zone's area.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "description": "What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (the part under a sloping Roof), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name, such as the part below the low ceiling height.",
+                                                "description": "What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (a low ceiling, for example the part under a sloping Roof below the low ceiling height), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name.",
                                                 "enum": [
                                                     "Rest",
                                                     "Wall",
@@ -3633,7 +3633,19 @@ static void AddRoomReductionSubPolygon (GS::ObjectState& os, const API_RoomReduc
 // coordinate as its last one, and the arcs index into the whole coordinate array.
 static void CollectRoomReduction (const API_RoomReductionPolyType* roomReduction)
 {
-    if (tl_roomReductions == nullptr || roomReduction == nullptr) {
+    if (roomReduction == nullptr) {
+        return;
+    }
+    // The handles of the polygon are the callback's to dispose of (API_RoomReductionPolyType).
+    const GS::OnExit polygonGuard ([roomReduction] () {
+        API_Coord** coords = roomReduction->coords;
+        Int32** subPolys = roomReduction->subPolys;
+        API_PolyArc** arcs = roomReduction->arcs;
+        BMKillHandle (reinterpret_cast<GSHandle*> (&coords));
+        BMKillHandle (reinterpret_cast<GSHandle*> (&subPolys));
+        BMKillHandle (reinterpret_cast<GSHandle*> (&arcs));
+    });
+    if (tl_roomReductions == nullptr) {
         return;
     }
 
