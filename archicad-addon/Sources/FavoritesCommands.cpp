@@ -780,14 +780,15 @@ static bool MemoCarriesGeometry (const API_Elem_Head& header)
 // its memo match its size. Everything else in API_WindowType stays the target's without
 // being named here: its wall, its marker, the position along the wall, the sill height and
 // the sill/header anchor that gives it its meaning, the mirroring and side flags and any
-// placement field a DevKit adds. The placement fields inside API_OpeningBaseType - the subfloor
-// thickness the sill height is measured from, and the three mirroring and side flags - are
-// put back from the target for the same reason. The Favorite's marker is not applied.
+// placement field a DevKit adds. The placement fields inside API_OpeningBaseType - the
+// sill/header anchor (verticalLink), the subfloor thickness the sill height is measured from,
+// and the three mirroring and side flags - are put back from the target for the same reason. The Favorite's marker is not applied.
 static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_Favorite& favorite)
 {
     API_Element element = targetElement;
     element.window.openingBase = favorite.element.window.openingBase;
     element.window.openingBase.markGuid = targetElement.window.openingBase.markGuid;
+    element.window.openingBase.verticalLink = targetElement.window.openingBase.verticalLink;
     element.window.openingBase.subFloorThickness = targetElement.window.openingBase.subFloorThickness;
     element.window.openingBase.reflected = targetElement.window.openingBase.reflected;
     element.window.openingBase.oSide = targetElement.window.openingBase.oSide;
