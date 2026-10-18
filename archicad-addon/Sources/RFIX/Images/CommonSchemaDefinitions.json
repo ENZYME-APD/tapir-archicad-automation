@@ -7858,6 +7858,71 @@
             "SolidBodyWithSkirt"
         ]
     },
+    "MeshModificationData": {
+        "type": "object",
+        "description": "The fields to modify on the Mesh. Only provided fields are changed; omitted fields are left as-is.",
+        "properties": {
+            "floorIndex": {
+                "type": "integer"
+            },
+            "level": {
+                "type": "number",
+                "description": "The Z reference level of coordinates."
+            },
+            "skirtType": {
+                "$ref": "#/MeshSkirtType"
+            },
+            "skirtLevel": {
+                "type": "number",
+                "description": "The height of the skirt."
+            },
+            "ridges": {
+                "$ref": "#/MeshRidges"
+            },
+            "showLines": {
+                "type": "boolean",
+                "description": "Whether to show secondary mesh lines on plan."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh contour line."
+            },
+            "levelPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh level lines."
+            },
+            "lineTypeIndex": {
+                "type": "integer",
+                "description": "Line type attribute index for the mesh contour."
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the mesh.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes3D"
+            },
+            "sublines": {
+                "type": "array",
+                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
+                "items": {
+                    "$ref": "#/MeshSubline"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "MeshDetails": {
         "type": "object",
         "properties": {
@@ -8609,21 +8674,24 @@
     "RevisionCustomSchemeData": {
         "type": "array",
         "items": {
-            "type": "object",
-            "properties": {
-                "customSchemeKey": {
-                    "$ref": "#/Guid"
-                },
-                "customSchemeValue": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "customSchemeKey",
-                "customSchemeValue"
-            ]
+            "$ref": "#/RevisionCustomSchemeEntry"
         }
+    },
+    "RevisionCustomSchemeEntry": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "$ref": "#/Guid"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "customSchemeKey",
+            "customSchemeValue"
+        ]
     },
     "DocumentRevisionReference": {
         "type": "object",
