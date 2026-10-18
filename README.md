@@ -4,10 +4,22 @@
 [![Archicad Add-On Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml)
 [![Grasshopper Plugin Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml)
 [![Tapir Installer Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/installer_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/installer_build_check.yml)
+[![Archicad API coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fapi-coverage-badge.json)](https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/)
 
 This repository contains the Tapir Archicad automation package. It consists of several components:
 - [Tapir Archicad Add-On](archicad-addon): An Add-On that registers several new JSON commands on top of the official commands provided by Graphisoft. You can see the list of new commands [here](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon). This is ready to use, see the installation instructions below.
 - [Tapir Grasshopper Plugin](grasshopper-plugin): A Grasshopper plugin to help using the above components even for non-programmers. This is work in progress at the moment.
+
+## Archicad API coverage
+
+How much of the Archicad API the Tapir Add-On already uses. The image is updated automatically, within minutes of every change; the [full checklist](https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/) lists every function. To ask for one, file an "Archicad API request" issue that names it.
+
+<a href="https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage-dark.svg">
+    <img alt="Archicad API coverage of Tapir" src="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.svg">
+  </picture>
+</a>
 
 ## Overview
 
