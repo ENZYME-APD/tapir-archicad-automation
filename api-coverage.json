@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 20:59 UTC",
+ "generatedAt": "2026-10-18 21:04 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1511,
   "not applicable": 468,
-  "in progress": 122,
+  "in progress": 123,
   "done": 491,
-  "claimed": 39,
+  "claimed": 38,
   "merged": 252
  },
  "items": [
@@ -3794,7 +3794,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    }
+   ],
    "issues": []
   },
   {
@@ -3873,7 +3878,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    }
+   ],
    "issues": []
   },
   {
@@ -4284,6 +4294,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    },
     {
      "number": 1075,
      "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
@@ -6377,6 +6391,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -7542,9 +7560,14 @@
    "olderNames": [
     "APIAny_ChangeContentID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    }
+   ],
    "issues": [
     {
      "number": 1092,
@@ -8139,6 +8162,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    },
     {
      "number": 1086,
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
@@ -8819,6 +8846,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    },
     {
      "number": 940,
      "title": "Add ModifyCurtainWalls command"
@@ -23806,6 +23837,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1095,
+     "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
+    },
     {
      "number": 1094,
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
