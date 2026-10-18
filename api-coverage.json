@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 12:47 UTC",
+ "generatedAt": "2026-10-18 13:26 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "open": 1520,
   "not applicable": 468,
-  "in progress": 118,
+  "in progress": 116,
   "done": 491,
   "claimed": 36,
-  "merged": 250
+  "merged": 252
  },
  "items": [
   {
@@ -11212,14 +11212,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 971,
-     "title": "[1/3] Get and set the graphic override combination of the current window (Archicad 30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 942,
@@ -11247,12 +11242,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 971,
-     "title": "[1/3] Get and set the graphic override combination of the current window (Archicad 30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11275,12 +11265,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 971,
-     "title": "[1/3] Get and set the graphic override combination of the current window (Archicad 30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11463,14 +11448,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 971,
-     "title": "[1/3] Get and set the graphic override combination of the current window (Archicad 30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 942,
