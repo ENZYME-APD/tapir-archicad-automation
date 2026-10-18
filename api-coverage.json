@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 20:56 UTC",
+ "generatedAt": "2026-10-18 20:58 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1512,
+  "open": 1511,
   "not applicable": 468,
   "in progress": 120,
   "done": 491,
-  "claimed": 40,
+  "claimed": 41,
   "merged": 252
  },
  "items": [
@@ -14922,10 +14922,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1093,
+     "title": "Expose ACAPI_ModelAccess_GetConnectionTable (contact surfaces between elements, to check wall joins)"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_GetNum",
