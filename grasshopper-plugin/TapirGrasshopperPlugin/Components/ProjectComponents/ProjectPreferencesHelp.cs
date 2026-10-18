@@ -454,14 +454,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             Dimensions
         };
 
-        // The Zones page, as seven plain inputs or outputs in this order.
+        // The Zones page, as four plain inputs or outputs in this order: the
+        // low ceiling area reduction, which is all the add-on exposes of the
+        // page (the wall inset sizes are not in API_ZonePrefs).
         public const string ZoneActiveHeightLimitsName = "ZoneActiveHeightLimits";
         public const string ZoneHeightLimitsName = "ZoneHeightLimits";
         public const string ZoneReductionPercentsName = "ZoneReductionPercents";
         public const string ZoneReductionPercentAboveLimitsName = "ZoneReductionPercentAboveLimits";
-        public const string ZoneWallInsetMinimumAreaName = "ZoneWallInsetMinimumArea";
-        public const string ZoneWallInsetMinimumLengthName = "ZoneWallInsetMinimumLength";
-        public const string ZoneWallInsetMinimumDepthName = "ZoneWallInsetMinimumDepth";
 
         public const string ZoneActiveHeightLimitsDescription =
             "How many of the three ceiling height limits of the low ceiling area reduction are in use: 0 (no reduction) to 3.";
@@ -475,15 +474,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public const string ZoneReductionPercentAboveLimitsDescription =
             "The reduction of the zone area above the highest height limit, in percent.";
 
-        public const string ZoneWallInsetMinimumAreaDescription =
-            "The smallest area of a wall inset (niche) that counts as part of the zone area, in square meters.";
-
-        public const string ZoneWallInsetMinimumLengthDescription =
-            "The smallest length of a wall inset (niche) that counts as part of the zone area, along the wall, in meters.";
-
-        public const string ZoneWallInsetMinimumDepthDescription =
-            "The smallest depth of a wall inset (niche) that counts as part of the zone area, in meters.";
-
         // Hands the Zones page out, from the output at firstIndex on; empty
         // when the page is not in the response.
         public static void SetZoneOutputs(
@@ -495,9 +485,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             var heightLimits = new List<object>();
             var reductionPercents = new List<object>();
             object reductionPercentAboveLimits = null;
-            object minimumArea = null;
-            object minimumLength = null;
-            object minimumDepth = null;
 
             if (zones is JObject)
             {
@@ -512,20 +499,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     }
                 }
                 reductionPercentAboveLimits = JsonOutputHelp.Scalar(reduction, "reductionPercentAboveHeightLimits");
-
-                var wallInsets = zones["wallInsets"];
-                minimumArea = JsonOutputHelp.Scalar(wallInsets, "minimumArea");
-                minimumLength = JsonOutputHelp.Scalar(wallInsets, "minimumLength");
-                minimumDepth = JsonOutputHelp.Scalar(wallInsets, "minimumDepth");
             }
 
             da.SetData(firstIndex, activeHeightLimits);
             da.SetDataList(firstIndex + 1, heightLimits);
             da.SetDataList(firstIndex + 2, reductionPercents);
             da.SetData(firstIndex + 3, reductionPercentAboveLimits);
-            da.SetData(firstIndex + 4, minimumArea);
-            da.SetData(firstIndex + 5, minimumLength);
-            da.SetData(firstIndex + 6, minimumDepth);
         }
 
         // Reads the Zones inputs from firstIndex on and puts the given fields
@@ -577,18 +556,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (da.GetData(firstIndex + 3, ref value))
             {
                 Child(Child(parameters, "zones"), "lowCeilingAreaReduction")["reductionPercentAboveHeightLimits"] = value;
-            }
-            if (da.GetData(firstIndex + 4, ref value))
-            {
-                Child(Child(parameters, "zones"), "wallInsets")["minimumArea"] = value;
-            }
-            if (da.GetData(firstIndex + 5, ref value))
-            {
-                Child(Child(parameters, "zones"), "wallInsets")["minimumLength"] = value;
-            }
-            if (da.GetData(firstIndex + 6, ref value))
-            {
-                Child(Child(parameters, "zones"), "wallInsets")["minimumDepth"] = value;
             }
 
             return true;

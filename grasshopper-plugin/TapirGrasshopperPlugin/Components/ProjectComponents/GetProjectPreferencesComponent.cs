@@ -48,18 +48,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutNumberItem(
                 ProjectPreferencesHelp.ZoneReductionPercentAboveLimitsName,
                 ProjectPreferencesHelp.ZoneReductionPercentAboveLimitsDescription);
-
-            OutNumberItem(
-                ProjectPreferencesHelp.ZoneWallInsetMinimumAreaName,
-                ProjectPreferencesHelp.ZoneWallInsetMinimumAreaDescription);
-
-            OutNumberItem(
-                ProjectPreferencesHelp.ZoneWallInsetMinimumLengthName,
-                ProjectPreferencesHelp.ZoneWallInsetMinimumLengthDescription);
-
-            OutNumberItem(
-                ProjectPreferencesHelp.ZoneWallInsetMinimumDepthName,
-                ProjectPreferencesHelp.ZoneWallInsetMinimumDepthDescription);
         }
 
         private void OutNumberItem(
