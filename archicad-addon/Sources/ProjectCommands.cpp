@@ -2464,7 +2464,7 @@ static GS::Optional<GS::UniString> ApplyZones (const GS::ObjectState& os, API_Zo
             if (activeHeightLimits < 0 || activeHeightLimits > static_cast<Int32> (ZoneHeightLimitCount)) {
                 return GS::UniString ("activeHeightLimits has to be between 0 and 3.");
             }
-            prefs.nLowAreas = static_cast<unsigned short> (activeHeightLimits);
+            prefs.nLowAreas = static_cast<decltype (prefs.nLowAreas)> (activeHeightLimits);
             changed = true;
         }
 
