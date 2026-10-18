@@ -2208,8 +2208,8 @@ static GS::ObjectState CreateWorkingUnitsObjectState (const API_WorkingUnitPrefs
 // The Zones page (API_ZonePrefs). Up to ZoneHeightLimitCount ceiling height limits
 // (roomHeightLimits, nLowAreas of them in use) split a zone into height ranges, each
 // reduced in the calculated area by its own percent (roomRedPercents: one per limit and
-// a last one for the area above the highest limit). A wall inset (niche) counts as part
-// of the zone area from the wallInsetMin* sizes on.
+// a last one for the area above the highest limit). The wall inset (niche) sizes of the
+// dialog are not in the struct, so the page has only the low ceiling area reduction.
 static const UIndex ZoneHeightLimitCount = 3;
 
 static GS::ObjectState CreateZonesObjectState (const API_ZonePrefs& prefs)
@@ -2224,12 +2224,7 @@ static GS::ObjectState CreateZonesObjectState (const API_ZonePrefs& prefs)
     }
     lowCeilingAreaReduction.Add ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
 
-    return GS::ObjectState (
-        "lowCeilingAreaReduction", lowCeilingAreaReduction,
-        "wallInsets", GS::ObjectState (
-            "minimumArea", prefs.wallInsetMinArea,
-            "minimumLength", prefs.wallInsetMinLength,
-            "minimumDepth", prefs.wallInsetMinDepth));
+    return GS::ObjectState ("lowCeilingAreaReduction", lowCeilingAreaReduction);
 }
 
 #ifdef ServerMainVers_2700
@@ -2488,13 +2483,6 @@ static GS::Optional<GS::UniString> ApplyZones (const GS::ObjectState& os, API_Zo
         changed |= lowCeilingAreaReduction.Get ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
     }
 
-    GS::ObjectState wallInsets;
-    if (os.Get ("wallInsets", wallInsets)) {
-        changed |= wallInsets.Get ("minimumArea", prefs.wallInsetMinArea);
-        changed |= wallInsets.Get ("minimumLength", prefs.wallInsetMinLength);
-        changed |= wallInsets.Get ("minimumDepth", prefs.wallInsetMinDepth);
-    }
-
     return GS::NoValue;
 }
 
@@ -2737,7 +2725,7 @@ static GS::UniString GetZonesSchema (bool allFieldsRequired)
 {
     GS::UniString schema = R"({
         "type": "object",
-        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling, and the smallest wall insets (niches) that count as part of a zone.",
+        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
         "properties": {
             "lowCeilingAreaReduction": {
                 "type": "object",
@@ -2780,33 +2768,11 @@ static GS::UniString GetZonesSchema (bool allFieldsRequired)
                 )";
     schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("activeHeightLimits", "heightLimits", "reductionPercentAboveHeightLimits")");
     schema += R"(
-            },
-            "wallInsets": {
-                "type": "object",
-                "description": "The sizes a wall inset (niche) has to reach to count as part of the zone area.",
-                "properties": {
-                    "minimumArea": {
-                        "type": "number",
-                        "description": "The smallest area of a wall inset counted, in square meters."
-                    },
-                    "minimumLength": {
-                        "type": "number",
-                        "description": "The smallest length of a wall inset counted, along the wall, in meters."
-                    },
-                    "minimumDepth": {
-                        "type": "number",
-                        "description": "The smallest depth of a wall inset counted, in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("minimumArea", "minimumLength", "minimumDepth")");
-    schema += R"(
             }
         },
         "additionalProperties": false,
         )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction", "wallInsets")");
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction")");
     schema += R"(
     })";
     return schema;

@@ -31,7 +31,7 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
     },
     # Zones: count the area under a ceiling lower than 1.5 m not at all and the
     # area between 1.5 m and 2 m at half; the third height limit keeps its
-    # values and stays unused. Wall insets count from half a square meter on.
+    # values and stays unused.
     'zones': {
         'lowCeilingAreaReduction': {
             'activeHeightLimits': 2,
@@ -39,9 +39,6 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
                 { 'height': 1.5, 'reductionPercent': 100 },
                 { 'height': 2.0, 'reductionPercent': 50 }
             ]
-        },
-        'wallInsets': {
-            'minimumArea': 0.5
         }
     }
 })
@@ -61,8 +58,8 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
         }
     },
     'zones': {
-        'wallInsets': {
-            'minimumDepth': 0.3
+        'lowCeilingAreaReduction': {
+            'reductionPercentAboveHeightLimits': 0
         }
     }
 })
