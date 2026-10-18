@@ -4721,6 +4721,123 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+GetVisibleSkinStatusCommand::GetVisibleSkinStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetVisibleSkinStatusCommand::GetName () const
+{
+    return "GetVisibleSkinStatus";
+}
+
+GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "structureDisplay": {
+                "type": "string",
+                "description": "The Partial Structure Display mode to check the elements in. The current window is not changed.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "structureDisplay"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "visibleSkinStatuses": {
+                "type": "array",
+                "description": "Whether each element has a visible skin in the given Partial Structure Display mode, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hasVisibleSkin": {
+                                    "type": "boolean",
+                                    "description": "True when the element has at least one skin shown in the given Partial Structure Display mode."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hasVisibleSkin"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visibleSkinStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetVisibleSkinStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString structureDisplayStr;
+    parameters.Get ("structureDisplay", structureDisplayStr);
+
+    API_StructureDisplay structureDisplay = API_EntireStructure;
+    if      (structureDisplayStr == "EntireStructure")  structureDisplay = API_EntireStructure;
+    else if (structureDisplayStr == "CoreOnly")         structureDisplay = API_CoreOnly;
+    else if (structureDisplayStr == "WithoutFinishes")  structureDisplay = API_WithoutFinishes;
+    else if (structureDisplayStr == "StructureOnly")    structureDisplay = API_StructureOnly;
+    else {
+        return CreateErrorResponse (APIERR_BADPARS, "structureDisplay must be one of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.");
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& visibleSkinStatuses = response.AddList<GS::ObjectState> ("visibleSkinStatuses");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            visibleSkinStatuses (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            visibleSkinStatuses (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        bool hasVisibleSkin = false;
+        err = ACAPI_Element_ElemHasVisibleSkin (&elemHead.guid, &structureDisplay, &hasVisibleSkin);
+        if (err != NoError) {
+            visibleSkinStatuses (CreateErrorResponse (err, "Failed to check the visible skins of the element"));
+            continue;
+        }
+
+        visibleSkinStatuses (GS::ObjectState ("hasVisibleSkin", hasVisibleSkin));
+    }
+
+    return response;
+}
+
 DeleteElementsCommand::DeleteElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
