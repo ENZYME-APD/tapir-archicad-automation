@@ -71,12 +71,105 @@ div.group_name {
     margin-top: 2.0em;
 }
 
+section.group,
+details.command_container {
+    /* Keep the target clear of the sticky toolbar when jumping to it;
+       renderer.js sets --toolbar-height from the toolbar's real height. */
+    scroll-margin-top: calc(var(--toolbar-height, 4em) + 0.5em);
+}
+
+span.group_count {
+    color: var(--gray-70);
+    font-size: 0.6em;
+    margin-left: 0.6em;
+}
+
+div.toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.6em 0;
+    background: var(--background);
+    border-bottom: 1px solid var(--gray-30);
+}
+
+div.toolbar input,
+div.toolbar select,
+div.toolbar button {
+    font: inherit;
+    font-size: 0.9em;
+    color: inherit;
+    background: var(--background);
+    border: 1px solid var(--gray-30);
+    border-radius: 5px;
+    padding: 0.35em 0.6em;
+}
+
+input.toolbar_search {
+    flex: 1 1 14em;
+    min-width: 0;
+}
+
+div.toolbar select {
+    max-width: 13em;
+}
+
+button.toolbar_button {
+    cursor: pointer;
+}
+
+button.toolbar_button:hover {
+    background: var(--gray-10);
+}
+
+span.toolbar_status {
+    color: var(--gray-70);
+    font-size: 0.9em;
+}
+
+div.overview {
+    margin: 1.5em 0 0;
+}
+
+div.overview_title {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+table.overview_table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.overview_table th,
+table.overview_table td {
+    text-align: left;
+    padding: 0.3em 0.6em;
+    border-bottom: 1px solid var(--gray-10);
+}
+
+table.overview_table th {
+    color: var(--gray-70);
+    font-weight: normal;
+    font-size: 0.85em;
+}
+
+table.overview_table .number {
+    text-align: right;
+    white-space: nowrap;
+}
+
+table.overview_table a {
+    color: inherit;
+}
+
 summary.command_header {
     padding: 0.5em 0.6em;
     border-radius: 5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
     cursor: pointer;
     transition: background 0.1s;
 
@@ -97,6 +190,27 @@ details summary.command_header:hover {
 
 span.command_name {
     display: inline-block;
+    word-break: break-word;
+}
+
+span.command_summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    /* Muted on every header background, hovered or not. */
+    opacity: 0.75;
+    font-size: 0.85em;
+    line-height: 1.4em;
+    margin-top: 0.2em;
+    /* Line up with the name, after the disclosure marker. */
+    padding-left: 1.1em;
+}
+
+details[open] span.command_summary {
+    /* The full description is in the opened content. */
+    display: none;
 }
 
 span.command_version {
@@ -148,17 +262,13 @@ code.language-python.hljs {
         width: auto;
     }
 
-    /* Long command names (e.g. GetSubelementsOfHierarchicalElements) were
-       clipped to invisibility by the nowrap + hidden overflow of the header
-       on narrow screens - let them wrap instead. */
-    summary.command_header {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+    div.toolbar select {
+        flex: 1 1 40%;
+        max-width: none;
     }
 
-    span.command_name {
-        word-break: break-word;
+    div.toolbar button {
+        flex: 1 1 auto;
     }
 
 }

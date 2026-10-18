@@ -76,37 +76,219 @@ function CreateSchemaElement(parentElement, title, schema, schemaDefinitions) {
     schemeContainer.appendChild(view.render());
 }
 
+function CreateTextElement(parentElement, elementType, className, text) {
+    let elem = CreateElement(parentElement, elementType, className, null);
+    elem.textContent = text;
+    return elem;
+}
+
+function PlainText(html) {
+    // Descriptions may contain markup; DOMParser builds an inert document.
+    return new DOMParser().parseFromString(html || '', 'text/html').body.textContent;
+}
+
+function GroupId(group) {
+    return 'group-' + group.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function VersionKey(version) {
+    // "1.7.2" -> [1, 7, 2], so versions compare numerically.
+    return String(version).split('.').map(part => parseInt(part, 10) || 0);
+}
+
+function CompareVersions(a, b) {
+    let keyA = VersionKey(a);
+    let keyB = VersionKey(b);
+    for (let i = 0; i < Math.max(keyA.length, keyB.length); i++) {
+        let diff = (keyA[i] || 0) - (keyB[i] || 0);
+        if (diff !== 0) {
+            return diff;
+        }
+    }
+    return 0;
+}
+
+function MinorVersion(version) {
+    return VersionKey(version).slice(0, 2).join('.');
+}
+
+function RenderCommandContent(parentElement, command, schemaDefinitions) {
+    let commandContent = CreateElement(parentElement, 'div', 'command_content', null);
+    CreateElement(commandContent, 'div', 'command_description', command.description);
+    try {
+        CreateSchemaElement(commandContent, 'Input parameters', command.inputScheme, schemaDefinitions);
+        CreateSchemaElement(commandContent, 'Output parameters', command.outputScheme, schemaDefinitions);
+    } catch (error) {
+        // One broken schema must not break the rest of the page.
+        CreateElement(commandContent, 'div', 'command_description', 'Failed to render the schemas of this command.');
+        console.error('Failed to render command ' + command.name, error);
+    }
+}
+
 function RenderCommand(parentElement, command, schemaDefinitions) {
     parentElement.setAttribute("id", command.name);
+    let headerElement = CreateElement(parentElement, 'summary', 'command_header', null);
+    let titleElement = CreateElement(headerElement, 'span', 'command_title', null);
+    CreateTextElement(titleElement, 'span', 'command_name', command.name);
+    CreateTextElement(titleElement, 'span', 'command_version', command.version);
+    // The description shows without opening the command; the schemas are
+    // rendered when it is first opened, which keeps the page fast.
+    CreateTextElement(headerElement, 'span', 'command_summary', PlainText(command.description));
+    let rendered = false;
     parentElement.addEventListener("toggle", function () {
+        if (parentElement.open && !rendered) {
+            rendered = true;
+            RenderCommandContent(parentElement, command, schemaDefinitions);
+        }
+        if (parentElement.dataset.bulkToggle) {
+            // Opened or closed by "Expand all" / "Collapse all": leave the URL alone.
+            delete parentElement.dataset.bulkToggle;
+            return;
+        }
         if (parentElement.open) {
             history.pushState(null, '', window.location.pathname + '#' + command.name);
         } else {
             history.replaceState(null, '', window.location.pathname);
         }
-    })
-    let headerElement = CreateElement(parentElement, 'summary', 'command_header', null);
-    CreateElement(headerElement, 'span', 'command_name', command.name);
-    CreateElement(headerElement, 'span', 'command_version', command.version);
-    let commandContent = CreateElement(parentElement, 'div', 'command_content', null);
+    });
+}
 
-    CreateElement(commandContent, 'div', 'command_description', command.description);
-    CreateSchemaElement(commandContent, 'Input parameters', command.inputScheme, schemaDefinitions);
-    CreateSchemaElement(commandContent, 'Output parameters', command.outputScheme, schemaDefinitions);
+function RenderOverview(parentElement, commands, groupElements) {
+    let overview = CreateElement(parentElement, 'div', 'overview', null);
+    let total = commands.reduce((sum, group) => sum + group.commands.length, 0);
+    CreateTextElement(overview, 'div', 'overview_title', total + ' commands in ' + commands.length + ' groups');
+    let table = CreateElement(overview, 'table', 'overview_table', null);
+    let head = CreateElement(CreateElement(table, 'thead', null, null), 'tr', null, null);
+    CreateTextElement(head, 'th', null, 'Group');
+    CreateTextElement(head, 'th', 'number', 'Commands');
+    CreateTextElement(head, 'th', 'number', 'Newest');
+    let body = CreateElement(table, 'tbody', null, null);
+    for (let group of commands) {
+        let row = CreateElement(body, 'tr', null, null);
+        let link = CreateTextElement(CreateElement(row, 'td', null, null), 'a', null, group.name);
+        link.href = '#' + GroupId(group);
+        let countCell = CreateTextElement(row, 'td', 'number', String(group.commands.length));
+        let newest = group.commands.reduce((max, command) => CompareVersions(command.version, max) > 0 ? command.version : max, '0');
+        CreateTextElement(row, 'td', 'number', newest);
+        groupElements.get(group).overviewCount = countCell;
+    }
+}
+
+function RenderToolbar(parentElement, commands, onChange) {
+    let toolbar = CreateElement(parentElement, 'div', 'toolbar', null);
+
+    let search = CreateElement(toolbar, 'input', 'toolbar_search', null);
+    search.type = 'search';
+    search.placeholder = 'Search commands, e.g. zone, layout, property';
+    search.setAttribute('aria-label', 'Search commands');
+
+    let groupSelect = CreateElement(toolbar, 'select', 'toolbar_group', null);
+    groupSelect.setAttribute('aria-label', 'Jump to group');
+    CreateTextElement(groupSelect, 'option', null, 'Jump to group…').value = '';
+    for (let group of commands) {
+        CreateTextElement(groupSelect, 'option', null, group.name).value = GroupId(group);
+    }
+
+    let versionSelect = CreateElement(toolbar, 'select', 'toolbar_version', null);
+    versionSelect.setAttribute('aria-label', 'Filter by version');
+    CreateTextElement(versionSelect, 'option', null, 'Any version').value = '';
+    let minors = new Set();
+    for (let group of commands) {
+        for (let command of group.commands) {
+            minors.add(MinorVersion(command.version));
+        }
+    }
+    for (let minor of [...minors].sort((a, b) => CompareVersions(b, a))) {
+        CreateTextElement(versionSelect, 'option', null, 'Added in ' + minor + ' or later').value = minor;
+    }
+
+    let expandButton = CreateTextElement(toolbar, 'button', 'toolbar_button', 'Expand all');
+    expandButton.type = 'button';
+    let collapseButton = CreateTextElement(toolbar, 'button', 'toolbar_button', 'Collapse all');
+    collapseButton.type = 'button';
+    let status = CreateElement(toolbar, 'span', 'toolbar_status', null);
+    status.setAttribute('aria-live', 'polite');
+
+    function UpdateToolbarHeight() {
+        document.documentElement.style.setProperty('--toolbar-height', toolbar.offsetHeight + 'px');
+    }
+    UpdateToolbarHeight();
+    window.addEventListener('resize', UpdateToolbarHeight);
+
+    search.addEventListener('input', onChange);
+    versionSelect.addEventListener('change', onChange);
+    groupSelect.addEventListener('change', function () {
+        let target = groupSelect.value && document.getElementById(groupSelect.value);
+        if (target) {
+            target.scrollIntoView();
+            history.replaceState(null, '', window.location.pathname + '#' + groupSelect.value);
+        }
+        groupSelect.value = '';
+    });
+    return { search, versionSelect, expandButton, collapseButton, status };
 }
 
 function RenderCommands(parentElement, commands, schemaDefinitions) {
+    let groupElements = new Map();
+    let controls = RenderToolbar(parentElement, commands, ApplyFilters);
+    let overviewParent = CreateElement(parentElement, 'div', null, null);
+
     for (let group of commands) {
-        CreateElement(parentElement, 'div', 'group_name', group.name);
-        for (command of group.commands) {
-            let commandContainer = CreateElement(parentElement, 'details', 'command_container', null);
+        let section = CreateElement(parentElement, 'section', 'group', null);
+        section.id = GroupId(group);
+        let heading = CreateElement(section, 'div', 'group_name', null);
+        CreateTextElement(heading, 'span', null, group.name);
+        let count = CreateTextElement(heading, 'span', 'group_count', String(group.commands.length));
+        let entries = [];
+        for (let command of group.commands) {
+            let commandContainer = CreateElement(section, 'details', 'command_container', null);
             try {
                 RenderCommand(commandContainer, command, schemaDefinitions);
             } catch (error) {
-                // One broken schema must not blank out every command after it.
-                CreateElement(commandContainer, 'div', 'command_description', 'Failed to render the schemas of this command.');
+                // One broken command must not blank out every command after it.
+                CreateElement(commandContainer, 'div', 'command_description', 'Failed to render this command.');
                 console.error('Failed to render command ' + command.name, error);
+            }
+            let searchText = (command.name + ' ' + PlainText(command.description) + ' ' + group.name).toLowerCase();
+            entries.push({ command, element: commandContainer, searchText });
+        }
+        groupElements.set(group, { section, count, entries });
+    }
+    RenderOverview(overviewParent, commands, groupElements);
+
+    function ApplyFilters() {
+        let words = controls.search.value.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+        let minVersion = controls.versionSelect.value;
+        let shown = 0;
+        for (let groupElement of groupElements.values()) {
+            let groupShown = 0;
+            for (let entry of groupElement.entries) {
+                let visible = words.every(word => entry.searchText.includes(word)) &&
+                    (!minVersion || CompareVersions(entry.command.version, minVersion) >= 0);
+                entry.element.hidden = !visible;
+                groupShown += visible ? 1 : 0;
+            }
+            groupElement.section.hidden = groupShown === 0;
+            let total = groupElement.entries.length;
+            let countText = groupShown === total ? String(total) : groupShown + ' of ' + total;
+            groupElement.count.textContent = countText;
+            groupElement.overviewCount.textContent = countText;
+            shown += groupShown;
+        }
+        let filtering = words.length > 0 || minVersion;
+        controls.status.textContent = !filtering ? '' : shown === 0 ? 'No matching commands' : shown + (shown === 1 ? ' command' : ' commands');
+    }
+
+    function SetAllOpen(open) {
+        for (let groupElement of groupElements.values()) {
+            for (let entry of groupElement.entries) {
+                if (!entry.element.hidden && entry.element.open !== open) {
+                    entry.element.dataset.bulkToggle = 'true';
+                    entry.element.open = open;
+                }
             }
         }
     }
+    controls.expandButton.addEventListener('click', () => SetAllOpen(true));
+    controls.collapseButton.addEventListener('click', () => SetAllOpen(false));
 }
