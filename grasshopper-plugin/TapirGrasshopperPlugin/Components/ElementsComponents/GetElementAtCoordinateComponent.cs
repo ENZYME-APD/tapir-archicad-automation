@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public GetElementAtCoordinateComponent()
             : base(
                 "ElementAtCoordinate",
-                "Finds the element of the given type at a point of the floor plan, the way a click there would.",
+                "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a point of the floor plan, the way a click there would.",
                 GroupNames.Elements)
         {
         }
@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InText(
                 "ElementType",
-                "The type of the element to look for.");
+                "The type of the element to look for: a polygonal type, for example Slab, Roof, Mesh, Zone or Hatch.");
 
             InPoint(
                 "Point",
