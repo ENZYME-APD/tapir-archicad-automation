@@ -278,7 +278,12 @@ function RenderToolbar(parentElement, onChange) {
         document.documentElement.style.setProperty('--toolbar-height', toolbar.offsetHeight + 'px');
     }
     UpdateToolbarHeight();
-    window.addEventListener('resize', UpdateToolbarHeight);
+    // The toolbar wraps onto more rows when the window narrows or the status text grows.
+    if ('ResizeObserver' in window) {
+        new ResizeObserver(UpdateToolbarHeight).observe(toolbar);
+    } else {
+        window.addEventListener('resize', UpdateToolbarHeight);
+    }
 
     search.addEventListener('input', onChange);
     return { search, expandButton, collapseButton, status };

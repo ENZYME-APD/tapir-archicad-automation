@@ -48,8 +48,6 @@ div.header_frame {
 
 div.frame {
     padding: 0px 20px;
-    width: 920px;
-    margin: 0px auto;
 }
 
 /* A sidebar of sections next to the content on wide screens. */
@@ -341,14 +339,6 @@ code.language-python.hljs {
 .hljs-string {
     /* override for github highlighter */
     color: var(--schema-blue) !important;
-}
-
-@media only screen and (max-width: 1000px) {
-
-    div.frame {
-        width: auto;
-    }
-
 }
 
 /* Below this width the sidebar is a drawer opened by "Sections". */
