@@ -44,7 +44,8 @@ createLayersResult = aclib.RunTapirCommand ('CreateLayers', {
     }],
     'overwriteExisting': True
 })
-layerIds = createLayersResult['attributeIds'] if createLayersResult and 'attributeIds' in createLayersResult else []
+# Each item of attributeIds holds either attributeId or error; only the created ones are attribute ids.
+layerIds = [item for item in createLayersResult['attributeIds'] if 'attributeId' in item] if createLayersResult and 'attributeIds' in createLayersResult else []
 
 moveResult = aclib.RunTapirCommand ('MoveAttributesAndFolders', {
     'attributeIds': layerIds,
@@ -71,7 +72,7 @@ moveBackResult = aclib.RunTapirCommand ('MoveAttributesAndFolders', {
 print ('Moved attributes back to the root folder: {}'.format (CountSuccesses (moveBackResult, 'attributeExecutionResults')))
 
 aclib.RunTapirCommand ('DeleteAttributes', {
-    'attributesToDelete': [{'attributeType': 'Layer', 'attributeId': layerId['attributeId']} for layerId in layerIds]
+    'attributesToDelete': [{'attributeType': 'Layer', 'attributeId': layerId} for layerId in layerIds]
 })
 
 # Deleting a parent folder removes its subfolders with it. An empty path is the root folder, which cannot be deleted.

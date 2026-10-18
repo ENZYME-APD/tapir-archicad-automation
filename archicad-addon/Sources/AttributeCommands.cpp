@@ -3092,10 +3092,14 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
     if (invalidTarget.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid targetFolder: the attributeType is unknown or a folder name in path is empty.");
     }
-    // The root folder is identified by its empty path alone, so it is not looked up.
-    if (!targetFolder.path.IsEmpty () && !FindAttributeFolder (targetFolder)) {
-        return CreateErrorResponse (APIERR_BADID,
-            GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (targetFolder.path).ToPrintf ()));
+    // The root folder (empty path) always exists: its guid is looked up as well, and stays null when the API reports
+    // none for it, so the target is identified either way.
+    if (!FindAttributeFolder (targetFolder)) {
+        if (!targetFolder.path.IsEmpty ()) {
+            return CreateErrorResponse (APIERR_BADID,
+                GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (targetFolder.path).ToPrintf ()));
+        }
+        targetFolder.guid = GS::Guid ();
     }
 
     GS::Array<GS::ObjectState> attributeIds;
