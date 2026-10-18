@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 09:39 UTC",
+ "generatedAt": "2026-10-18 09:46 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1552,
+  "open": 1553,
   "not applicable": 468,
   "in progress": 113,
   "done": 492,
-  "claimed": 27,
+  "claimed": 26,
   "merged": 250
  },
  "items": [
@@ -30543,15 +30543,10 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1057,
-     "title": "Expose ACAPI::MEP::Bend::Modifier::SetFactorRadius"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::Bend::Modify",
