@@ -1,0 +1,286 @@
+{
+  "title": "Graphic override rules with a structured criterion, rule groups and combination delete",
+  "minTapir": "1.7.2",
+  "steps": [
+    {
+      "id": "create with criterion",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck structured wall",
+            "ruleGroupName": "TapirCheck structured criterion",
+            "criterion": {
+              "and": [
+                {
+                  "elementType": "Wall"
+                },
+                {
+                  "wallHeightGreaterThan": 2.0
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "save": {
+        "rule": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid"
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "criterion and criterionXML together",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck both criteria",
+            "ruleGroupName": "TapirCheck structured criterion",
+            "criterion": {
+              "elementType": "Slab"
+            },
+            "criterionXML": "<x/>"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "rejected"
+        }
+      ]
+    },
+    {
+      "id": "modify with criterion",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "graphicOverrideRuleId": {
+              "guid": "${rule}"
+            },
+            "criterion": {
+              "elementType": "Slab"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "combination",
+      "command": "CreateGraphicOverrideCombinations",
+      "creates": false,
+      "params": {
+        "graphicOverrideCombinations": [
+          {
+            "name": "TapirCheck structured combination",
+            "graphicOverrideRuleIds": [
+              {
+                "graphicOverrideRuleId": {
+                  "guid": "${rule}"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "combination": "graphicOverrideCombinationIds[0].graphicOverrideCombinationId.guid"
+      }
+    },
+    {
+      "id": "delete combination",
+      "command": "DeleteGraphicOverrideCombinations",
+      "creates": false,
+      "params": {
+        "graphicOverrideCombinationIds": [
+          {
+            "graphicOverrideCombinationId": {
+              "guid": "${combination}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "delete combination again",
+      "command": "DeleteGraphicOverrideCombinations",
+      "creates": false,
+      "params": {
+        "graphicOverrideCombinationIds": [
+          {
+            "graphicOverrideCombinationId": {
+              "guid": "${combination}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "already gone"
+        }
+      ]
+    },
+    {
+      "id": "delete non-empty group",
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck structured criterion"
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "kept, it still has a rule"
+        }
+      ]
+    },
+    {
+      "id": "delete group, move rules",
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck structured criterion"
+        ],
+        "moveRulesToGroup": "TapirCheck moved rules"
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "moved rule still exists",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "graphicOverrideRuleId": {
+              "guid": "${rule}"
+            },
+            "name": "TapirCheck structured wall moved"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "delete group again",
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck structured criterion"
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "no group by that name"
+        }
+      ]
+    },
+    {
+      "id": "delete group with its rules",
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck moved rules"
+        ],
+        "deleteRules": true
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "rule deleted with its group",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "graphicOverrideRuleId": {
+              "guid": "${rule}"
+            },
+            "name": "gone"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRules",
+      "params": {
+        "graphicOverrideRuleIds": [
+          {
+            "graphicOverrideRuleId": {
+              "guid": "${rule}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck structured criterion",
+          "TapirCheck moved rules"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}
