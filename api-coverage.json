@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:27 UTC",
+ "generatedAt": "2026-10-18 21:28 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1477,
   "not applicable": 468,
-  "in progress": 128,
+  "in progress": 131,
   "done": 491,
-  "claimed": 67,
+  "claimed": 64,
   "merged": 252
  },
  "items": [
@@ -8805,6 +8805,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1110,
+     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
+    },
+    {
      "number": 1087,
      "title": "Add GetCurtainWallAbsoluteBottoms command"
     },
@@ -12374,9 +12378,14 @@
    "olderNames": [
     "APIAny_GetContainingHotlinkGuidID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1110,
+     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
+    }
+   ],
    "issues": [
     {
      "number": 1104,
@@ -12402,9 +12411,14 @@
    "olderNames": [
     "APIDb_GetHotLinkOwnerID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1110,
+     "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
+    }
+   ],
    "issues": [
     {
      "number": 1104,
@@ -15865,6 +15879,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1112,
+     "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
+    },
+    {
      "number": 841,
      "title": "DeleteNavigatorItems: report a refused delete as a failure instead of success"
     },
@@ -16114,9 +16132,14 @@
    "olderNames": [
     "APIDb_GetSubSetID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1112,
+     "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
+    }
+   ],
    "issues": [
     {
      "number": 1105,
@@ -23240,6 +23263,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1112,
+     "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
+    },
     {
      "number": 1107,
      "title": "Add GetContainingDatabases command to find an element's database"
