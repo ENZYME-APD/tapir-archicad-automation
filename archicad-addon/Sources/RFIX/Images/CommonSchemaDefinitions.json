@@ -1,4 +1,20 @@
 {
+    "User": {
+        "type": "object",
+        "properties": {
+            "userId": {
+                "type": "number"
+            },
+            "userName": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userId",
+            "userName"
+        ]
+    },
     "Elements": {
         "type": "array",
         "description": "A list of elements.",
@@ -2340,6 +2356,39 @@
             "width"
         ]
     },
+    "BeamHoleModification": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/BeamHoleType"
+            },
+            "showContour": {
+                "type": "boolean"
+            },
+            "centerX": {
+                "type": "number"
+            },
+            "centerZ": {
+                "type": "number"
+            },
+            "width": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "height": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Only used for the Rectangular type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "centerX",
+            "centerZ",
+            "width"
+        ]
+    },
     "LinkToSettings": {
         "type": "object",
         "description": "Mode of linking an element to its home story.",
@@ -2350,7 +2399,7 @@
             },
             "newCreationMode": {
                 "type": "boolean",
-                "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
+                "description": "Controls home-story selection during element creation. If true, homeStoryDifference selects the home story relative to the current story and the element's absolute floor index is ignored. If false, the absolute floor index is used and Archicad fills homeStoryDifference. This is a creation instruction, not a persistent linking mode."
             }
         },
         "additionalProperties": false
@@ -6671,19 +6720,8 @@
                 "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
             },
             "linkToSettings": {
-                "type": "object",
-                "description": "Mode of linking the wall to its home story.",
-                "properties": {
-                    "homeStoryDifference": {
-                        "type": "integer",
-                        "description": "Difference of the home story from the current story."
-                    },
-                    "newCreationMode": {
-                        "type": "boolean",
-                        "description": "A one-shot instruction for Create, not a persisted property: when true, header.floorInd (floorIndex/zCoordinate) is ignored and homeStoryDifference is used to place the wall instead (API_LinkToSettings remarks). Reading it back afterward is expected to show false regardless, since Archicad resolves it to an absolute floor index immediately rather than storing the mode itself."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LinkToSettings",
+                "description": "newCreationMode is expected to read back as false after creation; Archicad resolves the relative story selection to an absolute floor index."
             },
             "inheritEndSurface": {
                 "type": "boolean",
@@ -7820,6 +7858,71 @@
             "SolidBodyWithSkirt"
         ]
     },
+    "MeshModificationData": {
+        "type": "object",
+        "description": "The fields to modify on the Mesh. Only provided fields are changed; omitted fields are left as-is.",
+        "properties": {
+            "floorIndex": {
+                "type": "integer"
+            },
+            "level": {
+                "type": "number",
+                "description": "The Z reference level of coordinates."
+            },
+            "skirtType": {
+                "$ref": "#/MeshSkirtType"
+            },
+            "skirtLevel": {
+                "type": "number",
+                "description": "The height of the skirt."
+            },
+            "ridges": {
+                "$ref": "#/MeshRidges"
+            },
+            "showLines": {
+                "type": "boolean",
+                "description": "Whether to show secondary mesh lines on plan."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh contour line."
+            },
+            "levelPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh level lines."
+            },
+            "lineTypeIndex": {
+                "type": "integer",
+                "description": "Line type attribute index for the mesh contour."
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the mesh.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes3D"
+            },
+            "sublines": {
+                "type": "array",
+                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
+                "items": {
+                    "$ref": "#/MeshSubline"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "MeshDetails": {
         "type": "object",
         "properties": {
@@ -8571,21 +8674,24 @@
     "RevisionCustomSchemeData": {
         "type": "array",
         "items": {
-            "type": "object",
-            "properties": {
-                "customSchemeKey": {
-                    "$ref": "#/Guid"
-                },
-                "customSchemeValue": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "customSchemeKey",
-                "customSchemeValue"
-            ]
+            "$ref": "#/RevisionCustomSchemeEntry"
         }
+    },
+    "RevisionCustomSchemeEntry": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "$ref": "#/Guid"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "customSchemeKey",
+            "customSchemeValue"
+        ]
     },
     "DocumentRevisionReference": {
         "type": "object",

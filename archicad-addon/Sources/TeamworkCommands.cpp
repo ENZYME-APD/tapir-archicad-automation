@@ -56,7 +56,7 @@ GS::ObjectState TeamworkReceiveCommand::Execute (const GS::ObjectState& /*parame
 }
 
 ReserveElementsCommand::ReserveElementsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -98,20 +98,7 @@ GS::Optional<GS::UniString> ReserveElementsCommand::GetRawResponseSchema () cons
                             "$ref": "#/ElementId"
                         },
                         "user": {
-                            "type": "object",
-                            "properties": {
-                                "userId": {
-                                    "type": "number"
-                                },
-                                "userName": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "userId",
-                                "userName"
-                            ]
+                            "$ref": "#/User"
                         }
                     },
                     "additionalProperties": false,
@@ -282,7 +269,7 @@ static const char* LockableStatusToString (API_LockableStatus status)
 }
 
 ReserveLockableObjectSetCommand::ReserveLockableObjectSetCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -308,20 +295,7 @@ GS::Optional<GS::UniString> ReserveLockableObjectSetCommand::GetRawResponseSchem
                 "type": "array",
                 "description": "The users whose reservation prevented reserving the object set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "userId": {
-                            "type": "number"
-                        },
-                        "userName": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "userId",
-                        "userName"
-                    ]
+                    "$ref": "#/User"
                 }
             }
         },
@@ -395,7 +369,7 @@ GS::ObjectState ReleaseLockableObjectSetCommand::Execute (const GS::ObjectState&
 }
 
 GetLockableObjectSetStatusCommand::GetLockableObjectSetStatusCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -423,20 +397,7 @@ GS::Optional<GS::UniString> GetLockableObjectSetStatusCommand::GetRawResponseSch
                 "type": "array",
                 "description": "The users who hold a reservation on the object set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "userId": {
-                            "type": "number"
-                        },
-                        "userName": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "userId",
-                        "userName"
-                    ]
+                    "$ref": "#/User"
                 }
             }
         },
@@ -467,7 +428,7 @@ GS::ObjectState GetLockableObjectSetStatusCommand::Execute (const GS::ObjectStat
 }
 
 ReserveHotlinkCacheManagementCommand::ReserveHotlinkCacheManagementCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -488,20 +449,7 @@ GS::Optional<GS::UniString> ReserveHotlinkCacheManagementCommand::GetRawResponse
                 "type": "array",
                 "description": "The user whose reservation prevented reserving the Hotlink and XRef management.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "userId": {
-                            "type": "number"
-                        },
-                        "userName": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "userId",
-                        "userName"
-                    ]
+                    "$ref": "#/User"
                 }
             }
         },
