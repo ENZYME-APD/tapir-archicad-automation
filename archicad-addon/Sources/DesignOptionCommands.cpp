@@ -31,6 +31,30 @@ static auto FindDesignOptionItemByGuid (ContainerT& items, const GS::Guid& guid)
     }
     return nullptr;
 }
+
+// The error of a failed ACAPI::Result as an Error object (code and message);
+// defaultMessage is used when the API gives no text.
+template <typename ResultT>
+static GS::ObjectState CreateErrorObjectState (const ResultT& result, const GS::UniString& defaultMessage)
+{
+    const GS::UniString text (result.UnwrapErr ().text.c_str ());
+    GS::ObjectState errorResponse = CreateErrorResponse (result.UnwrapErr ().kind, text.IsEmpty () ? defaultMessage : text);
+    GS::ObjectState error;
+    errorResponse.Get ("error", error);
+    return error;
+}
+
+// Adds whether the design option, set or combination is editable (renamed,
+// deleted or changed), with the reason when it is not.
+template <typename ItemT>
+static void AddIsEditable (GS::ObjectState& os, const ItemT& item)
+{
+    const auto editable = item.IsEditable ();
+    os.Add ("isEditable", editable.IsOk ());
+    if (editable.IsErr ()) {
+        os.Add ("notEditableError", CreateErrorObjectState (editable, "Not editable."));
+    }
+}
 #endif
 
 GetDesignOptionsCommand::GetDesignOptionsCommand () :
@@ -84,6 +108,7 @@ GS::ObjectState GetDesignOptionsCommand::Execute (const GS::ObjectState& /*param
         designOption.Add ("name", option.GetName ());
         designOption.Add ("id", option.GetId ());
         designOption.Add ("ownerSetName", option.GetOwnerSetName ());
+        AddIsEditable (designOption, option);
         designOptions (designOption);
     }
 
@@ -120,6 +145,14 @@ GS::Optional<GS::UniString> GetDesignOptionSetsCommand::GetRawResponseSchema () 
                         "name": {
                             "type": "string",
                             "description": "The name of the design option set."
+                        },
+                        "isEditable": {
+                            "type": "boolean",
+                            "description": "Whether the design option set can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork)."
+                        },
+                        "notEditableError": {
+                            "$ref": "#/Error",
+                            "description": "The reason why the design option set is not editable. Only present when isEditable is false."
                         },
                         "designOptions": {
                             "type": "array",
@@ -165,6 +198,7 @@ GS::ObjectState GetDesignOptionSetsCommand::Execute (const GS::ObjectState& /*pa
         GS::ObjectState designOptionSet;
         designOptionSet.Add ("designOptionSetId", CreateGuidObjectState (optionSet.GetGuid ()));
         designOptionSet.Add ("name", optionSet.GetName ());
+        AddIsEditable (designOptionSet, optionSet);
         const auto& options = designOptionSet.AddList<GS::ObjectState> ("designOptions");
         const auto designOptions = manager->GetDesignOptionsOfSet (optionSet);
         if (designOptions.IsOk ()) {
@@ -239,6 +273,7 @@ GS::ObjectState GetDesignOptionCombinationsCommand::Execute (const GS::ObjectSta
         designOptionCombination.Add ("designOptionCombinationId", CreateGuidObjectState (optionCombination.GetGuid ()));
         designOptionCombination.Add ("name", optionCombination.GetName ());
 #ifdef ServerMainVers_2900
+        AddIsEditable (designOptionCombination, optionCombination);
         const auto& activeOptions = designOptionCombination.AddList<GS::ObjectState> ("activeDesignOptions");
         const auto activeDesignOptions = manager->GetActiveDesignOptionsOfCombination (optionCombination);
         if (activeDesignOptions.IsOk ()) {
@@ -1791,6 +1826,115 @@ GS::ObjectState DeleteDesignOptionCombinationsCommand::Execute (const GS::Object
         }
         return NoError;
     });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+CanMoveElementsToDesignOptionsCommand::CanMoveElementsToDesignOptionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CanMoveElementsToDesignOptionsCommand::GetName () const
+{
+    return "CanMoveElementsToDesignOptions";
+}
+
+GS::Optional<GS::UniString> CanMoveElementsToDesignOptionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CanMoveElementsToDesignOptionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "canMoveElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "canMove": {
+                            "type": "boolean",
+                            "description": "Whether the element can be moved to another design option or to the main model."
+                        },
+                        "error": {
+                            "$ref": "#/Error",
+                            "description": "The reason why the element cannot be moved. Only present when canMove is false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "canMove"
+                    ]
+                },
+                "description": "The result for each given element, in the order of the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "canMoveElements"
+        ]
+    })";
+}
+
+GS::ObjectState CanMoveElementsToDesignOptionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve design options.");
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    GS::ObjectState response;
+    const auto& canMoveElements = response.AddList<GS::ObjectState> ("canMoveElements");
+
+    for (auto&& elemId : elemIds) {
+        GS::ObjectState canMoveElement = CreateElementIdObjectState (elemId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemId, elemHeader)) {
+            GS::ObjectState errorResponse = CreateErrorResponse (APIERR_BADID, "Not found element with the given 'elementId'.");
+            GS::ObjectState error;
+            errorResponse.Get ("error", error);
+            canMoveElement.Add ("canMove", false);
+            canMoveElement.Add ("error", error);
+            canMoveElements (canMoveElement);
+            continue;
+        }
+
+        const auto canBeMoved = manager->CanBeMovedToOtherDesignOption (elemId);
+        canMoveElement.Add ("canMove", canBeMoved.IsOk ());
+        if (canBeMoved.IsErr ()) {
+            canMoveElement.Add ("error", CreateErrorObjectState (canBeMoved, "The element cannot be moved to another design option."));
+        }
+        canMoveElements (canMoveElement);
+    }
 
     return response;
 #else

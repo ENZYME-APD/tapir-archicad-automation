@@ -8912,6 +8912,14 @@
                     "$ref": "#/DesignOptionIdArrayItem"
                 },
                 "description": "The list of active design options in the combination. Available from Archicad 29."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the design option combination can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Available from Archicad 29."
+            },
+            "notEditableError": {
+                "$ref": "#/Error",
+                "description": "The reason why the design option combination is not editable. Only present when isEditable is false."
             }
         },
         "additionalProperties": false,
@@ -10564,6 +10572,14 @@
             "ownerSetName": {
                 "type": "string",
                 "description": "The name of the owner design option set."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the design option can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Returned by GetDesignOptions."
+            },
+            "notEditableError": {
+                "$ref": "#/Error",
+                "description": "The reason why the design option is not editable. Only present when isEditable is false."
             }
         },
         "additionalProperties": false,
