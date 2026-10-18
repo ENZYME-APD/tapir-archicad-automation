@@ -266,6 +266,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   it labels the PR `needs-maintainer` and stops; removing the label hands the PR
   back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
+- Model tiers of these three Claude workflows, from repository variables
+  (aliases, so each tier follows new models): `CLAUDE_LIGHT_MODEL` (default
+  `sonnet`) for issue replies and PR re-reviews, `CLAUDE_MODEL` (default `opus`)
+  for issue fixes, first reviews and steward fix rounds, and
+  `CLAUDE_ESCALATION_MODEL` (default `best`) only for the last steward fix round
+  and one retry of an issue fix that did work but left no comment or PR.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
