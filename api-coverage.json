@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 16:40 UTC",
+ "generatedAt": "2026-10-18 16:42 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1518,
+  "open": 1517,
   "not applicable": 468,
   "in progress": 116,
   "done": 491,
-  "claimed": 38,
+  "claimed": 39,
   "merged": 252
  },
  "items": [
@@ -5059,10 +5059,15 @@
    "olderNames": [
     "APIAny_GetCWHeightID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1080,
+     "title": "Expose ACAPI_CurtainWall_GetCWHeight"
+    }
+   ]
   },
   {
    "id": "ACAPI_CurtainWall_GetCWSubElemParams",
@@ -5082,10 +5087,15 @@
    "olderNames": [
     "APIAny_GetCWSubElemParamsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1081,
+     "title": "Expose ACAPI_CurtainWall_GetCWSubElemParams"
+    }
+   ]
   },
   {
    "id": "ACAPI_CurtainWall_IsCWPanelDegenerate",
@@ -23635,6 +23645,14 @@
    ],
    "issues": [
     {
+     "number": 1081,
+     "title": "Expose ACAPI_CurtainWall_GetCWSubElemParams"
+    },
+    {
+     "number": 1080,
+     "title": "Expose ACAPI_CurtainWall_GetCWHeight"
+    },
+    {
      "number": 976,
      "title": "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"
     }
@@ -25569,15 +25587,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1079,
-     "title": "Expose ACAPI::CreatePropertyOperationManager"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::CreateZoneBoundaryQuery",
