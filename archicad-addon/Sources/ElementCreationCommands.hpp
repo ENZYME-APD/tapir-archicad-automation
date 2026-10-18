@@ -6,6 +6,20 @@
 // textContent/paragraphs handles and updates the API_TextType fields (nLine, useEolPos,
 // nonBreaking, width, height) for the given content.
 void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text);
+// The memo mask for writing the content built by SetTextContentAndParagraphs/ApplyTextContent
+// with ACAPI_Element_Change. Before Archicad 28 the content is UTF-16 with character offsets
+// (charCode CC_UniCode), which the *Uni masks declare. With the plain masks every content or
+// height change of a text with two or more characters failed on Archicad 26 (#759) while a
+// one-character text and ACAPI_Element_Create, which takes no memo mask and goes by the
+// element's charCode, worked: that is the pattern of ACAPI_Element_Change taking the handle as
+// an 8-bit string, which ends at the first character's high zero byte, so only a one-character
+// text has paragraph/run ranges that fit. From Archicad 28 the content is a GS::UniString and
+// the plain masks are the only ones.
+#ifdef ServerMainVers_2800
+constexpr UInt64 TextContentMemoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+#else
+constexpr UInt64 TextContentMemoMask = APIMemoMask_TextContentUni | APIMemoMask_ParagraphUni;
+#endif
 const char* JustificationToString (API_JustID just);
 // Shared with GetDetailsOfElementsCommand (ElementCommands.cpp): the origin a level dimension
 // measures from, as the "DimensionOrigin" schema names it.
