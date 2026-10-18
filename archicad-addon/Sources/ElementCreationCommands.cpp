@@ -407,9 +407,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "exclusiveMinimum": 0.0
                     },
                     "structureType": {
-                        "type": "string",
-                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept.",
-                        "enum": ["Basic", "Composite"]
+                        "$ref": "#/SlabStructureType",
+                        "description": "Optional structure of the slab. If omitted, derived from buildingMaterialId or compositeId when one is given, otherwise the slab tool default (or the favorite) is kept."
                     },
                     "buildingMaterialId": {
                         "$ref": "#/AttributeId",
@@ -2405,11 +2404,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             const bool explicitContent = item.Get ("text", explicitContentTextCheck) || item.Get ("runs", explicitContentRunsCheck);
             if (explicitContent || styleChanged) {
                 // Start from a BLANK memo, not one fetched via ACAPI_Element_GetMemo first: confirmed
-                // live (by cross-checking against Archicad's own official fix, commit a2a111b/54cbd36
-                // upstream) that ACAPI_Element_Change only persists memo-based text content when fed a
-                // from-scratch API_ElementMemo{} together with the NON-Uni memomask below - fetching
-                // the existing memo first (as this used to do, with the *Uni masks) silently failed to
-                // persist despite ApplyTextContent replacing textContent/paragraphs correctly.
+                // live on Archicad 28 (by cross-checking against Archicad's own official fix, commit
+                // a2a111b/54cbd36 upstream) that ACAPI_Element_Change only persists memo-based text
+                // content when fed a from-scratch API_ElementMemo{} - fetching the existing memo first
+                // silently failed to persist despite ApplyTextContent replacing textContent/paragraphs
+                // correctly. The memo mask is version dependent, see TextContentMemoMask.
                 GS::ObjectState contentParams = item;
                 if (!explicitContent) {
                     // Style-only change on an existing multistyle element: re-fetch the current
@@ -2440,7 +2439,7 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 
             // withdel=false was tried and made things WORSE (even the style fields stopped
             // applying) - confirmed live. withdel=true is required here.
-            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? (APIMemoMask_TextContent | APIMemoMask_Paragraph) : 0, true);
+            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Text."));
         }
         return NoError;
@@ -2619,7 +2618,7 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             }
 
             // withdel=true required - see ModifyTexts.
-            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? (APIMemoMask_TextContent | APIMemoMask_Paragraph) : 0, true);
+            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Label."));
         }
         return NoError;
