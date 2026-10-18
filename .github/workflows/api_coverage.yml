@@ -135,9 +135,19 @@ jobs:
             echo "The checklist did not change."
             exit 0
           fi
+          base=$(git rev-parse -q --verify HEAD || true)
           git commit -q -m "Update the Archicad API coverage checklist"
+          if git push -q origin HEAD:api-coverage; then
+            exit 0
+          fi
           # A newer run may have pushed meanwhile: it had newer data, so give way.
-          git push -q origin HEAD:api-coverage || echo "::notice::api-coverage moved meanwhile; a newer run published."
+          # Any other rejection (ruleset, token) leaves the branch where it was.
+          if git fetch -q origin api-coverage && [ "$(git rev-parse FETCH_HEAD)" != "$base" ]; then
+            echo "::notice::api-coverage moved meanwhile; a newer run published."
+          else
+            echo "::error::Pushing to api-coverage failed and the branch did not move."
+            exit 1
+          fi
 
       - name: Update the tracking issue
         if: vars.API_COVERAGE_ISSUE != ''

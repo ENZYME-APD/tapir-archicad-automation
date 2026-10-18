@@ -46,7 +46,9 @@ import re
 REPO_URL = 'https://github.com/ENZYME-APD/tapir-archicad-automation'
 
 C_EXPORT_RE = re.compile (r'(?:__APIEXPORT|\b[A-Z][A-Z0-9_]*EXPORT)\b[^;(]*?\b(ACAPI_[A-Za-z0-9_]+)\s*\(')
-OLD_ID_RE = re.compile (r'\b(API(?:Db|Env|Any|Io|Do|Eng|Prop|Mod)_[A-Za-z0-9]+ID)\b\s*=')
+# Prefixes of the AC25/26 command ids (APIDb_GetDrawingScaleID, APINavigator_GetNavigatorItemID, ...).
+OLD_ID_PREFIXES = ('APIDb_', 'APIEnv_', 'APIAny_', 'APIIo_', 'APIDo_', 'APIEng_', 'APIProp_', 'APIMod_', 'APINavigator_')
+OLD_ID_RE = re.compile (r'\b((?:' + '|'.join (OLD_ID_PREFIXES) + r')[A-Za-z0-9]+ID)\b\s*=')
 BRIEF_RE = re.compile (r'@brief\s+(.*?)(?:\n\s*\*?\s*\n|\n\s*\*?\s*@|\*/)', re.S)
 IDENT_RE = re.compile (r'\b[A-Za-z_][A-Za-z0-9_]*\b')
 EXPORT_MACRO_RE = re.compile (r'\b[A-Z][A-Z0-9_]*(?:EXPORT|DLL_EXPORT)[A-Z0-9_]*\b')
@@ -225,7 +227,7 @@ def used_c_names (files):
     used = collections.defaultdict (set)
     for name, data in files.items ():
         for ident in data['idents']:
-            if ident.startswith (('ACAPI_', 'APIDb_', 'APIEnv_', 'APIAny_', 'APIIo_', 'APIDo_', 'APIEng_')):
+            if ident.startswith (('ACAPI_',) + OLD_ID_PREFIXES):
                 used[ident].add (name)
     # A #define in MigrationHelper.hpp only names a function: count it as used
     # only when some other file calls it.
