@@ -4808,15 +4808,17 @@ static GS::ObjectState CreateCutPolygonObjectState (const GS::Array<GS::Array<AP
 }
 
 // Cuts the bodies with the horizontal plane at cutHeight and appends the cut polygons to
-// `polygons`, adding their area to `area`. API_Plane3D is the plane equation
-// pa*x + pb*y + pc*z + pd = 0, so z = cutHeight with the normal pointing up is (0, 0, 1, -cutHeight).
+// `polygons`, adding their area to `area`. API_Plane3D is a coordinate frame (a base point and
+// three axes, as the opening's extrusion frame uses it) and the cut polygons come back in the
+// coordinates of that frame, so the base point is put at the cut height on the Z axis and the
+// axes are the world axes: the 2D coordinates of the cut polygons are then the project X and Y.
 static GSErrCode CutBodiesAtHeight (const GS::Array<Int32>& bodyIndices, double cutHeight, GS::Array<GS::ObjectState>& polygons, double& area)
 {
     API_Plane3D cutPlane = {};
-    cutPlane.pa = 0.0;
-    cutPlane.pb = 0.0;
-    cutPlane.pc = 1.0;
-    cutPlane.pd = -cutHeight;
+    cutPlane.basePoint = { 0.0, 0.0, cutHeight };
+    cutPlane.axisX = { 1.0, 0.0, 0.0 };
+    cutPlane.axisY = { 0.0, 1.0, 0.0 };
+    cutPlane.axisZ = { 0.0, 0.0, 1.0 };
 
     for (Int32 bodyIndex : bodyIndices) {
         GS::Array<Geometry::MultiPolygon2D> cutPolygons;
