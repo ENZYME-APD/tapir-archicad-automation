@@ -595,6 +595,179 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+// The graphic override combination applied to the current (front) window, as
+// opposed to the one stored in a saved view (SetViewSettings). The two API
+// functions below are new in Archicad 30; the combinations themselves are
+// reached through the ACAPI_GraphicalOverride_* functions of Archicad 27+.
+
+GetActiveGraphicalOverrideCombinationCommand::GetActiveGraphicalOverrideCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetActiveGraphicalOverrideCombinationCommand::GetName () const
+{
+    return "GetActiveGraphicalOverrideCombination";
+}
+
+GS::Optional<GS::UniString> GetActiveGraphicalOverrideCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The graphic override combination applied to the current window. Empty when the current window has no combination applied.",
+        "properties": {
+            "combinationId": {
+                "type": "object",
+                "description": "The identifier of the graphic override combination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination. Missing when the combination cannot be read, e.g. it was deleted."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetActiveGraphicalOverrideCombinationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    API_Guid combinationGuid = APINULLGuid;
+    GSErrCode err = ACAPI_GraphicalOverride_GetActualOverrideCombination (combinationGuid);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the graphic override combination of the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...).");
+    }
+
+    GS::ObjectState response;
+    if (combinationGuid == APINULLGuid) {
+        return response;
+    }
+
+    response.Add ("combinationId", CreateGuidObjectState (combinationGuid));
+
+    API_OverrideCombination combination = {};
+    combination.guid = combinationGuid;
+    if (ACAPI_GraphicalOverride_GetOverrideCombination (combination) == NoError) {
+        response.Add ("name", combination.name);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
+}
+
+SetActiveGraphicalOverrideCombinationCommand::SetActiveGraphicalOverrideCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetActiveGraphicalOverrideCombinationCommand::GetName () const
+{
+    return "SetActiveGraphicalOverrideCombination";
+}
+
+GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The graphic override combination to apply, given by id or by name.",
+        "properties": {
+            "combinationId": {
+                "type": "object",
+                "description": "The identifier of the graphic override combination, as returned by GetActiveGraphicalOverrideCombination.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
+            }
+        },
+        "additionalProperties": false,
+        "oneOf": [
+            {
+                "required": [
+                    "combinationId"
+                ]
+            },
+            {
+                "required": [
+                    "name"
+                ]
+            }
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    API_Guid combinationGuid = APINULLGuid;
+
+    const GS::ObjectState* combinationIdOS = parameters.Get ("combinationId");
+    GS::UniString name;
+    if (combinationIdOS != nullptr) {
+        combinationGuid = GetGuidFromObjectState (*combinationIdOS);
+        if (combinationGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "combinationId is corrupt or missing.");
+        }
+    } else if (parameters.Get ("name", name)) {
+        GS::Array<API_Guid> combinationGuids;
+        GSErrCode err = ACAPI_GraphicalOverride_GetOverrideCombinationList (combinationGuids);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to get the list of graphic override combinations.");
+        }
+
+        for (const API_Guid& guid : combinationGuids) {
+            API_OverrideCombination combination = {};
+            combination.guid = guid;
+            if (ACAPI_GraphicalOverride_GetOverrideCombination (combination) == NoError && combination.name == name) {
+                combinationGuid = guid;
+                break;
+            }
+        }
+
+        if (combinationGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADNAME, "No graphic override combination is named '" + name + "'.");
+        }
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Either combinationId or name is required.");
+    }
+
+    GSErrCode err = ACAPI_GraphicalOverride_SetActualOverrideCombination (combinationGuid);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to apply the graphic override combination to the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...) and the combination must exist.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
+}
+
 struct RenovationFilter {
     API_Guid      guid;
     GS::UniString name;

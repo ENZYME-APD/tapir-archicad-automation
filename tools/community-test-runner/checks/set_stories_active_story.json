@@ -1,0 +1,474 @@
+{
+  "title": "SetStories with any active story (#747)",
+  "minTapir": "1.7.0",
+  "steps": [
+    {
+      "id": "two stories",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "two stories: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "activate story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "accepted"
+        }
+      ]
+    },
+    {
+      "id": "S0 active, lower S0",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": -1.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S0 active, lower S0: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": -1.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "S0 active, S0 back",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S0 active, S0 back: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "activate story 1",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 1
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "accepted"
+        }
+      ]
+    },
+    {
+      "id": "S1 active, raise S1",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 4.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S1 active, raise S1: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 4.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "S1 active, S1 back",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S1 active, S1 back: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "S1 active, lower S0",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": -1.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S1 active, lower S0: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": -1.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "active story is 1",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "actStory",
+          "eq": 1,
+          "name": "actStory == 1"
+        }
+      ]
+    },
+    {
+      "id": "S1 active, S0 back",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S1 active, S0 back: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "S1 active, shift both",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": -1.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 2.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S1 active, shift both: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": -1.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 2.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "S1 active, both back",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "S1 active, both back: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "active story is 1",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "actStory",
+          "eq": 1,
+          "name": "actStory == 1"
+        }
+      ]
+    },
+    {
+      "id": "activate story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "accepted"
+        }
+      ]
+    }
+  ]
+}
