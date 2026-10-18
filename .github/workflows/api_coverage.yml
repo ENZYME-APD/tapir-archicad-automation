@@ -68,18 +68,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: devkits
-          key: archicad-devkits-${{ env.DEVKITS }}
+          key: archicad-devkit-headers-${{ env.DEVKITS }}
 
       - name: Download the DevKits
         if: steps.devkits.outputs.cache-hit != 'true'
         run: |
           set -eu
-          # The same releases the build checks use.
+          # The same releases the build checks use. Only the headers are read, so
+          # only they are kept: the cache is about 15 MB instead of 150 MB.
           for entry in $DEVKITS; do
             major=${entry%%:*}; version=${entry#*:}
             mkdir -p "devkits/AC$major"
             curl -sSfL -o devkit.zip "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$version/API.Development.Kit.WIN.$version.zip"
-            unzip -qq devkit.zip -d "devkits/AC$major"
+            unzip -qq devkit.zip 'Support/Inc/*.h' 'Support/Modules/*.h' 'Support/Modules/*.hpp' -d "devkits/AC$major"
             rm devkit.zip
           done
 

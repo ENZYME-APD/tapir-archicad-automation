@@ -53,6 +53,8 @@ BRIEF_RE = re.compile (r'@brief\s+(.*?)(?:\n\s*\*?\s*\n|\n\s*\*?\s*@|\*/)', re.S
 IDENT_RE = re.compile (r'\b[A-Za-z_][A-Za-z0-9_]*\b')
 # A #define with its name and its body, continuation lines included.
 DEFINE_RE = re.compile (r'^[ \t]*#[ \t]*define[ \t]+([A-Za-z_][A-Za-z0-9_]*)((?:[^\n]*\\\n)*[^\n]*)', re.M)
+# The start of an inline function: inline GSErrCode ACAPI_View_Zoom (
+INLINE_WRAPPER_RE = re.compile (r'\binline\b[^;{}()]*?\b([A-Za-z_][A-Za-z0-9_]*)\s*\(')
 EXPORT_MACRO_RE = re.compile (r'\b[A-Z][A-Z0-9_]*(?:EXPORT|DLL_EXPORT)[A-Z0-9_]*\b')
 CPP_KEYWORDS = {'if', 'for', 'while', 'switch', 'return', 'sizeof', 'operator', 'decltype', 'static_assert',
                 'alignas', 'noexcept', 'template', 'typename', 'explicit', 'friend', 'using', 'typedef'}
@@ -212,6 +214,26 @@ def record_statement (items, stack, statement, module, header_name, raw):
 
 # --------------------------------------------------------------- Tapir usage --
 
+def inline_wrappers (text):
+    """The inline functions of a header: (name, identifiers of its body, start, end)."""
+    wrappers = []
+    for match in INLINE_WRAPPER_RE.finditer (text):
+        i, depth = match.end (), 1
+        while i < len (text) and depth:
+            depth += {'(': 1, ')': -1}.get (text[i], 0)
+            i += 1
+        rest = re.match (r'[\s\w]*\{', text[i:])
+        if not rest:
+            continue  # a declaration, not a definition
+        i += rest.end ()
+        body_start, depth = i, 1
+        while i < len (text) and depth:
+            depth += {'{': 1, '}': -1}.get (text[i], 0)
+            i += 1
+        wrappers.append ((match.group (1), set (IDENT_RE.findall (text[body_start:i])), match.start (), i))
+    return wrappers
+
+
 def read_sources (sources):
     files = {}
     for path in sorted (sources.rglob ('*')):
@@ -219,11 +241,15 @@ def read_sources (sources):
             text = strip_comments (read_text (path))
             scanned, defines = text, []
             if path.name == 'MigrationHelper.hpp':
-                # Its #defines map a current name to its AC25/26 name
-                # (#define ACAPI_Markup_Create ACAPI_MarkUp_Create): a define is not
-                # a use by itself; used_c_names follows it from a call of its name.
+                # Its #defines and inline wrappers map a current name to its AC25/26
+                # name (#define ACAPI_Markup_Create ACAPI_MarkUp_Create): defining one
+                # is not a use by itself; used_c_names follows it from a call of its name.
                 defines = [(m.group (1), set (IDENT_RE.findall (m.group (2)))) for m in DEFINE_RE.finditer (text)]
                 scanned = DEFINE_RE.sub ('', text)
+                wrappers = inline_wrappers (scanned)
+                defines += [(name, body) for name, body, _, _ in wrappers]
+                for _, _, start, end in reversed (wrappers):
+                    scanned = scanned[:start] + scanned[end:]
             files[path.name] = {
                 'idents': set (IDENT_RE.findall (scanned)),
                 'defines': defines,
@@ -239,19 +265,21 @@ def used_c_names (files):
         for ident in data['idents']:
             if ident.startswith (('ACAPI_',) + OLD_ID_PREFIXES):
                 used[ident].add (name)
-    # A called macro uses what it expands to: on AC25/26 a call of
-    # ACAPI_Markup_Create is a call of ACAPI_MarkUp_Create.
+    # A called macro or wrapper uses what it expands to: on AC25/26 a call of
+    # ACAPI_Markup_Create is a call of ACAPI_MarkUp_Create, and a call of
+    # TAPIR_Element_SetCategoryValue one of ACAPI_Category_SetCategoryValue.
     defines = [d for data in files.values () for d in data['defines']]
+    called = set ().union (*(data['idents'] for data in files.values ()))
     changed = True
     while changed:
         changed = False
         for macro, body in defines:
-            if macro not in used:
-                continue
-            for ident in body:
-                if ident.startswith (('ACAPI_',) + OLD_ID_PREFIXES) and ident not in used:
-                    used[ident].add ('MigrationHelper.hpp')
-                    changed = True
+            if macro in called and not body <= called:
+                called |= body
+                changed = True
+    for ident in called:
+        if ident.startswith (('ACAPI_',) + OLD_ID_PREFIXES) and ident not in used:
+            used[ident].add ('MigrationHelper.hpp')
     return used
 
 
