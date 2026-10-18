@@ -2230,7 +2230,7 @@ static GS::ObjectState CreateAreaDimFormatObjectState (const API_AreaDimFormat& 
 {
     return GS::ObjectState (
         "unit", ConvertAPIAreaType (format.unit),
-        "decimals", format.areaDecimals,
+        "decimals", format.lenDecimals,
         "hideZeroDecimals", format.hide0Dec != 0);
 }
 
@@ -2531,7 +2531,7 @@ static GS::Optional<GS::UniString> ApplyAreaDimFormat (const GS::ObjectState& os
         return error;
     }
 
-    changed |= GetPreferenceIntegerField (os, "decimals", format.areaDecimals);
+    changed |= GetPreferenceIntegerField (os, "decimals", format.lenDecimals);
     changed |= GetPreferenceFlagField (os, "hideZeroDecimals", format.hide0Dec);
 
     return GS::NoValue;
