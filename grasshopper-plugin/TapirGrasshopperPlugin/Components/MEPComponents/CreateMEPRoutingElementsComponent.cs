@@ -53,7 +53,25 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "MEPSystemGuids",
                 "MEP system attribute of each route (input only 1 to use the same system for all). Optional.");
 
-            SetOptionality(new[] { 2, 3, 4, 5 });
+            InIntegers(
+                "CrossSectionReferenceIds",
+                "Cross section reference id of the segment preference table row applied to all segments of each route " +
+                "(used for circular cross sections; see GetMEPPreferenceTables). Resolved against the PreferenceTableGuids " +
+                "table if given, otherwise against the table of the current routing tool default " +
+                "(input only 1 to use the same id for all). Optional.");
+
+            InTexts(
+                "PreferenceTableGuids",
+                "Identifier of the segment preference table applied to all segments of each route " +
+                "(see GetMEPPreferenceTables; not applicable to the CableCarrier domain; " +
+                "input only 1 to use the same table for all). Optional.");
+
+            InIntegers(
+                "LayerIndices",
+                "Layer attribute index of each route, also set on its segments, elbows and transitions; " +
+                "a missing or locked layer gives an error for the route (input only 1 to use the same layer for all). Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8 });
         }
 
         protected override void AddOutputs()
@@ -105,13 +123,22 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             shapes = shapes ?? new List<string>();
             da.TryGetList(5, out List<GH_ObjectWrapper> mepSystemWrappers);
             mepSystemWrappers = mepSystemWrappers ?? new List<GH_ObjectWrapper>();
+            da.TryGetList(6, out List<int> referenceIds);
+            referenceIds = referenceIds ?? new List<int>();
+            da.TryGetList(7, out List<string> preferenceTableGuids);
+            preferenceTableGuids = preferenceTableGuids ?? new List<string>();
+            da.TryGetList(8, out List<int> layerIndices);
+            layerIndices = layerIndices ?? new List<int>();
 
             foreach (var pair in new (string Name, int Count)[]
                      {
                          ("CrossSectionWidths", widths.Count),
                          ("CrossSectionHeights", heights.Count),
                          ("CrossSectionShapes", shapes.Count),
-                         ("MEPSystemGuids", mepSystemWrappers.Count)
+                         ("MEPSystemGuids", mepSystemWrappers.Count),
+                         ("CrossSectionReferenceIds", referenceIds.Count),
+                         ("PreferenceTableGuids", preferenceTableGuids.Count),
+                         ("LayerIndices", layerIndices.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -121,6 +148,17 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                         $"The size of the input {pair.Name} must be 0, 1 or equal to the number of branches in the Polylines input.");
                     return;
                 }
+            }
+
+            // The add-on accepts only the hyphenated form of a guid.
+            for (var i = 0; i < preferenceTableGuids.Count; i++)
+            {
+                if (!Guid.TryParse(preferenceTableGuids[i], out var tableGuid))
+                {
+                    this.AddError("Invalid identifier in the PreferenceTableGuids input.");
+                    return;
+                }
+                preferenceTableGuids[i] = tableGuid.ToString("D");
             }
 
             var mepSystemIds = new List<AttributeGuidObject>();
@@ -174,12 +212,24 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 {
                     item["crossSectionShape"] = shapes[shapes.Count == 1 ? 0 : i];
                 }
+                if (referenceIds.Count > 0)
+                {
+                    item["crossSectionReferenceId"] = referenceIds[referenceIds.Count == 1 ? 0 : i];
+                }
+                if (preferenceTableGuids.Count > 0)
+                {
+                    item["preferenceTableId"] = preferenceTableGuids[preferenceTableGuids.Count == 1 ? 0 : i];
+                }
                 if (mepSystemIds.Count > 0)
                 {
                     item["mepSystemId"] = new JObject
                     {
                         ["guid"] = mepSystemIds[mepSystemIds.Count == 1 ? 0 : i].Guid
                     };
+                }
+                if (layerIndices.Count > 0)
+                {
+                    item["layerIndex"] = layerIndices[layerIndices.Count == 1 ? 0 : i];
                 }
                 items.Add(item);
             }

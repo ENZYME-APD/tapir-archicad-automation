@@ -46,10 +46,12 @@ print ('\nMorph details after creation:\n' + aclib.JsonDumpDictionary (details))
 
 # 3) Modify it: replace the whole body with a simple box (ModifyMorphs' "body" field discards the
 # existing geometry entirely and rebuilds from what's given here, same idea as CreateProfiles'
-# replaceSkins).
+# replaceSkins). 'edgeDefault' : 'HardHidden' hides every edge of the new body - this takes effect
+# from Archicad 29 on (where it is applied with ACAPI_Element_ChangeMorphEdgeType); on earlier
+# versions it is accepted but has no effect, so the edges stay visible there.
 boxBody = {
     'bodyType' : 'Solid',
-    'edgeDefault' : 'HardVisible',
+    'edgeDefault' : 'HardHidden',
     'vertices' : [
         { 'x' : 0, 'y' : 0, 'z' : 0 }, { 'x' : 1, 'y' : 0, 'z' : 0 }, { 'x' : 1, 'y' : 1, 'z' : 0 }, { 'x' : 0, 'y' : 1, 'z' : 0 },
         { 'x' : 0, 'y' : 0, 'z' : 1 }, { 'x' : 1, 'y' : 0, 'z' : 1 }, { 'x' : 1, 'y' : 1, 'z' : 1 }, { 'x' : 0, 'y' : 1, 'z' : 1 }

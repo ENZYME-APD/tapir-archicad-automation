@@ -318,6 +318,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetQuantitiesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetQuantitiesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -1056,6 +1064,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetMarkerParametersOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMarkerParametersOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetMarkerParametersOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetMarkerParametersOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap TeamworkSend
         {
             get {
@@ -1084,6 +1108,46 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("ReleaseElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReserveLockableObjectSet
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReserveLockableObjectSet", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReleaseLockableObjectSet
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReleaseLockableObjectSet", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLockableObjectSetStatus
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLockableObjectSetStatus", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReserveHotlinkCacheManagement
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReserveHotlinkCacheManagement", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReleaseHotlinkCacheManagement
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReleaseHotlinkCacheManagement", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1236,6 +1300,54 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("MoveDesignOptionsToAnotherSet", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameDesignOptions
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameDesignOptions", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameDesignOptionSets
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameDesignOptionSets", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameDesignOptionCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameDesignOptionCombinations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteDesignOptions
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteDesignOptions", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteDesignOptionSets
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteDesignOptionSets", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteDesignOptionCombinations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteDesignOptionCombinations", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1536,6 +1648,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SetIFCPropertiesOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetIFCPropertiesOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetRevisionIssues
         {
             get {
@@ -1612,6 +1732,22 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("Set3DCutPlanes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Get3DProjectionSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Get3DProjectionSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap Set3DProjectionSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("Set3DProjectionSettings", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -1860,6 +1996,14 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateWalls", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateCurtainWalls
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateCurtainWalls", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2489,6 +2633,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap UpdateHotlinks
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdateHotlinks", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ChangeHotlinkNodes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ChangeHotlinkNodes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap ChangeHotlinkInstances
         {
             get {
@@ -2593,6 +2753,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap SaveCurrentWindowAsImage
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SaveCurrentWindowAsImage", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetIFCExportTranslators
         {
             get {
@@ -2653,6 +2821,134 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("DeleteEmbeddedLibraryItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalPanels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalDevices
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalDevices", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElectricalProjectSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElectricalProjectSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElectricalPanels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElectricalDevices
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElectricalDevices", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalPanels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalPanels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalDevices
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalDevices", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ConnectToElectricalCircuits
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ConnectToElectricalCircuits", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyElectricalProjectSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyElectricalProjectSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateGridElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateGridElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGridElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGridElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGridElementDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGridElementDefaults", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

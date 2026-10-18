@@ -1,9 +1,11 @@
 #include "ElementGDLParameterCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "GSUnID.hpp"
 
 #include <cmath>
 
 constexpr const char* ParameterValueFieldName = "value";
+constexpr USize MaxStrValueLength = 512;
 
 static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
 {
@@ -129,6 +131,88 @@ static void AddArrayItemDescriptions (GS::ObjectState& gdlParameterDetails,
             descIndex += GS::ucslen32 (uDescStr) + 1;
             itemDescriptionAdder (GS::UniString (uDescStr));
         }
+    }
+}
+
+// The array dimensions, the value, the per-item descriptions of an array and the value
+// description of a parameter, as both GetGDLParametersOfElements and
+// GetMarkerParametersOfElements report them.
+static void AddValueAndDescriptions (GS::ObjectState& gdlParameterDetails,
+                                     const API_AddParType& actParam)
+{
+    if (actParam.typeMod == API_ParArray) {
+        gdlParameterDetails.Add ("dimension1", actParam.dim1);
+        gdlParameterDetails.Add ("dimension2", actParam.dim2);
+    }
+
+    switch (actParam.typeID) {
+        case APIParT_Integer:
+        case APIParT_PenCol:
+        case APIParT_LineTyp:
+        case APIParT_Mater:
+        case APIParT_FillPat:
+        case APIParT_BuildingMaterial:
+        case APIParT_Profile:
+            AddValueInteger (gdlParameterDetails, actParam);
+            break;
+        case APIParT_ColRGB:
+        case APIParT_Intens:
+        case APIParT_Length:
+        case APIParT_RealNum:
+        case APIParT_Angle:
+            AddValueDouble (gdlParameterDetails, actParam);
+            break;
+        case APIParT_LightSw:
+            AddValueOnOff (gdlParameterDetails, actParam);
+            break;
+        case APIParT_Boolean:
+            AddValueBool (gdlParameterDetails, actParam);
+            break;
+        case APIParT_CString:
+        case APIParT_Title:
+            AddValueString (gdlParameterDetails, actParam);
+            break;
+        default:
+        case APIParT_Dictionary:
+            // Not supported by the Archicad API yet
+            break;
+    }
+
+    AddArrayItemDescriptions (gdlParameterDetails, actParam);
+
+    GS::UniString valueDescription (actParam.valueDescription);
+    if (!valueDescription.IsEmpty ()) {
+        gdlParameterDetails.Add ("valueDescription", valueDescription);
+    }
+}
+
+static void AddParameterFlags (GS::ObjectState& gdlParameterDetails,
+                               const API_AddParType& actParam)
+{
+    const auto& flags = gdlParameterDetails.AddList<GS::UniString> ("flags");
+    if (actParam.flags & API_ParFlg_Hidden) {
+        flags ("Hidden");
+    }
+    if (actParam.flags & API_ParFlg_SHidden) {
+        flags ("HiddenFromScript");
+    }
+    if (actParam.flags & API_ParFlg_Disabled) {
+        flags ("Disabled");
+    }
+    if (actParam.flags & API_ParFlg_Child) {
+        flags ("Child");
+    }
+    if (actParam.flags & API_ParFlg_Unique) {
+        flags ("Unique");
+    }
+    if (actParam.flags & API_ParFlg_Fixed) {
+        flags ("Fixed");
+    }
+    if (actParam.flags & API_ParFlg_BoldName) {
+        flags ("BoldName");
+    }
+    if (actParam.flags & API_ParFlg_Open) {
+        flags ("Open");
     }
 }
 
@@ -385,10 +469,10 @@ static bool SetParamValueString (API_ChangeParamType& changeParam,
 {
     GS::UniString value;
     if (parameterDetails.Get (ParameterValueFieldName, value)) {
-        constexpr USize MaxStrValueLength = 512;
-
+        // MaxStrValueLength characters plus the terminating zero did not fit in the buffer,
+        // a value of exactly that length wrote one character past its end.
         static GS::uchar_t strValuePtr[MaxStrValueLength];
-        GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength)).Get ());
+        GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
 
         changeParam.uStrValue = strValuePtr;
         return true;
@@ -541,78 +625,11 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             gdlParameterDetails.Add ("displayName", GS::UniString (actLibPartParam.uDescname));
             gdlParameterDetails.Add ("index", actParam.index);
             gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
-            if (actParam.typeMod == API_ParArray) {
-                gdlParameterDetails.Add ("dimension1", actParam.dim1);
-                gdlParameterDetails.Add ("dimension2", actParam.dim2);
-            }
-
-            switch (actParam.typeID) {
-                case APIParT_Integer:
-                case APIParT_PenCol:
-                case APIParT_LineTyp:
-                case APIParT_Mater:
-                case APIParT_FillPat:
-                case APIParT_BuildingMaterial:
-                case APIParT_Profile:
-                    AddValueInteger (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_ColRGB:
-                case APIParT_Intens:
-                case APIParT_Length:
-                case APIParT_RealNum:
-                case APIParT_Angle:
-                    AddValueDouble (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_LightSw:
-                    AddValueOnOff (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_Boolean:
-                    AddValueBool (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_CString:
-                case APIParT_Title:
-                    AddValueString (gdlParameterDetails, actParam);
-                    break;
-                default:
-                case APIParT_Dictionary:
-                    // Not supported by the Archicad API yet
-                    break;
-            }
-
-            AddArrayItemDescriptions (gdlParameterDetails, actParam);
-
-            GS::UniString valueDescription (actParam.valueDescription);
-            if (!valueDescription.IsEmpty ()) {
-                gdlParameterDetails.Add ("valueDescription", valueDescription);
-            }
+            AddValueAndDescriptions (gdlParameterDetails, actParam);
 
             gdlParameterDetails.Add ("isLocked", getValues.locked);
 
-            const auto& flags = gdlParameterDetails.AddList<GS::UniString> ("flags");
-            if (actParam.flags & API_ParFlg_Hidden) {
-                flags ("Hidden");
-            }
-            if (actParam.flags & API_ParFlg_SHidden) {
-                flags ("HiddenFromScript");
-            }
-            if (actParam.flags & API_ParFlg_Disabled) {
-                flags ("Disabled");
-            }
-            if (actParam.flags & API_ParFlg_Child) {
-                flags ("Child");
-            }
-            if (actParam.flags & API_ParFlg_Unique) {
-                flags ("Unique");
-            }
-            if (actParam.flags & API_ParFlg_Fixed) {
-                flags ("Fixed");
-            }
-            if (actParam.flags & API_ParFlg_BoldName) {
-                flags ("BoldName");
-            }
-            if (actParam.flags & API_ParFlg_Open) {
-                flags ("Open");
-            }
+            AddParameterFlags (gdlParameterDetails, actParam);
 
             if (getValues.nVals > 0) {
                 if (actParam.typeID == APIParT_PenCol && getValues.nVals == 255) {
@@ -813,8 +830,14 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                     break;
                                 }
 
+                                // An unchecked failure here left getParams.params null, and the
+                                // ACAPI_Element_Change below then committed an empty AddPars memo.
                                 ACAPI_DisposeAddParHdl (&getParams.params);
-                                ACAPI_LibraryPart_GetActParameters (&getParams);
+                                err = ACAPI_LibraryPart_GetActParameters (&getParams);
+                                if (err != NoError) {
+                                    errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
+                                    break;
+                                }
                             }
                             if (err != NoError) {
                                 break;
@@ -826,12 +849,23 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             }
 
                             ACAPI_DisposeAddParHdl (&getParams.params);
-                            ACAPI_LibraryPart_GetActParameters (&getParams);
+                            err = ACAPI_LibraryPart_GetActParameters (&getParams);
+                            if (err != NoError) {
+                                errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
+                                break;
+                            }
                         }
                     }
 
                     if (err == NoError && !pendingArrayChanges.IsEmpty ()) {
                         err = ApplyArrayParameterChanges (getParams, pendingArrayChanges, elemGuid, errMessage);
+                    }
+
+                    if (err == NoError && getParams.params == nullptr) {
+                        // Committing an APIMemoMask_AddPars memo with no parameter block is what
+                        // leaves the element drawable but its parameters unreadable afterwards.
+                        errMessage = GS::UniString::Printf ("Failed to read back the parameters of element with guid %T, nothing was changed", APIGuidToString (elemGuid).ToPrintf ());
+                        err = APIERR_GENERAL;
                     }
 
                     if (err == NoError) {
@@ -976,7 +1010,7 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
         errMessage = GS::UniString::Printf ("Invalid input: index2 is given without index1 for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     } else if (isArrayParameter) {
-        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of element %T, provide a list value to resize the array or use index1/index2 to change a single item", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of element %T, provide a list value with all of its items or use index1/index2 to change a single item", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
 
@@ -1102,62 +1136,668 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
     }
 }
 
+// Every item of the array is written through ACAPI_LibraryPart_ChangeAParameter, the same documented
+// entry point the single-item (index1/index2) path and every scalar parameter already use.
+//
+// This used to overwrite actParam->value.array in the fetched parameter block directly and commit the
+// whole block with one ACAPI_Element_Change, which skipped ACAPI_LibraryPart_ChangeAParameter for array
+// parameters only. Nothing then validated the value, and the object's parameter script never got to
+// reconcile the parameters that depend on the changed one, so the committed AddPars memo could end up
+// inconsistent with the library part - the element still drew, but its parameters could no longer be
+// read back at all (issue #557).
+//
+// Writing item by item cannot resize the array, and there is no documented API entry point that resizes
+// an array parameter of a placed element, so a value list of a different size is now rejected instead of
+// silently rewriting dim1/dim2 in the memo.
 GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
-    const API_GetParamsType& getParams,
+    API_GetParamsType& getParams,
     const GS::Array<ArrayParameterChange>& changes,
     const API_Guid& elemGuid,
     GS::UniString& errMessage)
 {
-    const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
     for (const ArrayParameterChange& change : changes) {
-        API_AddParType* actParam = nullptr;
-        for (GSIndex ii = 0; ii < nParams; ++ii) {
-            if (CHCompareCStrings ((*getParams.params)[ii].name, change.name.ToCStr ()) == 0) {
-                actParam = &(*getParams.params)[ii];
-                break;
-            }
-        }
-
+        const API_AddParType* actParam = FindParameterByName (getParams, change.name.ToCStr ());
         if (actParam == nullptr || actParam->typeMod != API_ParArray) {
             errMessage = GS::UniString::Printf ("Invalid input: %s is not an array parameter of element %T", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
             return APIERR_BADPARS;
         }
 
-        GSHandle newArrayHandle = nullptr;
-        if (change.typeID == APIParT_CString || change.typeID == APIParT_Title) {
-            GSSize totalLength = 0;
-            for (const GS::UniString& value : change.stringValues) {
-                totalLength += value.GetLength () + 1;
-            }
-            newArrayHandle = BMAllocateHandle (totalLength * sizeof (GS::uchar_t), ALLOCATE_CLEAR, 0);
-            if (newArrayHandle == nullptr) {
-                return APIERR_MEMFULL;
-            }
-            GS::uchar_t* strPos = reinterpret_cast<GS::uchar_t*> (*newArrayHandle);
-            for (const GS::UniString& value : change.stringValues) {
-                GS::ucscpy (strPos, value.ToUStr ().Get ());
-                strPos += value.GetLength () + 1;
-            }
-        } else {
-            newArrayHandle = BMAllocateHandle (change.numberValues.GetSize () * sizeof (double), ALLOCATE_CLEAR, 0);
-            if (newArrayHandle == nullptr) {
-                return APIERR_MEMFULL;
-            }
-            double* arrayValues = reinterpret_cast<double*> (*newArrayHandle);
-            for (UIndex ii = 0; ii < change.numberValues.GetSize (); ++ii) {
-                arrayValues[ii] = change.numberValues[ii];
-            }
+        // A flat list is taken as the whole array in the order GetGDLParametersOfElements
+        // reports it - first index outer, second inner - so the values that command hands
+        // out can be written straight back. Without this a 3 x 3 parameter read as nine
+        // values would be rejected as "9 x 1", which is the shape of every round trip.
+        Int32 dim1 = change.dim1;
+        Int32 dim2 = change.dim2;
+        if (dim2 == 1 && actParam->dim2 > 1 &&
+            static_cast<USize> (dim1) == static_cast<USize> (actParam->dim1) * static_cast<USize> (actParam->dim2)) {
+            dim1 = actParam->dim1;
+            dim2 = actParam->dim2;
         }
 
-        if (actParam->dim1 != change.dim1 || actParam->dim2 != change.dim2) {
-            // The stored value descriptions would no longer match the new dimensions
-            BMKillHandle (&actParam->arrayDescriptions);
+        if (actParam->dim1 != dim1 || actParam->dim2 != dim2) {
+            errMessage = GS::UniString::Printf ("Invalid input: array parameter %s of element %T has %d x %d items, but %d x %d were given - resizing an array parameter is not supported, give exactly as many values as the parameter has",
+                                                change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), actParam->dim1, actParam->dim2, change.dim1, change.dim2);
+            return APIERR_BADPARS;
         }
-        BMKillHandle (&actParam->value.array);
-        actParam->value.array = newArrayHandle;
-        actParam->dim1 = change.dim1;
-        actParam->dim2 = change.dim2;
+
+        const bool isStringArray = (change.typeID == APIParT_CString || change.typeID == APIParT_Title);
+        const USize itemCount = isStringArray ? change.stringValues.GetSize () : change.numberValues.GetSize ();
+        if (itemCount != static_cast<USize> (dim1) * static_cast<USize> (dim2)) {
+            errMessage = GS::UniString::Printf ("Invalid input: the given value of array parameter %s of element %T is not a %d x %d array", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), dim1, dim2);
+            return APIERR_BADPARS;
+        }
+
+        UIndex itemIndex = 0;
+        for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+            for (Int32 i2 = 1; i2 <= dim2; ++i2, ++itemIndex) {
+                API_ChangeParamType changeParam = {};
+                CHTruncate (change.name.ToCStr (), changeParam.name, API_NameLen);
+                changeParam.ind1 = i1;
+                changeParam.ind2 = i2;
+
+                GS::uchar_t strValue[MaxStrValueLength] = {};
+                if (isStringArray) {
+                    const GS::UniString& value = change.stringValues[itemIndex];
+                    GS::ucscpy (strValue, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
+                    changeParam.uStrValue = strValue;
+                } else {
+                    changeParam.realValue = change.numberValues[itemIndex];
+                }
+
+                GSErrCode err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to change item %d,%d of array parameter %s of element with guid %T", i1, i2, change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                    return err;
+                }
+
+                // The parameter script may have changed other parameters in response, exactly as
+                // after a single-value change - re-read the block so the next item and the final
+                // ACAPI_Element_Change see what the script produced.
+                ACAPI_DisposeAddParHdl (&getParams.params);
+                err = ACAPI_LibraryPart_GetActParameters (&getParams);
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T after changing %s", APIGuidToString (elemGuid).ToPrintf (), change.name.ToCStr ());
+                    return err;
+                }
+            }
+        }
     }
 
     return NoError;
+}
+
+// --- Marker parameters of windows and doors ---
+
+// Reads a window or a door together with its Main Marker sub-element. There is no
+// ACAPI_Element_GetExt for a placed element (only ACAPI_Element_GetDefaultsExt for the tool
+// default): the marker is a separate object element the opening links to with
+// openingBase.markGuid, so it is read the way the opening itself is, with ACAPI_Element_Get
+// and ACAPI_Element_GetMemo. `memo` is left empty: none of the opening's own memo is needed.
+// `memo` and `marker.memo` are the caller's to dispose, whether or not this succeeds.
+static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, GS::UniString& errMessage)
+{
+    element = {};
+    memo = {};
+    marker = {};
+
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+        return err;
+    }
+
+    const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
+    if (elemTypeId != API_WindowID && elemTypeId != API_DoorID) {
+        errMessage = GS::UniString::Printf ("Element with guid %T is not a window or a door, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADELEMENTTYPE;
+    }
+
+    const API_Guid markerGuid = element.window.openingBase.markGuid;
+    if (markerGuid == APINULLGuid) {
+        errMessage = GS::UniString::Printf ("Element with guid %T has no marker.", APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_GENERAL;
+    }
+
+    marker.subType = APISubElement_MainMarker;
+    marker.subElem.header.guid = markerGuid;
+    err = ACAPI_Element_Get (&marker.subElem);
+    if (err == NoError) {
+        err = ACAPI_Element_GetMemo (markerGuid, &marker.memo, APIMemoMask_AddPars);
+    }
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Failed to get the marker of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+        return err;
+    }
+
+    if (marker.memo.params == nullptr) {
+        errMessage = GS::UniString::Printf ("Element with guid %T has no marker parameters.", APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_GENERAL;
+    }
+
+    return NoError;
+}
+
+static void AddMarkerLibPartDetails (GS::ObjectState& os, Int32 libInd)
+{
+    API_LibPart libPart = {};
+    libPart.index = libInd;
+    if (ACAPI_LibraryPart_Get (&libPart) == NoError) {
+        os.Add ("libPart", GS::ObjectState (
+            "name", GS::UniString (libPart.docu_UName),
+            "parentUnID", CreateGuidObjectState (GS::UnID (libPart.parentUnID).GetMainGuid ()),
+            "ownUnID", CreateGuidObjectState (GS::UnID (libPart.ownUnID).GetMainGuid ())));
+    }
+    delete libPart.location;
+}
+
+// The display names by parameter name, from the library part: GetGDLParametersOfElements
+// takes them from there too, not from the placed element's parameter list.
+static GS::HashTable<GS::String, GS::UniString> GetParameterDisplayNames (Int32 libInd)
+{
+    GS::HashTable<GS::String, GS::UniString> displayNames;
+
+    double a = 0.0;
+    double b = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    if (ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars) != NoError || addPars == nullptr) {
+        return displayNames;
+    }
+
+    const GSSize nParams = BMGetHandleSize ((GSHandle) addPars) / sizeof (API_AddParType);
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& libPartParam = (*addPars)[ii];
+        if (libPartParam.typeID == APIParT_Separator) {
+            continue;
+        }
+        const GS::String name (libPartParam.name);
+        if (!displayNames.ContainsKey (name)) {
+            displayNames.Add (name, GS::UniString (libPartParam.uDescname));
+        }
+    }
+    ACAPI_DisposeAddParHdl (&addPars);
+
+    return displayNames;
+}
+
+// Changes one parameter of the marker's parameter list in place. There is no parameter
+// interface (ACAPI_LibraryPart_OpenParameters) for a sub-element, so unlike
+// SetGDLParametersOfElements this writes the API_AddParType the marker was read with.
+static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_AddParType** params, GS::UniString& errMessage)
+{
+    const GSSize nParams = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
+
+    API_AddParType* actParam = nullptr;
+    GS::String name;
+    short index = 0;
+    if (parameter.Get ("name", name)) {
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            API_AddParType& candidate = (*params)[ii];
+            if (candidate.typeID != APIParT_Separator && CHCompareCStrings (candidate.name, name.ToCStr ()) == 0) {
+                actParam = &candidate;
+                break;
+            }
+        }
+        if (actParam == nullptr) {
+            errMessage = GS::UniString::Printf ("Invalid input: %s is not a parameter of the marker of element %T", name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+    } else if (parameter.Get ("index", index)) {
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            API_AddParType& candidate = (*params)[ii];
+            if (candidate.typeID != APIParT_Separator && candidate.index == index) {
+                actParam = &candidate;
+                break;
+            }
+        }
+        if (actParam == nullptr) {
+            errMessage = GS::UniString::Printf ("Invalid input: no marker parameter with index %d for element %T", index, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+    } else {
+        errMessage = "Invalid input: both name and index are missing, one of them must be set!";
+        return APIERR_BADPARS;
+    }
+
+    if (!parameter.Contains (ParameterValueFieldName)) {
+        errMessage = GS::UniString::Printf ("Invalid input: value is missing for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+
+    if (actParam->typeMod != API_ParSimple) {
+        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of the marker of element %T, array marker parameters are not supported", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+
+    switch (actParam->typeID) {
+        case APIParT_Integer:
+        case APIParT_PenCol:
+        case APIParT_LineTyp:
+        case APIParT_Mater:
+        case APIParT_FillPat:
+        case APIParT_BuildingMaterial:
+        case APIParT_Profile: {
+            Int32 value = 0;
+            if (!parameter.Get (ParameterValueFieldName, value)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not an integer for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            actParam->value.real = value;
+            break;
+        }
+        case APIParT_ColRGB:
+        case APIParT_Intens:
+        case APIParT_Length:
+        case APIParT_RealNum:
+        case APIParT_Angle: {
+            double value = 0.0;
+            Int32 integerValue = 0;
+            if (parameter.Get (ParameterValueFieldName, value)) {
+                actParam->value.real = value;
+            } else if (parameter.Get (ParameterValueFieldName, integerValue)) {
+                actParam->value.real = integerValue;
+            } else {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a real number for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            break;
+        }
+        case APIParT_LightSw: {
+            GS::String value;
+            if (!parameter.Get (ParameterValueFieldName, value) || (value != "On" && value != "Off")) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not 'On' or 'Off' for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            actParam->value.real = (value == "Off" ? 0 : 1);
+            break;
+        }
+        case APIParT_Boolean: {
+            bool value = false;
+            if (!parameter.Get (ParameterValueFieldName, value)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a boolean for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            actParam->value.real = (value ? 1 : 0);
+            break;
+        }
+        case APIParT_CString:
+        case APIParT_Title: {
+            GS::UniString value;
+            if (!parameter.Get (ParameterValueFieldName, value)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a string for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+            // uStr is a fixed buffer of API_UAddParStrLen characters, terminator included.
+            GS::ucscpy (actParam->value.uStr, value.ToUStr (0, GS::Min (value.GetLength (), static_cast<USize> (API_UAddParStrLen - 1))).Get ());
+            break;
+        }
+        default:
+        case APIParT_Dictionary:
+            errMessage = GS::UniString::Printf ("Invalid input: the type of marker parameter %s of element %T is not supported", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+    }
+
+    return NoError;
+}
+
+GetMarkerParametersOfElementsCommand::GetMarkerParametersOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMarkerParametersOfElementsCommand::GetName () const
+{
+    return "GetMarkerParametersOfElements";
+}
+
+GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "markerParametersOfElements": {
+            "type": "array",
+            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window or a door.",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "libPart": {
+                                "$ref": "#/LibPartDetails",
+                                "description": "The library part of the marker. Absent when it could not be read."
+                            },
+                            "parameters": {
+                                "type": "array",
+                                "description": "The GDL parameters of the marker.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the parameter."
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "The display name of the parameter."
+                                        },
+                                        "index": {
+                                            "type": "integer",
+                                            "description": "The index of the parameter."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "The type of the parameter."
+                                        },
+                                        "dimension1": {
+                                            "type": "integer",
+                                            "description": "The 1st dimension of array (in case of array value)."
+                                        },
+                                        "dimension2": {
+                                            "type": "integer",
+                                            "description": "The 2nd dimension of array (in case of array value)."
+                                        },
+                                        "value": {
+                                            "description": "The value of the parameter."
+                                        },
+                                        "valueDescription": {
+                                            "type": "string",
+                                            "description": "The value description for numeric parameter."
+                                        },
+                                        "itemDescriptions": {
+                                            "type": "array",
+                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "flags": {
+                                            "type": "array",
+                                            "description": "The flags of the parameter.",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "Hidden",
+                                                    "HiddenFromScript",
+                                                    "Disabled",
+                                                    "Child",
+                                                    "Unique",
+                                                    "Fixed",
+                                                    "BoldName",
+                                                    "Open"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "name",
+                                        "displayName",
+                                        "index",
+                                        "type",
+                                        "value",
+                                        "flags"
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "parameters"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "markerParametersOfElements"
+    ]
+})";
+}
+
+GS::ObjectState GetMarkerParametersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& markerParametersListAdder = response.AddList<GS::ObjectState> ("markerParametersOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            markerParametersListAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+        API_Element apiElement = {};
+        API_ElementMemo memo = {};
+        API_SubElement marker = {};
+        const GS::OnExit cleanup ([&]() {
+            ACAPI_DisposeElemMemoHdls (&memo);
+            ACAPI_DisposeElemMemoHdls (&marker.memo);
+        });
+
+        GS::UniString errMessage;
+        const GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, apiElement, memo, marker, errMessage);
+        if (err != NoError) {
+            markerParametersListAdder (CreateErrorResponse (err, errMessage));
+            continue;
+        }
+
+        const Int32 libInd = marker.subElem.object.libInd;
+        GS::ObjectState markerParameters;
+        AddMarkerLibPartDetails (markerParameters, libInd);
+        const GS::HashTable<GS::String, GS::UniString> displayNames = GetParameterDisplayNames (libInd);
+
+        const GSSize nParams = BMGetHandleSize ((GSHandle) marker.memo.params) / sizeof (API_AddParType);
+        const auto& parameterListAdder = markerParameters.AddList<GS::ObjectState> ("parameters");
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            const API_AddParType& actParam = (*marker.memo.params)[ii];
+            if (actParam.typeID == APIParT_Separator) {
+                continue;
+            }
+
+            GS::ObjectState parameterDetails;
+            parameterDetails.Add ("name", actParam.name);
+            const GS::UniString* displayName = displayNames.GetPtr (GS::String (actParam.name));
+            parameterDetails.Add ("displayName", displayName != nullptr ? *displayName : GS::UniString (actParam.uDescname));
+            parameterDetails.Add ("index", actParam.index);
+            parameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+            AddValueAndDescriptions (parameterDetails, actParam);
+            AddParameterFlags (parameterDetails, actParam);
+            parameterListAdder (parameterDetails);
+        }
+
+        markerParametersListAdder (markerParameters);
+    }
+
+    return response;
+}
+
+SetMarkerParametersOfElementsCommand::SetMarkerParametersOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetMarkerParametersOfElementsCommand::GetName () const
+{
+    return "SetMarkerParametersOfElements";
+}
+
+GS::Optional<GS::UniString> SetMarkerParametersOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elementsWithMarkerParameters": {
+            "type": "array",
+            "description": "The elements with the marker parameters to change.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "markerParameters": {
+                        "type": "array",
+                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the marker parameter."
+                                        },
+                                        "value": {
+                                            "description": "The new value of the marker parameter: a number for the numeric types (Integer, Length, Angle, RealNumber, PenColor, LineType, Material, FillPattern, BuildingMaterial, Profile, RGBColor, Intensity), a string for String and Title, true/false for Boolean and 'On'/'Off' for LightSwitch. Array parameters are not supported."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "index": {
+                                            "type": "integer",
+                                            "description": "The index of the marker parameter, as GetMarkerParametersOfElements reports it."
+                                        },
+                                        "value": {
+                                            "description": "The new value of the marker parameter, see the value given with a name."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "index",
+                                        "value"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "markerParameters"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elementsWithMarkerParameters"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> SetMarkerParametersOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithMarkerParameters;
+    parameters.Get ("elementsWithMarkerParameters", elementsWithMarkerParameters);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Marker Parameters of Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithMarkerParameters : elementsWithMarkerParameters) {
+            const GS::ObjectState* elementId = elementWithMarkerParameters.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            GS::Array<GS::ObjectState> markerParameters;
+            elementWithMarkerParameters.Get ("markerParameters", markerParameters);
+
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            const GS::OnExit cleanup ([&]() {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+            });
+
+            GS::UniString errMessage;
+            GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, element, memo, marker, errMessage);
+
+            for (const GS::ObjectState& parameter : markerParameters) {
+                if (err != NoError) {
+                    break;
+                }
+                err = SetOneMarkerParameter (parameter, elemGuid, marker.memo.params, errMessage);
+            }
+
+            if (err == NoError) {
+                // Only the marker changes: the cleared mask and the empty memo mask leave the
+                // opening's own fields and memo alone, and the marker goes back whole with the
+                // parameters changed above - as ApplyWindowOrDoorFavoriteToDefaults hands a
+                // favorite's marker to ACAPI_Element_ChangeDefaultsExt with a full mask.
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                ACAPI_ELEMENT_MASK_SETFULL (marker.mask);
+                err = ACAPI_Element_ChangeExt (&element, &mask, &memo, 0, 1UL, &marker, true, 0);
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to change the marker of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
+                }
+            }
+
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, errMessage));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
 }

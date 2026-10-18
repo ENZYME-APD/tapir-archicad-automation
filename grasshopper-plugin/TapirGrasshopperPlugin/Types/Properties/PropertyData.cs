@@ -81,6 +81,13 @@ namespace TapirGrasshopperPlugin.Types.Properties
 
         [JsonProperty("possibleEnumValues")]
         public List<PossibleEnumValueItem> PossibleEnumValues;
+
+        [JsonProperty("isExpressionBased")]
+        public bool IsExpressionBased;
+
+        // Only for expression-based properties.
+        [JsonProperty("expressions")]
+        public List<string> Expressions;
     }
 
     public class EnumValueGuidObject : GuidObject<EnumValueGuidObject>

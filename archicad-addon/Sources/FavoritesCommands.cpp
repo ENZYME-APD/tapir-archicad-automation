@@ -643,9 +643,7 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
 GS::Optional<GS::UniString> ExportFavoritesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {},
-        "additionalProperties": false
+        "$ref": "#/ExecutionResult"
     })";
 }
 
@@ -654,7 +652,7 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
     GS::UniString path;
     parameters.Get ("path", path);
     if (path.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "path is required");
+        return CreateFailedExecutionResult (APIERR_BADPARS, "path is required");
     }
 
     const IO::Location location = LocationFromPath (path);
@@ -667,13 +665,10 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
         err = ACAPI_Favorite_Export (location, nullptr);
     }
     if (err != NoError) {
-        return CreateErrorResponse (err, "ACAPI_Favorite_Export failed.");
+        return CreateFailedExecutionResult (err, "Failed to export favorites.");
     }
 
-    // Empty response satisfies the schema (`additionalProperties: false`).
-    // CreateSuccessfulExecutionResult() would inject `{"success": true}`
-    // which the schema validator rejects for top-level command responses.
-    return GS::ObjectState ();
+    return CreateSuccessfulExecutionResult ();
 }
 
 // ============================================================================
@@ -922,21 +917,7 @@ GS::Optional<GS::UniString> UpdateFavoritesFromElementsCommand::GetInputParamete
             "favoritesFromElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "The identifier of the element and the name of the existing Favorite to update from it.",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "favorite": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "favorite"
-                    ]
+                    "$ref": "#/FavoritesFromElementUpdate"
                 }
             }
         },
@@ -1027,13 +1008,7 @@ GS::Optional<GS::UniString> RenameFavoritesCommand::GetInputParametersSchema () 
             "renames": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "oldName": { "type": "string" },
-                        "newName": { "type": "string" }
-                    },
-                    "additionalProperties": false,
-                    "required": ["oldName", "newName"]
+                    "$ref": "#/FavoriteRename"
                 }
             }
         },
