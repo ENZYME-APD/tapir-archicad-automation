@@ -1,0 +1,213 @@
+{
+  "title": "CreateStairs honours treadDepth (#425)",
+  "minTapir": "1.6.0",
+  "steps": [
+    {
+      "id": "going 0.25, 15 risers",
+      "command": "CreateStairs",
+      "timeout": 120,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              {
+                "x": 600,
+                "y": 600
+              },
+              {
+                "x": 614,
+                "y": 600
+              }
+            ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.75,
+            "flightWidth": 1.0,
+            "stepNum": 15,
+            "treadDepth": 0.25
+          }
+        ]
+      },
+      "save": {
+        "g_a": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "going 0.25, 15 risers: bounding box",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${g_a}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "x0_a": "boundingBoxes3D[0].boundingBox3D.xMin",
+        "x1_a": "boundingBoxes3D[0].boundingBox3D.xMax"
+      }
+    },
+    {
+      "id": "going 0.25, 16 risers",
+      "command": "CreateStairs",
+      "timeout": 120,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              {
+                "x": 600,
+                "y": 610
+              },
+              {
+                "x": 614,
+                "y": 610
+              }
+            ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.75,
+            "flightWidth": 1.0,
+            "stepNum": 16,
+            "treadDepth": 0.25
+          }
+        ]
+      },
+      "save": {
+        "g_b": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "going 0.25, 16 risers: bounding box",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${g_b}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "x0_b": "boundingBoxes3D[0].boundingBox3D.xMin",
+        "x1_b": "boundingBoxes3D[0].boundingBox3D.xMax"
+      }
+    },
+    {
+      "id": "going 0.28, 16 risers",
+      "command": "CreateStairs",
+      "timeout": 120,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              {
+                "x": 600,
+                "y": 620
+              },
+              {
+                "x": 614,
+                "y": 620
+              }
+            ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.75,
+            "flightWidth": 1.0,
+            "stepNum": 16,
+            "treadDepth": 0.28
+          }
+        ]
+      },
+      "save": {
+        "g_c": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "going 0.28, 16 risers: bounding box",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${g_c}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "x0_c": "boundingBoxes3D[0].boundingBox3D.xMin",
+        "x1_c": "boundingBoxes3D[0].boundingBox3D.xMax"
+      }
+    },
+    {
+      "id": "going 0.28, 17 risers",
+      "command": "CreateStairs",
+      "timeout": 120,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              {
+                "x": 600,
+                "y": 630
+              },
+              {
+                "x": 614,
+                "y": 630
+              }
+            ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.75,
+            "flightWidth": 1.0,
+            "stepNum": 17,
+            "treadDepth": 0.28
+          }
+        ]
+      },
+      "save": {
+        "g_d": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "going 0.28, 17 risers: bounding box",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${g_d}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "x0_d": "boundingBoxes3D[0].boundingBox3D.xMin",
+        "x1_d": "boundingBoxes3D[0].boundingBox3D.xMax"
+      }
+    },
+    {
+      "id": "compare runs",
+      "command": "GetAddOnVersion",
+      "creates": false,
+      "expect": [
+        {
+          "expr": "(${x1_b} - ${x0_b}) - (${x1_a} - ${x0_a})",
+          "approx": 0.25,
+          "tol": 0.01,
+          "name": "one more riser adds 0.25 at going 0.25"
+        },
+        {
+          "expr": "(${x1_d} - ${x0_d}) - (${x1_c} - ${x0_c})",
+          "approx": 0.28,
+          "tol": 0.01,
+          "name": "one more riser adds 0.28 at going 0.28"
+        }
+      ]
+    }
+  ]
+}

@@ -66,7 +66,12 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "(see GetMEPPreferenceTables; not applicable to the CableCarrier domain; " +
                 "input only 1 to use the same table for all). Optional.");
 
-            SetOptionality(new[] { 2, 3, 4, 5, 6, 7 });
+            InIntegers(
+                "LayerIndices",
+                "Layer attribute index of each route, also set on its segments, elbows and transitions; " +
+                "a missing or locked layer gives an error for the route (input only 1 to use the same layer for all). Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8 });
         }
 
         protected override void AddOutputs()
@@ -122,6 +127,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             referenceIds = referenceIds ?? new List<int>();
             da.TryGetList(7, out List<string> preferenceTableGuids);
             preferenceTableGuids = preferenceTableGuids ?? new List<string>();
+            da.TryGetList(8, out List<int> layerIndices);
+            layerIndices = layerIndices ?? new List<int>();
 
             foreach (var pair in new (string Name, int Count)[]
                      {
@@ -130,7 +137,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                          ("CrossSectionShapes", shapes.Count),
                          ("MEPSystemGuids", mepSystemWrappers.Count),
                          ("CrossSectionReferenceIds", referenceIds.Count),
-                         ("PreferenceTableGuids", preferenceTableGuids.Count)
+                         ("PreferenceTableGuids", preferenceTableGuids.Count),
+                         ("LayerIndices", layerIndices.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -218,6 +226,10 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                     {
                         ["guid"] = mepSystemIds[mepSystemIds.Count == 1 ? 0 : i].Guid
                     };
+                }
+                if (layerIndices.Count > 0)
+                {
+                    item["layerIndex"] = layerIndices[layerIndices.Count == 1 ? 0 : i];
                 }
                 items.Add(item);
             }

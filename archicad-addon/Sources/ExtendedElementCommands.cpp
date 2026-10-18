@@ -393,10 +393,10 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
 // the caller clones element/memo/marker via PrepareWindowOrDoorDefaults.
 //
 // The parameter is a FAVORITE name (as returned by `GetFavoritesByType
-// (elementType=Door|Window)`), NOT a libpart `docu_UName`. Real
-// libpart-by-name lookup against AC29's Door/Window library is not
-// viable: the favorite name is the only stable identifier exposed to
-// API callers.
+// (elementType=Door|Window)`), NOT a libpart `docu_UName`. To place a
+// library part by its name instead, `libraryPartName` goes through
+// ApplyWindowOrDoorLibraryPartToDefaults; a favorite also carries the
+// settings saved with it.
 //
 // This is the workaround for `-2130313110 Failed to create door` /
 // `Failed to create window` on a fresh project where the user has
@@ -2550,7 +2550,7 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
 }
 
-bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo)
+bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo, double topExpansion, API_AttributeIndex surface)
 {
     void* bodyData = nullptr;
     if (ACAPI_Body_Create (nullptr, nullptr, &bodyData) != NoError || bodyData == nullptr) {
@@ -2563,15 +2563,18 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
         }
     });
 
+    // A topExpansion > 0 grows the top rectangle by that amount on all four sides, which makes
+    // a frustum (for example an excavation with sloped sides).
+    const double e = topExpansion;
     API_Coord3D coords[] = {
-        {0.0,   0.0,   0.0},
-        {sizeX, 0.0,   0.0},
-        {sizeX, sizeY, 0.0},
-        {0.0,   sizeY, 0.0},
-        {0.0,   0.0,   sizeZ},
-        {sizeX, 0.0,   sizeZ},
-        {sizeX, sizeY, sizeZ},
-        {0.0,   sizeY, sizeZ}
+        {0.0,       0.0,       0.0},
+        {sizeX,     0.0,       0.0},
+        {sizeX,     sizeY,     0.0},
+        {0.0,       sizeY,     0.0},
+        {-e,        -e,        sizeZ},
+        {sizeX + e, -e,        sizeZ},
+        {sizeX + e, sizeY + e, sizeZ},
+        {-e,        sizeY + e, sizeZ}
     };
 
     UInt32 vertices[8];
@@ -2593,15 +2596,21 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     ACAPI_Body_AddEdge (bodyData, vertices[2], vertices[6], edges[10]);
     ACAPI_Body_AddEdge (bodyData, vertices[3], vertices[7], edges[11]);
 
-#ifdef ServerMainVers_2700
-    API_OverriddenAttribute material;
-    material = buildingMaterial;
-#else
+    // Surface override of every face. This must be a surface (material) index: the AC27+ branch
+    // used to put the building material index here, so whichever surface had the same index was
+    // shown and surfaceId had no effect. Without a surface the faces show the building material's
+    // own surface.
     (void) buildingMaterial;
     API_OverriddenAttribute material = {};
-#endif
+    if (surface != APIInvalidAttributeIndex) {
+        SetOverriddenAttribute (material, surface);
+    }
+    // For a closed solid every edge has to run in opposite directions in its two faces. The
+    // bottom face is therefore traversed 0, 3, 2, 1 (reversed) to match the side faces. With the
+    // bottom in the same direction as the sides the morph was not a solid, and solid element
+    // operations (for example a subtraction) failed on it.
     UInt32 polygon = 0;
-    ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[1], edges[2], edges[3]}, 0, material, polygon);
+    ACAPI_Body_AddPolygon (bodyData, {-edges[3], -edges[2], -edges[1], -edges[0]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[4], edges[5], edges[6], edges[7]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[9], -edges[4], -edges[8]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[1], edges[10], -edges[5], -edges[9]}, 0, material, polygon);
@@ -3640,16 +3649,8 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
-                            "type": "object",
-                            "description": "Mode of linking the wall to its home story.",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": {
-                                    "type": "boolean",
-                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings",
+                            "description": "When newCreationMode is true, homeStoryDifference overrides the home story selected by floorIndex or derived from zCoordinate."
                         },
                         "inheritEndSurface": {
                             "type": "boolean",
@@ -3812,8 +3813,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "type": "number",
                             "description": "Rotation angle of the profile around the beam's center line, in radians."
                         },
-                        "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" },
+                        "arcAngle": { "type": "number", "description": "Optional arc angle in radians. A non-zero value makes a horizontally curved beam." },
+                        "verticalCurveHeight": { "type": "number", "description": "Optional rise of a vertically curved beam. A non-zero value makes a vertically curved beam; it wins over arcAngle." },
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the beam. Applied to all segments.",
@@ -3891,13 +3892,21 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     if (profileAngle.HasValue ()) {
         element.beam.profileAngle = profileAngle.Get ();
     }
+    // A curve only takes effect with the matching beamShape: with the default straight shape the
+    // beam was created straight and arcAngle / verticalCurveHeight were ignored.
     auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
     if (arcAngle.HasValue ()) {
         element.beam.curveAngle = arcAngle.Get ();
+        if (arcAngle.Get () != 0.0) {
+            element.beam.beamShape = API_HorizontallyCurvedBeam;
+        }
     }
     auto curveHeight = GetOptionalDouble (parameters, "verticalCurveHeight");
     if (curveHeight.HasValue ()) {
         element.beam.verticalCurveHeight = curveHeight.Get ();
+        if (curveHeight.Get () != 0.0) {
+            element.beam.beamShape = API_VerticallyCurvedBeam;
+        }
     }
 
     GS::UniString anchorPoint;
@@ -4152,6 +4161,10 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
                         "oSide": { "type": "boolean" },
+                        "libraryPartName": {
+                            "type": "string",
+                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Applied to the tool defaults before cloning."
+                        },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
@@ -4179,6 +4192,62 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetRawResponseSchema () const
         "additionalProperties": false,
         "required": ["elements"]
     })";
+}
+
+// Applies a library part, given by its localized name (docu_UName), to the Door/Window tool
+// defaults BEFORE PrepareWindowOrDoorDefaults, so the cloned defaults and marker are consistent
+// (same reason as for ApplyWindowOrDoorFavoriteToDefaults). Without libraryPartName the tool
+// defaults are kept. This places parts that have no favorite, such as shutters or grilles.
+// The type of a library part is its place in the subtype hierarchy: the typeID that a search or
+// ACAPI_LibraryPart_Get returns does not tell a window from an object (Archicad 30 returns
+// APILib_ObjectID for windows and doors). Given to the search together with the name, the
+// window (or door) typeID limits it to that subtype, so a part of another type (an object, a
+// lamp, a door for CreateWindows) is not found and the tool defaults are left unchanged.
+static GSErrCode ApplyWindowOrDoorLibraryPartToDefaults (const GS::ObjectState& data, API_ElemTypeID typeId)
+{
+    GS::UniString libName;
+    if (!data.Get ("libraryPartName", libName) || libName.IsEmpty ()) {
+        return NoError;
+    }
+    API_LibPart libPart = {};
+    libPart.typeID = (typeId == API_DoorID) ? APILib_DoorID : APILib_WindowID;
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    delete libPart.location;
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element element = {};
+    API_ElementMemo memo = {};
+#ifdef ServerMainVers_2600
+    element.header.type = typeId;
+#else
+    element.header.typeID = typeId;
+#endif
+    err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return err;
+    }
+    const GS::OnExit cleanup ([&]() { ACAPI_DisposeElemMemoHdls (&memo); });
+
+    double a = 0.0, b = 0.0;
+    Int32 addParNum = 0;
+    API_AddParType** addPars = nullptr;
+    err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.params != nullptr) {
+        ACAPI_DisposeAddParHdl (&memo.params);
+    }
+    memo.params = addPars;
+    element.window.openingBase.libInd = libPart.index;
+
+    API_Element mask;
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.libInd);
+    return ACAPI_Element_ChangeDefaults (&element, &memo, &mask);
 }
 
 GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -4237,6 +4306,13 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
             GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_WindowID);
+            if (err == NoError) {
+                err = ApplyWindowOrDoorLibraryPartToDefaults (data, API_WindowID);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no window library part with that name."));
+                    continue;
+                }
+            }
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
                 continue;
@@ -4322,6 +4398,10 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
                         "oSide": { "type": "boolean" },
+                        "libraryPartName": {
+                            "type": "string",
+                            "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Applied to the tool defaults before cloning."
+                        },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
@@ -4407,6 +4487,13 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
             GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_DoorID);
+            if (err == NoError) {
+                err = ApplyWindowOrDoorLibraryPartToDefaults (data, API_DoorID);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no door library part with that name."));
+                    continue;
+                }
+            }
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
                 continue;
@@ -4685,6 +4772,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                         "yAxis": { "$ref": "#/Coordinate3D" },
                         "zAxis": { "$ref": "#/Coordinate3D" },
                         "surfaceId": { "$ref": "#/AttributeId" },
+                        "topExpansion": { "type": "number", "minimum": 0.0, "description": "Only used with `size` (box) morphs. Expands the top rectangle outwards on all four sides by this amount, creating a frustum (e.g. sloped excavation shape). 0 creates a cuboid." },
                         "castShadow": { "type": "boolean" },
                         "receiveShadow": { "type": "boolean" },
                         "isAutoOnStoryVisibility": { "type": "boolean" },
@@ -4825,6 +4913,23 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+            // ApplyMorphCosmeticDetails has put surfaceId into element.morph.material; the faces
+            // of a box morph get the same surface.
+            API_AttributeIndex surfaceIndex = APIInvalidAttributeIndex;
+#ifdef ServerMainVers_2700
+            if (element.morph.material.hasValue) {
+                surfaceIndex = element.morph.material.value;
+            }
+#else
+            if (element.morph.material.overridden) {
+                surfaceIndex = element.morph.material.attributeIndex;
+            }
+#endif
+
+            // The schema keeps it non-negative.
+            double topExpansion = 0.0;
+            data.Get ("topExpansion", topExpansion);
+
             API_ElementMemo memo = {};
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
@@ -4837,7 +4942,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                     elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
                     continue;
                 }
-                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo)) {
+                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo, topExpansion, surfaceIndex)) {
                     elements.Push (CreateErrorResponse (APIERR_GENERAL, "Failed to build morph body."));
                     continue;
                 }
@@ -5375,6 +5480,17 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 continue;
             }
 
+            // Same ghost-guid failure mode as CreateAssociativeDimensions (#510), reported for
+            // interior elevation sub-views in #567: the create reports success and hands back a
+            // GUID although no dimension was created in any database. Verify before reporting
+            // the id, so the caller gets an error instead of an id that resolves to nothing.
+            API_Element createdElement = {};
+            createdElement.header.guid = element.header.guid;
+            if (ACAPI_Element_Get (&createdElement) != NoError) {
+                elements.Push (CreateErrorResponse (APIERR_GENERAL, "The section associative dimension was not created: Archicad reported success but no such element exists."));
+                continue;
+            }
+
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
@@ -5627,16 +5743,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "When true, the Composite's own priority is used at junctions instead of connectionPriority."
                         },
                         "linkToSettings": {
-                            "type": "object",
-                            "description": "Mode of linking the wall to its home story.",
-                            "properties": {
-                                "homeStoryDifference": { "type": "integer" },
-                                "newCreationMode": {
-                                    "type": "boolean",
-                                    "description": "A one-shot instruction for Create, not a persisted property: when true, floorIndex/zCoordinate is ignored and homeStoryDifference is used to place the wall instead."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LinkToSettings"
                         },
                         "inheritEndSurface": {
                             "type": "boolean",
@@ -5758,17 +5865,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Replaces all holes currently placed on the beam.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "type": { "type": "string", "enum": ["Rectangular", "Circular"] },
-                                    "showContour": { "type": "boolean" },
-                                    "centerX": { "type": "number" },
-                                    "centerZ": { "type": "number" },
-                                    "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                                    "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Only used for the Rectangular type." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["type", "centerX", "centerZ", "width"]
+                                "$ref": "#/BeamHoleModification"
                             }
                         },
                         "cutFillPen": { "$ref": "#/OverriddenPen" },
@@ -7314,65 +7411,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
                         "$ref": "#/ElementId"
                     },
                     "meshData": {
-                        "type": "object",
-                        "description": "The fields to modify on the Mesh. Only provided fields are changed; omitted fields are left as-is.",
-                        "properties": {
-                            "floorIndex": {
-                                "type": "integer"
-                            },
-                            "level": {
-                                "type": "number",
-                                "description": "The Z reference level of coordinates."
-                            },
-                            "skirtType": {
-                                "$ref": "#/MeshSkirtType"
-                            },
-                            "skirtLevel": {
-                                "type": "number",
-                                "description": "The height of the skirt."
-                            },
-                            "ridges": {
-                                "$ref": "#/MeshRidges"
-                            },
-                            "showLines": {
-                                "type": "boolean",
-                                "description": "Whether to show secondary mesh lines on plan."
-                            },
-                            "contourPen": {
-                                "type": "integer",
-                                "description": "Pen attribute index for the mesh contour line."
-                            },
-                            "levelPen": {
-                                "type": "integer",
-                                "description": "Pen attribute index for the mesh level lines."
-                            },
-                            "lineTypeIndex": {
-                                "type": "integer",
-                                "description": "Line type attribute index for the mesh contour."
-                            },
-                            "polygonCoordinates": {
-                                "type": "array",
-                                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
-                                "items": { "$ref": "#/Coordinate3D" },
-                                "minItems": 3
-                            },
-                            "polygonArcs": {
-                                "type": "array",
-                                "description": "Polygon outline arcs of the mesh.",
-                                "items": { "$ref": "#/PolyArc" }
-                            },
-                            "holes": {
-                                "$ref": "#/Holes3D"
-                            },
-                            "sublines": {
-                                "type": "array",
-                                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
-                                "items": {
-                                    "$ref": "#/MeshSubline"
-                                }
-                            }
-                        },
-                        "additionalProperties": false
+                        "$ref": "#/MeshModificationData"
                     }
                 },
                 "additionalProperties": false,
