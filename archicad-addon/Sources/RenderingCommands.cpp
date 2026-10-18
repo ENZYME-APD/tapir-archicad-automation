@@ -203,8 +203,9 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
     // The size, quality and background of the image come from the current scene,
     // as for PhotoRender Projection; the API renders the 3D model as the 3D window
     // shows it, so the view to render has to be set up in the 3D window first.
+    IO::Location imageLocation (imageFilePath);
     API_PhotoRenderPars photoRenderPars = {};
-    photoRenderPars.fileLoc = IO::Location (imageFilePath);
+    photoRenderPars.file = &imageLocation;
     photoRenderPars.fileTypeID = fileTypeID;
 
     // A print parameter would print the image too; nullptr writes only the file.
