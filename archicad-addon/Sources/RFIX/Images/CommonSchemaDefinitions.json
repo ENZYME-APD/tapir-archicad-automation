@@ -8388,6 +8388,10 @@
             "type": "string",
             "description": "Present only when labelClass is 'Text'."
           },
+          "rawText": {
+            "type": "string",
+            "description": "Present only when labelClass is 'Text' and Archicad's autotext flag could be switched for the read: the text content read with that flag turned off, so an autotext shows its key (e.g. '<PROJECTNUMBER>') instead of its value."
+          },
           "paragraphCount": {
             "type": "integer",
             "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
@@ -8492,6 +8496,10 @@
             "text": {
                 "type": "string",
                 "description": "The text content. Newlines separate the lines."
+            },
+            "rawText": {
+                "type": "string",
+                "description": "The text content as read with Archicad's autotext flag turned off, so an autotext shows its key (e.g. '<PROJECTNUMBER>') instead of its value. Present only when the flag could be switched for the read."
             },
             "position": {
                 "$ref": "#/Coordinate2D",

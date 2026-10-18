@@ -2627,6 +2627,131 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
+ChangeTextContentCommand::ChangeTextContentCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeTextContentCommand::GetName () const
+{
+    return "ChangeTextContent";
+}
+
+GS::Optional<GS::UniString> ChangeTextContentCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "contentChanges": {
+                "type": "array",
+                "description": "The content changes, applied in order (several changes of one element see the content as the previous one left it). Unlike ModifyTexts/ModifyLabels, the rest of the content is not rebuilt: the other runs, their styles and any autotext in them stay as they are, and the inserted piece takes the style of the character at 'from'.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "A Text element or a Label of the Text class."
+                        },
+                        "from": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The position in the content where the replaced range starts."
+                        },
+                        "range": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph."
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "The new content of the range; an empty string deletes the range. It must not contain line ends."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "from", "range", "content"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["contentChanges"]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeTextContentCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> contentChanges;
+    parameters.Get ("contentChanges", contentChanges);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // ACAPI_Element_ChangeContent modifies the database, so it runs in an undo scope.
+    ACAPI_CallUndoableCommand ("ChangeTextContent", [&] () -> GSErrCode {
+        for (const GS::ObjectState& change : contentChanges) {
+            const GS::ObjectState* elementId = change.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            const API_ElemTypeID typeId = GetElemTypeId (element.header);
+            if (typeId != API_TextID && !(typeId == API_LabelID && element.label.labelClass == APILblClass_Text)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Text or a Label of the Text class."));
+                continue;
+            }
+
+            Int32 from = 0;
+            Int32 range = 0;
+            GS::UniString content;
+            change.Get ("from", from);
+            change.Get ("range", range);
+            change.Get ("content", content);
+            if (from < 0 || range < 0) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "from and range must not be negative."));
+                continue;
+            }
+            if (content.FindFirst (GS::UniChar (char ('\n'))) != MaxUIndex || content.FindFirst (GS::UniChar (char ('\r'))) != MaxUIndex) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The content must not contain line ends."));
+                continue;
+            }
+
+            API_ContentPars contentPars = {};
+            contentPars.head = element.header;
+            contentPars.from = from;
+            contentPars.range = range;
+            // The new piece as a terminated UTF-16 string, kept alive for the call.
+            std::vector<GS::uchar_t> contentChars (content.GetLength () + 1, 0);
+            GS::ucscpy (contentChars.data (), content.ToUStr ().Get ());
+            contentPars.content = contentChars.data ();
+
+            err = ACAPI_Element_ChangeContent (&contentPars);
+            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to change the content (a range over more than one paragraph or a from past the end of the content is refused)."));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
 CreateMeshesCommand::CreateMeshesCommand () :
     CreateElementsCommandBase ("CreateMeshes", API_MeshID, "meshesData")
 {}
@@ -3906,23 +4031,21 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     return {};
 }
 
-GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
+static GSErrCode GetTextContentMemo (const API_Guid& elemGuid, API_ElementMemo& memo)
 {
-    API_ElementMemo memo = {};
-    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
 #ifdef ServerMainVers_2800
-    const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContent | APIMemoMask_Paragraph);
+    return ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContent | APIMemoMask_Paragraph);
 #else
     // Before Archicad 28 the plain masks may return the content as an 8-bit string with byte
     // offsets; the *Uni masks return it as UTF-16 with character offsets, as it is read below.
-    const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContentUni | APIMemoMask_ParagraphUni);
+    return ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContentUni | APIMemoMask_ParagraphUni);
 #endif
-    if (err != NoError) {
-        return err;
-    }
+}
 
+static GS::UniString GetTextContentFromMemo (const API_ElementMemo& memo)
+{
 #ifdef ServerMainVers_2800
-    const GS::UniString content = (memo.textContent != nullptr) ? *memo.textContent : GS::EmptyUniString;
+    return (memo.textContent != nullptr) ? *memo.textContent : GS::EmptyUniString;
 #else
     GS::UniString content;
     if (memo.textContent != nullptr) {
@@ -3939,8 +4062,55 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         }
         content = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (chars), contentCharCount);
     }
+    return content;
 #endif
+}
+
+// The content read with the autotext flag off, in which an autotext reads as its "<KEY>" instead
+// of its value (the flag CreateElementsCommandBase also turns off, so a key given in the content
+// of CreateTexts/CreateLabels is placed as an autotext). The flag is restored right after the
+// read. Nothing is returned when the flag cannot be read or switched.
+static GS::Optional<GS::UniString> GetRawTextContent (const API_Guid& elemGuid)
+{
+    bool savedAutoTextFlag = false;
+    if (ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag) != NoError) {
+        return {};
+    }
+    if (savedAutoTextFlag) {
+        bool keysAutoTextFlag = false;
+        if (ACAPI_AutoText_ChangeAutoTextFlag (&keysAutoTextFlag) != NoError) {
+            return {};
+        }
+    }
+    const GS::OnExit flagGuard ([&savedAutoTextFlag] () {
+        if (savedAutoTextFlag) {
+            ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
+        }
+    });
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (GetTextContentMemo (elemGuid, memo) != NoError) {
+        return {};
+    }
+    return GetTextContentFromMemo (memo);
+}
+
+GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const GSErrCode err = GetTextContentMemo (elemGuid, memo);
+    if (err != NoError) {
+        return err;
+    }
+
+    const GS::UniString content = GetTextContentFromMemo (memo);
     os.Add ("text", content);
+    const GS::Optional<GS::UniString> rawContent = GetRawTextContent (elemGuid);
+    if (rawContent.HasValue ()) {
+        os.Add ("rawText", *rawContent);
+    }
 
     const UInt32 nParagraphs = (memo.paragraphs != nullptr) ? static_cast<UInt32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType)) : 0;
     os.Add ("paragraphCount", static_cast<int> (nParagraphs));
