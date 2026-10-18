@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 11:05 UTC",
+ "generatedAt": "2026-10-18 11:06 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1532,
+  "open": 1531,
   "not applicable": 468,
   "in progress": 113,
   "done": 491,
-  "claimed": 29,
+  "claimed": 30,
   "merged": 250
  },
  "items": [
@@ -11656,10 +11656,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1062,
+     "title": "Expose ACAPI_Grouping_GetUserData"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_SetUserData",
