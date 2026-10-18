@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 11:06 UTC",
+ "generatedAt": "2026-10-18 11:07 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1531,
+  "open": 1529,
   "not applicable": 468,
   "in progress": 113,
   "done": 491,
-  "claimed": 30,
+  "claimed": 32,
   "merged": 250
  },
  "items": [
@@ -11272,10 +11272,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1063,
+     "title": "Expose ACAPI_GraphicalOverride_GetOverrideRuleByName"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_GetOverrideRuleGroup",
@@ -11439,10 +11444,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1064,
+     "title": "Expose ACAPI_GraphicalOverride_SetOverrideRuleOrder"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_ChangeSuspendGroup",
