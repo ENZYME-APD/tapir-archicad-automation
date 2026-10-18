@@ -1079,6 +1079,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Performs a drawing update on the given elements."
         );
+        err |= RegisterCommand<GetDrawingContentBoxesCommand> (
+            navigatorCommands, "1.7.2",
+            "Returns the full content box of the given Drawing elements, independent of their frames, as ACAPI_Drawing_GetFullDrawingContentBox reports it. Available from Archicad 27."
+        );
         err |= RegisterCommand<GetDatabaseIdFromNavigatorItemIdCommand> (
             navigatorCommands, "1.1.4",
             "Gets the ID of the database associated with the supplied navigator item id"
