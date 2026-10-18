@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:54 UTC",
+ "generatedAt": "2026-10-18 21:58 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1467,
+  "open": 1454,
   "not applicable": 468,
-  "in progress": 132,
+  "in progress": 138,
   "done": 491,
-  "claimed": 73,
+  "claimed": 80,
   "merged": 252
  },
  "items": [
@@ -2958,6 +2958,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1121,
+     "title": "Add GetCurrentLayerCombination command"
+    },
+    {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
     },
@@ -5513,10 +5517,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetDatabasesForTypes",
@@ -5532,10 +5541,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetDetailDatabases",
@@ -5555,10 +5569,15 @@
    "olderNames": [
     "APIDb_GetDetailDatabasesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetDocumentFrom3DDatabases",
@@ -5578,10 +5597,15 @@
    "olderNames": [
     "APIDb_GetDocumentFrom3DDatabasesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetElevationDatabases",
@@ -5601,10 +5625,15 @@
    "olderNames": [
     "APIDb_GetElevationDatabasesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetGuidFromDBUnId",
@@ -5647,10 +5676,15 @@
    "olderNames": [
     "APIDb_GetInteriorElevationDatabasesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetLayoutDatabases",
@@ -5673,7 +5707,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetLocOrigo",
@@ -5693,9 +5732,14 @@
    "olderNames": [
     "APIDb_GetLocOrigoID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1123,
+     "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
+    }
+   ],
    "issues": [
     {
      "number": 1117,
@@ -5744,10 +5788,15 @@
    "olderNames": [
     "APIDb_GetSectionDatabasesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetWorksheetDatabases",
@@ -5767,10 +5816,15 @@
    "olderNames": [
     "APIDb_GetWorksheetDatabasesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1128,
+     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_JsonQuery",
@@ -8118,10 +8172,15 @@
    "olderNames": [
     "APIAny_ElemHasVisibleSkinID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1124,
+     "title": "Expose ACAPI_Element_ElemHasVisibleSkin (is an element visible under a Partial Structure Display mode)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ElemTypeToNeigID",
@@ -8802,9 +8861,14 @@
    "olderNames": [
     "APIDb_GetExtent3DID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1125,
+     "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
+    }
+   ],
    "issues": [
     {
      "number": 1118,
@@ -9405,10 +9469,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1126,
+     "title": "Expose ACAPI_Element_GetSyTran (placement transformation of windows, doors, objects, lamps, zones)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetTextLineLength",
@@ -9428,9 +9497,14 @@
    "olderNames": [
     "APIAny_GetTextLineLengthID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1129,
+     "title": "Add MeasureTexts command: measure text length before placing it"
+    }
+   ],
    "issues": [
     {
      "number": 1119,
@@ -9456,9 +9530,14 @@
    "olderNames": [
     "APIAny_GetTextSizeFactorID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1129,
+     "title": "Add MeasureTexts command: measure text length before placing it"
+    }
+   ],
    "issues": [
     {
      "number": 1119,
@@ -15774,9 +15853,14 @@
    "olderNames": [
     "APIEnv_GetCurrLayerCombID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1121,
+     "title": "Add GetCurrentLayerCombination command"
+    }
+   ],
    "issues": [
     {
      "number": 1116,
@@ -16935,10 +17019,15 @@
    "olderNames": [
     "APIAny_DisposeRegularizedPolyID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1127,
+     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Polygon_InsertPolyNode",
@@ -17027,10 +17116,15 @@
    "olderNames": [
     "APIAny_RegularizePolygonID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1127,
+     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Polygon_RegularizePolyline",
@@ -17050,10 +17144,15 @@
    "olderNames": [
     "APIAny_RegularizePolylineID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1127,
+     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Polygon_TriangulatePoly",
@@ -18232,9 +18331,14 @@
    "olderNames": [
     "APIDb_GetOffsetID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1123,
+     "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
+    }
+   ],
    "issues": [
     {
      "number": 1117,
@@ -23338,6 +23442,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1123,
+     "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
+    },
+    {
      "number": 1112,
      "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
     },
@@ -23956,6 +24064,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1121,
+     "title": "Add GetCurrentLayerCombination command"
+    },
+    {
      "number": 1028,
      "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
     },
@@ -24038,6 +24150,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1129,
+     "title": "Add MeasureTexts command: measure text length before placing it"
+    },
     {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
