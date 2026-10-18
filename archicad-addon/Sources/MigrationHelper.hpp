@@ -226,6 +226,16 @@ inline GSErrCode ACAPI_AutoText_GetPropertyAutoTextKeyTable (API_Guid* guid, GS:
     return ACAPI_Goodies (APIAny_GetPropertyAutoTextKeyTableID, (void*) guid, (void*) keyGuidTable);
 }
 
+inline GSErrCode ACAPI_AutoText_GetAutoTextKeys (char*** keys, char*** values)
+{
+    return ACAPI_Goodies (APIAny_GetAutoTextKeysID, (void*) keys, (void*) values);
+}
+
+inline GSErrCode ACAPI_AutoText_InterpretAutoText (const GS::UniString* autotext, const API_Guid* guid, GS::UniString* value)
+{
+    return ACAPI_Goodies (APIAny_InterpretAutoTextID, (void*) autotext, (void*) guid, (void*) value);
+}
+
 // The unplaced-node flag (APIdefs_Database.h): AC26 takes it as par2 of
 // APIDb_GetHotlinkNodeID and par3 of APIDb_GetHotlinkNodesID; AC25 has neither
 // (par2 is "---" and the node list respectively), so on 25 the flag is accepted
