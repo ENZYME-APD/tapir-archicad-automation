@@ -1040,7 +1040,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GrantElementsCommand> (
             teamworkCommands, "1.7.2",
-            "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog."
+            "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog. Available from Archicad 27."
         );
         err |= RegisterCommand<ReserveLockableObjectSetCommand> (
             teamworkCommands, "1.7.1",

@@ -426,6 +426,9 @@ GS::Optional<GS::UniString> GrantElementsCommand::GetRawResponseSchema () const
 
 GS::ObjectState GrantElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+// ACAPI_Teamwork_GrantElements is new in the Archicad 27 API; the AC25 and AC26 DevKits have no
+// ACAPI_TeamworkControl_GrantElements to map it to.
+#ifdef ServerMainVers_2700
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
@@ -442,6 +445,10 @@ GS::ObjectState GrantElementsCommand::Execute (const GS::ObjectState& parameters
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to grant the elements to user %d.", (int) userId));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "GrantElements requires Archicad 27 or newer.");
+#endif
 }
 
 // Lockable object sets: the non-element things Teamwork can reserve (attributes, favorites,
