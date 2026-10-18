@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:20 UTC",
+ "generatedAt": "2026-10-18 21:21 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1502,
   "not applicable": 468,
-  "in progress": 126,
+  "in progress": 127,
   "done": 491,
-  "claimed": 44,
+  "claimed": 43,
   "merged": 252
  },
  "items": [
@@ -8600,9 +8600,14 @@
     "ACAPI_Goodies_GetElemTypeName",
     "APIAny_GetElemTypeNameID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1106,
+     "title": "Add GetElementTypeNames: localized element type names"
+    }
+   ],
    "issues": [
     {
      "number": 1100,
@@ -19728,10 +19733,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 314,
-     "title": "Bug: ChangeSelectionOfElements is really slow"
-    },
     {
      "number": 314,
      "title": "Bug: ChangeSelectionOfElements is really slow"
