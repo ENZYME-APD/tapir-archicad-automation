@@ -40,6 +40,21 @@ name: Claude PR Review
 # resolves them in plain shell, and only threads this bot opened on this pull
 # request - so no text in a comment can get anything else resolved.
 #
+# Models (#991): the first review of a pull request - the main safeguard
+# before an automatic merge - runs on the repository variable CLAUDE_MODEL
+# (default `opus`). A re-review, which mostly checks whether the findings of
+# the earlier reviews were addressed, runs on CLAUDE_LIGHT_MODEL (default
+# `sonnet`); set that variable to `opus` if re-reviews turn out too shallow.
+# A review counts as a re-review once a summary of an earlier one (its
+# resolve marker) is on the pull request.
+#
+# The subscription's usage limit (#977): a review waits for a model slot
+# first, and a review the API refused on its first turn fails in its "Stop on
+# a refused run" step with the error in the job summary - see the header of
+# claude_issue_triage.yml. claude_bot_pr_steward.yml starts the review of a
+# bot pull request again; any other pull request is reviewed again on its
+# next push or comment.
+#
 # Decided and not open: any human's comment re-runs the review, not only the
 # author's or a maintainer's, so any GitHub account can spend review runs on
 # the subscription by commenting on an open pull request. To narrow it to the
@@ -86,7 +101,8 @@ run-name: "${{ github.event_name == 'workflow_dispatch' && format('Claude review
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # 45 minutes of review after up to two hours of waiting for a model slot.
+    timeout-minutes: 165
 
     # Pull requests the issue bot opened are reviewed as well: the review runs
     # separately from the run that wrote the change, and its verdict gates the
@@ -125,6 +141,7 @@ jobs:
       contents: read
       issues: read           # the summary comment, read back to find the resolve marker
       pull-requests: write
+      actions: read          # the runs in progress, for the model slot
 
     outputs:
       bot_pr: ${{ steps.pr.outputs.bot_pr }}
@@ -168,6 +185,17 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
           echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          # Whether an earlier review finished here: every summary ends with
+          # the resolve marker. If the comments cannot be read, it counts as
+          # a first review, which only costs the stronger model.
+          earlier=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- claude-review-resolve:")))] | length' \
+            | jq -s 'add // 0') || earlier=0
+          if [ "$earlier" -gt 0 ]; then
+            echo "re_review=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "re_review=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Checkout the base commit
         if: steps.pr.outputs.skip != 'true'
@@ -221,8 +249,44 @@ jobs:
             > .review-context/trigger.json
           echo "Earlier bot threads: $(jq length .review-context/threads.json)"
 
+      # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
+      # started before this one are in progress (see the header of claude_issue_triage.yml).
+      - name: Wait for a model slot
+        if: steps.pr.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+        run: |
+          set -euo pipefail
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
+          deadline=$((SECONDS + 7200))
+          while :; do
+            # In-progress runs of the three Claude workflows started before this
+            # one, except the sweeps and the hourly retry, which run no model.
+            ahead=$(gh api "repos/$REPO/actions/runs?status=in_progress&per_page=100" \
+              | jq --arg me "$me" --argjson id "$GITHUB_RUN_ID" '[.workflow_runs[]
+                  | select((.path | test("claude_(issue_triage|pr_review|bot_pr_steward)[.]yml$"))
+                           and .event != "schedule" and .display_title != "Bot PR sweep" and .id != $id
+                           and (.created_at < $me or (.created_at == $me and .id < $id)))] | length')
+            if [ "$ahead" -lt "$MAX_RUNS" ]; then
+              echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - going ahead."
+              break
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Waited two hours for a model slot ($ahead earlier Claude runs in progress). The run did nothing."
+              exit 1
+            fi
+            # Further back in the queue, poll less often: every poll is an API call.
+            wait=$((60 + 30 * ahead)); [ "$wait" -le 600 ] || wait=600
+            echo "$ahead earlier Claude run(s) in progress, the limit is $MAX_RUNS - waiting ${wait}s."
+            sleep "$wait"
+          done
+
       - name: Review the pull request
         if: steps.pr.outputs.skip != 'true'
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -376,8 +440,51 @@ jobs:
 
           claude_args: |
             --max-turns 120
-            --model best
+            --model ${{ steps.pr.outputs.re_review == 'true' && (vars.CLAUDE_LIGHT_MODEL || 'sonnet') || (vars.CLAUDE_MODEL || 'opus') }}
             --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
+
+      # What the run came to, in the job summary: the result message of its
+      # execution file, with the error text of a failed run, so a failure can be
+      # told apart without the hidden model output. A run the API refused on its
+      # first turn - a used-up usage limit or an API error: an error, one turn, no
+      # cost - is marked as such by the next step.
+      - name: Report the Claude result
+        id: result
+        if: always() && steps.claude.outcome != 'skipped'
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          result='{}'
+          if [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ]; then
+            result=$(jq -c '[.[] | select(.type == "result")] | last // {}' "$EXECUTION_FILE" 2>/dev/null || echo '{}')
+          fi
+          turns=$(jq -r '.num_turns // 0' <<<"$result")
+          case "$turns" in ''|*[!0-9]*) turns=0 ;; esac
+          isError=$(jq -r '.is_error // false' <<<"$result")
+          {
+            echo "### Claude result"
+            jq -r '"subtype: \(.subtype // "none"), is_error: \(.is_error // false), turns: \(.num_turns // 0), cost: \(.total_cost_usd // 0) USD"' <<<"$result"
+            if [ "$isError" = true ]; then
+              echo
+              echo '```'
+              jq -r '.result // "(no error text)" | tostring' <<<"$result" | head -c 2000 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          refused=false
+          if [ "$isError" = true ] && [ "$turns" -le 1 ] && jq -e '(.total_cost_usd // 0) == 0' <<<"$result" >/dev/null; then
+            refused=true
+          fi
+          echo "Turns: $turns, refused: $refused"
+          echo "turns=$turns" >> "$GITHUB_OUTPUT"
+          echo "refused=$refused" >> "$GITHUB_OUTPUT"
+
+      - name: Stop on a refused run
+        if: always() && steps.result.outputs.refused == 'true'
+        run: |
+          echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
+          exit 1
 
       # Resolves what the review listed as settled - in shell, and only threads
       # this bot opened on this pull request, whatever the marker says.
