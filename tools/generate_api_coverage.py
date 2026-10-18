@@ -51,6 +51,8 @@ OLD_ID_PREFIXES = ('APIDb_', 'APIEnv_', 'APIAny_', 'APIIo_', 'APIDo_', 'APIEng_'
 OLD_ID_RE = re.compile (r'\b((?:' + '|'.join (OLD_ID_PREFIXES) + r')[A-Za-z0-9]+ID)\b\s*=')
 BRIEF_RE = re.compile (r'@brief\s+(.*?)(?:\n\s*\*?\s*\n|\n\s*\*?\s*@|\*/)', re.S)
 IDENT_RE = re.compile (r'\b[A-Za-z_][A-Za-z0-9_]*\b')
+# A #define with its name and its body, continuation lines included.
+DEFINE_RE = re.compile (r'^[ \t]*#[ \t]*define[ \t]+([A-Za-z_][A-Za-z0-9_]*)((?:[^\n]*\\\n)*[^\n]*)', re.M)
 EXPORT_MACRO_RE = re.compile (r'\b[A-Z][A-Z0-9_]*(?:EXPORT|DLL_EXPORT)[A-Z0-9_]*\b')
 CPP_KEYWORDS = {'if', 'for', 'while', 'switch', 'return', 'sizeof', 'operator', 'decltype', 'static_assert',
                 'alignas', 'noexcept', 'template', 'typename', 'explicit', 'friend', 'using', 'typedef'}
@@ -215,8 +217,16 @@ def read_sources (sources):
     for path in sorted (sources.rglob ('*')):
         if path.suffix in ('.cpp', '.hpp', '.h', '.c'):
             text = strip_comments (read_text (path))
+            scanned, defines = text, []
+            if path.name == 'MigrationHelper.hpp':
+                # Its #defines map a current name to its AC25/26 name
+                # (#define ACAPI_Markup_Create ACAPI_MarkUp_Create): a define is not
+                # a use by itself; used_c_names follows it from a call of its name.
+                defines = [(m.group (1), set (IDENT_RE.findall (m.group (2)))) for m in DEFINE_RE.finditer (text)]
+                scanned = DEFINE_RE.sub ('', text)
             files[path.name] = {
-                'idents': set (IDENT_RE.findall (text)),
+                'idents': set (IDENT_RE.findall (scanned)),
+                'defines': defines,
                 'includes': set (re.findall (r'#\s*include\s*[<"]([^">]+)[">]', text)),
                 'text': text,
             }
@@ -229,14 +239,19 @@ def used_c_names (files):
         for ident in data['idents']:
             if ident.startswith (('ACAPI_',) + OLD_ID_PREFIXES):
                 used[ident].add (name)
-    # A #define in MigrationHelper.hpp only names a function: count it as used
-    # only when some other file calls it.
-    helper = files.get ('MigrationHelper.hpp')
-    if helper:
-        defined = set (re.findall (r'#\s*define\s+(ACAPI_[A-Za-z0-9_]+)', helper['text']))
-        for ident in defined:
-            if used.get (ident) == {'MigrationHelper.hpp'}:
-                del used[ident]
+    # A called macro uses what it expands to: on AC25/26 a call of
+    # ACAPI_Markup_Create is a call of ACAPI_MarkUp_Create.
+    defines = [d for data in files.values () for d in data['defines']]
+    changed = True
+    while changed:
+        changed = False
+        for macro, body in defines:
+            if macro not in used:
+                continue
+            for ident in body:
+                if ident.startswith (('ACAPI_',) + OLD_ID_PREFIXES) and ident not in used:
+                    used[ident].add ('MigrationHelper.hpp')
+                    changed = True
     return used
 
 

@@ -1,7 +1,7 @@
 """Write the live GitHub data tools/generate_api_coverage.py reads (--github-data).
 
-Collects the open pull requests with the lines they add, and the open issues,
-of the repository. Standard library only; GITHUB_TOKEN authenticates.
+Collects the open pull requests with the lines they add to the Add-On sources
+(archicad-addon/Sources), and the open issues, of the repository. Standard library only; GITHUB_TOKEN authenticates.
 
     python tools/fetch_api_coverage_github_data.py ENZYME-APD/tapir-archicad-automation github.json
 """
@@ -45,6 +45,10 @@ def main ():
     for pr in pages (f'/repos/{repo}/pulls?state=open'):
         added = []
         for changed in pages (f'/repos/{repo}/pulls/{pr["number"]}/files'):
+            # Only code counts: docs, examples or this checklist's own data
+            # naming a function do not make it in progress.
+            if not changed['filename'].startswith ('archicad-addon/Sources/'):
+                continue
             for line in (changed.get ('patch') or '').splitlines ():
                 if line.startswith ('+') and not line.startswith ('+++'):
                     added.append (line[1:])
