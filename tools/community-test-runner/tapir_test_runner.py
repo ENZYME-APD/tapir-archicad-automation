@@ -396,10 +396,17 @@ def ports_of(exe: str) -> set[int]:
     """The TCP ports this Archicad's own process listens on (Windows, from netstat)."""
     pids = archicad_pids(exe)
     out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, timeout=60).stdout
+    return listening_ports(out, pids)
+
+
+def listening_ports(netstat: str, pids: set[int]) -> set[int]:
+    """The ports these processes listen on, from 'netstat -ano'. The state column is localized
+    ("LISTENING", "ABHÖREN", ...); a listening socket is the one without a foreign address."""
     ports = set()
-    for line in out.splitlines():
+    for line in netstat.splitlines():
         parts = line.split()
-        if len(parts) >= 5 and parts[3] == "LISTENING" and parts[4].isdigit() and int(parts[4]) in pids:
+        if (len(parts) >= 5 and parts[2] in ("0.0.0.0:0", "[::]:0") and parts[-1].isdigit()
+                and int(parts[-1]) in pids):
             port = parts[1].rsplit(":", 1)[-1]
             if port.isdigit():
                 ports.add(int(port))

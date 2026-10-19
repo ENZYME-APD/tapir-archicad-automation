@@ -97,6 +97,13 @@ class AddOnListTest(unittest.TestCase):
         found = {a["version"]: Path(a["blankTemplate"]).name for a in rw.find_archicads(str(root))}
         self.assertEqual(found, {"26": "01 Archicad Beispiel-Vorlage.tpl", "30": "00 Archicad INT Template.tpl"})
 
+    def test_listening_ports_in_a_localized_netstat(self):
+        out = ("  TCP    0.0.0.0:19723          0.0.0.0:0              ABHÖREN         45264\n"
+               "  TCP    0.0.0.0:19724          0.0.0.0:0              LISTENING       39092\n"
+               "  TCP    [::]:19725             [::]:0                 ABHÖREN         45264\n"
+               "  TCP    127.0.0.1:19723        127.0.0.1:63357        WARTEND         45264\n")
+        self.assertEqual(r.listening_ports(out, {45264}), {19723, 19725})
+
     def test_urls_round_trip(self):
         path = Path(r"C:\Users\A B\Tapir #1\TapirAddOn_AC30_Win.apx")
         self.assertEqual(rw.to_url(path), "lan.flat:///C:/Users/A%20B/Tapir%20%231/TapirAddOn_AC30_Win.apx")
