@@ -1276,8 +1276,12 @@ var gCommands = [{
                                 "lessThan",
                                 "greaterOrEqual",
                                 "lessOrEqual",
+                                "hasValue",
                                 "hasAnyValue",
-                                "isUndefined"
+                                "isUndefined",
+                                "isUserUndefined",
+                                "isNotAvailable",
+                                "isDefault"
                             ]
                         },
                         "value": {

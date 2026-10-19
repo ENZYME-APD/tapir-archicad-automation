@@ -5637,6 +5637,11 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+// -------------------------------------------------------------------------------------------------
+// GetElementsByCriteriaCommand
+// In-process server-side element criteria evaluator.
+// Concept and propertyCriteria specification designed by @DaviiiiiDave (Issue #1253).
+// -------------------------------------------------------------------------------------------------
 GetElementsByCriteriaCommand::GetElementsByCriteriaCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -5704,8 +5709,12 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSche
                                 "lessThan",
                                 "greaterOrEqual",
                                 "lessOrEqual",
+                                "hasValue",
                                 "hasAnyValue",
-                                "isUndefined"
+                                "isUndefined",
+                                "isUserUndefined",
+                                "isNotAvailable",
+                                "isDefault"
                             ]
                         },
                         "value": {
@@ -5891,15 +5900,27 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
 
             bool allCriteriaPassed = true;
             for (const auto& crit : criteriaList) {
-                if (!propMap.ContainsKey (crit.propertyGuid)) {
-                    allCriteriaPassed = false;
-                    break;
+                const bool inMap = propMap.ContainsKey (crit.propertyGuid);
+                const API_Property* prop = inMap ? propMap[crit.propertyGuid] : nullptr;
+
+                // An element property is NOT available if it is not in the map, or its status is API_Property_NotAvailable
+                const bool isNotAvailable = (!inMap || prop == nullptr || prop->status == API_Property_NotAvailable);
+
+                // An element property is user undefined ("empty") if it is available, but value is UserUndefined
+                const bool isUndefined = (!isNotAvailable && (prop->status != API_Property_HasValue || prop->value.variantStatus == API_VariantStatusUserUndefined));
+
+                // An element property has a value if it is available and not undefined
+                const bool hasValue = (!isNotAvailable && !isUndefined);
+
+                if (crit.operatorStr == "isNotAvailable") {
+                    if (!isNotAvailable) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    continue;
                 }
 
-                const API_Property* prop = propMap[crit.propertyGuid];
-                const bool isUndefined = prop->value.variantStatus == API_VariantStatusUserUndefined;
-
-                if (crit.operatorStr == "isUndefined") {
+                if (crit.operatorStr == "isUndefined" || crit.operatorStr == "isUserUndefined") {
                     if (!isUndefined) {
                         allCriteriaPassed = false;
                         break;
@@ -5907,15 +5928,24 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
                     continue;
                 }
 
-                if (crit.operatorStr == "hasAnyValue") {
-                    if (isUndefined) {
+                if (crit.operatorStr == "hasValue" || crit.operatorStr == "hasAnyValue") {
+                    if (!hasValue) {
                         allCriteriaPassed = false;
                         break;
                     }
                     continue;
                 }
 
-                if (isUndefined) {
+                if (crit.operatorStr == "isDefault") {
+                    if (isNotAvailable || !prop->isDefault) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    continue;
+                }
+
+                // Any comparison operator requires the property to have a value
+                if (!hasValue) {
                     allCriteriaPassed = false;
                     break;
                 }
