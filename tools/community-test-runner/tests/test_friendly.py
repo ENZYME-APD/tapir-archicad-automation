@@ -152,6 +152,16 @@ class InstallationTest(unittest.TestCase):
             r.Installation(self.ac).start()
         self.assertEqual(dialogs.call_count, 3)  # three polls in a row, not the whole startTimeout
 
+    def test_hidden_starts_on_the_runners_desktop_and_says_where_a_dialog_is(self):
+        with unittest.mock.patch.object(r, "find_port", return_value=None), \
+                unittest.mock.patch.object(r.os, "name", "nt"), \
+                unittest.mock.patch.object(rw, "start_hidden") as start_hidden, \
+                unittest.mock.patch.object(rw, "dialogs", return_value=["Lizenz"]), \
+                self.assertRaisesRegex(RuntimeError, "'show' takes you there"):
+            r.Installation(dict(self.ac, hidden=True)).start()
+        start_hidden.assert_called_once_with(["Archicad.exe", "t.tpl"])
+        r.subprocess.Popen.assert_not_called()
+
     def test_no_administrator_rights_is_said_plainly(self):
         with unittest.mock.patch.object(r.shutil, "copy2", side_effect=PermissionError(13, "Access is denied")), \
                 self.assertRaisesRegex(RuntimeError, "administrator"):

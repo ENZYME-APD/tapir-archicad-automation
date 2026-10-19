@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import urllib.parse
 from pathlib import Path
 
@@ -223,7 +224,106 @@ def dialogs(pids: set[int]) -> list[str]:
                 found.append(title.value or kind.value)
         return True
     user32.EnumWindows(visit, 0)
+    desktop = _open_desktop(DESKTOP)
+    if desktop:  # EnumWindows only sees the desktop this process is on
+        user32.EnumDesktopWindows(desktop, visit, 0)
+        user32.CloseDesktop(desktop)
     return found
+
+
+# --- the runner's own desktop ------------------------------------------------------------------
+# Windows shows one desktop at a time. An Archicad started on another one ("hidden": true in the
+# configuration) runs normally but never takes the focus or covers the tester's work.
+
+DESKTOP = "TapirRunner"
+_DESKTOP_ACCESS = 0x01FF  # every desktop right a program needs to start, enumerate and switch
+_desktop_handle = None
+
+
+def _open_desktop(name: str):
+    if os.name != "nt":
+        return None
+    ctypes.windll.user32.OpenDesktopW.restype = ctypes.c_void_p
+    return ctypes.windll.user32.OpenDesktopW(name, 0, False, _DESKTOP_ACCESS)
+
+
+class _StartupInfo(ctypes.Structure):
+    _fields_ = [("cb", ctypes.c_ulong), ("lpReserved", ctypes.c_wchar_p), ("lpDesktop", ctypes.c_wchar_p),
+                ("lpTitle", ctypes.c_wchar_p), ("dwX", ctypes.c_ulong), ("dwY", ctypes.c_ulong),
+                ("dwXSize", ctypes.c_ulong), ("dwYSize", ctypes.c_ulong), ("dwXCountChars", ctypes.c_ulong),
+                ("dwYCountChars", ctypes.c_ulong), ("dwFillAttribute", ctypes.c_ulong), ("dwFlags", ctypes.c_ulong),
+                ("wShowWindow", ctypes.c_ushort), ("cbReserved2", ctypes.c_ushort), ("lpReserved2", ctypes.c_void_p),
+                ("hStdInput", ctypes.c_void_p), ("hStdOutput", ctypes.c_void_p), ("hStdError", ctypes.c_void_p)]
+
+
+class _ProcessInformation(ctypes.Structure):
+    _fields_ = [("hProcess", ctypes.c_void_p), ("hThread", ctypes.c_void_p),
+                ("dwProcessId", ctypes.c_ulong), ("dwThreadId", ctypes.c_ulong)]
+
+
+def start_hidden(args: list[str]) -> int:
+    """Starts a program on the runner's desktop; returns its process id. The desktop stays while
+    this process or a program on it runs."""
+    global _desktop_handle
+    user32, kernel32 = ctypes.windll.user32, ctypes.windll.kernel32
+    if not _desktop_handle:
+        user32.CreateDesktopW.restype = ctypes.c_void_p
+        _desktop_handle = user32.CreateDesktopW(DESKTOP, None, None, 0, _DESKTOP_ACCESS, None)
+        if not _desktop_handle:
+            raise OSError(ctypes.get_last_error(), "could not create the runner's desktop")
+    info = _StartupInfo(cb=ctypes.sizeof(_StartupInfo), lpDesktop=f"WinSta0\\{DESKTOP}")
+    process = _ProcessInformation()
+    command = ctypes.create_unicode_buffer(" ".join(f'"{a}"' for a in args))
+    if not kernel32.CreateProcessW(None, command, None, None, False, 0, None, None,
+                                   ctypes.byref(info), ctypes.byref(process)):
+        raise OSError(ctypes.get_last_error(), f"could not start {args[0]}")
+    kernel32.CloseHandle(ctypes.c_void_p(process.hProcess))
+    kernel32.CloseHandle(ctypes.c_void_p(process.hThread))
+    return process.dwProcessId
+
+
+def show_desktop(python: str) -> bool:
+    """Switches the screen to the runner's desktop, with a window there to switch back; False when
+    nothing runs there."""
+    desktop = _open_desktop(DESKTOP)
+    if not desktop:
+        return False
+    try:
+        start_back_button(python)
+        return bool(ctypes.windll.user32.SwitchDesktop(desktop))
+    finally:
+        ctypes.windll.user32.CloseDesktop(desktop)
+
+
+def start_back_button(python: str) -> None:
+    info = _StartupInfo(cb=ctypes.sizeof(_StartupInfo), lpDesktop=f"WinSta0\\{DESKTOP}")
+    process = _ProcessInformation()
+    command = ctypes.create_unicode_buffer(f'"{python}" "{Path(__file__).resolve()}" back')
+    if ctypes.windll.kernel32.CreateProcessW(None, command, None, None, False, 0, None, None,
+                                             ctypes.byref(info), ctypes.byref(process)):
+        ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(process.hProcess))
+        ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(process.hThread))
+
+
+def back_button() -> None:
+    """Runs on the runner's desktop: a small window that switches back to the tester's desktop."""
+    import tkinter as tk
+
+    def back():
+        default = _open_desktop("Default")
+        if default:
+            ctypes.windll.user32.SwitchDesktop(default)
+            ctypes.windll.user32.CloseDesktop(default)
+        root.destroy()
+    root = tk.Tk()
+    root.title("Tapir test runner")
+    root.attributes("-topmost", True)
+    tk.Label(root, text="This is the test runner's desktop. Answer Archicad's dialog here,\n"
+                        "then go back to your own desktop.", padx=16, pady=10).pack()
+    tk.Button(root, text="Back to my desktop", command=back, padx=12, pady=6).pack(pady=(0, 12))
+    root.protocol("WM_DELETE_WINDOW", back)  # closing the window must not leave the tester here
+    root.mainloop()
+
 
 
 def stage_build(build: Path, version: str) -> Path:
@@ -278,3 +378,7 @@ def load_token() -> str:
 
 def delete_token() -> bool:
     return os.name == "nt" and bool(_advapi.CredDeleteW(CREDENTIAL_TARGET, 1, 0))
+
+
+if __name__ == "__main__" and sys.argv[1:] == ["back"]:
+    back_button()

@@ -458,8 +458,18 @@ class Installation:
             shutil.copy2(self.keep, self.addon)
             self.keep.unlink()
 
+    def hidden(self) -> bool:
+        return os.name == "nt" and bool(self.ac.get("hidden"))
+
+    def where(self) -> str:
+        """Where to answer a dialog: the runner's desktop is never shown on its own."""
+        return " It is on the runner's own desktop: 'show' takes you there." if self.hidden() else ""
+
     def start(self) -> Tapir:
-        subprocess.Popen([self.ac["archicadExe"], self.ac["blankTemplate"]])
+        if self.hidden():
+            rw.start_hidden([self.ac["archicadExe"], self.ac["blankTemplate"]])
+        else:
+            subprocess.Popen([self.ac["archicadExe"], self.ac["blankTemplate"]])
         found: dict = {}
 
         def ready() -> bool:
@@ -478,11 +488,11 @@ class Installation:
         if not wait_for(ready, self.ac.get("startTimeout", 300), 5):
             raise RuntimeError(f"Archicad {self.ac['version']} did not answer with Tapir loaded within "
                                f"{self.ac.get('startTimeout', 300)} s; it may be waiting at a dialog (project recovery, "
-                               "licence, update). Answer it, quit Archicad, then 'restore' puts your add-on back")
+                               "licence, update). Answer it, quit Archicad, then 'restore' puts your add-on back." + self.where())
         if "port" not in found:
             raise RuntimeError(f"Archicad {self.ac['version']} shows a dialog ('{found['title']}') instead of answering "
                                "with Tapir loaded. Answer it, quit Archicad, then 'restore' puts your add-on back. If it "
-                               "says some add-ons could not be loaded, see #1150 (set \"addonFile\")")
+                               "says some add-ons could not be loaded, see #1150 (set \"addonFile\")." + self.where())
         tapir = Tapir(found["port"])
         running = archicad_version(tapir)
         if running != str(self.ac["version"]):
@@ -497,7 +507,7 @@ class Installation:
         except TapirError:
             pass
         if not wait_for(lambda: not archicad_running(self.ac["archicadExe"]), self.ac.get("quitTimeout", 180), 5):
-            raise RuntimeError(f"Archicad {self.ac['version']} did not quit; close it by hand, then run 'restore'")
+            raise RuntimeError(f"Archicad {self.ac['version']} did not quit; close it by hand, then run 'restore'." + self.where())
 
 
 def restore_all(cfg: dict, log: Callable[[str], None] = print) -> int:
@@ -842,6 +852,7 @@ def main(argv: list[str] | None = None) -> int:
     p = with_config(sub.add_parser("prs", help="one line per open pull request: checks, builds, last results"))
     p.add_argument("--labelled", action="store_true", help="only those labelled for testing")
     with_config(sub.add_parser("restore", help="put your own add-on back after a test that did not finish"))
+    sub.add_parser("show", help="switch to the runner's own desktop, where a hidden Archicad shows its dialogs")
     with_config(sub.add_parser("uninstall", help="put your add-on back, then remove the token, the logon task and the runner's files"))
     for name in ("once", "poll"):
         o = with_config(sub.add_parser(name))
@@ -871,6 +882,10 @@ def main(argv: list[str] | None = None) -> int:
         print((brief if args.brief else report)(rows, archicad_version(tapir), version, "local"))
         return 0 if all(r["ok"] is not False for r in rows) else 1
 
+    if args.mode == "show":
+        if not rw.show_desktop(sys.executable):
+            sys.exit("nothing runs on the runner's desktop")
+        return 0
     if args.mode == "uninstall":
         return uninstall(Path(args.config) if args.config else default_config_path())
     cfg = load_config(args.config)
