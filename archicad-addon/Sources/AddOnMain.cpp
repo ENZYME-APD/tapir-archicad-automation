@@ -665,6 +665,18 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Gets the elements directly contained by each given group."
         );
+        err |= RegisterCommand<GetMainGroupsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Gets the top level group of each given group. A group that is not nested in another group is its own top level group."
+        );
+        err |= RegisterCommand<GetAllElementsOfGroupsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Gets all the elements of each given group, including the elements of its nested groups."
+        );
+        err |= RegisterCommand<GetAutoGroupModeCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Gets the current state of the Auto Group mode."
+        );
         err |= RegisterCommand<GetSuspendGroupsModeCommand> (
             elementGroupingCommands, "1.5.6",
             "Gets the current state of the Suspend Groups mode."

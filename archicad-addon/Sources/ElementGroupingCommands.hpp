@@ -32,6 +32,35 @@ public:
     virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetMainGroupsCommand : public CommandBase
+{
+public:
+    GetMainGroupsCommand();
+    virtual GS::String GetName() const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema() const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
+    virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAllElementsOfGroupsCommand : public CommandBase
+{
+public:
+    GetAllElementsOfGroupsCommand();
+    virtual GS::String GetName() const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema() const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
+    virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAutoGroupModeCommand : public CommandBase
+{
+public:
+    GetAutoGroupModeCommand();
+    virtual GS::String GetName() const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
+    virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetSuspendGroupsModeCommand : public CommandBase
 {
 public:
