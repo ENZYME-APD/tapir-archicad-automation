@@ -392,6 +392,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.4",
             "Gets the elements hosted by (connected to) the given owner elements, filtered to the given element type: for example the Windows or Doors of a Wall, the frames, panels, junctions and accessories of a Curtain Wall, the risers, treads and structures of a Stair, or the posts, rails and panels of a Railing."
         );
+        err |= RegisterCommand<GetElementsInDrawOrderCommand> (
+            elementCommands, "1.7.2",
+            "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering."
+        );
         err |= RegisterCommand<GetSectionElementsCommand> (
             elementCommands, "1.5.8",
             "Gets the elements drawn in the given section, elevation or interior elevation databases, each with the owner element it was generated from. This is the only command that returns raw section element identifiers - every other listing command converts them to their owner - so it is the way to obtain the sectionElementId that CreateAssociativeDimensionsOnSection requires."
