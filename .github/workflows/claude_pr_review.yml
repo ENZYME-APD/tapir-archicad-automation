@@ -401,9 +401,14 @@ jobs:
               is still open - the summary line points to it instead.
             - If the triggering comment asks you something, answer it in the
               summary, briefly.
-            - If a comment started this run and there is nothing new - no
-              settled thread, no new finding, no question to answer - post
-              nothing at all.
+            - If a comment started this run (trigger.json has a comment)
+              and there is nothing new - no settled thread, no new finding,
+              no question to answer - post nothing at all.
+            - Any other run - a push, or a dispatched run with no comment -
+              ALWAYS posts the summary with both markers below, even when
+              nothing changed since the last review: the verdict is recorded
+              per commit, and without one the pull request is never merged
+              and the review is started again.
 
             End the summary comment with this line, listing the settled
             thread ids (or none):
