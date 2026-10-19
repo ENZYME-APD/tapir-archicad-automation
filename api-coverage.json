@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:36 UTC",
+ "generatedAt": "2026-10-19 11:37 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1448,
+  "open": 1447,
   "not applicable": 468,
   "in progress": 161,
   "done": 491,
-  "claimed": 63,
+  "claimed": 64,
   "merged": 252
  },
  "items": [
@@ -51776,10 +51776,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1155,
+     "title": "Expose ACAPI::Modify"
+    }
+   ]
   },
   {
    "id": "ACAPI::Object::GetToken",
