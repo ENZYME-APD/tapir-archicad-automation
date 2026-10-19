@@ -673,6 +673,10 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards."
         );
+        err |= RegisterCommand<CreateElementSetsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing)."
+        );
         AddCommandGroup (elementGroupingCommands);
     }
 
