@@ -1801,3 +1801,218 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
 
     return response;
 }
+
+GetGDLParametersOfLibraryPartsCommand::GetGDLParametersOfLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGDLParametersOfLibraryPartsCommand::GetName () const
+{
+    return "GetGDLParametersOfLibraryParts";
+}
+
+GS::Optional<GS::UniString> GetGDLParametersOfLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "libraryParts": {
+            "type": "array",
+            "description": "The library parts to read the default GDL parameters of.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "libraryPartName": {
+                        "type": "string",
+                        "description": "The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "libraryPartName"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "libraryParts"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> GetGDLParametersOfLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "gdlParametersOfLibraryParts": {
+            "type": "array",
+            "description": "The default GDL parameters of each given library part, in the order of the input, or an error for a name that no loaded library part has.",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "libPart": {
+                                "$ref": "#/LibPartDetails",
+                                "description": "The library part found by the name. Absent when it could not be read."
+                            },
+                            "parameters": {
+                                "type": "array",
+                                "description": "The GDL parameters of the library part with their default values as stored in the library part (its Parameter Script is not run). The description of each parameter is the displayName of the same entry.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the parameter."
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "The display name (description) of the parameter."
+                                        },
+                                        "index": {
+                                            "type": "integer",
+                                            "description": "The index of the parameter."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "The type of the parameter."
+                                        },
+                                        "dimension1": {
+                                            "type": "integer",
+                                            "description": "The 1st dimension of array (in case of array value)."
+                                        },
+                                        "dimension2": {
+                                            "type": "integer",
+                                            "description": "The 2nd dimension of array (in case of array value)."
+                                        },
+                                        "value": {
+                                            "description": "The default value of the parameter. An array value is a flat list of dimension1 x dimension2 items, as GetGDLParametersOfElements returns it. Absent for a Dictionary parameter."
+                                        },
+                                        "valueDescription": {
+                                            "type": "string",
+                                            "description": "The value description for numeric parameter."
+                                        },
+                                        "itemDescriptions": {
+                                            "type": "array",
+                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "flags": {
+                                            "type": "array",
+                                            "description": "The flags of the parameter.",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "Hidden",
+                                                    "HiddenFromScript",
+                                                    "Disabled",
+                                                    "Child",
+                                                    "Unique",
+                                                    "Fixed",
+                                                    "BoldName",
+                                                    "Open"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "name",
+                                        "displayName",
+                                        "index",
+                                        "type",
+                                        "flags"
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "parameters"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "gdlParametersOfLibraryParts"
+    ]
+})";
+}
+
+// Reads the parameter list stored in the library part with ACAPI_LibraryPart_GetParams, the same
+// call that fills a window's or door's parameters when CreateWindows/CreateDoors place it by
+// libraryPartName. Nothing is placed and the tool defaults are not changed.
+GS::ObjectState GetGDLParametersOfLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> libraryParts;
+    parameters.Get ("libraryParts", libraryParts);
+
+    GS::ObjectState response;
+    const auto& libPartParametersListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfLibraryParts");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::UniString libName;
+        if (!libraryPart.Get ("libraryPartName", libName) || libName.IsEmpty ()) {
+            libPartParametersListAdder (CreateErrorResponse (APIERR_BADPARS, "libraryPartName is missing"));
+            continue;
+        }
+
+        API_LibPart libPart = {};
+        GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+        GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+        delete libPart.location;
+        if (err != NoError) {
+            libPartParametersListAdder (CreateErrorResponse (err, GS::UniString::Printf ("Not found library part with name '%T'", libName.ToPrintf ())));
+            continue;
+        }
+
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** addPars = nullptr;
+        err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+        if (err != NoError || addPars == nullptr) {
+            libPartParametersListAdder (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, GS::UniString::Printf ("Failed to get the parameters of library part '%T'", libName.ToPrintf ())));
+            continue;
+        }
+        const GS::OnExit cleanup ([&]() { ACAPI_DisposeAddParHdl (&addPars); });
+
+        GS::ObjectState libPartParameters;
+        AddMarkerLibPartDetails (libPartParameters, libPart.index);
+
+        const GSSize nParams = BMGetHandleSize ((GSHandle) addPars) / sizeof (API_AddParType);
+        const auto& parameterListAdder = libPartParameters.AddList<GS::ObjectState> ("parameters");
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            const API_AddParType& libPartParam = (*addPars)[ii];
+            if (libPartParam.typeID == APIParT_Separator) {
+                continue;
+            }
+
+            GS::ObjectState parameterDetails;
+            parameterDetails.Add ("name", libPartParam.name);
+            parameterDetails.Add ("displayName", GS::UniString (libPartParam.uDescname));
+            parameterDetails.Add ("index", libPartParam.index);
+            parameterDetails.Add ("type", ConvertAddParIDToString (libPartParam.typeID));
+            AddValueAndDescriptions (parameterDetails, libPartParam);
+            AddParameterFlags (parameterDetails, libPartParam);
+            parameterListAdder (parameterDetails);
+        }
+
+        libPartParametersListAdder (libPartParameters);
+    }
+
+    return response;
+}
