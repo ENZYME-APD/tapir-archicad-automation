@@ -1025,6 +1025,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
+        err |= RegisterCommand<GetLibrariesOfLibPartsCommand> (
+            libraryCommands, "1.7.3",
+            "Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29."
+        );
         AddCommandGroup (libraryCommands);
     }
 
