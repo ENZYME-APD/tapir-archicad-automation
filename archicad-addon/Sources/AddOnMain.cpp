@@ -1362,6 +1362,18 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.7.1",
             "Deletes the given design option combinations. Available from Archicad 29."
         );
+        err |= RegisterCommand<SetDefaultDesignOptionCommand> (
+            designOptionsCommands, "1.7.3",
+            "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29."
+        );
+        err |= RegisterCommand<ReorderDesignOptionSetsCommand> (
+            designOptionsCommands, "1.7.3",
+            "Moves the given design option sets before another set or to the end of the list. Available from Archicad 29."
+        );
+        err |= RegisterCommand<ReorderDesignOptionsInSetCommand> (
+            designOptionsCommands, "1.7.3",
+            "Moves the given design options before another design option of the same set or to the end of their set. Available from Archicad 29."
+        );
         AddCommandGroup (designOptionsCommands);
     }
 
