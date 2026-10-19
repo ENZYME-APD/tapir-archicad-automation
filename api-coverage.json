@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:50 UTC",
+ "generatedAt": "2026-10-19 11:53 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1431,
+  "open": 1430,
   "not applicable": 468,
   "in progress": 165,
   "done": 743,
-  "claimed": 76
+  "claimed": 77
  },
  "items": [
   {
@@ -26304,10 +26304,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1177,
+     "title": "Expose ACAPI::CreatePropertyOperationManager"
+    }
+   ]
   },
   {
    "id": "ACAPI::CreateZoneBoundaryQuery",
