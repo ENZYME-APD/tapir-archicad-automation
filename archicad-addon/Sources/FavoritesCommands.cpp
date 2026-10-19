@@ -1481,3 +1481,109 @@ GS::ObjectState RenameFavoriteFolderCommand::Execute (const GS::ObjectState& par
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
 }
+
+DeleteFavoriteFolderCommand::DeleteFavoriteFolderCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteFavoriteFolderCommand::GetName () const
+{
+    return "DeleteFavoriteFolder";
+}
+
+GS::Optional<GS::UniString> DeleteFavoriteFolderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "array",
+                "description": "The path of the folder to delete, in the format GetFavoriteFolders returns: the folder names from the root down. The root folder cannot be deleted.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            },
+            "recursive": {
+                "type": "boolean",
+                "description": "Archicad deletes a folder together with everything in it: its Favorites and its subfolders with their Favorites. A folder that is not empty is deleted only if this is true. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "path"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteFavoriteFolderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "deletedFolder": {
+                "$ref": "#/FavoriteFolderDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "deletedFolder"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> path;
+    bool recursive = false;
+    parameters.Get ("path", path);
+    parameters.Get ("recursive", recursive);
+    if (path.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "The root folder of the Favorites cannot be deleted.");
+    }
+
+    GS::ObjectState response;
+    GS::UniString errorMessage = "Failed to delete the Favorite folder.";
+    const GSErrCode err = ACAPI_CallUndoableCommand ("DeleteFavoriteFolder", [&]() -> GSErrCode {
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+        std::optional<ACAPI::Favorite::FavoriteFolder> folder;
+        const GSErrCode findErr = FindFavoriteFolderByPath (manager, path, folder, errorMessage);
+        if (findErr != NoError) {
+            return findErr;
+        }
+
+        // Archicad deletes the content of the folder with it, so a folder that
+        // is not empty is only deleted when the caller asked for it explicitly.
+        if (!recursive && (!folder->GetFavorites ().empty () || !folder->GetSubFolders ().empty ())) {
+            errorMessage = "The Favorite folder is not empty. Deleting it would also delete its Favorites and subfolders; set recursive to true to delete them.";
+            return APIERR_BADPARS;
+        }
+
+        // Read the folder before deleting it, so the response shows what was deleted.
+        GS::ObjectState deletedFolderOs;
+        const GSErrCode readErr = AddFavoriteFolderToObjectState (*folder, path.GetLast (), path, deletedFolderOs, errorMessage);
+        if (readErr != NoError) {
+            return readErr;
+        }
+
+        const auto deleteResult = manager.DeleteFavoriteFolder (*folder);
+        if (deleteResult.IsErr ()) {
+            errorMessage = "Failed to delete the Favorite folder.";
+            return deleteResult.UnwrapErr ().kind;
+        }
+
+        response.Add ("deletedFolder", deletedFolderOs);
+        return NoError;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
