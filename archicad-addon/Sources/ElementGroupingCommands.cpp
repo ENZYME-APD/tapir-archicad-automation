@@ -401,3 +401,132 @@ GS::ObjectState SetSuspendGroupsModeCommand::Execute(const GS::ObjectState& para
         ? CreateSuccessfulExecutionResult()
         : CreateFailedExecutionResult(err, "Failed to set the Suspend Groups mode."));
 }
+
+GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementSetsOfElementsCommand::GetName() const
+{
+    return "GetElementSetsOfElements";
+}
+
+GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSetsOfElements": {
+                "type": "array",
+                "description": "The element sets that contain each given element, or an error, in the order of the input. Only element sets created by the Tapir Add-On are examined.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementSets": {
+                                    "type": "array",
+                                    "description": "The element sets that contain the element. Empty if the element is not part of any element set.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "elementSetId": {
+                                                "type": "object",
+                                                "description": "The identifier of an element set.",
+                                                "properties": {
+                                                    "guid": {
+                                                        "$ref": "#/Guid"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "guid"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "elementSetId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementSets"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSetsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementSetsOfElementsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get("elements", elements)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetsOfElements = response.AddList<GS::ObjectState>("elementSetsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get("elementId");
+        if (elementId == nullptr) {
+            elementSetsOfElements(CreateErrorResponse(APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        // The null GUID would make the API return every element set of the
+        // add-on, which is not what an element lookup should do.
+        const API_Guid elemGuid = GetGuidFromObjectState(*elementId);
+        if (elemGuid == APINULLGuid) {
+            elementSetsOfElements(CreateErrorResponse(APIERR_BADPARS, "Invalid element identifier."));
+            continue;
+        }
+
+        GS::Array<API_Guid> setGuids;
+        const GSErrCode err = ACAPI_ElementSet_Identify(elemGuid, &setGuids);
+        if (err != NoError) {
+            elementSetsOfElements(CreateErrorResponse(err, "Failed to get the element sets of the element."));
+            continue;
+        }
+
+        GS::ObjectState elementSetsItem;
+        const auto& elementSets = elementSetsItem.AddList<GS::ObjectState>("elementSets");
+        for (const API_Guid& setGuid : setGuids) {
+            elementSets(CreateIdObjectState("elementSetId", setGuid));
+        }
+        elementSetsOfElements(elementSetsItem);
+    }
+
+    return response;
+}

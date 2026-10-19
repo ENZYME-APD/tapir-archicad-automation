@@ -673,6 +673,10 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards."
         );
+        err |= RegisterCommand<GetElementSetsOfElementsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found."
+        );
         AddCommandGroup (elementGroupingCommands);
     }
 
