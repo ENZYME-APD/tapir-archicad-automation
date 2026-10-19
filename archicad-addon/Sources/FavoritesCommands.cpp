@@ -1351,7 +1351,7 @@ GS::ObjectState SearchFavoritesCommand::Execute (const GS::ObjectState& paramete
 {
     GS::UniString query;
     const bool hasQuery = parameters.Get ("query", query) && !query.IsEmpty ();
-    const GS::UniString queryLower = hasQuery ? query.GetLowerCased () : GS::EmptyUniString;
+    const GS::UniString queryLower = hasQuery ? GetLowerCasedString (query) : GS::EmptyUniString;
 
     GS::Array<API_ElemTypeID> typesToQuery;
     GS::UniString elementTypeStr;
@@ -1435,11 +1435,11 @@ GS::ObjectState SearchFavoritesCommand::Execute (const GS::ObjectState& paramete
             bool matches = !hasQuery;
 
             if (hasQuery) {
-                if (favoriteName.GetLowerCased ().Contains (queryLower)) {
+                if (GetLowerCasedString (favoriteName).Contains (queryLower)) {
                     matches = true;
                 } else if (i < folders.GetSize ()) {
                     for (const GS::UniString& folderSegment : folders[i]) {
-                        if (folderSegment.GetLowerCased ().Contains (queryLower)) {
+                        if (GetLowerCasedString (folderSegment).Contains (queryLower)) {
                             matches = true;
                             break;
                         }
@@ -1469,4 +1469,3 @@ GS::ObjectState SearchFavoritesCommand::Execute (const GS::ObjectState& paramete
 
     return response;
 }
-

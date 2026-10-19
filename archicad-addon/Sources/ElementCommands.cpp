@@ -5811,7 +5811,7 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
             GS::Array<API_PropertyDefinition> defs;
             ACAPI_Property_GetPropertyDefinitions (grp.guid, defs);
             for (const API_PropertyDefinition& def : defs) {
-                propNameToGuid.Add (def.name.GetLowerCased (), def.guid);
+                propNameToGuid.Add (GetLowerCasedString (def.name), def.guid);
             }
         }
 
@@ -5822,8 +5822,8 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
                 rpc.propertyGuid = GetGuidFromObjectState (*propIdOs);
             } else {
                 GS::UniString propName;
-                if (c.Get ("propertyName", propName) && propNameToGuid.ContainsKey (propName.GetLowerCased ())) {
-                    rpc.propertyGuid = propNameToGuid[propName.GetLowerCased ()];
+                if (c.Get ("propertyName", propName) && propNameToGuid.ContainsKey (GetLowerCasedString (propName))) {
+                    rpc.propertyGuid = propNameToGuid[GetLowerCasedString (propName)];
                 }
             }
 
@@ -5954,17 +5954,17 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
                 GetPropertyValueString (*prop, actualStr);
 
                 if (crit.operatorStr == "equals") {
-                    if (actualStr.GetLowerCased () != crit.expectedValue.GetLowerCased ()) {
+                    if (GetLowerCasedString (actualStr) != GetLowerCasedString (crit.expectedValue)) {
                         allCriteriaPassed = false;
                         break;
                     }
                 } else if (crit.operatorStr == "notEquals") {
-                    if (actualStr.GetLowerCased () == crit.expectedValue.GetLowerCased ()) {
+                    if (GetLowerCasedString (actualStr) == GetLowerCasedString (crit.expectedValue)) {
                         allCriteriaPassed = false;
                         break;
                     }
                 } else if (crit.operatorStr == "contains") {
-                    if (!actualStr.GetLowerCased ().Contains (crit.expectedValue.GetLowerCased ())) {
+                    if (!GetLowerCasedString (actualStr).Contains (GetLowerCasedString (crit.expectedValue))) {
                         allCriteriaPassed = false;
                         break;
                     }

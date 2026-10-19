@@ -2030,11 +2030,11 @@ GS::ObjectState SearchPropertiesCommand::Execute (const GS::ObjectState& paramet
 {
     GS::UniString query;
     bool hasQuery = parameters.Get ("query", query) && !query.IsEmpty ();
-    GS::UniString queryLower = hasQuery ? query.GetLowerCased () : GS::EmptyUniString;
+    GS::UniString queryLower = hasQuery ? GetLowerCasedString (query) : GS::EmptyUniString;
 
     GS::UniString propertyGroupFilter;
     bool hasGroupFilter = parameters.Get ("propertyGroup", propertyGroupFilter) && !propertyGroupFilter.IsEmpty ();
-    GS::UniString groupFilterLower = hasGroupFilter ? propertyGroupFilter.GetLowerCased () : GS::EmptyUniString;
+    GS::UniString groupFilterLower = hasGroupFilter ? GetLowerCasedString (propertyGroupFilter) : GS::EmptyUniString;
 
     GS::UniString propertyTypeFilter;
     bool hasPropertyTypeFilter = parameters.Get ("propertyType", propertyTypeFilter) && !propertyTypeFilter.IsEmpty ();
@@ -2067,7 +2067,7 @@ GS::ObjectState SearchPropertiesCommand::Execute (const GS::ObjectState& paramet
             break;
         }
 
-        const GS::UniString groupNameLower = group.name.GetLowerCased ();
+        const GS::UniString groupNameLower = GetLowerCasedString (group.name);
         if (hasGroupFilter && !groupNameLower.Contains (groupFilterLower)) {
             continue;
         }
@@ -2098,7 +2098,7 @@ GS::ObjectState SearchPropertiesCommand::Execute (const GS::ObjectState& paramet
             }
 
             if (hasQuery) {
-                const GS::UniString propNameLower = definition.name.GetLowerCased ();
+                const GS::UniString propNameLower = GetLowerCasedString (definition.name);
                 if (!groupMatchesQuery && !propNameLower.Contains (queryLower)) {
                     continue;
                 }
