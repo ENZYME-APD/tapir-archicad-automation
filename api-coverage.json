@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 18:15 UTC",
+ "generatedAt": "2026-10-19 18:25 UTC",
  "versions": [
   25,
   26,
@@ -4683,6 +4683,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1282,
+     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
+    },
+    {
      "number": 1280,
      "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
     },
@@ -4876,6 +4880,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1283,
+     "title": "Feature request: SetPropertyValuesByCriteria (server-side batch property assignment)"
+    },
     {
      "number": 1254,
      "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
@@ -32061,6 +32069,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1282,
+     "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
+    },
     {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
