@@ -12603,6 +12603,10 @@
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the physical system can be modified. Missing when Archicad could not tell."
+            },
             "rootElementId": {
                 "$ref": "#/ElementId",
                 "description": "The element the system starts from. Missing when not set, or when Archicad cleared it because the element is not part of an MEP network."
@@ -12637,6 +12641,10 @@
             },
             "name": {
                 "type": "string"
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the system group can be modified. Missing when Archicad could not tell."
             },
             "physicalSystems": {
                 "type": "array",
