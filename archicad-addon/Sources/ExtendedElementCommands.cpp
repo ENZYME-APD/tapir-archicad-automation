@@ -6725,7 +6725,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "translation": { "$ref": "#/Coordinate3D" },
-                        "rotationDegreesZ": { "type": "number" },
+                        "rotationDegreesZ": { "type": "number", "description": "Turns the Morph about the vertical axis through its origin, counterclockwise seen from above, in degrees. Added to the current rotation." },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "body": {
                             "$ref": "#/MorphBody",
@@ -6836,9 +6836,11 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 const double cosAngle = std::cos (radians);
                 const double sinAngle = std::sin (radians);
                 const API_Tranmat originalTransform = element.morph.tranmat;
-                for (Int32 column = 0; column < 4; ++column) {
-                    element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] + sinAngle * originalTransform.tmx[8 + column];
-                    element.morph.tranmat.tmx[8 + column] = -sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[8 + column];
+                // Turn about the vertical axis through the morph's origin: recombine rows 0 (x') and 1 (y')
+                // of the 3x3 part only, so the translation (tmx[3], tmx[7], tmx[11]) is kept.
+                for (Int32 column = 0; column < 3; ++column) {
+                    element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] - sinAngle * originalTransform.tmx[4 + column];
+                    element.morph.tranmat.tmx[4 + column] = sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[4 + column];
                 }
                 ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
                 changed = true;
