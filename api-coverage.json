@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 12:08 UTC",
+ "generatedAt": "2026-10-19 12:25 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1426,
   "not applicable": 468,
-  "in progress": 168,
+  "in progress": 170,
   "done": 743,
-  "claimed": 78
+  "claimed": 76
  },
  "items": [
   {
@@ -4306,6 +4306,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1188,
+     "title": "Add CreateElementSets command (ACAPI_ElementSet_Create)"
+    },
+    {
      "number": 1186,
      "title": "Add ActivateDesignOptionsInCombinations command"
     },
@@ -7364,9 +7368,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1188,
+     "title": "Add CreateElementSets command (ACAPI_ElementSet_Create)"
+    }
+   ],
    "issues": [
     {
      "number": 1182,
@@ -7416,9 +7425,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1190,
+     "title": "Add GetElementSetData command exposing ACAPI_ElementSet_GetData"
+    },
+    {
+     "number": 1189,
+     "title": "Add GetElementSetData command (ACAPI_ElementSet_GetData)"
+    }
+   ],
    "issues": [
     {
      "number": 1185,
