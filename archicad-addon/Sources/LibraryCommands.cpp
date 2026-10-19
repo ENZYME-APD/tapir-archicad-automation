@@ -6,6 +6,30 @@
 #include "FileSystem.hpp"
 #include "GSUnID.hpp"
 
+#ifdef ServerMainVers_2800
+#include "ACAPI/Result.hpp"
+#include "ACAPI/Library/LibraryManager.hpp"
+#include "ACAPI/Library/GSMObject.hpp"
+
+#include <functional>
+
+using ACAPI::Library::GSMObject;
+
+struct LibraryPartScriptSection
+{
+    const char* key;
+    std::function<ACAPI::Result<void> (GSMObject::Modifier&, const GS::UniString&)> set;
+};
+
+static const LibraryPartScriptSection libraryPartScriptSections[] = {
+    { "master",     [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetMasterScript (script); } },
+    { "parameter",  [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetParameterScript (script); } },
+    { "2d",         [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set2DScript (script); } },
+    { "3d",         [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set3DScript (script); } },
+    { "properties", [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetPropertiesScript (script); } }
+};
+#endif
+
 AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -683,4 +707,186 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     response.Add ("skippedCount", skippedCount);
 
     return response;
+}
+
+SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLibraryPartScriptsCommand::GetName () const
+{
+    return "SetLibraryPartScripts";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to modify and the scripts to set in each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                        },
+                        "scripts": {
+                            "type": "object",
+                            "description": "The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it.",
+                            "properties": {
+                                "master": {
+                                    "type": "string",
+                                    "description": "The master script."
+                                },
+                                "parameter": {
+                                    "type": "string",
+                                    "description": "The parameter script."
+                                },
+                                "2d": {
+                                    "type": "string",
+                                    "description": "The 2D script."
+                                },
+                                "3d": {
+                                    "type": "string",
+                                    "description": "The 3D script."
+                                },
+                                "properties": {
+                                    "type": "string",
+                                    "description": "The properties script."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "minProperties": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "scripts"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Library Part Scripts", [&]() -> GSErrCode {
+        for (const GS::ObjectState& libraryPart : libraryParts) {
+            GS::UniString name;
+            const GS::ObjectState* scripts = libraryPart.Get ("scripts");
+            if (!libraryPart.Get ("name", name) || name.IsEmpty () || scripts == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' or 'scripts' parameter."));
+                continue;
+            }
+
+            bool hasScript = false;
+            for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
+                GS::UniString script;
+                hasScript = hasScript || scripts->Get (section.key, script);
+            }
+            if (!hasScript) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No script is given in 'scripts'."));
+                continue;
+            }
+
+            auto libPart = libraryManager->GetLibPartByName (name);
+            if (libPart.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+                continue;
+            }
+
+            auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+            if (gsmObject.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
+                continue;
+            }
+
+            if (!gsmObject->IsEditable ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library."));
+                continue;
+            }
+
+            GS::UniString failedSection;
+            GS::UniString failedText;
+            ACAPI::Result<void> modifyResult = gsmObject->Modify ([&] (GSMObject::Modifier& modifier) -> GSErrCode {
+                for (const LibraryPartScriptSection& section : libraryPartScriptSections) {
+                    GS::UniString script;
+                    if (!scripts->Get (section.key, script)) {
+                        continue;
+                    }
+                    ACAPI::Result<void> setResult = section.set (modifier, script);
+                    if (setResult.IsErr ()) {
+                        failedSection = section.key;
+                        failedText = setResult.UnwrapErr ().text.c_str ();
+                        return setResult.UnwrapErr ().kind;
+                    }
+                }
+                return NoError;
+            });
+
+            if (modifyResult.IsErr ()) {
+                GS::UniString errorMessage = "Failed to modify the library part '" + name + "'";
+                GS::UniString errorText = modifyResult.UnwrapErr ().text.c_str ();
+                if (!failedSection.IsEmpty ()) {
+                    errorMessage += ": setting the '" + failedSection + "' script failed";
+                    errorText = failedText;
+                }
+                if (!errorText.IsEmpty ()) {
+                    errorMessage += " (" + errorText + ")";
+                }
+                errorMessage += ".";
+                executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
 }
