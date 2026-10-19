@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 13:31 UTC",
+ "generatedAt": "2026-10-19 13:34 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 1419,
+  "open": 1363,
   "not applicable": 468,
-  "claimed": 83,
+  "claimed": 139,
   "in progress": 170,
   "done": 743
  },
@@ -1554,14 +1554,6 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1200,
-     "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
-    },
-    {
-     "number": 1199,
-     "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
-    },
-    {
      "number": 1198,
      "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
     }
@@ -1585,10 +1577,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSurfaceMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_DeleteAnalyticalLoadCase",
@@ -1608,10 +1605,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCase"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_DeleteAnalyticalLoadCombination",
@@ -1631,10 +1633,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCombination"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_DeleteAnalyticalLoadGroup",
@@ -1654,10 +1661,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadGroup"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAllAnalyticalLoadCases",
@@ -1677,10 +1689,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAllAnalyticalLoadCases"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLinkGeometry",
@@ -1700,10 +1717,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLinkGeometry"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCase",
@@ -1723,10 +1745,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCase"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCases",
@@ -1746,10 +1773,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCases"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCombination",
@@ -1769,10 +1801,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombination"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCombinations",
@@ -1792,10 +1829,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombinations"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadGroup",
@@ -1815,10 +1857,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroup"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadGroups",
@@ -1838,10 +1885,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroups"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalMemberConnections",
@@ -1861,10 +1913,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberConnections"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalMemberPartRefCoord",
@@ -1884,10 +1941,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberPartRefCoord"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalMemberPartRefCurve",
@@ -1907,10 +1969,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberPartRefCurve"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalModel",
@@ -1930,10 +1997,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalModel"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalModelVariation",
@@ -1953,10 +2025,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalModelVariation"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalPointLoadGeometry",
@@ -1976,10 +2053,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalPointLoadGeometry"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalRelease",
@@ -1999,10 +2081,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalRelease"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalSupportGeometry",
@@ -2022,10 +2109,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalSupportGeometry"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetComplementaryProjectMemberType",
@@ -2045,10 +2137,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetComplementaryProjectMemberType"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetCurrentAnalyticalModel",
@@ -2068,10 +2165,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurrentAnalyticalModel"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetCurveElements",
@@ -2091,10 +2193,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurveElements"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetCurveMember",
@@ -2114,10 +2221,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurveMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetCustomCurveMemberStretchValues",
@@ -2131,10 +2243,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetEdgeLoadFromElement",
@@ -2153,10 +2270,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetEdgeLoadFromElement"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetEdgeLoadGeometry",
@@ -2175,10 +2297,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetEdgeLoadGeometry"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetLCSOfAnalyticalMember",
@@ -2198,10 +2325,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLCSOfAnalyticalMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetLCSOfAnalyticalMemberInIntersection",
@@ -2220,10 +2352,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLCSOfAnalyticalMemberInIntersection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetLinkFromElement",
@@ -2242,10 +2379,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLinkFromElement"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetModelCheckTypeId",
@@ -2259,10 +2401,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetPointLoadFromElement",
@@ -2281,10 +2428,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetPointLoadFromElement"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetSegmentedSurfaceMember",
@@ -2304,10 +2456,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSegmentedSurfaceMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetSupportFromElement",
@@ -2326,10 +2483,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSupportFromElement"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceElements",
@@ -2349,10 +2511,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceElements"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceLoadFromElement",
@@ -2371,10 +2538,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceLoadFromElement"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceLoadGeometry",
@@ -2393,10 +2565,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceLoadGeometry"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceMember",
@@ -2416,10 +2593,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_GetVisibilitySettings",
@@ -2438,10 +2620,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetVisibilitySettings"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetAnalyticalRelease",
@@ -2461,10 +2648,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetAnalyticalRelease"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetCustomCurveMember",
@@ -2478,10 +2670,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetEdgeLoadCustomDataFromMemo",
@@ -2500,10 +2697,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetEdgeLoadCustomDataFromMemo"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetElementFromEdgeLoad",
@@ -2522,10 +2724,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromEdgeLoad"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetElementFromLink",
@@ -2544,10 +2751,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromLink"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetElementFromPointLoad",
@@ -2566,10 +2778,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromPointLoad"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetElementFromSupport",
@@ -2588,10 +2805,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromSupport"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetElementFromSurfaceLoad",
@@ -2610,10 +2832,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromSurfaceLoad"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetGenerationSettingsToNoRule",
@@ -2632,10 +2859,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetGenerationSettingsToNoRule"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetMemoFromEdgeLoadCustomData",
@@ -2654,10 +2886,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetMemoFromEdgeLoadCustomData"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetMemoFromSurfaceLoadCustomData",
@@ -2676,10 +2913,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetMemoFromSurfaceLoadCustomData"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetSurfaceLoadCustomDataFromMemo",
@@ -2698,10 +2940,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetSurfaceLoadCustomDataFromMemo"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_SetVisibilitySettings",
@@ -2720,10 +2967,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetVisibilitySettings"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_UpdateAnalyticalModel",
@@ -2743,10 +2995,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_UpdateAnalyticalModel"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_AddClassificationItem",
@@ -23366,10 +23623,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_AnalyticalModel_GetAnalyticalSurfaceLoadGeometry",
@@ -23382,10 +23644,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_AnalyticalModel_GetCurveMemberProfileVectorImage",
@@ -23398,10 +23665,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1202,
+     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_AttributeList_AddProperty",
