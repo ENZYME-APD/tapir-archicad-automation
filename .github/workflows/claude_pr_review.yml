@@ -401,9 +401,14 @@ jobs:
               is still open - the summary line points to it instead.
             - If the triggering comment asks you something, answer it in the
               summary, briefly.
-            - If a comment started this run and there is nothing new - no
-              settled thread, no new finding, no question to answer - post
-              nothing at all.
+            - If a comment started this run (trigger.json has a comment)
+              and there is nothing new - no settled thread, no new finding,
+              no question to answer - post nothing at all.
+            - Any other run - a push, or a dispatched run with no comment -
+              ALWAYS posts the summary with both markers below, even when
+              nothing changed since the last review: the verdict is recorded
+              per commit, and without one the pull request is never merged
+              and the review is started again.
 
             End the summary comment with this line, listing the settled
             thread ids (or none):
@@ -477,6 +482,13 @@ jobs:
             refused=true
           fi
           echo "Turns: $turns, refused: $refused"
+          # The action hides the model's output. A run that ends after a few
+          # turns without a summary is otherwise impossible to diagnose, so
+          # log which model ran and its final message.
+          jq -r '"subtype: \(.subtype // "none"), cost: \(.total_cost_usd // 0) USD, models: \((.modelUsage // {}) | keys | join(", ")), permission denials: \(.permission_denials_count // 0)"' <<<"$result"
+          echo "Final message (first 1500 characters):"
+          jq -r '.result // "(none)" | tostring' <<<"$result" | head -c 1500 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+          echo
           echo "turns=$turns" >> "$GITHUB_OUTPUT"
           echo "refused=$refused" >> "$GITHUB_OUTPUT"
 
