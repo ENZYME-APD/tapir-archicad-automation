@@ -1949,3 +1949,122 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
     return response;
 }
+
+GetPropertyAvailabilityOfDefaultsCommand::GetPropertyAvailabilityOfDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyAvailabilityOfDefaultsCommand::GetName () const
+{
+    return "GetPropertyAvailabilityOfDefaults";
+}
+
+GS::Optional<GS::UniString> GetPropertyAvailabilityOfDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type whose current tool default is checked. This is the native tool default, a Favorite counts only after it was applied."
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyAvailabilityOfDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyAvailabilities": {
+                "type": "array",
+                "description": "The order is that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "available": {
+                                    "type": "boolean",
+                                    "description": "Whether the property is available for the tool default of the element type."
+                                },
+                                "visible": {
+                                    "type": "boolean",
+                                    "description": "Whether the property is visible for the tool default of the element type."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "available",
+                                "visible"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyAvailabilities"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyAvailabilityOfDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString elementTypeStr;
+    parameters.Get ("elementType", elementTypeStr);
+    const API_ElemTypeID elemTypeId = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    if (elemTypeId == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+    }
+
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    const API_ElemType elemType (elemTypeId);
+
+    GS::ObjectState response;
+    const auto& propertyAvailabilities = response.AddList<GS::ObjectState> ("propertyAvailabilities");
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyAvailabilities (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
+            continue;
+        }
+
+        // The availability functions return a plain bool, so an unknown property would
+        // look like an unavailable one. Check it first and report it as an error.
+        API_PropertyDefinition definition = {};
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        if (definition.guid == APINULLGuid || ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+            propertyAvailabilities (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+
+        GS::ObjectState availability;
+        availability.Add ("available", ACAPI_Element_IsPropertyDefinitionAvailableDefault (elemType, definition.guid));
+        availability.Add ("visible", ACAPI_Element_IsPropertyDefinitionVisibleDefault (elemType, definition.guid));
+        propertyAvailabilities (availability);
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Property availability of tool defaults is available from Archicad 26.");
+#endif
+}
