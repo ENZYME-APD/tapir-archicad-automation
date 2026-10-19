@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 13:34 UTC",
+ "generatedAt": "2026-10-19 13:44 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 1363,
   "not applicable": 468,
-  "claimed": 139,
-  "in progress": 170,
+  "claimed": 135,
+  "in progress": 174,
   "done": 743
  },
  "items": [
@@ -2165,9 +2165,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurrentAnalyticalModel"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1204,
+     "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -2401,9 +2406,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1204,
+     "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -2859,9 +2869,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetGenerationSettingsToNoRule"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1204,
+     "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -2995,9 +3010,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_UpdateAnalyticalModel"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1204,
+     "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -4605,6 +4625,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1204,
+     "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
+    },
     {
      "number": 1188,
      "title": "Add CreateElementSets command (ACAPI_ElementSet_Create)"
@@ -11654,6 +11678,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1204,
+     "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
