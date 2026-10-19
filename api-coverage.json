@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 18:25 UTC",
+ "generatedAt": "2026-10-19 18:38 UTC",
  "versions": [
   25,
   26,
@@ -4683,6 +4683,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1286,
+     "title": "[4/4] Add DeleteFavoriteFolder command"
+    },
+    {
      "number": 1282,
      "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
     },
@@ -4880,10 +4884,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1283,
-     "title": "Feature request: SetPropertyValuesByCriteria (server-side batch property assignment)"
-    },
     {
      "number": 1254,
      "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
@@ -17010,6 +17010,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 885,
+     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
+    },
+    {
      "number": 761,
      "title": "CreateLayout: let the caller choose the new layout's place in its subset"
     }
@@ -17040,6 +17044,10 @@
     {
      "number": 1112,
      "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
+    },
+    {
+     "number": 885,
+     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
     },
     {
      "number": 841,
@@ -17113,6 +17121,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 885,
+     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
+    },
     {
      "number": 761,
      "title": "CreateLayout: let the caller choose the new layout's place in its subset"
@@ -32069,6 +32081,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1286,
+     "title": "[4/4] Add DeleteFavoriteFolder command"
+    },
     {
      "number": 1282,
      "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
