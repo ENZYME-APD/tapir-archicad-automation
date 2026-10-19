@@ -421,6 +421,26 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetDetails (Int32 libInd, API_LibPartDetails* details)
+{
+    return ACAPI_LibPart_GetDetails (libInd, details);
+}
+
+inline GSErrCode ACAPI_LibraryPart_CheckLibPartSubtypeOf (const char* successorUnIDStr, const char* predecessorUnIDStr)
+{
+    return ACAPI_Goodies (APIAny_CheckLibPartSubtypeOfID, const_cast<char*> (successorUnIDStr), const_cast<char*> (predecessorUnIDStr));
+}
+
+inline GSErrCode ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain (const char* successorUnIDStr, const char* predecessorUnIDStr)
+{
+    return ACAPI_Goodies (APIAny_CheckLibPartSubtypeOfbyMainID, const_cast<char*> (successorUnIDStr), const_cast<char*> (predecessorUnIDStr));
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetLibPartToolVariation (API_LibPart* libPart, API_ToolBoxItem* toolboxItem)
+{
+    return ACAPI_Goodies (APIAny_GetLibPartToolVariationID, libPart, toolboxItem);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
