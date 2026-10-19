@@ -25,9 +25,13 @@ so no server hosting is needed. Every run:
    has already handled a message) and replies to it with the issue number.
 5. Moves its 👀 reaction to the last message it checked. Each channel
    carries only one 👀: the next run continues with the messages after it,
-   so messages classified as *not* actionable are not classified again. The
-   👀 never moves past a message left for the next run (the issue limit was
-   reached, or classifying or filing it failed).
+   so messages classified as *not* actionable are not classified again.
+   When a message has to wait for the next run (the issue limit was
+   reached, or the duplicate search or filing it failed), the scan of that
+   channel stops there and the next run continues from it. A message the
+   classifier cannot answer for is skipped once the classifier answers for
+   the next one, and listed on the borderline issue below; when the next
+   one fails too, the classifier is down and the scan stops there as well.
    Actionable-looking messages that fall just short of the confidence
    threshold count as checked too, but are recorded on a rolling
    **Borderline Discord reports** issue (and in the workflow run's

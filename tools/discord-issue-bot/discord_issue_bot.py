@@ -155,9 +155,9 @@ BORDERLINE_ISSUE_TITLE = "Borderline Discord reports"
 BORDERLINE_ISSUE_BODY = """\
 The Tapir Discord issue bot appends a comment here whenever it sees
 messages that Claude judged actionable but with confidence below the
-threshold for filing an issue. They count as checked and will not be
-classified again, so this is their only trace: review them and file
-real issues by hand where the classifier was too cautious.
+threshold for filing an issue, and messages it could not classify at all.
+They count as checked and will not be classified again, so this is their
+only trace: review them and file real issues by hand where needed.
 
 Closing this issue archives it - the bot opens a fresh one when needed.
 
@@ -960,20 +960,21 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         groups_by_id[merged["id"]] = group
         merged_by_id[merged["id"]] = merged
 
-    # The checkpoint moves to the last message of each candidate checked,
-    # but never past one left for the next run (no classification, the
-    # issue limit, a failed search or issue creation) - that one would be
-    # skipped forever. It moves right away, not at the end, so a run cut
-    # short by the job timeout keeps its progress. The new mark goes on
-    # first: if that fails, the old one stays, and an older checkpoint only
-    # costs some re-classification, never a skipped message.
+    # The checkpoint moves to the last message of each candidate checked.
+    # It moves right away, not at the end, so a run cut short by the job
+    # timeout keeps its progress. The new mark goes on first: if that
+    # fails, the old one stays, and an older checkpoint only costs some
+    # re-classification, never a skipped message. It never moves past a
+    # message left for the next run (the issue limit, a failed search or
+    # issue creation, the classifier not answering): the scan of the
+    # channel stops there, as everything after it would only be classified
+    # again by the next run, which starts at that message.
     holder = checkpoint
-    left_for_next_run = False
 
     def checked(message):
         nonlocal holder
         last = groups_by_id[message["id"]][-1]
-        if left_for_next_run or config.dry_run or last is holder:
+        if config.dry_run or last is holder:
             return
         if discord.add_mark(channel_id, last["id"], SEEN_MARK):
             if holder is not None:
@@ -997,10 +998,19 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             continue
         to_classify.append(candidate)
 
+    # A message the classifier gives no usable answer for waits for the
+    # next candidate's answer: when that comes, the classifier works and
+    # the message itself is the problem - it is skipped, with a trace for a
+    # maintainer, so one message cannot hold up the channel. When that one
+    # fails too, the classifier is down and the scan stops at the first.
+    unclassified = None
+
     for candidate in candidates:
         message = merged_by_id[candidate["id"]]
         if filed(message):
-            checked(message)
+            # Filed by an earlier run; says nothing about the classifier.
+            if unclassified is None:
+                checked(message)
             continue
         index = to_classify.index(candidate)
         if index >= classified_until:
@@ -1009,9 +1019,23 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             classified_until = index + len(chunk)
         classification = classifications.get(candidate["id"])
         if classification is None:
-            log("  message {}: classifier gave no usable answer, skipping".format(message["id"]))
-            left_for_next_run = True
+            if unclassified is not None:
+                log("  message {}: classifier gave no usable answer again - "
+                    "leaving the channel from message {} for the next run".format(
+                        message["id"], unclassified["id"]))
+                break
+            log("  message {}: classifier gave no usable answer".format(message["id"]))
+            unclassified = message
             continue
+        if unclassified is not None:
+            log("  message {}: skipped, the classifier answers for other "
+                "messages but not for this one".format(unclassified["id"]))
+            note_borderline(
+                "- Could not be classified, skipped: [jump to message]({})".format(
+                    message_jump_url(unclassified, channel)),
+                state)
+            checked(unclassified)
+            unclassified = None
         confidence = float(classification.get("confidence", 0.0))
         if not classification.get("actionable") or confidence < config.min_confidence:
             if classification.get("actionable") and confidence >= BORDERLINE_CONFIDENCE:
@@ -1039,15 +1063,12 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             log("  DRY RUN: would create a '{}' issue and reply on Discord".format(issue_type))
             continue
 
-        # Past the cap, only issue creation stops: the message stays
-        # unchecked so the next run files it, while the not-actionable
-        # results above still count as checked - their classification is
-        # already paid for.
+        # Past the cap the scan of the channel stops: the next run files
+        # this message and continues after it.
         if state["created"] >= config.max_issues_per_run:
             log("  message {}: issue limit of {} for this run reached - left "
                 "for the next run".format(message["id"], config.max_issues_per_run))
-            left_for_next_run = True
-            continue
+            break
 
         existing = github.find_issue_for_message(message["id"])
         if existing is SEARCH_FAILED:
@@ -1055,8 +1076,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             # duplicate. Leave the message unchecked; the next run retries.
             log("  message {}: duplicate check unavailable, retrying next run".format(message["id"]))
             state["github_failures"] += 1
-            left_for_next_run = True
-            continue
+            break
         if existing is not None:
             log("  message {}: issue #{} already exists, marking as processed".format(
                 message["id"], existing["number"]))
@@ -1069,8 +1089,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         issue = github.create_issue(title, body, [label, "discord"])
         if issue is None:
             state["github_failures"] += 1
-            left_for_next_run = True
-            continue
+            break
         state["created"] += 1
         state["created_numbers"].append(issue["number"])
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))

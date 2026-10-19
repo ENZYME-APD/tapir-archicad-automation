@@ -531,6 +531,7 @@ class CheckpointTests(NoSleepTestCase):
         state = {"created": 0, "created_numbers": [], "unreadable_channels": 0,
                  "github_failures": 0, "human_messages": 0, "messages_with_signal": 0,
                  "borderline": []}
+        self.state = state
         bot.process_channel("c", config or self.Config, discord, github, classifier, state)
         return discord, classifier, github
 
@@ -554,18 +555,45 @@ class CheckpointTests(NoSleepTestCase):
         self.assertEqual(classifier.classified, ["3"])
         self.assertEqual(discord.seen(), ["3"])
 
-    def test_checkpoint_stops_before_a_message_left_for_the_next_run(self):
-        messages = [self.message("1", "a"), self.message("2", "b"), self.message("3", "c")]
-        discord, classifier, _ = self.run_channel(messages, {"2": "fail"})
+    def test_classifier_down_stops_the_scan_at_the_first_failure(self):
+        messages = [self.message("1", "a"), self.message("2", "b"),
+                    self.message("3", "c"), self.message("4", "d")]
+        discord, classifier, _ = self.run_channel(messages, {"2": "fail", "3": "fail"})
         self.assertEqual(classifier.classified, ["1", "2", "3"])
         self.assertEqual(discord.seen(), ["1"])
 
-    def test_failed_duplicate_search_holds_the_checkpoint(self):
+    def test_one_unclassifiable_message_is_skipped_with_a_trace(self):
+        messages = [self.message("1", "a"), self.message("2", "b"), self.message("3", "c")]
+        discord, classifier, _ = self.run_channel(messages, {"2": "fail"})
+        self.assertEqual(classifier.classified, ["1", "2", "3"])
+        self.assertEqual(discord.seen(), ["3"])
+        self.assertTrue(any("Could not be classified" in line for line in self.state["borderline"]))
+
+    def test_a_filed_message_does_not_vouch_for_the_classifier(self):
+        messages = [self.message("1", "a"), self.message("2", "b"), self.message("3", "c")]
+        messages[1]["reactions"] = [{"emoji": {"name": bot.PROCESSED_MARK}, "me": True}]
+        discord, classifier, _ = self.run_channel(messages, {"1": "fail", "3": "fail"})
+        self.assertEqual(classifier.classified, ["1", "3"])
+        self.assertEqual(discord.seen(), [])
+
+    def test_failed_duplicate_search_stops_the_scan(self):
         messages = [self.message("1", "a"), self.message("2", "b")]
-        discord, _, github = self.run_channel(
+        discord, classifier, github = self.run_channel(
             messages, {"1": "bug"}, github=FakeGitHub(search=bot.SEARCH_FAILED))
         self.assertEqual(github.created, [])
+        self.assertEqual(classifier.classified, ["1"])
         self.assertEqual(discord.seen(), [])
+
+    def test_issue_cap_stops_the_scan(self):
+        class CapConfig(self.Config):
+            max_issues_per_run = 1
+        messages = [self.message("1", "a"), self.message("2", "b"),
+                    self.message("3", "c"), self.message("4", "d")]
+        discord, classifier, github = self.run_channel(
+            messages, {"1": "bug", "2": "bug"}, config=CapConfig)
+        self.assertEqual(len(github.created), 1)
+        self.assertEqual(classifier.classified, ["1", "2"])
+        self.assertEqual(discord.seen(), ["1"])
 
     def test_failed_add_keeps_the_old_checkpoint(self):
         messages = [self.message("1", "a", seen=True), self.message("2", "b")]
