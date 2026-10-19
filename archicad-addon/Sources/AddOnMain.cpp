@@ -776,6 +776,14 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Makes a property definition available for all the given elements. Available only in Archicad 27."
+        );
+        err |= RegisterCommand<MakePropertyUnavailableForElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Makes a property definition unavailable for all the given elements. Available only in Archicad 27."
+        );
         AddCommandGroup (propertyCommands);
     }
 
