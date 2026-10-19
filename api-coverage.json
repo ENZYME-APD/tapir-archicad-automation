@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 17:07 UTC",
+ "generatedAt": "2026-10-19 17:11 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 1313,
+  "open": 1293,
   "not applicable": 469,
-  "claimed": 172,
+  "claimed": 192,
   "in progress": 186,
   "done": 743
  },
@@ -3461,10 +3461,15 @@
    "olderNames": [
     "APIEnv_GetCurrPenSetID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1229,
+     "title": "Expose ACAPI_Attribute_GetCurrPenSet / GetPenNum (which pen set is active)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetCurrentAttributeSetReader",
@@ -3674,10 +3679,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1229,
+     "title": "Expose ACAPI_Attribute_GetCurrPenSet / GetPenNum (which pen set is active)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetPropertyDefinitions",
@@ -6910,7 +6920,12 @@
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1230,
+     "title": "Expose ACAPI_Favorite_Read (read the contents of a favorites file or folder)"
+    }
+   ]
   },
   {
    "id": "ACAPI_DisposeParagraphsHdl",
@@ -10197,10 +10212,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1228,
+     "title": "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionValueEditableDefault",
@@ -10218,10 +10238,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1228,
+     "title": "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionVisible",
@@ -10239,10 +10264,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1228,
+     "title": "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionVisibleDefault",
@@ -11233,10 +11263,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1230,
+     "title": "Expose ACAPI_Favorite_Read (read the contents of a favorites file or folder)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Favorite_Rename",
@@ -30736,10 +30771,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1232,
+     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElemCategoryValues",
@@ -30753,10 +30793,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1232,
+     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementDefault",
@@ -30923,10 +30968,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1232,
+     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetSubElements",
@@ -30974,10 +31024,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetName",
@@ -30991,10 +31046,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetParentFolder",
@@ -31025,10 +31085,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetSubFolders",
@@ -31042,10 +31107,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::IsRoot",
@@ -31127,10 +31197,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::DeleteFavorite",
@@ -31144,10 +31219,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::DeleteFavoriteFolder",
@@ -31161,10 +31241,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ExportFavorites",
@@ -31229,10 +31314,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1232,
+     "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::GetFavoritesByElementType",
@@ -31263,10 +31353,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ImportAllFavorites",
@@ -31331,10 +31426,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::MoveFolder",
@@ -31382,10 +31482,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1231,
+     "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::GetFavoriteManager",
