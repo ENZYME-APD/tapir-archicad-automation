@@ -776,6 +776,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<CheckPropertyValuesCommand> (
+            propertyCommands, "1.7.2",
+            "Checks whether the given values are acceptable for the given property definitions, without changing anything."
+        );
         AddCommandGroup (propertyCommands);
     }
 
