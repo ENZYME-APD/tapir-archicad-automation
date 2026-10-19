@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 13:54 UTC",
+ "generatedAt": "2026-10-19 16:48 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 1363,
+  "open": 1360,
   "not applicable": 469,
-  "claimed": 134,
+  "claimed": 137,
   "in progress": 174,
   "done": 743
  },
@@ -16250,10 +16250,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1206,
+     "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_DimStand_GetNum",
@@ -16269,10 +16274,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1206,
+     "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_DimStand_Search",
@@ -16288,10 +16298,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1206,
+     "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetCurrLayerComb",

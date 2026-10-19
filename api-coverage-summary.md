@@ -1,9 +1,9 @@
-**743 of 2414** applicable Archicad API items are used by Tapir (30 %): ✅ 743 done, 🚧 174 in progress, 🙋 134 claimed, ⬜ 1363 open, ➖ 469 not applicable.
+**743 of 2414** applicable Archicad API items are used by Tapir (30 %): ✅ 743 done, 🚧 174 in progress, 🙋 137 claimed, ⬜ 1360 open, ➖ 469 not applicable.
 
 | Part of the API | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ |
 |---|---|---|---|---|---|---|---|---|---|
-| C functions | 34 % | 748 | 259 |  | 165 | 94 | 230 |  | 165 |
+| C functions | 34 % | 748 | 259 |  | 165 | 97 | 227 |  | 165 |
 | C functions of Archicad 25/26 only, and their command ids | 21 % | 90 | 19 |  | 7 | 8 | 56 |  | 49 |
 | C++ API (ACAPI::, IFCAPI::) | 29 % | 1576 | 465 |  | 2 | 32 | 1077 |  | 255 |
 
-Archicad 25–30 DevKits; updated 2026-10-19 13:54 UTC.
+Archicad 25–30 DevKits; updated 2026-10-19 16:48 UTC.
