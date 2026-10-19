@@ -776,6 +776,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<ModifyPropertyValueOfElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27."
+        );
         AddCommandGroup (propertyCommands);
     }
 
