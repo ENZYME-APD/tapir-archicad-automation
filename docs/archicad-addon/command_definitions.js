@@ -1225,7 +1225,8 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "Optional list of elements to get details for. When omitted or empty, all elements in the current database (optionally filtered by the filter parameter) are used."
             },
             "fields": {
                 "type": "array",
@@ -1234,12 +1235,38 @@ var gCommands = [{
                     "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
+            },
+            "filter": {
+                "type": "object",
+                "description": "Optional server-side filter. When given, only elements matching these conditions are returned.",
+                "properties": {
+                    "types": {
+                        "type": "array",
+                        "description": "Optional filter for element types (e.g. ['Wall', 'Column']).",
+                        "items": {
+                            "$ref": "#/ElementType"
+                        }
+                    },
+                    "floorIndices": {
+                        "type": "array",
+                        "description": "Optional filter for story indices (e.g. [0, 1]).",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "layerIndices": {
+                        "type": "array",
+                        "description": "Optional filter for layer attribute indices.",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "additionalProperties": false
             }
         },
         "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "required": []
     },
                 "outputScheme": {
         "type": "object",
@@ -1250,6 +1277,10 @@ var gCommands = [{
                     "type": "object",
                     "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
                     "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The unique identifier of the element."
+                        },
                         "type": {
                             "$ref": "#/ElementType"
                         },

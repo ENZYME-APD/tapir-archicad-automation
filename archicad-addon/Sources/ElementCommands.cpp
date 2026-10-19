@@ -481,7 +481,8 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "Optional list of elements to get details for. When omitted or empty, all elements in the current database (optionally filtered by the filter parameter) are used."
             },
             "fields": {
                 "type": "array",
@@ -490,12 +491,38 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
                     "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
+            },
+            "filter": {
+                "type": "object",
+                "description": "Optional server-side filter. When given, only elements matching these conditions are returned.",
+                "properties": {
+                    "types": {
+                        "type": "array",
+                        "description": "Optional filter for element types (e.g. ['Wall', 'Column']).",
+                        "items": {
+                            "$ref": "#/ElementType"
+                        }
+                    },
+                    "floorIndices": {
+                        "type": "array",
+                        "description": "Optional filter for story indices (e.g. [0, 1]).",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "layerIndices": {
+                        "type": "array",
+                        "description": "Optional filter for layer attribute indices.",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "additionalProperties": false
             }
         },
         "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "required": []
     })";
 }
 
@@ -510,6 +537,10 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                     "type": "object",
                     "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
                     "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The unique identifier of the element."
+                        },
                         "type": {
                             "$ref": "#/ElementType"
                         },
@@ -904,7 +935,7 @@ using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
+    const bool hasElementsParam = parameters.Get ("elements", elements) && !elements.IsEmpty ();
 
     GS::Array<GS::UniString> fields;
     const bool filterFields = parameters.Get ("fields", fields) && !fields.IsEmpty ();
@@ -912,30 +943,90 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         return !filterFields || fields.Contains (GS::UniString (fieldName));
     };
 
+    const GS::ObjectState* filterObj = parameters.Get ("filter");
+    GS::Array<GS::UniString> filterTypes;
+    GS::Array<short> filterFloorIndices;
+    GS::Array<Int32> filterLayerIndices;
+    bool hasFilterTypes = false;
+    bool hasFilterFloorIndices = false;
+    bool hasFilterLayerIndices = false;
+
+    if (filterObj != nullptr) {
+        hasFilterTypes = filterObj->Get ("types", filterTypes) && !filterTypes.IsEmpty ();
+        hasFilterFloorIndices = filterObj->Get ("floorIndices", filterFloorIndices) && !filterFloorIndices.IsEmpty ();
+        hasFilterLayerIndices = filterObj->Get ("layerIndices", filterLayerIndices) && !filterLayerIndices.IsEmpty ();
+    }
+
+    GS::Array<API_Guid> elementGuids;
+    if (hasElementsParam) {
+        elementGuids.SetCapacity (elements.GetSize ());
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId != nullptr) {
+                elementGuids.Push (GetGuidFromObjectState (*elementId));
+            } else {
+                elementGuids.Push (APINULLGuid);
+            }
+        }
+    } else {
+        if (hasFilterTypes) {
+            for (const GS::UniString& typeStr : filterTypes) {
+                const API_ElemTypeID typeId = GetElementTypeFromNonLocalizedName (typeStr);
+                if (typeId != API_ZombieElemID) {
+                    GS::Array<API_Guid> typeGuids;
+                    if (ACAPI_Element_GetElemList (typeId, &typeGuids, APIFilt_None) == NoError) {
+                        for (const API_Guid& guid : typeGuids) {
+                            elementGuids.Push (guid);
+                        }
+                    }
+                }
+            }
+        } else {
+            ACAPI_Element_GetElemList (API_ZombieElemID, &elementGuids, APIFilt_None);
+        }
+    }
+
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
 
     const Stories stories = GetStories ();
 
-    for (const GS::ObjectState& element : elements) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+    for (const API_Guid& guid : elementGuids) {
+        if (guid == APINULLGuid) {
+            if (hasElementsParam) {
+                detailsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            }
             continue;
         }
 
         API_Element elem = {};
-        elem.header.guid = GetGuidFromObjectState (*elementId);
+        elem.header.guid = guid;
         GSErrCode err = ACAPI_Element_Get (&elem);
 
         if (err != NoError) {
-            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element"));
+            if (hasElementsParam) {
+                detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element"));
+            }
+            continue;
+        }
+
+        const API_ElemTypeID typeID = GetElemTypeId (elem.header);
+
+        if (hasFilterTypes && !filterTypes.Contains (GetElementTypeNonLocalizedName (typeID))) {
+            continue;
+        }
+        if (hasFilterFloorIndices && !filterFloorIndices.Contains (elem.header.floorInd)) {
+            continue;
+        }
+        if (hasFilterLayerIndices && !filterLayerIndices.Contains (GetAttributeIndex (elem.header.layer))) {
             continue;
         }
 
         GS::ObjectState detailsOfElement;
-        const API_ElemTypeID typeID = GetElemTypeId (elem.header);
 
+        if (isFieldRequested ("elementId")) {
+            detailsOfElement.Add ("elementId", CreateElementIdObjectState (elem.header.guid));
+        }
         if (isFieldRequested ("type")) {
             detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
         }

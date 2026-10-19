@@ -8635,6 +8635,7 @@ var gSchemaDefinitions = {
         "type": "string",
         "description": "A field of the details of an element.",
         "enum": [
+            "elementId",
             "type",
             "id",
             "floorIndex",
