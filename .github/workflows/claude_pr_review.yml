@@ -256,10 +256,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do
