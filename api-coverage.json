@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:45 UTC",
+ "generatedAt": "2026-10-19 11:47 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1439,
+  "open": 1434,
   "not applicable": 468,
-  "in progress": 163,
+  "in progress": 164,
   "done": 491,
-  "claimed": 70,
+  "claimed": 74,
   "merged": 252
  },
  "items": [
@@ -3968,10 +3968,15 @@
    "olderNames": [
     "ACAPI_Element_GetNoteAutotexts"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1166,
+     "title": "Expose ACAPI_AutoText_GetNoteAutotexts"
+    }
+   ]
   },
   {
    "id": "ACAPI_AutoText_GetNoteKeywordForAutotextID",
@@ -3990,10 +3995,15 @@
    "olderNames": [
     "ACAPI_Element_GetNoteKeywordForAutotextID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1168,
+     "title": "Expose ACAPI_AutoText_GetNoteKeywordForAutotextID"
+    }
+   ]
   },
   {
    "id": "ACAPI_AutoText_GetPropertyAutoTextKeyTable",
@@ -6673,9 +6683,14 @@
    "olderNames": [
     "APIDb_DrawOrderGetNextID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1167,
+     "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
+    }
+   ],
    "issues": [
     {
      "number": 1160,
@@ -7056,10 +7071,15 @@
    "olderNames": [
     "APIEnv_GetNumberingGridLinesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1171,
+     "title": "Expose ACAPI_Drawing_GetNumberingGridLines"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_IsMarkerDrawingEnabled",
@@ -8298,6 +8318,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1167,
+     "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
+    },
+    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
@@ -8936,6 +8960,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1167,
+     "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
+    },
     {
      "number": 1133,
      "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
@@ -23491,6 +23519,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1167,
+     "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
+    },
+    {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     },
@@ -24186,6 +24218,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1171,
+     "title": "Expose ACAPI_Drawing_GetNumberingGridLines"
+    },
     {
      "number": 938,
      "title": "Get/SetGeoLocation: survey point visibility and lock"
@@ -26431,10 +26467,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1169,
+     "title": "Expose ACAPI::DesignOptionCombinationViewSettings::GetName"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptionCombinationViewSettings::GetStatus",
@@ -26447,10 +26488,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1170,
+     "title": "Expose ACAPI::DesignOptionCombinationViewSettings::GetStatus"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly",
