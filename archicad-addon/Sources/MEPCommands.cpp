@@ -33,6 +33,11 @@
 #include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeReferenceSet.hpp"
 #include "ACAPI/MEPDuctReferenceSet.hpp"
+#include "ACAPI/MEPRigidSegment.hpp"
+#include "ACAPI/MEPFlexibleSegment.hpp"
+#include "ACAPI/MEPElbow.hpp"
+#include "ACAPI/MEPBranch.hpp"
+#include "ACAPI/MEPTransition.hpp"
 #ifdef ServerMainVers_2900
 #include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
@@ -45,6 +50,7 @@
 #endif
 
 #include <optional>
+#include <utility>
 
 using namespace ACAPI::MEP;
 #endif
@@ -269,6 +275,66 @@ static GS::UniString GetMEPElementDomainName (const API_Guid& classId)
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
     return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+}
+
+// The getters of the MEP element parts used by GetMEPElementDetails could not be checked against the
+// DevKit when they were added, so these helpers accept a plain value, an ACAPI::Result or a
+// std::optional of it. A value that cannot be read is left out of the response.
+template <typename T>
+static std::optional<T> ToOptional (const T& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> ToOptional (const std::optional<T>& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> ToOptional (ACAPI::Result<T>&& result)
+{
+    if (result.IsErr ()) {
+        return std::nullopt;
+    }
+    return result.Unwrap ();
+}
+
+template <typename Value>
+static void AddNumberIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto number = ToOptional (std::forward<Value> (value));
+    if (number.has_value ()) {
+        os.Add (name, static_cast<double> (number.value ()));
+    }
+}
+
+template <typename Value>
+static void AddBoolIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto boolValue = ToOptional (std::forward<Value> (value));
+    if (boolValue.has_value ()) {
+        os.Add (name, static_cast<bool> (boolValue.value ()));
+    }
+}
+
+template <typename Value>
+static void AddElementIdIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto id = ToOptional (std::forward<Value> (value));
+    if (id.has_value ()) {
+        os.Add (name, CreateGuidObjectState (MEPUniqueIDToAPIGuid (id.value ())));
+    }
+}
+
+template <typename Value>
+static void AddGuidIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto id = ToOptional (std::forward<Value> (value));
+    if (id.has_value ()) {
+        os.Add (name, APIGuidToString (MEPUniqueIDToAPIGuid (id.value ())));
+    }
 }
 
 #endif
@@ -597,6 +663,237 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
         }
 
         elementPorts (elementPortsOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetMEPElementDetailsCommand::GetMEPElementDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMEPElementDetailsCommand::GetName () const
+{
+    return "GetMEPElementDetails";
+}
+
+GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementDetails": {
+                "type": "array",
+                "description": "The details of the given MEP elements, in the order of the input, or an error for an element that is not an MEP element. A value that cannot be read is left out.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "type": {
+                                    "$ref": "#/MEPElementType"
+                                },
+                                "domain": {
+                                    "type": "string",
+                                    "description": "The MEP domain (Ventilation, Piping or CableCarrier), empty if the element has none."
+                                },
+                                "insulationThickness": {
+                                    "type": "number",
+                                    "description": "The insulation thickness. RigidSegment, Elbow, Branch and Transition."
+                                },
+                                "routingSegmentId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The routing segment the rigid segment belongs to (see GetMEPRoutingElements). RigidSegment."
+                                },
+                                "routingNodeId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The routing node the elbow or transition belongs to (see GetMEPRoutingElements). Elbow and Transition."
+                                },
+                                "controlPoints": {
+                                    "type": "array",
+                                    "description": "The control points of the flexible segment. FlexibleSegment.",
+                                    "items": {
+                                        "$ref": "#/Coordinate3D"
+                                    }
+                                },
+                                "factorRadius": {
+                                    "type": "number",
+                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow."
+                                },
+                                "preferenceTableId": {
+                                    "$ref": "#/Guid",
+                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow, and Transition from Archicad 29."
+                                },
+                                "branchAngle": {
+                                    "type": "number",
+                                    "description": "The angle of the branch, as returned by Branch::GetBranchAngle. Branch."
+                                },
+                                "branchLength": {
+                                    "type": "number",
+                                    "description": "The length of the branch. Branch."
+                                },
+                                "offsetY": {
+                                    "type": "number",
+                                    "description": "The Y offset of the transition (Transition::GetOffsetY). Transition."
+                                },
+                                "offsetZ": {
+                                    "type": "number",
+                                    "description": "The Z offset of the transition (Transition::GetOffsetZ). Transition."
+                                },
+                                "widerPortId": {
+                                    "$ref": "#/Guid",
+                                    "description": "The port at the wider end of the transition (see GetMEPPorts). Transition."
+                                },
+                                "narrowerPortId": {
+                                    "$ref": "#/Guid",
+                                    "description": "The port at the narrower end of the transition (see GetMEPPorts). Transition."
+                                },
+                                "isControlledByPreference": {
+                                    "type": "boolean",
+                                    "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "type",
+                                "domain"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDetails"
+        ]
+    })";
+}
+
+GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementDetails = response.AddList<GS::ObjectState> ("elementDetails");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+
+        API_Elem_Head header = {};
+        header.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&header) != NoError) {
+            elementDetails (CreateErrorResponse (APIERR_BADID, "Failed to get the element."));
+            continue;
+        }
+        const GS::UniString typeName = GetMEPElementTypeName (header.type.classID);
+        if (typeName.IsEmpty ()) {
+            elementDetails (CreateErrorResponse (APIERR_BADPARS, "The element is not an MEP element."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID elemId = Adapter::UniqueID (elemGuid);
+        GS::ObjectState detailsOs;
+        detailsOs.Add ("elementId", CreateGuidObjectState (elemGuid));
+        detailsOs.Add ("type", typeName);
+        detailsOs.Add ("domain", GetMEPElementDomainName (header.type.classID));
+
+        // Only these types have data of their own in the MEP API; the routing element is covered by
+        // GetMEPRoutingElements and the ports of every type by GetMEPPorts.
+        if (typeName == "RigidSegment") {
+            ACAPI::Result<ACAPI::MEP::RigidSegment> rigidSegment = ACAPI::MEP::RigidSegment::Get (elemId);
+            if (rigidSegment.IsErr ()) {
+                elementDetails (CreateErrorResponse (rigidSegment.UnwrapErr ().kind, "Failed to get the rigid segment."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "insulationThickness", rigidSegment->GetInsulationThickness ());
+            AddElementIdIfAvailable (detailsOs, "routingSegmentId", rigidSegment->GetRoutingSegmentId ());
+        } else if (typeName == "FlexibleSegment") {
+            ACAPI::Result<ACAPI::MEP::FlexibleSegment> flexibleSegment = ACAPI::MEP::FlexibleSegment::Get (elemId);
+            if (flexibleSegment.IsErr ()) {
+                elementDetails (CreateErrorResponse (flexibleSegment.UnwrapErr ().kind, "Failed to get the flexible segment."));
+                continue;
+            }
+            const auto controlPoints = ToOptional (flexibleSegment->GetControlPoints ());
+            if (controlPoints.has_value ()) {
+                const auto& controlPointList = detailsOs.AddList<GS::ObjectState> ("controlPoints");
+                for (const auto& point : controlPoints.value ()) {
+                    controlPointList (Create3DCoordinateObjectState (API_Coord3D { point.x, point.y, point.z }));
+                }
+            }
+        } else if (typeName == "Elbow") {
+            // In Archicad 28 the elbows are bends (see GetMEPElementTypeName); they are read through the
+            // Elbow class as well, and give an error if that does not work.
+            ACAPI::Result<ACAPI::MEP::Elbow> elbow = ACAPI::MEP::Elbow::Get (elemId);
+            if (elbow.IsErr ()) {
+                elementDetails (CreateErrorResponse (elbow.UnwrapErr ().kind, "Failed to get the elbow."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "factorRadius", elbow->GetFactorRadius ());
+            AddNumberIfAvailable (detailsOs, "insulationThickness", elbow->GetInsulationThickness ());
+            AddGuidIfAvailable (detailsOs, "preferenceTableId", elbow->GetPreferenceTable ());
+            AddElementIdIfAvailable (detailsOs, "routingNodeId", elbow->GetRoutingNodeId ());
+        } else if (typeName == "Branch") {
+            ACAPI::Result<ACAPI::MEP::Branch> branch = ACAPI::MEP::Branch::Get (elemId);
+            if (branch.IsErr ()) {
+                elementDetails (CreateErrorResponse (branch.UnwrapErr ().kind, "Failed to get the branch."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "branchAngle", branch->GetBranchAngle ());
+            AddNumberIfAvailable (detailsOs, "branchLength", branch->GetBranchLength ());
+            AddNumberIfAvailable (detailsOs, "insulationThickness", branch->GetInsulationThickness ());
+        } else if (typeName == "Transition") {
+            ACAPI::Result<ACAPI::MEP::Transition> transition = ACAPI::MEP::Transition::Get (elemId);
+            if (transition.IsErr ()) {
+                elementDetails (CreateErrorResponse (transition.UnwrapErr ().kind, "Failed to get the transition."));
+                continue;
+            }
+            AddNumberIfAvailable (detailsOs, "insulationThickness", transition->GetInsulationThickness ());
+            AddNumberIfAvailable (detailsOs, "offsetY", transition->GetOffsetY ());
+            AddNumberIfAvailable (detailsOs, "offsetZ", transition->GetOffsetZ ());
+            AddGuidIfAvailable (detailsOs, "widerPortId", transition->GetWiderPortID ());
+            AddGuidIfAvailable (detailsOs, "narrowerPortId", transition->GetNarrowerPortID ());
+            AddElementIdIfAvailable (detailsOs, "routingNodeId", transition->GetRoutingNodeId ());
+#ifdef ServerMainVers_2900
+            AddGuidIfAvailable (detailsOs, "preferenceTableId", transition->GetPreferenceTable ());
+            AddBoolIfAvailable (detailsOs, "isControlledByPreference", transition->IsControlledByPreference ());
+#endif
+        }
+
+        elementDetails (detailsOs);
     }
 
     return response;
