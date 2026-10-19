@@ -44,7 +44,8 @@ def find_archicads(root: str = r"C:\Program Files\Graphisoft") -> list[dict]:
         exe = folder / "Archicad.exe"
         if not match or not exe.exists():
             continue
-        templates = sorted(folder.glob("Defaults/**/*.tpl"), key=lambda p: ("template" not in p.name.lower(), len(str(p))))
+        # The defaults folder is localized ("Defaults", "Grundeinstellungen", ...); the layout below it is not.
+        templates = sorted(folder.glob("*/Archicad/*.tpl"), key=lambda p: ("template" not in p.name.lower(), len(str(p))))
         found.append({"version": match.group(1), "archicadExe": str(exe),
                       "blankTemplate": str(templates[0]) if templates else ""})
     return sorted(found, key=lambda a: -int(a["version"]))
@@ -59,7 +60,9 @@ def from_url(url: str) -> Path:
 
 
 def is_tapir(path: Path | str) -> bool:
-    return Path(path).name.lower().startswith("tapiraddon")
+    """A Tapir add-on file, not a backup copy of one ('TapirAddOn_AC26_Win.apx.bak')."""
+    name = Path(path).name.lower()
+    return name.startswith("tapiraddon") and name.endswith((".apx", ".bundle"))
 
 
 # --- the add-on list ----------------------------------------------------------------------------
@@ -146,7 +149,7 @@ class AddOnList:
         found = [from_url(u) for u in entries(include) if is_tapir(from_url(u)) and u not in disabled]
         actual = self.registry.read(key).get("Actual Path", [""])[0]
         if actual and Path(actual).is_dir():
-            found += [p for p in Path(actual).rglob("TapirAddOn*") if to_url(p) not in disabled]
+            found += [p for p in Path(actual).rglob("TapirAddOn*") if is_tapir(p) and to_url(p) not in disabled]
         return found
 
     def install(self, addon: Path) -> None:
@@ -159,7 +162,7 @@ class AddOnList:
         disable = [u for u in entries(saved["Disable"]) if from_url(u) != addon]
         actual = self.registry.read(key).get("Actual Path", [""])[0]
         if actual and Path(actual).is_dir():
-            disable += [to_url(p) for p in Path(actual).rglob("TapirAddOn*") if to_url(p) not in disable]
+            disable += [to_url(p) for p in Path(actual).rglob("TapirAddOn*") if is_tapir(p) and to_url(p) not in disable]
         self.registry.write(f"{key}\\Include", numbered("Include", include))
         self.registry.write(f"{key}\\Disable", numbered("Disable", disable))
 
