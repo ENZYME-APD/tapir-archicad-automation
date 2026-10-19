@@ -327,6 +327,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.1.6",
             "Gets the project location details."
         );
+        err |= RegisterCommand<GetSurveyPointTransformationCommand> (
+            projectCommands, "1.7.3",
+            "Gets the 3x4 matrix that transforms points from the Project Origin coordinate system into the Survey Point coordinate system, row by row, and its inverse when it is invertible. Read only. Available from Archicad 27."
+        );
         err |= RegisterCommand<SetGeoLocationCommand> (
             projectCommands, "1.2.9",
             "Sets the project location details."

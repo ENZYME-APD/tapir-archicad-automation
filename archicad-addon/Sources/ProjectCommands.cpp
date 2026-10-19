@@ -1873,6 +1873,106 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
                 "scale", apiGeoLocation.geoReferenceData.scale)));
 }
 
+GetSurveyPointTransformationCommand::GetSurveyPointTransformationCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetSurveyPointTransformationCommand::GetName () const
+{
+    return "GetSurveyPointTransformation";
+}
+
+GS::Optional<GS::UniString> GetSurveyPointTransformationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectToSurvey": {
+                "type": "array",
+                "description": "The 3x4 matrix that transforms a point given in the Project Origin coordinate system into the Survey Point coordinate system, row by row (12 numbers): x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + m[5]*y + m[6]*z + m[7], z' = m[8]*x + m[9]*y + m[10]*z + m[11].",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "surveyToProject": {
+                "type": "array",
+                "description": "The inverse of projectToSurvey in the same row by row layout: it transforms a point given in the Survey Point coordinate system into the Project Origin coordinate system. Missing when projectToSurvey is not invertible.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectToSurvey"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+static bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
+{
+    const double* m = tranmat.tmx;
+    const double c00 = m[5] * m[10] - m[6] * m[9];
+    const double c01 = m[6] * m[8] - m[4] * m[10];
+    const double c02 = m[4] * m[9] - m[5] * m[8];
+    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
+    if (std::fabs (det) < 1e-12) {
+        return false;
+    }
+
+    double* r = inverse.tmx;
+    r[0]  = c00 / det;
+    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
+    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
+    r[4]  = c01 / det;
+    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
+    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
+    r[8]  = c02 / det;
+    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
+    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
+
+    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
+    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
+    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
+    return true;
+}
+#endif
+
+GS::ObjectState GetSurveyPointTransformationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    API_Tranmat projectToSurvey = {};
+    const GSErrCode err = ACAPI_SurveyPoint_GetSurveyPointTransformation (&projectToSurvey);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the survey point transformation.");
+    }
+
+    GS::ObjectState response;
+    const auto& projectToSurveyList = response.AddList<double> ("projectToSurvey");
+    for (double value : projectToSurvey.tmx) {
+        projectToSurveyList (value);
+    }
+
+    API_Tranmat surveyToProject = {};
+    if (InvertTranmat (projectToSurvey, surveyToProject)) {
+        const auto& surveyToProjectList = response.AddList<double> ("surveyToProject");
+        for (double value : surveyToProject.tmx) {
+            surveyToProjectList (value);
+        }
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 SetGeoLocationCommand::SetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {
