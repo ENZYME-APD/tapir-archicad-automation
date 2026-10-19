@@ -723,6 +723,121 @@ GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters
 }
 
 // ---------------------------------------------------------------------------
+// GetEditModeState
+// ---------------------------------------------------------------------------
+
+GetEditModeStateCommand::GetEditModeStateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetEditModeStateCommand::GetName () const
+{
+    return "GetEditModeState";
+}
+
+GS::Optional<GS::UniString> GetEditModeStateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "inEditMode": {
+                "type": "boolean",
+                "description": "True when Archicad is in any hierarchical editing mode (curtain wall, stair, railing, beam, column, MEP elements, etc.). Only returned from Archicad 29."
+            },
+            "curtainWall": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Curtain wall editing mode."
+            },
+            "stair": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Stair editing mode."
+            },
+            "beam": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Beam editing mode."
+            },
+            "column": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Column editing mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curtainWall",
+            "stair",
+            "beam",
+            "column"
+        ]
+    })";
+}
+
+#if defined (ServerMainVers_2700)
+static GS::ObjectState CreateEditModeStateItem (bool inEditMode, const API_Guid& editedElement)
+{
+    GS::ObjectState item ("inEditMode", inEditMode);
+    if (inEditMode && editedElement != APINULLGuid) {
+        item.Add ("elementId", CreateGuidObjectState (editedElement));
+    }
+    return item;
+}
+#endif
+
+GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    // Read only: the edit mode is only queried, never entered, left or cancelled.
+    GS::ObjectState response;
+    GSErrCode err = NoError;
+
+#if defined (ServerMainVers_2900)
+    bool inAnyEditMode = false;
+    err = ACAPI_HierarchicalEditing_IsInEditMode (inAnyEditMode);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the hierarchical editing mode.");
+    }
+    response.Add ("inEditMode", inAnyEditMode);
+#endif
+
+    bool inEditMode = false;
+    API_Guid editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInCurtainWallEditMode (inEditMode, &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the curtain wall editing mode.");
+    }
+    response.Add ("curtainWall", CreateEditModeStateItem (inEditMode, editedElement));
+
+    inEditMode = false;
+    editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInStairEditMode (inEditMode, &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the stair editing mode.");
+    }
+    response.Add ("stair", CreateEditModeStateItem (inEditMode, editedElement));
+
+    inEditMode = false;
+    editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInBeamEditMode (inEditMode, &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the beam editing mode.");
+    }
+    response.Add ("beam", CreateEditModeStateItem (inEditMode, editedElement));
+
+    inEditMode = false;
+    editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInColumnEditMode (inEditMode, &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the column editing mode.");
+    }
+    response.Add ("column", CreateEditModeStateItem (inEditMode, editedElement));
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetEditModeState requires Archicad 27 or later.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
 // GetPointFromUser
 // ---------------------------------------------------------------------------
 

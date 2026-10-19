@@ -229,6 +229,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.5.6",
             "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."
         );
+        err |= RegisterCommand<GetEditModeStateCommand> (
+            applicationCommands, "1.7.3",
+            "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later."
+        );
 
         AddCommandGroup (applicationCommands);
     }

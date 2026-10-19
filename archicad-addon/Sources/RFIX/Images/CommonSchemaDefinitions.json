@@ -340,6 +340,24 @@
             "guid"
         ]
     },
+    "EditModeStateItem": {
+        "type": "object",
+        "description": "The state of one hierarchical editing mode.",
+        "properties": {
+            "inEditMode": {
+                "type": "boolean",
+                "description": "True when Archicad is in this editing mode."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The element being edited. Only returned when inEditMode is true and Archicad reports the edited element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "inEditMode"
+        ]
+    },
     "SurfaceType": {
         "type": "string",
         "description": "The type of a surface material.",
