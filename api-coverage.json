@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 13:47 UTC",
+ "generatedAt": "2026-10-19 13:54 UTC",
  "versions": [
   25,
   26,
@@ -10,8 +10,8 @@
  ],
  "counts": {
   "open": 1363,
-  "not applicable": 468,
-  "claimed": 135,
+  "not applicable": 469,
+  "claimed": 134,
   "in progress": 174,
   "done": 743
  },
@@ -15346,15 +15346,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
-   "reason": "",
+   "status": "not applicable",
+   "reason": "user interface",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1154,
-     "title": "Expose ACAPI_Markup_PDFImportOptions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_MenuItem_AddMenuItemText",
