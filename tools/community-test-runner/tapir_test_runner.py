@@ -35,6 +35,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable
 
@@ -770,25 +771,43 @@ def run_pass(cfg: dict, post: bool, numbers: list[int] | None = None, every_open
     return results
 
 
-def pull_rows(cfg: dict, every_open: bool = True) -> list[dict]:
+def pull_rows(cfg: dict, every_open: bool = True,
+              on_row: Callable[[dict, int, int], None] | None = None) -> list[dict]:
     """Per open pull request: where its branch is, its checks, its builds and the last reports."""
     token = get_token(cfg)
     if not token:
         raise RuntimeError("no GitHub token yet: run 'python tapir_test_runner.py setup' (GitHub allows only 60 requests an hour without one)")
     gh = GitHub(cfg["repo"], token)
-    rows = []
-    for pull in select_pulls(gh, cfg, None, every_open):
+    pulls = select_pulls(gh, cfg, None, every_open)
+
+    def basic(pull: dict) -> dict:
         owner = fork_owner(cfg, pull)
         trusted = not owner or cfg.get("allowForks") or owner in cfg.get("trustedForks", [])
-        rows.append({"number": pull["number"], "title": pull["title"], "sha": pull["head"]["sha"][:7],
-                     "branch": "own" if not owner else owner + (" (trusted)" if trusted else " fork"),
-                     "testable": bool(trusted),
-                     "labels": ",".join(lb["name"] for lb in pull.get("labels", [])) or "-",
-                     "checks": len(gh.check_paths(pull["number"], cfg.get("checkFolder", DEFAULTS["checkFolder"]))),
-                     "builds": gh.built_versions(pull["head"]["sha"]),
-                     "last": [c["body"].splitlines()[0].removeprefix(RESULT_MARKER).strip()
-                              for c in gh.reports(pull["number"])][-2:]})
-    return rows
+        return {"number": pull["number"], "title": pull["title"], "sha": pull["head"]["sha"][:7],
+                "branch": "own" if not owner else owner + (" (trusted)" if trusted else " fork"),
+                "testable": bool(trusted), "labels": ",".join(lb["name"] for lb in pull.get("labels", [])) or "-",
+                "checks": None, "builds": None, "last": None}
+
+    def detail(pull: dict) -> dict:
+        row = basic(pull)
+        row.update(checks=len(gh.check_paths(pull["number"], cfg.get("checkFolder", DEFAULTS["checkFolder"]))),
+                   builds=gh.built_versions(pull["head"]["sha"]),
+                   last=[c["body"].splitlines()[0].removeprefix(RESULT_MARKER).strip()
+                         for c in gh.reports(pull["number"])][-2:])
+        return row
+
+    rows = {p["number"]: basic(p) for p in pulls}
+    if on_row:
+        for row in rows.values():
+            on_row(row, 0, len(rows))
+    # three or four requests per pull request: in parallel, or a hundred open ones take minutes
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for done, future in enumerate(as_completed([pool.submit(detail, p) for p in pulls]), 1):
+            row = future.result()
+            rows[row["number"]] = row
+            if on_row:
+                on_row(row, done, len(pulls))
+    return [rows[p["number"]] for p in pulls]
 
 
 def list_pulls(cfg: dict, every_open: bool = True) -> list[str]:
