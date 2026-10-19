@@ -2603,9 +2603,21 @@ GS::ObjectState SetAutoIntersectCommand::Execute (const GS::ObjectState& paramet
         return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: isOn.");
     }
 
-    GSErrCode err = ACAPI_View_ChangeAutoIntersect (&isOn);
+    // The state is changed only when it differs from the requested one and is
+    // read back afterwards, so the result is right even if the API toggles.
+    bool currentState = false;
+    GSErrCode err = ACAPI_View_IsAutoIntersectOn (&currentState);
+    if (err == NoError && currentState != isOn) {
+        err = ACAPI_View_ChangeAutoIntersect (&isOn);
+        if (err == NoError) {
+            err = ACAPI_View_IsAutoIntersectOn (&currentState);
+        }
+    }
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the Auto-Intersection state.");
+    }
+    if (currentState != isOn) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The Auto-Intersection state did not change.");
     }
 
     return CreateSuccessfulExecutionResult ();
