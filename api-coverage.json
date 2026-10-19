@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 07:10 UTC",
+ "generatedAt": "2026-10-19 08:42 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1455,
+  "open": 1449,
   "not applicable": 468,
   "in progress": 155,
   "done": 491,
-  "claimed": 62,
+  "claimed": 68,
   "merged": 252
  },
  "items": [
@@ -18581,10 +18581,15 @@
    "olderNames": [
     "APIAny_CheckPropertyExpressionStringID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1145,
+     "title": "Expose ACAPI_Property missing functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_CreatePropertyDefinition",
@@ -18735,10 +18740,15 @@
    "olderNames": [
     "APIAny_GetPropertyExprReferenceStringID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1145,
+     "title": "Expose ACAPI_Property missing functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_GetPropertyGroup",
@@ -18878,10 +18888,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1145,
+     "title": "Expose ACAPI_Property missing functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_ModifyPropertyValue",
@@ -18897,10 +18912,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1145,
+     "title": "Expose ACAPI_Property missing functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_RegisterPropertyObjectHandler",
@@ -25002,10 +25022,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1145,
+     "title": "Expose ACAPI_Property missing functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_DeleteProperty",
@@ -25018,10 +25043,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1145,
+     "title": "Expose ACAPI_Property missing functions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Register_AddOnObjectHandler",
