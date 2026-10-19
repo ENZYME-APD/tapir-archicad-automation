@@ -1164,7 +1164,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
-            "Sets the 3D cut planes."
+            "Sets the 3D cut planes. An empty cutPlanes array switches the 3D cut off."
+        );
+        err |= RegisterCommand<Get3DCutPlanesCommand> (
+            navigatorCommands, "1.7.2",
+            "Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes."
         );
         err |= RegisterCommand<Get3DProjectionSettingsCommand> (
             navigatorCommands, "1.7.1",
