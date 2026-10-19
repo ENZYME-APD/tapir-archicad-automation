@@ -388,6 +388,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
         );
+        err |= RegisterCommand<EditHierarchicalElementCommand> (
+            elementCommands, "1.7.3",
+            "Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later."
+        );
+        err |= RegisterCommand<FinishHierarchicalEditingCommand> (
+            elementCommands, "1.7.3",
+            "Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later."
+        );
         err |= RegisterCommand<GetConnectedElementsCommand> (
             elementCommands, "1.1.4",
             "Gets the elements hosted by (connected to) the given owner elements, filtered to the given element type: for example the Windows or Doors of a Wall, the frames, panels, junctions and accessories of a Curtain Wall, the risers, treads and structures of a Stair, or the posts, rails and panels of a Railing."
