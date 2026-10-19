@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 16:48 UTC",
+ "generatedAt": "2026-10-19 16:50 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 1360,
+  "open": 1354,
   "not applicable": 469,
-  "claimed": 137,
+  "claimed": 143,
   "in progress": 174,
   "done": 743
  },
@@ -12724,10 +12724,15 @@
    "olderNames": [
     "APIAny_GetHierarchicalElementOwnerID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1207,
+     "title": "Expose ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (find the curtain wall / stair / railing of a sub-element)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInBeamEditMode",
@@ -12747,10 +12752,15 @@
    "olderNames": [
     "APIEnv_IsInBeamEditModeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1208,
+     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInColumnEditMode",
@@ -12770,10 +12780,15 @@
    "olderNames": [
     "APIEnv_IsInColumnEditModeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1208,
+     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInCurtainWallEditMode",
@@ -12793,10 +12808,15 @@
    "olderNames": [
     "APIEnv_IsInCurtainWallEditModeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1208,
+     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInEditMode",
@@ -12810,10 +12830,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1208,
+     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInStairEditMode",
@@ -12833,10 +12858,15 @@
    "olderNames": [
     "APIEnv_IsInStairEditModeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1208,
+     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_OkHierarchicalElem",
