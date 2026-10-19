@@ -23,21 +23,34 @@ so no server hosting is needed. Every run:
    containing a summary, the quoted original message and a link back to it.
 4. Adds a ✅ reaction to the Discord message (this is how the bot remembers it
    has already handled a message) and replies to it with the issue number.
-   Messages classified as *not* actionable get a 👀 reaction instead, so
-   later runs skip them rather than paying to classify them again.
+5. Moves its 👀 reaction to the last message it checked. Each channel
+   carries only one 👀: the next run continues with the messages after it,
+   so messages classified as *not* actionable are not classified again. The
+   👀 never moves past a message left for the next run (the issue limit was
+   reached, or classifying or filing it failed).
    Actionable-looking messages that fall just short of the confidence
-   threshold also get the 👀 reaction, but are recorded on a rolling
+   threshold count as checked too, but are recorded on a rolling
    **Borderline Discord reports** issue (and in the workflow run's
    summary) so a maintainer can file them by hand if the classifier was
    too cautious. Closing that issue archives it; the bot opens a fresh
    one when needed. Only calls with confidence 0.5 or higher are
-   recorded there — an actionable call below 0.5 leaves just a log line
-   before the 👀 mark.
+   recorded there — an actionable call below 0.5 leaves just a log line.
 
-Duplicates are prevented twice over: a message carrying the bot's own ✅ or
-👀 reaction is skipped, and before creating an issue the bot searches
+Consecutive messages of one author are read together as one report: they
+are classified together, filed as one issue quoting all of them, and the
+reply and ✅ go to the first of them. The newest such run is left for the
+next scan while its last message is less than 10 minutes old, as its
+author may still be typing.
+
+Duplicates are prevented twice over: a message carrying the bot's own ✅
+reaction is skipped, and before creating an issue the bot searches
 existing issues for the Discord message ID (which is embedded in every
 issue body).
+
+Earlier versions put a 👀 on every message classified as not actionable.
+Run the workflow by hand with **cleanup seen marks** checked to remove
+those from each channel's whole history, keeping only the newest one as the
+checkpoint; regular runs also remove them from the messages they scan.
 
 Only regular channel messages are scanned — threads and forum posts are
 not read, so reports posted there will not become issues. Screenshots
@@ -124,12 +137,13 @@ important ones and the rest fall back to defaults:
 | Variable             | Default         | Meaning                                          |
 | -------------------- | --------------- | ------------------------------------------------ |
 | `CLAUDE_MODEL`       | (CLI default)   | model used to classify messages; defaults to the Claude Code CLI's own default model |
-| `LOOKBACK_MINUTES`   | `1440`          | how far back each run scans; the wide overlap is nearly free because marked messages are skipped without a model call |
+| `LOOKBACK_MINUTES`   | `1440`          | how far back each run scans; the wide overlap is nearly free because messages up to the 👀 checkpoint are skipped without a model call |
 | `MAX_ISSUES_PER_RUN` | `5`             | safety cap on issues created per run             |
 | `MAX_ISSUES_PER_DAY` | `20`            | backstop across runs: when this many `discord`-labelled issues were created in the last 24 h, a run creates none (`0` disables) |
 | `MIN_CONFIDENCE`     | `0.7`           | classifier confidence required to file an issue  |
 | `MIN_MESSAGE_LENGTH` | `25`            | messages shorter than this are never considered  |
 | `DRY_RUN`            | `false`         | classify and log only, no issues/replies         |
+| `CLEANUP_SEEN_MARKS` | `false`         | only remove the bot's 👀 from every message except the newest per channel, then exit |
 
 Running it locally works too:
 
