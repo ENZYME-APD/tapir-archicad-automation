@@ -829,3 +829,234 @@ GS::ObjectState ImportClassificationsXmlCommand::Execute (const GS::ObjectState&
     AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
     return response;
 }
+
+GetClassificationItemVisibilityCommand::GetClassificationItemVisibilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetClassificationItemVisibilityCommand::GetName () const
+{
+    return "GetClassificationItemVisibility";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "targets": {
+                "type": "array",
+                "description": "The elements, element tool defaults and attributes to check the classification items for.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType",
+                                    "description": "The tool default of this element type is checked."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementType"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId"
+                            ]
+                        }
+                    ]
+                },
+                "minItems": 1
+            },
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "targets",
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemVisibilities": {
+                "type": "array",
+                "description": "One entry per target, in the order of the input. A non-existing element or attribute, or an invalid element type, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "visibilities": {
+                                    "type": "array",
+                                    "description": "One entry per classification item, in the order of the input. A non-existing classification item is represented by an error object.",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "classificationItemId": {
+                                                        "$ref": "#/ClassificationItemId"
+                                                    },
+                                                    "isVisible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the classification item is visible (offered) for the target, as Archicad reports it. It can be true even if a parent item is not visible. It does not tell whether the target is classified with the item."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "classificationItemId",
+                                                    "isVisible"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "visibilities"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemVisibilities"
+        ]
+    })";
+}
+
+GS::ObjectState GetClassificationItemVisibilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> targets;
+    parameters.Get ("targets", targets);
+
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    // The visibility functions return false for invalid parameters too,
+    // so the classification items and the targets are checked first.
+    GS::Array<API_Guid> itemGuids;
+    GS::Array<bool> itemExists;
+    for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+        const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+        API_ClassificationItem classificationItem;
+        classificationItem.guid = itemId != nullptr ? GetGuidFromObjectState (*itemId) : APINULLGuid;
+        itemGuids.Push (classificationItem.guid);
+        itemExists.Push (itemId != nullptr && ACAPI_Classification_GetClassificationItem (classificationItem) == NoError);
+    }
+
+    GS::ObjectState response;
+    const auto& classificationItemVisibilities = response.AddList<GS::ObjectState> ("classificationItemVisibilities");
+
+    for (const GS::ObjectState& target : targets) {
+        enum class TargetKind { Element, ElementDefault, Attribute };
+        TargetKind targetKind = TargetKind::Element;
+        API_Elem_Head elemHead = {};
+        API_Attr_Head attrHead = {};
+        GS::UniString elementTypeStr;
+
+        if (const GS::ObjectState* elementId = target.Get ("elementId")) {
+            elemHead.guid = GetGuidFromObjectState (*elementId);
+            if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+                classificationItemVisibilities (CreateErrorResponse (APIERR_BADID, "element not found"));
+                continue;
+            }
+            targetKind = TargetKind::Element;
+        } else if (target.Get ("elementType", elementTypeStr)) {
+            const API_ElemTypeID elemTypeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            if (elemTypeID == API_ZombieElemID) {
+                classificationItemVisibilities (CreateErrorResponse (APIERR_BADPARS,
+                    GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                continue;
+            }
+#ifdef ServerMainVers_2600
+            elemHead.type = elemTypeID;
+#else
+            elemHead.typeID = elemTypeID;
+#endif
+            targetKind = TargetKind::ElementDefault;
+        } else if (const GS::ObjectState* attributeId = target.Get ("attributeId")) {
+            attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+            if (attrHead.typeID == API_ZombieAttrID) {
+                classificationItemVisibilities (CreateErrorResponse (APIERR_BADID, "attribute not found"));
+                continue;
+            }
+            targetKind = TargetKind::Attribute;
+        } else {
+            classificationItemVisibilities (CreateErrorResponse (APIERR_BADPARS, "elementId, elementType or attributeId is missing"));
+            continue;
+        }
+
+        GS::ObjectState targetVisibility;
+        const auto& visibilities = targetVisibility.AddList<GS::ObjectState> ("visibilities");
+        for (UIndex i = 0; i < itemGuids.GetSize (); ++i) {
+            if (!itemExists[i]) {
+                visibilities (CreateErrorResponse (APIERR_BADID, "classification item not found"));
+                continue;
+            }
+
+            bool isVisible = false;
+            switch (targetKind) {
+                case TargetKind::Element:
+                    isVisible = ACAPI_Element_IsClassificationItemVisible (elemHead.guid, itemGuids[i]);
+                    break;
+                case TargetKind::ElementDefault:
+                    isVisible = TAPIR_Element_IsClassificationItemVisibleDefault (elemHead, itemGuids[i]);
+                    break;
+                case TargetKind::Attribute:
+                    isVisible = ACAPI_Attribute_IsClassificationItemVisible (attrHead, itemGuids[i]);
+                    break;
+            }
+
+            visibilities (GS::ObjectState (
+                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (itemGuids[i])),
+                "isVisible", isVisible));
+        }
+
+        classificationItemVisibilities (targetVisibility);
+    }
+
+    return response;
+}

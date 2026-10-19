@@ -611,6 +611,15 @@ inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head
 #endif
 }
 
+inline bool TAPIR_Element_IsClassificationItemVisibleDefault (const API_Elem_Head& elemHead, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.type, itemGuid);
+#else
+    return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.typeID, elemHead.variationID, itemGuid);
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& elemHead, const API_ElemCategoryValue& categoryValue)
 {
 #ifdef ServerMainVers_2700
