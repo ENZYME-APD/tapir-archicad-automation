@@ -196,6 +196,12 @@ if schedule_items:
     })
     assert not sched_res.get("success"), f"Schedule rename unexpectedly succeeded: {sched_res}"
     print(f"PASS: schedule rename refused: {sched_res['error']['message']}")
+    sched_id_res = run("RenameNavigatorItem", {
+        "navigatorItemId": schedule_items[0]["navigatorItemId"],
+        "newId":           "TAPIR-SCHEDULE-ID",
+    })
+    assert not sched_id_res.get("success"), f"Schedule newId unexpectedly succeeded: {sched_id_res}"
+    print(f"PASS: schedule newId refused: {sched_id_res['error']['message']}")
 
 # 6d. RenameNavigatorItem with newId — give the linked view a custom ID, which must
 #     show up as uiId with customUiId true (the View Settings "Custom" ID radio button)

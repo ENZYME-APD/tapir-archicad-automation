@@ -1523,6 +1523,39 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetRawResponseSchema () 
     })";
 }
 
+static bool ContainsNavigatorItem (API_NavigatorItem item, API_NavigatorMapID mapId, const API_Guid& guid)
+{
+    if (item.guid == guid) {
+        return true;
+    }
+    item.mapId = mapId;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) != NoError) {
+        return false;
+    }
+    for (const API_NavigatorItem& child : children) {
+        if (ContainsNavigatorItem (child, mapId, guid)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsProjectMapItem (const API_Guid& guid)
+{
+    API_NavigatorSet projectMapSet = {};
+    projectMapSet.mapId = API_ProjectMap;
+    Int32 idx = 0;
+    if (ACAPI_Navigator_GetNavigatorSet (&projectMapSet, &idx) != NoError) {
+        return false;
+    }
+    API_NavigatorItem rootItem = {};
+    if (ACAPI_Navigator_GetNavigatorItem (&projectMapSet.rootGuid, &rootItem) != NoError) {
+        return false;
+    }
+    return ContainsNavigatorItem (rootItem, API_ProjectMap, guid);
+}
+
 GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     const GS::ObjectState* navIdOS = parameters.Get ("navigatorItemId");
@@ -1556,6 +1589,15 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     // item is the uiId of the navigator item, changed the same way as its name.
     const bool isLayout = navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem;
     const bool hasNewItemId = hasNewId && !isLayout;
+
+    // Archicad does not let the name or the ID of a Project Map item (story, section,
+    // elevation, schedule, ...) be changed, but ACAPI_Navigator_ChangeNavigatorItem
+    // returns NoError for them and ACAPI_Navigator_GetNavigatorItem then reads back the
+    // value that was passed in, so the read-back below cannot catch it. Refuse them here.
+    if ((hasNewName || resetCustomName || hasNewId) && IsProjectMapItem (guid)) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+            "The name and the ID of a Project Map item cannot be changed. Rename its view in the View Map instead.");
+    }
 
     if (hasNewName) {
         GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
