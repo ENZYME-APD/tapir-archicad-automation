@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 19:08 UTC",
+ "generatedAt": "2026-10-19 19:26 UTC",
  "versions": [
   25,
   26,
@@ -4683,6 +4683,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 1286,
      "title": "[4/4] Add DeleteFavoriteFolder command"
     },
@@ -6967,6 +6971,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 1274,
      "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
     },
@@ -7953,7 +7961,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -8172,6 +8185,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
@@ -8286,7 +8303,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": [
     {
      "number": 652,
@@ -8466,6 +8488,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
     {
      "number": 905,
      "title": "ApplyFavoritesToElements: optional keepFields to keep the target's ID, size, sill, reference line and top link"
@@ -8885,6 +8911,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
@@ -9034,7 +9064,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -9298,6 +9333,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 999,
      "title": "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"
     },
@@ -9537,6 +9576,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
+     "number": 1290,
+     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
+    },
+    {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
     },
@@ -9652,6 +9699,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
     {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
@@ -9793,6 +9844,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
     }
@@ -9916,7 +9971,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": [
     {
      "number": 1014,
@@ -9943,6 +10003,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
     {
      "number": 1019,
      "title": "Add element component commands: list components and read their properties"
@@ -10870,7 +10934,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11309,6 +11378,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 813,
      "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     }
@@ -11335,6 +11408,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
      "number": 813,
      "title": "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"
     }
@@ -11359,7 +11436,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11380,7 +11462,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11402,6 +11489,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
     {
      "number": 1274,
      "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
@@ -11436,7 +11527,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11457,7 +11553,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11478,7 +11579,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11530,7 +11636,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -19827,7 +19938,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -19902,7 +20018,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    }
+   ],
    "issues": []
   },
   {
@@ -36144,7 +36265,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1290,
+     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
+    }
+   ],
    "issues": [
     {
      "number": 1287,
@@ -41743,7 +41869,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1290,
+     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
+    }
+   ],
    "issues": [
     {
      "number": 1287,
@@ -44729,7 +44860,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1290,
+     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
+    }
+   ],
    "issues": [
     {
      "number": 1287,
@@ -51745,7 +51881,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1290,
+     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
+    }
+   ],
    "issues": [
     {
      "number": 1287,
@@ -55746,7 +55887,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1290,
+     "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
+    }
+   ],
    "issues": [
     {
      "number": 1287,
