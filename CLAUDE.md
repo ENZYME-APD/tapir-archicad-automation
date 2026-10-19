@@ -112,10 +112,11 @@ sandbox/                 Experiments / scratch
 
 ### Adding or changing a command
 
-[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–4 for new
+[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–5 for new
 commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
-the registration and a starter example. The Archicad API calls in `Execute` and any
-`Test/ExpectedOutputs/` are still written by hand.
+the registration, a starter example and a starter check. The Archicad API calls in `Execute`,
+the check's real parameters and expectations, and any `Test/ExpectedOutputs/` are still written
+by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
@@ -124,11 +125,19 @@ the registration and a starter example. The Archicad API calls in `Execute` and 
    and a clear description.
 4. Add a Python example under [archicad-addon/Examples/](archicad-addon/Examples/) and,
    if it should be tested, expected output under `Test/ExpectedOutputs/`.
-5. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
+5. Add or update a **check** for every command you add or whose behaviour you change:
+   `archicad-addon/Test/checks/<snake_case command>.json`, the commands the
+   [community test runner](tools/community-test-runner/) sends to an empty, untitled Archicad
+   project and the answers they must give (format: its README, "Writing checks"). It is how a
+   pull request gets run in real Archicad before it is merged: testers' runners test what is
+   labelled `needs-test`, which the bot PR steward sets once a bot pull request is built and has
+   a check. Make the elements it needs in its own steps, and make the expectations catch the bug
+   or prove the feature, not only that the command answers.
+6. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
    needed; same output as the `GenerateDocumentation` developer command). The weekly
    release regenerates them automatically; run it yourself to update them earlier.
-6. Bump the version consistently (see Versioning below) when releasing.
+7. Bump the version consistently (see Versioning below) when releasing.
 
 ## Building the Add-On
 
@@ -264,7 +273,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
   review on each new head, links the built add-on in a comment asking the
-  issue's author to test it in Archicad, and starts a `fix` run on a failed build,
+  issue's author to test it in Archicad, labels it `needs-test` when it has a check
+  file (for the community test runner), and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main` (which it merges in), at most
   `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
   (default 5) PRs per sweep. Then

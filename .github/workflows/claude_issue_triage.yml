@@ -323,7 +323,18 @@ jobs:
             command in AddOnMain.cpp with the UNRELEASED version from
             tools/package_info.json, keep the C++ style of the surrounding
             code, and add a Python example under archicad-addon/Examples if you
-            add a command. Then post one comment on the issue linking the pull
+            add a command. For every command you add or whose behaviour you
+            change, also add or update a check file
+            archicad-addon/Test/checks/<snake_case command>.json: the commands
+            the community test runner sends to an empty, untitled Archicad
+            project, and the answers they must give (format in
+            tools/community-test-runner/README.md, "Writing checks";
+            python tools/new_command.py writes a starter one with a new
+            command). Testers run it on real Archicad once the build is green,
+            so it is how your change gets tried before it is merged: write the
+            expectations from what the command must return, make every element
+            it needs in its own steps (well away from the origin), and set
+            "creates": false on steps that make nothing. Then post one comment on the issue linking the pull
             request and saying what you changed. Start that comment by tagging
             the person who opened the issue (@<their login>) - unless the
             issue was filed by a bot (the Discord issue bot files as the
@@ -397,7 +408,8 @@ jobs:
             - You cannot run Archicad or build the add-on here; the build
               checks build it after you push, but nothing runs it in Archicad.
               State plainly in the pull request that the change is untested in
-              Archicad, and say what to run there to verify it.
+              Archicad, and say what to run there to verify it (the check
+              file is that, for the community test runner).
             - Never push to main; push to a new branch and open a pull request.
               Never modify .github/, archicad-addon/Tools/ or tools/ - those run
               with repository credentials, and a change there is a release
@@ -769,7 +781,19 @@ jobs:
                command in AddOnMain.cpp with the UNRELEASED version from
                tools/package_info.json, keep the C++ style of the surrounding
                code, and add a Python example under archicad-addon/Examples if
-               you add a command. Then post one comment on the issue linking
+               you add a command. For every command you add or whose behaviour
+               you change, also add or update a check file
+               archicad-addon/Test/checks/<snake_case command>.json: the
+               commands the community test runner sends to an empty, untitled
+               Archicad project, and the answers they must give (format in
+               tools/community-test-runner/README.md, "Writing checks";
+               python tools/new_command.py writes a starter one with a new
+               command). Testers run it on real Archicad once the build is
+               green, so it is how your change gets tried before it is merged:
+               write the expectations from what the command must return, make
+               every element it needs in its own steps (well away from the
+               origin), and set "creates": false on steps that make nothing.
+               Then post one comment on the issue linking
                the pull request and saying what you changed. Start it by
                tagging the person who opened the issue (@<their login>) -
                unless a bot filed it (the Discord issue bot files as the

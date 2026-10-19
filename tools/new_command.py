@@ -10,6 +10,8 @@ command, so only the Archicad API calls inside Execute are left to write by hand
   * the RegisterCommand call in AddOnMain.cpp, with the version from
     tools/package_info.json
   * a starter Python example in archicad-addon/Examples/
+  * a starter check in archicad-addon/Test/checks/ for the community test runner
+    (tools/community-test-runner), which tests pull requests on real Archicad
 
 Existing commands are never touched: a command whose class already exists is
 skipped. Standard library only; a .yaml spec also works when PyYAML is installed.
@@ -31,6 +33,7 @@ Spec format (JSON list, or {"commands": [...]}), one object per command:
     "commonSchema": true,                  optional: CommonSchema::Used (default) or NotUsed
     "version": "1.7.3",                    optional: defaults to tools/package_info.json
     "example": true,                       optional: write Examples/<snake_case>.py (default true)
+    "check": true,                         optional: write Test/checks/<snake_case>.json (default true)
     "input": { ... compact schema ... },   null or omitted for no parameters
     "output": "executionResults" | "elements" | { ... compact schema ... }
   }
@@ -64,6 +67,7 @@ import sys
 ROOT = os.path.dirname (os.path.dirname (os.path.abspath (__file__)))
 SOURCES = os.path.join (ROOT, 'archicad-addon', 'Sources')
 EXAMPLES = os.path.join (ROOT, 'archicad-addon', 'Examples')
+CHECKS = os.path.join (ROOT, 'archicad-addon', 'Test', 'checks')
 ADDON_MAIN = os.path.join (SOURCES, 'AddOnMain.cpp')
 PACKAGE_INFO = os.path.join (ROOT, 'tools', 'package_info.json')
 
@@ -518,6 +522,34 @@ def gen_example (cmd, input_schema, common):
             f"# TODO: replace the placeholder values with real ones.\n\n{call}\n\nprint (result)\n")
 
 
+def gen_check (cmd, input_schema, output_schema, version, common):
+    """A starter check: one call of the command and expectations from its output shape. The params
+    are placeholders; the elements a command needs are made in earlier steps of the same check."""
+    params = (placeholder (input_schema, common) if input_schema else None) or {}
+    props = (output_schema or {}).get ('properties', {})
+    out = cmd.get ('output', 'executionResults')
+    step = {'id': 'call', 'command': cmd['name'], 'params': params}
+    if out == 'elements' or 'elements' in props:
+        step['expect'] = [{'path': 'elements[0].elementId.guid', 'exists': True, 'name': 'an element is created'}]
+    else:
+        step['creates'] = False
+        if out == 'executionResults' or 'executionResults' in props:
+            step['expect'] = [{'path': 'executionResults[0].success', 'eq': True, 'name': 'succeeds'}]
+        else:
+            step['expect'] = [{'path': name, 'exists': True} for name in props] or [{'path': 'error', 'exists': False}]
+    check = {
+        'title': f"{cmd['name']}: TODO what this check proves",
+        'minTapir': version,
+        '_todo': ('Replace the placeholder params with real ones: make the elements, attributes or stories '
+                  'the command needs in earlier steps, save their ids ("save": {"w1": "elements[0].elementId.guid"}) '
+                  'and use "${w1}". Then make the expectations prove the behaviour (eq, approx, len, ...), not '
+                  'only that it answers. Format: tools/community-test-runner/README.md, "Writing checks". '
+                  'Remove this note when done.'),
+        'steps': [step],
+    }
+    return json.dumps (check, indent=2) + '\n'
+
+
 # ------------------------------------------------------------ insertion --
 
 NEWLINES = {}  # path -> line ending found on read, kept on write
@@ -645,6 +677,17 @@ def main ():
                     if args.dry_run:
                         print (f'===== Examples/{snake (name)}.py\n{gen_example (cmd, input_schema, common)}')
                     write (ex_path, gen_example (cmd, input_schema, common), args.dry_run, 'example')
+            if cmd.get ('check', True):
+                check_path = os.path.join (CHECKS, snake (name) + '.json')
+                check_text = gen_check (cmd, input_schema, output_schema, cmd.get ('version', version), common)
+                if os.path.exists (check_path):
+                    print (f'note: {os.path.relpath (check_path, ROOT)} exists, check not written')
+                else:
+                    if args.dry_run:
+                        print (f'===== Test/checks/{snake (name)}.json\n{check_text}')
+                    elif not os.path.isdir (CHECKS):
+                        os.makedirs (CHECKS)
+                    write (check_path, check_text, args.dry_run, 'check')
 
         if args.schemas:
             print (json.dumps (schemas_out, indent=4))
@@ -664,7 +707,8 @@ def main ():
         if skipped:
             print (f'skipped (already exist): {", ".join (skipped)}')
         if written and not args.dry_run:
-            print ('next: fill the TODOs in Execute, then run python tools/generate_addon_docs.py to check the schemas parse '
+            print ('next: fill the TODOs in Execute and in the check file (Test/checks/), then run '
+                   'python tools/generate_addon_docs.py to check the schemas parse '
                    '(revert docs/ afterwards: the weekly release regenerates them)')
         return 0
     except SpecError as e:
