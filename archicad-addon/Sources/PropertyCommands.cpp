@@ -1949,3 +1949,291 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
     return response;
 }
+
+GetPropertyEditabilityCommand::GetPropertyEditabilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyEditabilityCommand::GetName () const
+{
+    return "GetPropertyEditability";
+}
+
+GS::Optional<GS::UniString> GetPropertyEditabilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "properties": {
+                "$ref": "#/PropertyIds"
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Checks whether the value of each property can be modified for these elements, and whether each property is visible for them."
+            },
+            "elementTypes": {
+                "type": "array",
+                "description": "Checks whether the value of each property can be modified in the tool default of these element types.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "propertyDefinitionDefaults": {
+                "type": "boolean",
+                "description": "When true, checks whether the default value of each property definition can be modified. This is the default value of the property definition itself, not the tool default of an element type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyEditabilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "Only the lists that were asked for are present.",
+        "properties": {
+            "editabilityOfElements": {
+                "type": "array",
+                "description": "Present when elements were given. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyEditabilities": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "editable": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the value of the property can be modified for the element. False for example for read-only properties or expressions with cyclic references."
+                                                    },
+                                                    "visible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the property is visible for the element."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "editable",
+                                                    "visible"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyEditabilities"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            },
+            "editabilityOfElementTypeDefaults": {
+                "type": "array",
+                "description": "Present when elementTypes were given. The order of the outer list is that of the given element types. The order of the inner lists are that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyEditabilities": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "editable": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the value of the property can be modified in the tool default of the element type."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "editable"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyEditabilities"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            },
+            "editabilityOfPropertyDefinitionDefaults": {
+                "type": "array",
+                "description": "Present when propertyDefinitionDefaults is true. The order is that of the given properties.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "editable": {
+                                    "type": "boolean",
+                                    "description": "Whether the default value of the property definition can be modified."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "editable"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetPropertyEditabilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    GS::Array<GS::ObjectState> elements;
+    const bool hasElements = parameters.Get ("elements", elements);
+
+    GS::Array<GS::UniString> elementTypes;
+    const bool hasElementTypes = parameters.Get ("elementTypes", elementTypes);
+
+    bool propertyDefinitionDefaults = false;
+    parameters.Get ("propertyDefinitionDefaults", propertyDefinitionDefaults);
+
+    // The editability functions return a plain bool, so an unknown property or element
+    // would look like a locked one. Check every identifier first and report it as an error.
+    GS::Array<API_Guid> propertyGuids;
+    GS::Array<GS::Optional<GS::ObjectState>> propertyErrors;
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyGuids.Push (APINULLGuid);
+            propertyErrors.Push (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
+            continue;
+        }
+
+        API_PropertyDefinition definition = {};
+        definition.guid = GetGuidFromObjectState (*propertyId);
+        propertyGuids.Push (definition.guid);
+        if (definition.guid == APINULLGuid || ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+            propertyErrors.Push (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+        propertyErrors.Push (GS::NoValue);
+    }
+
+    GS::ObjectState response;
+
+    if (hasElements) {
+        const auto& editabilityOfElements = response.AddList<GS::ObjectState> ("editabilityOfElements");
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                editabilityOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+            API_Elem_Head elemHead;
+            if (elemGuid == APINULLGuid || !LoadElementHeaderByGuid (elemGuid, elemHead)) {
+                editabilityOfElements (CreateErrorResponse (APIERR_BADID, "Element not found"));
+                continue;
+            }
+
+            GS::ObjectState editabilityOfElement;
+            const auto& propertyEditabilities = editabilityOfElement.AddList<GS::ObjectState> ("propertyEditabilities");
+            for (UIndex i = 0; i < propertyGuids.GetSize (); ++i) {
+                if (propertyErrors[i].HasValue ()) {
+                    propertyEditabilities (propertyErrors[i].Get ());
+                    continue;
+                }
+
+                GS::ObjectState editability;
+                editability.Add ("editable", ACAPI_Element_IsPropertyDefinitionValueEditable (elemGuid, propertyGuids[i]));
+                editability.Add ("visible", ACAPI_Element_IsPropertyDefinitionVisible (elemGuid, propertyGuids[i]));
+                propertyEditabilities (editability);
+            }
+            editabilityOfElements (editabilityOfElement);
+        }
+    }
+
+    if (hasElementTypes) {
+        const auto& editabilityOfElementTypeDefaults = response.AddList<GS::ObjectState> ("editabilityOfElementTypeDefaults");
+        for (const GS::UniString& elementTypeStr : elementTypes) {
+            const API_ElemTypeID elemTypeId = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            if (elemTypeId == API_ZombieElemID) {
+                editabilityOfElementTypeDefaults (CreateErrorResponse (APIERR_BADPARS,
+                    GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                continue;
+            }
+
+#ifdef ServerMainVers_2600
+            const API_ElemType elemType (elemTypeId);
+            GS::ObjectState editabilityOfElementTypeDefault;
+            const auto& propertyEditabilities = editabilityOfElementTypeDefault.AddList<GS::ObjectState> ("propertyEditabilities");
+            for (UIndex i = 0; i < propertyGuids.GetSize (); ++i) {
+                if (propertyErrors[i].HasValue ()) {
+                    propertyEditabilities (propertyErrors[i].Get ());
+                    continue;
+                }
+
+                propertyEditabilities (GS::ObjectState ("editable", ACAPI_Element_IsPropertyDefinitionValueEditableDefault (elemType, propertyGuids[i])));
+            }
+            editabilityOfElementTypeDefaults (editabilityOfElementTypeDefault);
+#else
+            editabilityOfElementTypeDefaults (CreateErrorResponse (APIERR_NOTSUPPORTED, "Tool default editability is available from Archicad 26."));
+#endif
+        }
+    }
+
+    if (propertyDefinitionDefaults) {
+        const auto& editabilityOfPropertyDefinitionDefaults = response.AddList<GS::ObjectState> ("editabilityOfPropertyDefinitionDefaults");
+        for (UIndex i = 0; i < propertyGuids.GetSize (); ++i) {
+            if (propertyErrors[i].HasValue ()) {
+                editabilityOfPropertyDefinitionDefaults (propertyErrors[i].Get ());
+                continue;
+            }
+
+            // APINULLGuid as the element checks the default value of the property definition.
+            editabilityOfPropertyDefinitionDefaults (GS::ObjectState ("editable", ACAPI_Element_IsPropertyDefinitionValueEditable (APINULLGuid, propertyGuids[i])));
+        }
+    }
+
+    return response;
+}

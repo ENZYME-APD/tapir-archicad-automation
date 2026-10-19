@@ -776,6 +776,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<GetPropertyEditabilityCommand> (
+            propertyCommands, "1.7.3",
+            "Tells whether the values of the given properties can be modified, and whether the properties are visible, for the given elements. Also tells whether they can be modified in the tool defaults of element types (from Archicad 26) and in the default values of the property definitions themselves. Unknown elements, element types and properties are reported as errors, not as locked properties."
+        );
         AddCommandGroup (propertyCommands);
     }
 
