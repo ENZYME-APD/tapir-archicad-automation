@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 12:02 UTC",
+ "generatedAt": "2026-10-19 12:04 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1427,
+  "open": 1426,
   "not applicable": 468,
   "in progress": 168,
   "done": 743,
-  "claimed": 77
+  "claimed": 78
  },
  "items": [
   {
@@ -22841,10 +22841,15 @@
    "olderNames": [
     "APIDb_AddTextWindowContentID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1187,
+     "title": "Expose ACAPI_Window_AddTextWindowContent"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_ChangeGridSettings",
@@ -23654,6 +23659,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1187,
+     "title": "Expose ACAPI_Window_AddTextWindowContent"
+    },
     {
      "number": 1160,
      "title": "Expose ACAPI_DrawOrder_DrawOrderGetNext"
