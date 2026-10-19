@@ -78,6 +78,32 @@ class AddOnListTest(unittest.TestCase):
         self.assertTrue(fresh.restore())
         self.assertEqual(json.dumps(self.registry.keys, sort_keys=True), self.original)
 
+    def test_backup_copies_are_not_tapirs(self):
+        (self.addons / "Tapir" / "TapirAddOn_AC30_Win.apx.bak-153").write_bytes(b"old")
+        self.assertEqual(set(self.list.tapirs()), {self.own, self.addons / "Tapir" / "TapirAddOn_AC30_Win.apx"})
+        self.list.install(Path(self.tmp.name) / "runner" / "TapirAddOn_AC30_Win.apx")
+        disable = rw.entries(self.registry.read(KEY + "\\Disable"))
+        self.assertEqual(disable, [rw.to_url(self.addons / "Tapir" / "TapirAddOn_AC30_Win.apx")])
+        self.list.restore()
+
+    def test_finds_templates_in_a_localized_defaults_folder(self):
+        root = Path(self.tmp.name) / "Graphisoft"
+        for version, defaults, name in (("26", "Grundeinstellungen", "01 Archicad Beispiel-Vorlage.tpl"),
+                                        ("30", "Defaults", "00 Archicad INT Template.tpl")):
+            folder = root / f"Archicad {version}"
+            (folder / defaults / "Archicad").mkdir(parents=True)
+            (folder / defaults / "Archicad" / name).write_bytes(b"")
+            (folder / "Archicad.exe").write_bytes(b"")
+        found = {a["version"]: Path(a["blankTemplate"]).name for a in rw.find_archicads(str(root))}
+        self.assertEqual(found, {"26": "01 Archicad Beispiel-Vorlage.tpl", "30": "00 Archicad INT Template.tpl"})
+
+    def test_listening_ports_in_a_localized_netstat(self):
+        out = ("  TCP    0.0.0.0:19723          0.0.0.0:0              ABHÖREN         45264\n"
+               "  TCP    0.0.0.0:19724          0.0.0.0:0              LISTENING       39092\n"
+               "  TCP    [::]:19725             [::]:0                 ABHÖREN         45264\n"
+               "  TCP    127.0.0.1:19723        127.0.0.1:63357        WARTEND         45264\n")
+        self.assertEqual(r.listening_ports(out, {45264}), {19723, 19725})
+
     def test_urls_round_trip(self):
         path = Path(r"C:\Users\A B\Tapir #1\TapirAddOn_AC30_Win.apx")
         self.assertEqual(rw.to_url(path), "lan.flat:///C:/Users/A%20B/Tapir%20%231/TapirAddOn_AC30_Win.apx")

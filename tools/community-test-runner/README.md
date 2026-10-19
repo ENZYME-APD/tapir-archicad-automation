@@ -48,7 +48,8 @@ For each pull request and each Archicad version:
 3. loads that build instead of your Tapir, starts Archicad with the template, runs the checks,
    asks Archicad to quit, and puts your Tapir back;
 4. posts one comment whose first line can be read by a workflow:
-   `tapir-test: AC28 PASS 12/12 build 1a2b3c4 tapir 1.7.1`, followed by a table.
+   `tapir-test: AC28 GER PASS 12/12 build 1a2b3c4 tapir 1.7.1` (Archicad version and language),
+   followed by a table.
 
 **How your Tapir is left alone.** Archicad keeps the list of add-ons from *Add-On Manager* in the
 registry (`HKCU\Software\GRAPHISOFT\Archicad\Archicad <version> …\Add-On Manager\Include` and
@@ -130,6 +131,9 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
   `approx` (+ `tol`), `lt`, `gt`, `len`, `contains`, `exists`; `name` labels the row.
 - Every element a step creates is deleted at the end; set `"creates": false` on steps that
   don't create anything. `teardown` steps run last.
+- Checks run on every language version of Archicad, each with its own template and defaults (stair
+  rules, pens, layers, units). Send every value the result depends on, and prefer differences
+  (one more riser adds the going) over absolute values (the run is 4.15 m), which a template can shift.
 - `minTapir` skips the file on older add-ons. `requiresEmpty` changes the element types that
   must be absent.
 
