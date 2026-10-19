@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 05:31 UTC",
+ "generatedAt": "2026-10-19 05:46 UTC",
  "versions": [
   25,
   26,
@@ -17633,12 +17633,7 @@
      "title": "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"
     }
    ],
-   "issues": [
-    {
-     "number": 941,
-     "title": "Project Info groups and fields on Archicad 30: create, rename, move and delete groups; rename and move fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectInfo_MoveField",
@@ -21368,7 +21363,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1139,
+     "title": "Set3DCutPlanes: switch the cut off with an empty array; add Get3DCutPlanes"
+    }
+   ],
    "issues": [
     {
      "number": 1046,
@@ -21768,7 +21768,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1139,
+     "title": "Set3DCutPlanes: switch the cut off with an empty array; add Get3DCutPlanes"
+    }
+   ],
    "issues": [
     {
      "number": 876,
