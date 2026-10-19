@@ -43,6 +43,8 @@ struct StructureSelection {
 struct AssociativeDimensionPoint {
     API_Guid elementGuid = APINULLGuid;
     API_ElemTypeID elementType = API_ZombieElemID;
+    bool isStatic = false;              // not associated with any element
+    API_Coord coordinate = {0.0, 0.0};  // position of a static point
     bool line = false;
     Int32 inIndex = 0;
     char special = 0;
@@ -536,8 +538,21 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
 GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectState& pointData, AssociativeDimensionPoint& point)
 {
     const GS::ObjectState* elementId = pointData.Get ("elementId");
+    const GS::ObjectState* coordinate = pointData.Get ("coordinate");
+    if (elementId != nullptr && coordinate != nullptr) {
+        return "A witness point takes either 'elementId' or 'coordinate', not both.";
+    }
     if (elementId == nullptr) {
-        return "Missing required field 'elementId'.";
+        if (coordinate == nullptr) {
+            return "Each witness point needs either 'elementId' or 'coordinate'.";
+        }
+        // Static witness point: not associated with any element, placed at the given
+        // coordinate, as a point added by hand on empty space (zombie base, position in loc).
+        point.isStatic = true;
+        point.elementGuid = APINULLGuid;
+        point.elementType = API_ZombieElemID;
+        point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
+        return {};
     }
 
     point.elementGuid = GetGuidFromObjectState (*elementId);
@@ -607,6 +622,9 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
         dimElem.base.base.node_typ = point.nodeType;
         dimElem.base.base.node_status = point.nodeStatus;
         dimElem.base.base.node_id = point.nodeId;
+        if (point.isStatic) {
+            dimElem.base.loc = point.coordinate;
+        }
         dimElem.note = element.dimension.defNote;
         dimElem.witnessVal = element.dimension.defWitnessVal;
         dimElem.witnessForm = element.dimension.defWitnessForm;
@@ -626,6 +644,9 @@ void TryApplyDimensionFloorIndex (
     }
 
     for (const AssociativeDimensionPoint& point : points) {
+        if (point.isStatic) {
+            continue;
+        }
         API_Elem_Head elementHeader = {};
         if (LoadElementHeaderByGuid (point.elementGuid, elementHeader)) {
             element.header.floorInd = elementHeader.floorInd;

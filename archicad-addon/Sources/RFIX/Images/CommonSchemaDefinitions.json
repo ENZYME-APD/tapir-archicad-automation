@@ -3756,9 +3756,14 @@
     },
     "AssociativeWitnessPoint": {
         "type": "object",
+        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. A witness point takes either elementId or coordinate, not both.",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The position of a static (non-associative) witness point. Use it instead of elementId; the other fields are ignored for a static point."
             },
             "line": {
                 "type": "boolean"
@@ -3780,10 +3785,7 @@
                 "minimum": 0.0
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "elementId"
-        ]
+        "additionalProperties": false
     },
     "IFCExportTranslator": {
         "type": "object",
