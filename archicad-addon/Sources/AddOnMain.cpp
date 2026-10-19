@@ -1418,7 +1418,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPPortsCommand> (
             mepCommands, "1.5.6",
-            "Retrieves the ports of the given MEP elements including position, shape, size and connection status. Available from Archicad 28."
+            "Retrieves the ports of the given MEP elements including position, shape, size and connection status, and the outer diameter, wall thickness and flange size (Archicad 30) of piping and ventilation ports. Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPDistributionSystemsCommand> (
             mepCommands, "1.5.6",

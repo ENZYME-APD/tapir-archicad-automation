@@ -8,6 +8,8 @@
 #include "ACAPI/MEPEnums.hpp"
 #include "ACAPI/MEPElement.hpp"
 #include "ACAPI/MEPPort.hpp"
+#include "ACAPI/MEPPipingPort.hpp"
+#include "ACAPI/MEPVentilationPort.hpp"
 #include "ACAPI/MEPRoutingElement.hpp"
 #include "ACAPI/MEPRoutingElementDefault.hpp"
 #include "ACAPI/MEPRoutingSegment.hpp"
@@ -45,6 +47,7 @@
 #endif
 
 #include <optional>
+#include <utility>
 
 using namespace ACAPI::MEP;
 #endif
@@ -269,6 +272,48 @@ static GS::UniString GetMEPElementDomainName (const API_Guid& classId)
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
     return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+}
+
+// The domain specific port getters used by GetMEPPorts could not be checked against the DevKit when
+// they were added, so these helpers accept a plain value, an ACAPI::Result or a std::optional of it.
+// A value that cannot be read is left out of the response.
+template <typename T>
+static std::optional<T> PortValueToOptional (const T& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> PortValueToOptional (const std::optional<T>& value)
+{
+    return value;
+}
+
+template <typename T>
+static std::optional<T> PortValueToOptional (ACAPI::Result<T>&& result)
+{
+    if (result.IsErr ()) {
+        return std::nullopt;
+    }
+    return result.Unwrap ();
+}
+
+template <typename Value>
+static void AddPortNumberIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto number = PortValueToOptional (std::forward<Value> (value));
+    if (number.has_value ()) {
+        os.Add (name, static_cast<double> (number.value ()));
+    }
+}
+
+template <typename Value>
+static void AddPortBoolIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
+{
+    const auto boolValue = PortValueToOptional (std::forward<Value> (value));
+    if (boolValue.has_value ()) {
+        os.Add (name, static_cast<bool> (boolValue.value ()));
+    }
 }
 
 #endif
@@ -580,9 +625,31 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
             portOs.Add ("shape", ConnectorShapeToString (port->GetShape ()));
             portOs.Add ("width", port->GetWidth ());
             portOs.Add ("height", port->GetHeight ());
-            portOs.Add ("domain", DomainToString (port->GetDomain ()));
+            const Domain portDomain = port->GetDomain ();
+            portOs.Add ("domain", DomainToString (portDomain));
             portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port->GetMEPSystem ()));
             portOs.Add ("isPhysicallyConnected", port->IsPhysicallyConnected ());
+            AddPortBoolIfAvailable (portOs, "isPhysicallyConnectable", port->IsPhysicallyConnectable ());
+
+            // The domain specific data. Cable carrier ports have no getters of their own.
+            if (portDomain == Domain::Piping) {
+                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+                if (pipingPort.IsOk ()) {
+                    AddPortNumberIfAvailable (portOs, "outerDiameter", pipingPort->GetOuterDiameter ());
+                    AddPortNumberIfAvailable (portOs, "wallThickness", pipingPort->GetWallThickness ());
+#ifdef ServerMainVers_3000
+                    AddPortNumberIfAvailable (portOs, "flangeSize", pipingPort->GetFlangeSize ());
+#endif
+                }
+            } else if (portDomain == Domain::Ventilation) {
+                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+                if (ventilationPort.IsOk ()) {
+                    AddPortNumberIfAvailable (portOs, "wallThickness", ventilationPort->GetWallThickness ());
+#ifdef ServerMainVers_3000
+                    AddPortNumberIfAvailable (portOs, "flangeSize", ventilationPort->GetFlangeSize ());
+#endif
+                }
+            }
 
             const std::optional<ACAPI::MEP::UniqueID> connectedPortId = port->GetConnectedPortId ();
             if (connectedPortId.has_value ()) {

@@ -235,6 +235,22 @@
             "isPhysicallyConnected": {
                 "type": "boolean"
             },
+            "isPhysicallyConnectable": {
+                "type": "boolean",
+                "description": "Whether the port can be physically connected. Left out if it cannot be read."
+            },
+            "outerDiameter": {
+                "type": "number",
+                "description": "The outer diameter of a piping port."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of a piping or ventilation port."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of a piping or ventilation port. Available from Archicad 30."
+            },
             "connectedPortId": {
                 "$ref": "#/Guid"
             },
