@@ -1,4 +1,20 @@
 var gSchemaDefinitions = {
+    "User": {
+        "type": "object",
+        "properties": {
+            "userId": {
+                "type": "number"
+            },
+            "userName": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userId",
+            "userName"
+        ]
+    },
     "Elements": {
         "type": "array",
         "description": "A list of elements.",
@@ -712,6 +728,31 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "designOptionCombinationId"
+        ]
+    },
+    "DesignOptionSetId": {
+        "type": "object",
+        "description": "The identifier of a design option set.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DesignOptionSetIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "designOptionSetId": {
+                "$ref": "#/DesignOptionSetId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSetId"
         ]
     },
     "LayersOfLayerCombination": {
@@ -2076,14 +2117,14 @@ var gSchemaDefinitions = {
             },
             "index1": {
                 "type": "integer",
-                "description": "Optional 1-based first index for changing a single item of an array parameter without resizing it. Only valid for array parameters and only together with a single (non-list) value."
+                "description": "Optional 1-based first index for changing a single item of an array parameter. Only valid for array parameters and only together with a single (non-list) value."
             },
             "index2": {
                 "type": "integer",
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the array parameter is resized to match the given values. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array without resizing it. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -2102,14 +2143,14 @@ var gSchemaDefinitions = {
             },
             "index1": {
                 "type": "integer",
-                "description": "Optional 1-based first index for changing a single item of an array parameter without resizing it. Only valid for array parameters and only together with a single (non-list) value."
+                "description": "Optional 1-based first index for changing a single item of an array parameter. Only valid for array parameters and only together with a single (non-list) value."
             },
             "index2": {
                 "type": "integer",
                 "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
             },
             "value": {
-                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the array parameter is resized to match the given values. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array without resizing it. Within one command call whole-array (list) values are applied after all single-value changes."
+                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the list must contain exactly as many values as the parameter has items, resizing an array parameter is not supported. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -2199,6 +2240,88 @@ var gSchemaDefinitions = {
             "coordinates"
         ]
     },
+    "CurtainWallPattern": {
+        "type": "object",
+        "description": "The column (primary) or row (secondary) pattern of a curtain wall segment: the sizes of the columns/rows of one pattern unit and how the unit is repeated along the segment.",
+        "properties": {
+            "sizes": {
+                "type": "array",
+                "description": "The sizes (widths of the columns or heights of the rows) of the pattern unit in meters, in order from the start of the segment or from the bottom. The unit is repeated to fill the segment.",
+                "items": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "minItems": 1
+            },
+            "logic": {
+                "$ref": "#/CurtainWallPatternLogic"
+            },
+            "origin": {
+                "$ref": "#/CurtainWallPatternOrigin"
+            },
+            "flexibleIndices": {
+                "type": "array",
+                "description": "Zero-based indices of the columns/rows of the pattern unit that 'BestDivision' may stretch. When omitted, all of them are flexible. Ignored by 'FixedSizes'.",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sizes"
+        ]
+    },
+    "CurtainWallPatternCell": {
+        "type": "object",
+        "description": "The panel and frame classes of one cell of the pattern unit of a curtain wall segment. Panel classes are numbered as Archicad numbers them: 0 is no panel (the cell is left empty), 1 is the first panel class of the curtain wall (as listed in the Curtain Wall Settings, from the favorite or the tool defaults), 2 the second and so on. Frame classes: 0 is no frame (the cell is merged with its neighbour), 1 the Division frame, 2 the Corner frame, 3 the Boundary frame, 4 the first custom frame class of the curtain wall, 5 the second and so on. Fields not given keep the default assignment of the cell.",
+        "properties": {
+            "columnIndex": {
+                "type": "integer",
+                "description": "Zero-based column of the cell within the pattern unit, counted from the start of the segment.",
+                "minimum": 0
+            },
+            "rowIndex": {
+                "type": "integer",
+                "description": "Zero-based row of the cell within the pattern unit, counted from the bottom.",
+                "minimum": 0
+            },
+            "panelClassIndex": {
+                "type": "integer",
+                "description": "The panel class of the cell. 0 leaves the cell without a panel (Archicad keeps a hidden 'deleted panel' subelement there). With a crossing frame it is the class of the left (or lower) half; see rightPanelClassIndex for the other half.",
+                "minimum": 0
+            },
+            "rightPanelClassIndex": {
+                "type": "integer",
+                "description": "The panel class of the right (or upper) half of a cell with a crossing frame. Defaults to panelClassIndex.",
+                "minimum": 0
+            },
+            "leftFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the frame on the left edge of the cell (the grid line at the start of the column).",
+                "minimum": 0
+            },
+            "bottomFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the frame on the bottom edge of the cell (the grid line at the bottom of the row).",
+                "minimum": 0
+            },
+            "crossingFrameType": {
+                "$ref": "#/CurtainWallCrossingFrameType"
+            },
+            "crossingFrameClassIndex": {
+                "type": "integer",
+                "description": "The frame class of the diagonal frame of the cell. Only used when crossingFrameType is not 'None'.",
+                "minimum": 0
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "columnIndex",
+            "rowIndex"
+        ]
+    },
     "BeamHole": {
         "type": "object",
         "properties": {
@@ -2233,6 +2356,39 @@ var gSchemaDefinitions = {
             "width"
         ]
     },
+    "BeamHoleModification": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/BeamHoleType"
+            },
+            "showContour": {
+                "type": "boolean"
+            },
+            "centerX": {
+                "type": "number"
+            },
+            "centerZ": {
+                "type": "number"
+            },
+            "width": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "height": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Only used for the Rectangular type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "centerX",
+            "centerZ",
+            "width"
+        ]
+    },
     "LinkToSettings": {
         "type": "object",
         "description": "Mode of linking an element to its home story.",
@@ -2243,7 +2399,7 @@ var gSchemaDefinitions = {
             },
             "newCreationMode": {
                 "type": "boolean",
-                "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
+                "description": "Controls home-story selection during element creation. If true, homeStoryDifference selects the home story relative to the current story and the element's absolute floor index is ignored. If false, the absolute floor index is used and Archicad fills homeStoryDifference. This is a creation instruction, not a persistent linking mode."
             }
         },
         "additionalProperties": false
@@ -2515,6 +2671,50 @@ var gSchemaDefinitions = {
             "x",
             "y",
             "z"
+        ]
+    },
+    "PerspectiveProjectionParameters": {
+        "type": "object",
+        "description": "The parameters of a perspective projection of the 3D window.",
+        "properties": {
+            "cameraPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The position of the camera."
+            },
+            "targetPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The position of the target point the camera looks at."
+            },
+            "distance": {
+                "type": "number",
+                "description": "The distance between the camera and the target."
+            },
+            "azimuth": {
+                "type": "number",
+                "description": "The azimuth angle of the camera."
+            },
+            "viewCone": {
+                "type": "number",
+                "description": "The view cone angle of the camera."
+            },
+            "rollAngle": {
+                "type": "number",
+                "description": "The roll angle of the camera."
+            },
+            "isTwoPointPersp": {
+                "type": "boolean",
+                "description": "True for a two-point perspective (vertical edges stay vertical)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cameraPosition",
+            "targetPosition",
+            "distance",
+            "azimuth",
+            "viewCone",
+            "rollAngle",
+            "isTwoPointPersp"
         ]
     },
     "Dimensions3D": {
@@ -3083,6 +3283,33 @@ var gSchemaDefinitions = {
             "UserDefined"
         ]
     },
+    "CurtainWallPatternLogic": {
+        "type": "string",
+        "description": "How the pattern unit fills the segment: 'FixedSizes' keeps the given sizes and repeats the unit, which may leave a partial unit at the end (Archicad: Fixed Size); 'BestDivision' stretches the flexible columns/rows so that whole units fill the segment with the least stretching (Archicad: Best Division).",
+        "enum": [
+            "FixedSizes",
+            "BestDivision"
+        ]
+    },
+    "CurtainWallPatternOrigin": {
+        "type": "string",
+        "description": "Where the pattern unit is anchored on the segment: at its start, centered with a unit starting at the center, centered with a unit centered on the center, or at its end.",
+        "enum": [
+            "StartWithPattern",
+            "StartFromCenter",
+            "AlignToCenter",
+            "EndWithPattern"
+        ]
+    },
+    "CurtainWallCrossingFrameType": {
+        "type": "string",
+        "description": "The diagonal frame of a pattern cell: none, or from the bottom left to the top right corner, or from the top left to the bottom right corner.",
+        "enum": [
+            "None",
+            "FromBottomLeftToTopRight",
+            "FromTopLeftToBottomRight"
+        ]
+    },
     "BeamAnchorPoint": {
         "type": "string",
         "description": "Anchor point of the beam cross section on a 3x3 grid.",
@@ -3258,7 +3485,9 @@ var gSchemaDefinitions = {
             "Equipment",
             "Fitting",
             "FlexibleSegment",
-            "TakeOff"
+            "TakeOff",
+            "ElectricalPanel",
+            "ElectricalDevice"
         ]
     },
     "DrawingNameType": {
@@ -5704,6 +5933,69 @@ var gSchemaDefinitions = {
             "$ref": "#/BoundingBox3DOrError"
         }
     },
+    "Body3D": {
+        "type": "object",
+        "description": "One solid body of an element's 3D model: a flat vertex list in world coordinates and the planar faces referencing it. The faces are not triangulated: a face is a closed loop of vertex indices (counterclockwise seen from outside the body) plus the loops of its holes.",
+        "properties": {
+            "vertices": {
+                "type": "array",
+                "description": "The vertices of the body in world coordinates (meters, absolute Z).",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "polygons": {
+                "type": "array",
+                "description": "The faces of the body.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "description": "The outer contour of the face: 0-based indices into vertices.",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 3
+                        },
+                        "holes": {
+                            "type": "array",
+                            "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "vertexIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "minItems": 3
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "vertexIds"
+                                ]
+                            }
+                        },
+                        "surfaceId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertices",
+            "polygons"
+        ]
+    },
     "LibPartUnId": {
         "type": "object",
         "properties": {
@@ -6125,8 +6417,8 @@ var gSchemaDefinitions = {
                 "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
             },
             "renovationFilterGuid": {
-                "$ref": "#/Guid",
-                "description": "GUID of the renovation filter applied to the view."
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter applied to the view."
             },
             "d3styleName": {
                 "type": "string",
@@ -6428,19 +6720,8 @@ var gSchemaDefinitions = {
                 "description": "Tie-breaker (0-999) used when two walls meet with the same connectionPriority, or when 3+ walls meet in a junction (API_WallType::sequence). Archicad ignores writes to this field; read-only in practice."
             },
             "linkToSettings": {
-                "type": "object",
-                "description": "Mode of linking the wall to its home story.",
-                "properties": {
-                    "homeStoryDifference": {
-                        "type": "integer",
-                        "description": "Difference of the home story from the current story."
-                    },
-                    "newCreationMode": {
-                        "type": "boolean",
-                        "description": "A one-shot instruction for Create, not a persisted property: when true, header.floorInd (floorIndex/zCoordinate) is ignored and homeStoryDifference is used to place the wall instead (API_LinkToSettings remarks). Reading it back afterward is expected to show false regardless, since Archicad resolves it to an absolute floor index immediately rather than storing the mode itself."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LinkToSettings",
+                "description": "newCreationMode is expected to read back as false after creation; Archicad resolves the relative story selection to an absolute floor index."
             },
             "inheritEndSurface": {
                 "type": "boolean",
@@ -7577,6 +7858,71 @@ var gSchemaDefinitions = {
             "SolidBodyWithSkirt"
         ]
     },
+    "MeshModificationData": {
+        "type": "object",
+        "description": "The fields to modify on the Mesh. Only provided fields are changed; omitted fields are left as-is.",
+        "properties": {
+            "floorIndex": {
+                "type": "integer"
+            },
+            "level": {
+                "type": "number",
+                "description": "The Z reference level of coordinates."
+            },
+            "skirtType": {
+                "$ref": "#/MeshSkirtType"
+            },
+            "skirtLevel": {
+                "type": "number",
+                "description": "The height of the skirt."
+            },
+            "ridges": {
+                "$ref": "#/MeshRidges"
+            },
+            "showLines": {
+                "type": "boolean",
+                "description": "Whether to show secondary mesh lines on plan."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh contour line."
+            },
+            "levelPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh level lines."
+            },
+            "lineTypeIndex": {
+                "type": "integer",
+                "description": "Line type attribute index for the mesh contour."
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the mesh.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes3D"
+            },
+            "sublines": {
+                "type": "array",
+                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
+                "items": {
+                    "$ref": "#/MeshSubline"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "MeshDetails": {
         "type": "object",
         "properties": {
@@ -8062,6 +8408,84 @@ var gSchemaDefinitions = {
               "leaderLine"
           ]
     },
+    "DimensionOrigin": {
+        "type": "string",
+        "description": "The origin a level dimension measures from.",
+        "enum": [
+            "ProjectZero",
+            "ReferenceLevel1",
+            "ReferenceLevel2",
+            "StoredOrigin",
+            "Altitude"
+        ]
+    },
+    "LevelDimensionDetails": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The location of the marker."
+            },
+            "level": {
+                "type": "number",
+                "description": "The level the dimension shows in meters: the height of the owner element at the position for an associative level dimension, the floor level or the static value otherwise."
+            },
+            "staticLevel": {
+                "type": "boolean",
+                "description": "The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false."
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "Present only for an associative level dimension: the element it measures."
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType",
+                "description": "Present only for an associative level dimension."
+            },
+            "dimForm": {
+                "type": "integer",
+                "description": "Marker type 0-19."
+            },
+            "needPlus": {
+                "type": "boolean"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer"
+            },
+            "markerSize": {
+                "type": "number",
+                "description": "Size of the marker in millimeters."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the marker in radians."
+            },
+            "origin": {
+                "$ref": "#/DimensionOrigin"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "level",
+            "staticLevel",
+            "dimForm",
+            "needPlus",
+            "pen",
+            "textHeight",
+            "textPen",
+            "markerSize",
+            "angle",
+            "origin"
+        ]
+    },
     "TextDetails": {
         "type": "object",
         "properties": {
@@ -8200,6 +8624,9 @@ var gSchemaDefinitions = {
                 "$ref": "#/TextDetails"
             },
             {
+                "$ref": "#/LevelDimensionDetails"
+            },
+            {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
             }
         ]
@@ -8247,21 +8674,24 @@ var gSchemaDefinitions = {
     "RevisionCustomSchemeData": {
         "type": "array",
         "items": {
-            "type": "object",
-            "properties": {
-                "customSchemeKey": {
-                    "$ref": "#/Guid"
-                },
-                "customSchemeValue": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "customSchemeKey",
-                "customSchemeValue"
-            ]
+            "$ref": "#/RevisionCustomSchemeEntry"
         }
+    },
+    "RevisionCustomSchemeEntry": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "$ref": "#/Guid"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "customSchemeKey",
+            "customSchemeValue"
+        ]
     },
     "DocumentRevisionReference": {
         "type": "object",
@@ -10607,6 +11037,7 @@ var gSchemaDefinitions = {
             "text": { "type": "string", "description": "The run's text content. Windows-style CRLF (and bare CR) line endings are normalized to LF." },
             "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
             "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
+            "fontName": { "type": "string", "description": "Name of the font for this run only, resolved like the style's fontName (and taking precedence over the run's fontIndex). Optional; defaults to the style's font. Read back as the name of the font the run's fontIndex refers to, absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10625,6 +11056,7 @@ var gSchemaDefinitions = {
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it and GetDetailsOfElements reports it in fontName, e.g. 'Arial'. Resolved to the font's index (exact match first, then case-insensitive); the command fails when no loaded font has the name. Takes precedence over fontIndex if both are given." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10660,6 +11092,7 @@ var gSchemaDefinitions = {
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "fontName": { "type": "string", "description": "The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10756,7 +11189,8 @@ var gSchemaDefinitions = {
         "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
         "properties": {
             "textWay": { "$ref": "#/SymbolLabelTextDirection" },
-            "fontIndex": { "type": "integer" },
+            "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
@@ -10769,6 +11203,2590 @@ var gSchemaDefinitions = {
             "effectSuperscript": { "type": "boolean" },
             "effectSubscript": { "type": "boolean" },
             "effectProtected": { "type": "boolean" }
+        },
+        "additionalProperties": false
+    },
+    "WallQuantities": {
+        "type": "object",
+        "description": "Quantities of a Wall element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the wall."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the wall (openings smaller than minOpeningSize are not subtracted)."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the wall (openings not subtracted)."
+            },
+            "referenceSideSurface": {
+                "type": "number",
+                "description": "Net surface on the reference line side."
+            },
+            "oppositeSideSurface": {
+                "type": "number",
+                "description": "Net surface on the side opposite to the reference line."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Surface of the edges of the wall."
+            },
+            "referenceSideSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional surface on the reference line side."
+            },
+            "oppositeSideSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional surface on the side opposite to the reference line."
+            },
+            "grossReferenceSideSurface": {
+                "type": "number",
+                "description": "Gross surface on the reference line side."
+            },
+            "grossOppositeSideSurface": {
+                "type": "number",
+                "description": "Gross surface on the side opposite to the reference line."
+            },
+            "length": {
+                "type": "number",
+                "description": "Average of the lengths on the two sides of the wall."
+            },
+            "referenceSideLength": {
+                "type": "number",
+                "description": "Length on the reference line side."
+            },
+            "oppositeSideLength": {
+                "type": "number",
+                "description": "Length on the side opposite to the reference line."
+            },
+            "centerLength": {
+                "type": "number",
+                "description": "Length of the wall at its center."
+            },
+            "referenceLineLength": {
+                "type": "number",
+                "description": "Length of the reference line."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the wall."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the wall."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the wall."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Floor plan perimeter of the wall."
+            },
+            "windowsSurface": {
+                "type": "number",
+                "description": "Surface of the windows in the wall."
+            },
+            "doorsSurface": {
+                "type": "number",
+                "description": "Surface of the doors in the wall."
+            },
+            "emptyOpeningsSurface": {
+                "type": "number",
+                "description": "Surface of the empty openings in the wall."
+            },
+            "emptyOpeningsVolume": {
+                "type": "number",
+                "description": "Volume of the empty openings in the wall."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "referenceSideSurface",
+            "oppositeSideSurface",
+            "edgeSurface",
+            "referenceSideSurfaceConditional",
+            "oppositeSideSurfaceConditional",
+            "grossReferenceSideSurface",
+            "grossOppositeSideSurface",
+            "length",
+            "referenceSideLength",
+            "oppositeSideLength",
+            "centerLength",
+            "referenceLineLength",
+            "minHeight",
+            "maxHeight",
+            "area",
+            "perimeter",
+            "windowsSurface",
+            "doorsSurface",
+            "emptyOpeningsSurface",
+            "emptyOpeningsVolume"
+        ]
+    },
+    "ColumnQuantities": {
+        "type": "object",
+        "description": "Quantities of a Column element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "coreVolume": {
+                "type": "number",
+                "description": "Net volume of the column core."
+            },
+            "veneerVolume": {
+                "type": "number",
+                "description": "Net volume of the column veneer."
+            },
+            "coreGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column core."
+            },
+            "veneerGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column veneer."
+            },
+            "coreSurface": {
+                "type": "number",
+                "description": "Net side surface of the column core."
+            },
+            "veneerSurface": {
+                "type": "number",
+                "description": "Net side surface of the column veneer."
+            },
+            "coreGrossSurface": {
+                "type": "number",
+                "description": "Gross side surface of the column core."
+            },
+            "veneerGrossSurface": {
+                "type": "number",
+                "description": "Gross side surface of the column veneer."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the column."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Floor plan perimeter of the column."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the column."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the column."
+            },
+            "crossSectionAreaCutBegin": {
+                "type": "number",
+                "description": "Area of the cross section at the beginning of the column."
+            },
+            "crossSectionAreaCutEnd": {
+                "type": "number",
+                "description": "Area of the cross section at the end of the column."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coreVolume",
+            "veneerVolume",
+            "coreGrossVolume",
+            "veneerGrossVolume",
+            "coreSurface",
+            "veneerSurface",
+            "coreGrossSurface",
+            "veneerGrossSurface",
+            "area",
+            "perimeter",
+            "minHeight",
+            "maxHeight",
+            "crossSectionAreaCutBegin",
+            "crossSectionAreaCutEnd"
+        ]
+    },
+    "BeamQuantities": {
+        "type": "object",
+        "description": "Quantities of a Beam element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the beam."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the beam."
+            },
+            "holesVolume": {
+                "type": "number",
+                "description": "Total volume of the holes in the beam."
+            },
+            "area": {
+                "type": "number",
+                "description": "Floor plan area of the beam."
+            },
+            "leftLength": {
+                "type": "number",
+                "description": "Length on the left side of the reference line."
+            },
+            "rightLength": {
+                "type": "number",
+                "description": "Length on the right side of the reference line."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Surface of the top of the beam."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Surface of the bottom of the beam."
+            },
+            "leftSurface": {
+                "type": "number",
+                "description": "Side surface on the left side of the reference line."
+            },
+            "rightSurface": {
+                "type": "number",
+                "description": "Side surface on the right side of the reference line."
+            },
+            "endSurface": {
+                "type": "number",
+                "description": "Surface of both ends of the beam."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total surface of the holes in the beam."
+            },
+            "holesEdgeSurface": {
+                "type": "number",
+                "description": "Total surface of the hole edges in the beam."
+            },
+            "holesNumber": {
+                "type": "integer",
+                "description": "Number of holes in the beam."
+            },
+            "crossSectionAreaCutBegin": {
+                "type": "number",
+                "description": "Area of the cross section at the beginning of the beam."
+            },
+            "crossSectionAreaCutEnd": {
+                "type": "number",
+                "description": "Area of the cross section at the end of the beam."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "holesVolume",
+            "area",
+            "leftLength",
+            "rightLength",
+            "topSurface",
+            "bottomSurface",
+            "leftSurface",
+            "rightSurface",
+            "endSurface",
+            "holesSurface",
+            "holesEdgeSurface",
+            "holesNumber",
+            "crossSectionAreaCutBegin",
+            "crossSectionAreaCutEnd"
+        ]
+    },
+    "SlabQuantities": {
+        "type": "object",
+        "description": "Quantities of a Slab element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the slab."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the slab."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the slab."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Net top surface of the slab."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Net bottom surface of the slab."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Net surface of the edges of the slab."
+            },
+            "topSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional top surface of the slab."
+            },
+            "bottomSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional bottom surface of the slab."
+            },
+            "grossTopSurface": {
+                "type": "number",
+                "description": "Gross top surface of the slab."
+            },
+            "grossBottomSurface": {
+                "type": "number",
+                "description": "Gross bottom surface of the slab."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross surface of the edges of the slab."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the slab."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes in the slab."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes in the slab."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "topSurface",
+            "bottomSurface",
+            "edgeSurface",
+            "topSurfaceConditional",
+            "bottomSurfaceConditional",
+            "grossTopSurface",
+            "grossBottomSurface",
+            "grossEdgeSurface",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter"
+        ]
+    },
+    "RoofQuantities": {
+        "type": "object",
+        "description": "Quantities of a Roof element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the roof."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the roof."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the roof."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Net top surface of the roof."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Net bottom surface of the roof."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Net surface of the edges of the roof."
+            },
+            "topSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional top surface of the roof."
+            },
+            "bottomSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional bottom surface of the roof."
+            },
+            "grossTopSurface": {
+                "type": "number",
+                "description": "Gross top surface of the roof."
+            },
+            "grossBottomSurface": {
+                "type": "number",
+                "description": "Gross bottom surface of the roof."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross surface of the edges of the roof."
+            },
+            "contourArea": {
+                "type": "number",
+                "description": "Area of the roof contour polygon."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the roof."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes in the roof."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes in the roof."
+            },
+            "openingsSurface": {
+                "type": "number",
+                "description": "Total surface of the roof openings."
+            },
+            "ridgesLength": {
+                "type": "number",
+                "description": "Length of the ridge edges (divided by 2, as Archicad reports it)."
+            },
+            "valleysLength": {
+                "type": "number",
+                "description": "Length of the valley edges (divided by 2, as Archicad reports it)."
+            },
+            "hipsLength": {
+                "type": "number",
+                "description": "Length of the hip edges (divided by 2, as Archicad reports it)."
+            },
+            "gablesLength": {
+                "type": "number",
+                "description": "Length of the gable edges."
+            },
+            "eavesLength": {
+                "type": "number",
+                "description": "Length of the eave edges."
+            },
+            "peaksLength": {
+                "type": "number",
+                "description": "Length of the peak edges."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "topSurface",
+            "bottomSurface",
+            "edgeSurface",
+            "topSurfaceConditional",
+            "bottomSurfaceConditional",
+            "grossTopSurface",
+            "grossBottomSurface",
+            "grossEdgeSurface",
+            "contourArea",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter",
+            "openingsSurface",
+            "ridgesLength",
+            "valleysLength",
+            "hipsLength",
+            "gablesLength",
+            "eavesLength",
+            "peaksLength"
+        ]
+    },
+    "ShellQuantities": {
+        "type": "object",
+        "description": "Quantities of a Shell element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the shell."
+            },
+            "volumeConditional": {
+                "type": "number",
+                "description": "Conditional net volume of the shell."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the shell."
+            },
+            "referenceSurface": {
+                "type": "number",
+                "description": "Net area of the reference surface."
+            },
+            "oppositeSurface": {
+                "type": "number",
+                "description": "Net area of the surface opposite to the reference."
+            },
+            "edgeSurface": {
+                "type": "number",
+                "description": "Total area of the edges."
+            },
+            "referenceSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional area of the reference surface."
+            },
+            "oppositeSurfaceConditional": {
+                "type": "number",
+                "description": "Conditional area of the opposite surface."
+            },
+            "grossReferenceSurface": {
+                "type": "number",
+                "description": "Gross area of the reference surface."
+            },
+            "grossOppositeSurface": {
+                "type": "number",
+                "description": "Gross area of the opposite surface."
+            },
+            "grossEdgeSurface": {
+                "type": "number",
+                "description": "Gross area of the edges."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the contour polygon."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total area of the holes."
+            },
+            "holesPerimeter": {
+                "type": "number",
+                "description": "Total perimeter of the holes."
+            },
+            "floorPlanArea": {
+                "type": "number",
+                "description": "Projected floor plan area of the contour polygon."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "volumeConditional",
+            "grossVolume",
+            "referenceSurface",
+            "oppositeSurface",
+            "edgeSurface",
+            "referenceSurfaceConditional",
+            "oppositeSurfaceConditional",
+            "grossReferenceSurface",
+            "grossOppositeSurface",
+            "grossEdgeSurface",
+            "perimeter",
+            "holesSurface",
+            "holesPerimeter",
+            "floorPlanArea"
+        ]
+    },
+    "MorphQuantities": {
+        "type": "object",
+        "description": "Quantities of a Morph element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the body."
+            },
+            "surface": {
+                "type": "number",
+                "description": "Net area of the body surface."
+            },
+            "floorPlanArea": {
+                "type": "number",
+                "description": "Net area of the floor plan projection."
+            },
+            "floorPlanPerimeter": {
+                "type": "number",
+                "description": "Perimeter of the floor plan projection."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the morph."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "surface",
+            "floorPlanArea",
+            "floorPlanPerimeter",
+            "height"
+        ]
+    },
+    "ZoneQuantities": {
+        "type": "object",
+        "description": "Quantities of a Zone element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "area": {
+                "type": "number",
+                "description": "Measured area of the zone."
+            },
+            "netArea": {
+                "type": "number",
+                "description": "Net area of the zone."
+            },
+            "calculatedArea": {
+                "type": "number",
+                "description": "Calculated area of the zone (after reductions)."
+            },
+            "perimeter": {
+                "type": "number",
+                "description": "Perimeter of the zone."
+            },
+            "netPerimeter": {
+                "type": "number",
+                "description": "Net perimeter of the zone."
+            },
+            "volume": {
+                "type": "number",
+                "description": "Volume of the zone."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the zone."
+            },
+            "wallsPerimeter": {
+                "type": "number",
+                "description": "Length of the perimeter walls."
+            },
+            "wallsSurface": {
+                "type": "number",
+                "description": "Surface of the perimeter walls."
+            },
+            "doorsSurface": {
+                "type": "number",
+                "description": "Surface of the doors in the zone."
+            },
+            "windowsSurface": {
+                "type": "number",
+                "description": "Surface of the windows in the zone."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "area",
+            "netArea",
+            "calculatedArea",
+            "perimeter",
+            "netPerimeter",
+            "volume",
+            "height",
+            "wallsPerimeter",
+            "wallsSurface",
+            "doorsSurface",
+            "windowsSurface"
+        ]
+    },
+    "ColumnSegmentQuantities": {
+        "type": "object",
+        "description": "Quantities of a ColumnSegment element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the column segment."
+            },
+            "grossVolume": {
+                "type": "number",
+                "description": "Gross volume of the column segment."
+            },
+            "coreVolume": {
+                "type": "number",
+                "description": "Net volume of the segment core."
+            },
+            "coreGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the segment core."
+            },
+            "veneerVolume": {
+                "type": "number",
+                "description": "Net volume of the segment veneer."
+            },
+            "veneerGrossVolume": {
+                "type": "number",
+                "description": "Gross volume of the segment veneer."
+            },
+            "coreSurface": {
+                "type": "number",
+                "description": "Net surface of the segment core."
+            },
+            "veneerSideSurface": {
+                "type": "number",
+                "description": "Side surface of the segment veneer."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the column segment."
+            },
+            "area": {
+                "type": "number",
+                "description": "Area of the column segment."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the column segment."
+            },
+            "minHeight": {
+                "type": "number",
+                "description": "Minimum height of the column segment."
+            },
+            "maxHeight": {
+                "type": "number",
+                "description": "Maximum height of the column segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "grossVolume",
+            "coreVolume",
+            "coreGrossVolume",
+            "veneerVolume",
+            "veneerGrossVolume",
+            "coreSurface",
+            "veneerSideSurface",
+            "length",
+            "area",
+            "height",
+            "minHeight",
+            "maxHeight"
+        ]
+    },
+    "BeamSegmentQuantities": {
+        "type": "object",
+        "description": "Quantities of a BeamSegment element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the beam segment."
+            },
+            "holesVolume": {
+                "type": "number",
+                "description": "Total volume of the holes in the beam segment."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the beam segment."
+            },
+            "leftLength": {
+                "type": "number",
+                "description": "Length on the left side."
+            },
+            "rightLength": {
+                "type": "number",
+                "description": "Length on the right side."
+            },
+            "topSurface": {
+                "type": "number",
+                "description": "Surface of the top of the beam segment."
+            },
+            "bottomSurface": {
+                "type": "number",
+                "description": "Surface of the bottom of the beam segment."
+            },
+            "leftSurface": {
+                "type": "number",
+                "description": "Surface of the left side of the beam segment."
+            },
+            "rightSurface": {
+                "type": "number",
+                "description": "Surface of the right side of the beam segment."
+            },
+            "endSurface": {
+                "type": "number",
+                "description": "Surface of the ends of the beam segment."
+            },
+            "holesSurface": {
+                "type": "number",
+                "description": "Total surface of the holes in the beam segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volume",
+            "holesVolume",
+            "length",
+            "leftLength",
+            "rightLength",
+            "topSurface",
+            "bottomSurface",
+            "leftSurface",
+            "rightSurface",
+            "endSurface",
+            "holesSurface"
+        ]
+    },
+    "ElementQuantities": {
+        "description": "The type-specific quantities of an element. The fields depend on the type of the element.",
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallQuantities"
+            },
+            {
+                "$ref": "#/ColumnQuantities"
+            },
+            {
+                "$ref": "#/BeamQuantities"
+            },
+            {
+                "$ref": "#/SlabQuantities"
+            },
+            {
+                "$ref": "#/RoofQuantities"
+            },
+            {
+                "$ref": "#/ShellQuantities"
+            },
+            {
+                "$ref": "#/MorphQuantities"
+            },
+            {
+                "$ref": "#/ZoneQuantities"
+            },
+            {
+                "$ref": "#/ColumnSegmentQuantities"
+            },
+            {
+                "$ref": "#/BeamSegmentQuantities"
+            }
+        ]
+    },
+    "MEPOrientation": {
+        "type": "object",
+        "description": "The orientation of an MEP element, given by a direction and a rotation vector.",
+        "properties": {
+            "direction": {
+                "$ref": "#/Coordinate3D",
+                "description": "The direction vector."
+            },
+            "rotation": {
+                "$ref": "#/Coordinate3D",
+                "description": "The rotation vector."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "direction",
+            "rotation"
+        ]
+    },
+    "ElectricalLoads": {
+        "type": "object",
+        "description": "An electrical load in total and per phase, as Archicad calculates it.",
+        "properties": {
+            "total": {
+                "type": "number"
+            },
+            "phaseA": {
+                "type": "number"
+            },
+            "phaseB": {
+                "type": "number"
+            },
+            "phaseC": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "total",
+            "phaseA",
+            "phaseB",
+            "phaseC"
+        ]
+    },
+    "ElectricalPanelDetails": {
+        "type": "object",
+        "description": "The details of an electrical panel (distribution board).",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "panelName": {
+                "type": "string"
+            },
+            "circuitNamePrefix": {
+                "type": "string",
+                "description": "The prefix of the names of the circuits of the panel."
+            },
+            "circuitIdStyle": {
+                "type": "integer",
+                "description": "The index of the style of the circuit ids."
+            },
+            "circuits": {
+                "$ref": "#/Elements",
+                "description": "The circuits owned by the panel."
+            },
+            "parentCircuitId": {
+                "$ref": "#/ElementId",
+                "description": "The circuit the panel is connected to. Missing when the panel is not connected to a circuit."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the element."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation"
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The base rotation of the element in radians."
+            },
+            "isReflected": {
+                "type": "boolean",
+                "description": "The element is mirrored."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part of the element."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the element along its local x axis."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the element along its local y axis."
+            },
+            "connectedLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "demandLoad": {
+                "$ref": "#/ElectricalLoads"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "panelName",
+            "circuitNamePrefix",
+            "circuitIdStyle",
+            "circuits",
+            "anchorPoint",
+            "orientation",
+            "rotation",
+            "isReflected",
+            "libraryPartId",
+            "xSize",
+            "ySize",
+            "connectedLoad",
+            "demandLoad"
+        ]
+    },
+    "ElectricalPanelDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical panel or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalPanelDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElectricalCircuitDetails": {
+        "type": "object",
+        "description": "The details of an electrical circuit.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the circuit, including the circuit name prefix of its panel."
+            },
+            "description": {
+                "type": "string"
+            },
+            "ownerPanelId": {
+                "$ref": "#/ElementId",
+                "description": "The panel that owns the circuit."
+            },
+            "childDevices": {
+                "$ref": "#/Elements",
+                "description": "The electrical devices connected to the circuit."
+            },
+            "childPanels": {
+                "$ref": "#/Elements",
+                "description": "The electrical panels connected to the circuit."
+            },
+            "voltage": {
+                "type": "number"
+            },
+            "phases": {
+                "type": "string",
+                "description": "The used phases, as Archicad displays them."
+            },
+            "isPhaseAUsed": {
+                "type": "boolean"
+            },
+            "isPhaseBUsed": {
+                "type": "boolean"
+            },
+            "isPhaseCUsed": {
+                "type": "boolean"
+            },
+            "wiringTypeName": {
+                "type": "string",
+                "description": "The name of the wiring type, as defined in the electrical project settings."
+            },
+            "connectedLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "demandLoad": {
+                "$ref": "#/ElectricalLoads"
+            },
+            "voltageDrop": {
+                "type": "number"
+            },
+            "estimatedCableLength": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "name",
+            "description",
+            "ownerPanelId",
+            "childDevices",
+            "childPanels",
+            "voltage",
+            "phases",
+            "isPhaseAUsed",
+            "isPhaseBUsed",
+            "isPhaseCUsed",
+            "wiringTypeName",
+            "connectedLoad",
+            "demandLoad",
+            "voltageDrop",
+            "estimatedCableLength"
+        ]
+    },
+    "ElectricalCircuitDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical circuit or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalCircuitDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElectricalDeviceDetails": {
+        "type": "object",
+        "description": "The details of an electrical device (a light, socket or other consumer).",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "parentCircuitId": {
+                "$ref": "#/ElementId",
+                "description": "The circuit the device is connected to. Missing when the device is not connected to a circuit."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the element."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation"
+            },
+            "rotation": {
+                "type": "number",
+                "description": "The base rotation of the element in radians."
+            },
+            "isReflected": {
+                "type": "boolean",
+                "description": "The element is mirrored."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part of the element."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the element along its local x axis."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the element along its local y axis."
+            },
+            "apparentPower": {
+                "type": "number",
+                "description": "The apparent power of the device in VA."
+            },
+            "isApparentPowerEnabled": {
+                "type": "boolean"
+            },
+            "loadClassificationName": {
+                "type": "string",
+                "description": "The name of the load classification, as defined in the electrical project settings."
+            },
+            "demandLoad": {
+                "type": "number"
+            },
+            "connectedElements": {
+                "$ref": "#/Elements",
+                "description": "The MEP elements directly connected to the device."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "anchorPoint",
+            "orientation",
+            "rotation",
+            "isReflected",
+            "libraryPartId",
+            "xSize",
+            "ySize",
+            "apparentPower",
+            "isApparentPowerEnabled",
+            "loadClassificationName",
+            "demandLoad",
+            "connectedElements"
+        ]
+    },
+    "ElectricalDeviceDetailsOrError": {
+        "type": "object",
+        "description": "The details of an electrical device or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElectricalDeviceDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPReferenceSet": {
+        "type": "object",
+        "description": "The reference ids (nominal sizes) that the preference tables of a domain can use.",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "referenceIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "referenceIds"
+        ]
+    },
+    "MEPAngleSet": {
+        "type": "object",
+        "description": "The angles (in degrees) that the elbow and branch preference tables of a domain can use.",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "angles": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "angles"
+        ]
+    },
+    "MEPElbowPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "referenceId": {
+                            "type": "integer"
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "In degrees. Available from Archicad 29."
+                        },
+                        "diameter": {
+                            "type": "number"
+                        },
+                        "radius": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "referenceId",
+                        "diameter",
+                        "radius"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPBranchPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "mainAxisReferenceId": {
+                            "type": "integer"
+                        },
+                        "branchAxisReferenceId": {
+                            "type": "integer"
+                        },
+                        "branchAxisAngle": {
+                            "type": "number",
+                            "description": "In degrees. Available from Archicad 29."
+                        },
+                        "mainAxisDiameter": {
+                            "type": "number"
+                        },
+                        "branchAxisDiameter": {
+                            "type": "number"
+                        },
+                        "length": {
+                            "type": "number"
+                        },
+                        "branchOffset": {
+                            "type": "number"
+                        },
+                        "connectionLength": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "mainAxisReferenceId",
+                        "branchAxisReferenceId",
+                        "mainAxisDiameter",
+                        "branchAxisDiameter",
+                        "length",
+                        "branchOffset",
+                        "connectionLength"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPTransitionPreferenceTable": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "beginReferenceId": {
+                            "type": "integer"
+                        },
+                        "endReferenceId": {
+                            "type": "integer"
+                        },
+                        "beginDiameter": {
+                            "type": "number"
+                        },
+                        "endDiameter": {
+                            "type": "number"
+                        },
+                        "length": {
+                            "type": "number",
+                            "description": "Piping only."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "In degrees. Ventilation only."
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "beginReferenceId",
+                        "endReferenceId",
+                        "beginDiameter",
+                        "endDiameter"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "name",
+            "rows"
+        ]
+    },
+    "MEPSystemGroupId": {
+        "type": "object",
+        "description": "The identifier of an MEP system group.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPPhysicalSystemId": {
+        "type": "object",
+        "description": "The identifier of an MEP physical system.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPPhysicalSystemDetails": {
+        "type": "object",
+        "properties": {
+            "physicalSystemId": {
+                "$ref": "#/MEPPhysicalSystemId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "rootElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the system starts from. Missing when not set, or when Archicad cleared it because the element is not part of an MEP network."
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId",
+                "description": "The MEP system attribute used as the category of the system. Missing when not set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemId",
+            "name"
+        ]
+    },
+    "MEPPhysicalSystemDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/MEPPhysicalSystemDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemGroupDetails": {
+        "type": "object",
+        "properties": {
+            "systemGroupId": {
+                "$ref": "#/MEPSystemGroupId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "physicalSystems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPhysicalSystemDetailsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupId",
+            "name",
+            "physicalSystems"
+        ]
+    },
+    "MEPSystemGroupDetailsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/MEPSystemGroupDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemGroupIdOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "systemGroupId": {
+                        "$ref": "#/MEPSystemGroupId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "systemGroupId"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPPhysicalSystemIdOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "physicalSystemId": {
+                        "$ref": "#/MEPPhysicalSystemId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "physicalSystemId"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GraphicOverrideRuleId": {
+        "type": "object",
+        "description": "The identifier of a graphic override rule.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "GraphicOverrideRuleIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideRuleId": {
+                "$ref": "#/GraphicOverrideRuleId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRuleId"
+        ]
+    },
+    "GraphicOverrideRuleIdOrError": {
+        "type": "object",
+        "description": "A graphic override rule identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GraphicOverrideRuleIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GraphicOverrideCombinationId": {
+        "type": "object",
+        "description": "The identifier of a graphic override combination.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "GraphicOverrideCombinationIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideCombinationId": {
+                "$ref": "#/GraphicOverrideCombinationId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideCombinationId"
+        ]
+    },
+    "GraphicOverrideElementType": {
+        "type": "string",
+        "description": "The tool an element was created with. Limited to tools that are not backed by a built-in GDL library part (Door, Window, Object, Lamp, Zone, Label, Grid and most MEP part types are intentionally excluded - their identification relies on a library part guid that was confirmed to differ across ArchiCAD builds, so it cannot be hardcoded reliably).",
+        "enum": [
+            "Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Stair", "Railing", "CurtainWall",
+            "Opening", "Mesh", "Morph",
+            "Dimension", "LevelDimension", "RadialDimension", "AngleDimension", "Text", "ChangeMarker",
+            "Hatch", "Line", "Arc", "PolyLine", "Spline", "Hotspot",
+            "Section", "Elevation", "InteriorElevation", "Detail", "Worksheet", "Camera",
+            "Figure", "Drawing",
+            "StructuralLink", "StructuralSupport", "LinearLoad", "PointLoad", "SurfaceLoad",
+            "DuctRouting", "CableCarrierRouting", "PipeRouting"
+        ]
+    },
+    "GraphicOverrideCriterion": {
+        "type": "object",
+        "description": "Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property. 'and'/'or' combine a flat list of other conditions (no nesting, see their description). 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: the renovation status of an element, and the shape, limits and orientation of an Opening.",
+        "properties": {
+            "and": {
+                "type": "array",
+                "description": "Matches if all of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.",
+                "items": { "$ref": "#/GraphicOverrideCriterion" }
+            },
+            "or": {
+                "type": "array",
+                "description": "Matches if any of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.",
+                "items": { "$ref": "#/GraphicOverrideCriterion" }
+            },
+            "elementType": {
+                "$ref": "#/GraphicOverrideElementType",
+                "description": "Matches elements created with this tool."
+            },
+            "classification": {
+                "type": "string",
+                "description": "Matches elements classified with this Classification System item ID (e.g. 'Slab'), or with any descendant of it in the classification tree (ArchiCAD's 'is in the branch of' operator - not a strict equality check)."
+            },
+            "classificationNot": {
+                "type": "string",
+                "description": "Matches elements NOT classified with this Classification System item ID and not with any descendant of it in the classification tree (ArchiCAD's 'is not in the branch of' operator - not a strict inequality check)."
+            },
+            "classificationSystem": {
+                "type": "string",
+                "description": "The classification system 'classification'/'classificationNot' refers to: its name as shown in the Classification Manager (e.g. 'Classification Archicad'), or its name and version as the criteria editor shows them (e.g. 'Classification Archicad - v 2.0'). Left out: the only classification system of the project that contains the item ID; an error when several do."
+            },
+            "all3DTypes": {
+                "type": "boolean",
+                "description": "If true, matches every 3D model element type."
+            },
+            "all2DTypes": {
+                "type": "boolean",
+                "description": "If true, matches every 2D drawing element type."
+            },
+            "missingAttributes": {
+                "type": "boolean",
+                "description": "Matches elements whose 'Missing attributes' status equals this value."
+            },
+            "missingLibraryPart": {
+                "type": "boolean",
+                "description": "Matches elements whose 'Missing library part' status equals this value (e.g. an Object/Lamp referencing a library part not found in the loaded libraries)."
+            },
+            "layer": {
+                "type": "string",
+                "description": "Matches elements on this layer (by layer name)."
+            },
+            "layerNot": {
+                "type": "string",
+                "description": "Matches elements NOT on this layer (by layer name)."
+            },
+            "layerLocked": {
+                "type": "boolean",
+                "description": "Matches elements whose layer's locked state equals this value."
+            },
+            "layerVisible": {
+                "type": "boolean",
+                "description": "Matches elements whose layer's visible state equals this value."
+            },
+            "layerCombination": {
+                "type": "string",
+                "description": "Matches elements whose layer is shown in this layer combination (by layer combination name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality."
+            },
+            "layerCombinationNot": {
+                "type": "string",
+                "description": "Matches elements whose layer is NOT shown in this layer combination (by layer combination name)."
+            },
+            "layerNameIs": {
+                "type": "string",
+                "description": "Matches elements whose layer name equals this string exactly."
+            },
+            "layerNameIsNot": {
+                "type": "string",
+                "description": "Matches elements whose layer name does not equal this string."
+            },
+            "layerNameContains": {
+                "type": "string",
+                "description": "Matches elements whose layer name contains this substring."
+            },
+            "layerNameNotContains": {
+                "type": "string",
+                "description": "Matches elements whose layer name does not contain this substring."
+            },
+            "layerNameStartsWith": {
+                "type": "string",
+                "description": "Matches elements whose layer name starts with this substring."
+            },
+            "layerNameEndsWith": {
+                "type": "string",
+                "description": "Matches elements whose layer name ends with this substring."
+            },
+            "compositeStructure": {
+                "type": "string",
+                "description": "Matches elements built with this Composite Structure attribute (by name)."
+            },
+            "compositeStructureNot": {
+                "type": "string",
+                "description": "Matches elements NOT built with this Composite Structure attribute (by name)."
+            },
+            "complexProfile": {
+                "type": "string",
+                "description": "Matches elements built with this Complex Profile attribute (by name)."
+            },
+            "complexProfileNot": {
+                "type": "string",
+                "description": "Matches elements NOT built with this Complex Profile attribute (by name)."
+            },
+            "compositeStructureNameIs": {
+                "type": "string",
+                "description": "Matches elements whose Composite Structure attribute name equals this string exactly."
+            },
+            "compositeStructureNameIsNot": {
+                "type": "string",
+                "description": "Matches elements whose Composite Structure attribute name does not equal this string."
+            },
+            "compositeStructureNameContains": {
+                "type": "string",
+                "description": "Matches elements whose Composite Structure attribute name contains this substring."
+            },
+            "compositeStructureNameNotContains": {
+                "type": "string",
+                "description": "Matches elements whose Composite Structure attribute name does not contain this substring."
+            },
+            "compositeStructureNameStartsWith": {
+                "type": "string",
+                "description": "Matches elements whose Composite Structure attribute name starts with this substring."
+            },
+            "compositeStructureNameEndsWith": {
+                "type": "string",
+                "description": "Matches elements whose Composite Structure attribute name ends with this substring."
+            },
+            "complexProfileNameIs": {
+                "type": "string",
+                "description": "Matches elements whose Complex Profile attribute name equals this string exactly."
+            },
+            "complexProfileNameIsNot": {
+                "type": "string",
+                "description": "Matches elements whose Complex Profile attribute name does not equal this string."
+            },
+            "complexProfileNameContains": {
+                "type": "string",
+                "description": "Matches elements whose Complex Profile attribute name contains this substring."
+            },
+            "complexProfileNameNotContains": {
+                "type": "string",
+                "description": "Matches elements whose Complex Profile attribute name does not contain this substring."
+            },
+            "complexProfileNameStartsWith": {
+                "type": "string",
+                "description": "Matches elements whose Complex Profile attribute name starts with this substring."
+            },
+            "complexProfileNameEndsWith": {
+                "type": "string",
+                "description": "Matches elements whose Complex Profile attribute name ends with this substring."
+            },
+            "roofConnected": {
+                "type": "boolean",
+                "description": "Matches roofs whose 'connected to other roof(s)' status equals this value."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Composite", "ComplexProfile" ],
+                "description": "Matches elements whose structure type (Wall/Beam/Column basic vs. composite vs. complex profile) equals this value."
+            },
+            "seaLevelAltitude": { "type": "number", "description": "Matches elements whose sea level altitude equals this value." },
+            "seaLevelAltitudeNot": { "type": "number", "description": "Matches elements whose sea level altitude does not equal this value." },
+            "seaLevelAltitudeLessThan": { "type": "number", "description": "Matches elements whose sea level altitude is less than this value." },
+            "seaLevelAltitudeGreaterThan": { "type": "number", "description": "Matches elements whose sea level altitude is greater than this value." },
+            "seaLevelAltitudeLessOrEqual": { "type": "number", "description": "Matches elements whose sea level altitude is less than or equal to this value." },
+            "seaLevelAltitudeGreaterOrEqual": { "type": "number", "description": "Matches elements whose sea level altitude is greater than or equal to this value." },
+            "projectZeroAltitude": { "type": "number", "description": "Matches elements whose altitude to project zero equals this value." },
+            "projectZeroAltitudeNot": { "type": "number", "description": "Matches elements whose altitude to project zero does not equal this value." },
+            "projectZeroAltitudeLessThan": { "type": "number", "description": "Matches elements whose altitude to project zero is less than this value." },
+            "projectZeroAltitudeGreaterThan": { "type": "number", "description": "Matches elements whose altitude to project zero is greater than this value." },
+            "projectZeroAltitudeLessOrEqual": { "type": "number", "description": "Matches elements whose altitude to project zero is less than or equal to this value." },
+            "projectZeroAltitudeGreaterOrEqual": { "type": "number", "description": "Matches elements whose altitude to project zero is greater than or equal to this value." },
+            "groundFloorAltitude": { "type": "number", "description": "Matches elements whose altitude to the ground floor equals this value." },
+            "groundFloorAltitudeNot": { "type": "number", "description": "Matches elements whose altitude to the ground floor does not equal this value." },
+            "groundFloorAltitudeLessThan": { "type": "number", "description": "Matches elements whose altitude to the ground floor is less than this value." },
+            "groundFloorAltitudeGreaterThan": { "type": "number", "description": "Matches elements whose altitude to the ground floor is greater than this value." },
+            "groundFloorAltitudeLessOrEqual": { "type": "number", "description": "Matches elements whose altitude to the ground floor is less than or equal to this value." },
+            "groundFloorAltitudeGreaterOrEqual": { "type": "number", "description": "Matches elements whose altitude to the ground floor is greater than or equal to this value." },
+            "roofAltitude": { "type": "number", "description": "Matches elements whose roof altitude equals this value." },
+            "roofAltitudeNot": { "type": "number", "description": "Matches elements whose roof altitude does not equal this value." },
+            "roofAltitudeLessThan": { "type": "number", "description": "Matches elements whose roof altitude is less than this value." },
+            "roofAltitudeGreaterThan": { "type": "number", "description": "Matches elements whose roof altitude is greater than this value." },
+            "roofAltitudeLessOrEqual": { "type": "number", "description": "Matches elements whose roof altitude is less than or equal to this value." },
+            "roofAltitudeGreaterOrEqual": { "type": "number", "description": "Matches elements whose roof altitude is greater than or equal to this value." },
+            "floorIndex": { "type": "integer", "description": "Matches elements whose placement story equals this 0-based story/floor index (same convention as floorIndex elsewhere in Tapir). Only equality is supported - ArchiCAD's criteria editor does not offer a 'not equal' option for this field." },
+            "sillHeight": { "type": "number", "description": "Matches Door/Window/RoofWindow/Opening elements whose sill height equals this value." },
+            "sillHeightNot": { "type": "number" },
+            "sillHeightLessThan": { "type": "number" },
+            "sillHeightGreaterThan": { "type": "number" },
+            "sillHeightLessOrEqual": { "type": "number" },
+            "sillHeightGreaterOrEqual": { "type": "number" },
+            "lintelHeight": { "type": "number", "description": "Matches Door/Window/RoofWindow/Opening elements whose lintel height equals this value." },
+            "lintelHeightNot": { "type": "number" },
+            "lintelHeightLessThan": { "type": "number" },
+            "lintelHeightGreaterThan": { "type": "number" },
+            "lintelHeightLessOrEqual": { "type": "number" },
+            "lintelHeightGreaterOrEqual": { "type": "number" },
+            "screedThickness": { "type": "number", "description": "Matches Door/Window/RoofWindow elements whose screed thickness ('Epaisseur chape') equals this value." },
+            "screedThicknessNot": { "type": "number" },
+            "screedThicknessLessThan": { "type": "number" },
+            "screedThicknessGreaterThan": { "type": "number" },
+            "screedThicknessLessOrEqual": { "type": "number" },
+            "screedThicknessGreaterOrEqual": { "type": "number" },
+            "linkedUpperStoryAbsolute": { "type": "integer", "description": "Matches Stair/Zone elements whose absolute linked upper story equals this 0-based story index. Only equality is supported. -31001 means 'not linked' ('Non lie')." },
+            "linkedUpperStoryRelative": { "type": "integer", "description": "Matches Stair/Zone elements whose relative linked upper story equals this value. Only equality is supported. -31001 means 'not linked' ('Non lie')." },
+            "mepDiameter": { "type": "number", "description": "Matches MEP elements whose diameter equals this value." },
+            "mepDiameterNot": { "type": "number" },
+            "mepDiameterLessThan": { "type": "number" },
+            "mepDiameterGreaterThan": { "type": "number" },
+            "mepDiameterLessOrEqual": { "type": "number" },
+            "mepDiameterGreaterOrEqual": { "type": "number" },
+            "mepDiameter2": { "type": "number", "description": "Matches MEP elements whose 2nd diameter equals this value." },
+            "mepDiameter2Not": { "type": "number" },
+            "mepDiameter2LessThan": { "type": "number" },
+            "mepDiameter2GreaterThan": { "type": "number" },
+            "mepDiameter2LessOrEqual": { "type": "number" },
+            "mepDiameter2GreaterOrEqual": { "type": "number" },
+            "mepDN": { "type": "integer", "description": "Matches MEP elements whose nominal diameter (DN) equals this value." },
+            "mepDNNot": { "type": "integer" },
+            "mepDNLessThan": { "type": "integer" },
+            "mepDNGreaterThan": { "type": "integer" },
+            "mepDNLessOrEqual": { "type": "integer" },
+            "mepDNGreaterOrEqual": { "type": "integer" },
+            "mepDN2": { "type": "integer", "description": "Matches MEP elements whose 2nd nominal diameter (DN) equals this value." },
+            "mepDN2Not": { "type": "integer" },
+            "mepDN2LessThan": { "type": "integer" },
+            "mepDN2GreaterThan": { "type": "integer" },
+            "mepDN2LessOrEqual": { "type": "integer" },
+            "mepDN2GreaterOrEqual": { "type": "integer" },
+            "mepHeight": { "type": "number", "description": "Matches MEP elements whose height equals this value." },
+            "mepHeightNot": { "type": "number" },
+            "mepHeightLessThan": { "type": "number" },
+            "mepHeightGreaterThan": { "type": "number" },
+            "mepHeightLessOrEqual": { "type": "number" },
+            "mepHeightGreaterOrEqual": { "type": "number" },
+            "mepHeight2": { "type": "number", "description": "Matches MEP elements whose 2nd height equals this value." },
+            "mepHeight2Not": { "type": "number" },
+            "mepHeight2LessThan": { "type": "number" },
+            "mepHeight2GreaterThan": { "type": "number" },
+            "mepHeight2LessOrEqual": { "type": "number" },
+            "mepHeight2GreaterOrEqual": { "type": "number" },
+            "mepWidth": { "type": "number", "description": "Matches MEP elements whose width equals this value." },
+            "mepWidthNot": { "type": "number" },
+            "mepWidthLessThan": { "type": "number" },
+            "mepWidthGreaterThan": { "type": "number" },
+            "mepWidthLessOrEqual": { "type": "number" },
+            "mepWidthGreaterOrEqual": { "type": "number" },
+            "mepWidth2": { "type": "number", "description": "Matches MEP elements whose 2nd width equals this value." },
+            "mepWidth2Not": { "type": "number" },
+            "mepWidth2LessThan": { "type": "number" },
+            "mepWidth2GreaterThan": { "type": "number" },
+            "mepWidth2LessOrEqual": { "type": "number" },
+            "mepWidth2GreaterOrEqual": { "type": "number" },
+            "mepAngle": { "type": "number", "description": "Matches MEP elements whose angle equals this value (degrees)." },
+            "mepAngleNot": { "type": "number" },
+            "mepAngleLessThan": { "type": "number" },
+            "mepAngleGreaterThan": { "type": "number" },
+            "mepAngleLessOrEqual": { "type": "number" },
+            "mepAngleGreaterOrEqual": { "type": "number" },
+            "mepCustomAngle": { "type": "number", "description": "Matches MEP elements whose custom angle equals this value (degrees)." },
+            "mepCustomAngleNot": { "type": "number" },
+            "mepCustomAngleLessThan": { "type": "number" },
+            "mepCustomAngleGreaterThan": { "type": "number" },
+            "mepCustomAngleLessOrEqual": { "type": "number" },
+            "mepCustomAngleGreaterOrEqual": { "type": "number" },
+            "mepInsulationThickness": { "type": "number", "description": "Matches MEP elements whose insulation thickness equals this value." },
+            "mepInsulationThicknessNot": { "type": "number" },
+            "mepInsulationThicknessLessThan": { "type": "number" },
+            "mepInsulationThicknessGreaterThan": { "type": "number" },
+            "mepInsulationThicknessLessOrEqual": { "type": "number" },
+            "mepInsulationThicknessGreaterOrEqual": { "type": "number" },
+            "mepLength": { "type": "number", "description": "Matches MEP elements whose length equals this value." },
+            "mepLengthNot": { "type": "number" },
+            "mepLengthLessThan": { "type": "number" },
+            "mepLengthGreaterThan": { "type": "number" },
+            "mepLengthLessOrEqual": { "type": "number" },
+            "mepLengthGreaterOrEqual": { "type": "number" },
+            "mepDescriptionIs": { "type": "string", "description": "Matches MEP elements whose description equals this string exactly." },
+            "mepDescriptionIsNot": { "type": "string" },
+            "mepDescriptionContains": { "type": "string" },
+            "mepDescriptionNotContains": { "type": "string" },
+            "mepDescriptionStartsWith": { "type": "string" },
+            "mepDescriptionEndsWith": { "type": "string" },
+            "mepMaterialNameIs": { "type": "string", "description": "Matches MEP elements whose material name equals this string exactly." },
+            "mepMaterialNameIsNot": { "type": "string" },
+            "mepMaterialNameContains": { "type": "string" },
+            "mepMaterialNameNotContains": { "type": "string" },
+            "mepMaterialNameStartsWith": { "type": "string" },
+            "mepMaterialNameEndsWith": { "type": "string" },
+            "wallComplexity": { "type": "string", "enum": ["Straight", "Slanted", "DoubleSlanted"], "description": "Matches walls whose complexity equals this." },
+            "wallComplexityNot": { "type": "string", "enum": ["Straight", "Slanted", "DoubleSlanted"], "description": "Matches walls whose complexity is NOT this." },
+            "wallLevelOffset": { "type": "number", "description": "Matches walls whose home story level offset equals this value." },
+            "wallLevelOffsetNot": { "type": "number" },
+            "wallLevelOffsetLessThan": { "type": "number" },
+            "wallLevelOffsetGreaterThan": { "type": "number" },
+            "wallLevelOffsetLessOrEqual": { "type": "number" },
+            "wallLevelOffsetGreaterOrEqual": { "type": "number" },
+            "wallTopOffset": { "type": "number", "description": "Matches walls whose top offset equals this value." },
+            "wallTopOffsetNot": { "type": "number" },
+            "wallTopOffsetLessThan": { "type": "number" },
+            "wallTopOffsetGreaterThan": { "type": "number" },
+            "wallTopOffsetLessOrEqual": { "type": "number" },
+            "wallTopOffsetGreaterOrEqual": { "type": "number" },
+            "wallReferenceLinePosition": { "type": "string", "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"], "description": "Matches walls whose reference line position equals this." },
+            "wallReferenceLinePositionNot": { "type": "string", "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"] },
+            "wallOutsideAngle": { "type": "number", "description": "Matches walls whose outside slant angle equals this value (degrees)." },
+            "wallOutsideAngleNot": { "type": "number" },
+            "wallOutsideAngleLessThan": { "type": "number" },
+            "wallOutsideAngleGreaterThan": { "type": "number" },
+            "wallOutsideAngleLessOrEqual": { "type": "number" },
+            "wallOutsideAngleGreaterOrEqual": { "type": "number" },
+            "wallInsideAngle": { "type": "number", "description": "Matches walls whose inside slant angle equals this value (degrees)." },
+            "wallInsideAngleNot": { "type": "number" },
+            "wallInsideAngleLessThan": { "type": "number" },
+            "wallInsideAngleGreaterThan": { "type": "number" },
+            "wallInsideAngleLessOrEqual": { "type": "number" },
+            "wallInsideAngleGreaterOrEqual": { "type": "number" },
+            "wallThickness": { "type": "number", "description": "Matches walls whose thickness equals this value." },
+            "wallThicknessNot": { "type": "number" },
+            "wallThicknessLessThan": { "type": "number" },
+            "wallThicknessGreaterThan": { "type": "number" },
+            "wallThicknessLessOrEqual": { "type": "number" },
+            "wallThicknessGreaterOrEqual": { "type": "number" },
+            "wallHeight": { "type": "number", "description": "Matches walls whose height equals this value." },
+            "wallHeightNot": { "type": "number" },
+            "wallHeightLessThan": { "type": "number" },
+            "wallHeightGreaterThan": { "type": "number" },
+            "wallHeightLessOrEqual": { "type": "number" },
+            "wallHeightGreaterOrEqual": { "type": "number" },
+            "wallProfileHeight": { "type": "number", "description": "Matches walls whose profile height equals this value." },
+            "wallProfileHeightNot": { "type": "number" },
+            "wallProfileHeightLessThan": { "type": "number" },
+            "wallProfileHeightGreaterThan": { "type": "number" },
+            "wallProfileHeightLessOrEqual": { "type": "number" },
+            "wallProfileHeightGreaterOrEqual": { "type": "number" },
+            "wallHeightReversed": { "type": "boolean", "description": "Matches walls whose height is measured downward (reversed) if true." },
+            "wallWidth": { "type": "number", "description": "Matches walls whose width equals this value." },
+            "wallWidthNot": { "type": "number" },
+            "wallWidthLessThan": { "type": "number" },
+            "wallWidthGreaterThan": { "type": "number" },
+            "wallWidthLessOrEqual": { "type": "number" },
+            "wallWidthGreaterOrEqual": { "type": "number" },
+            "wallProfileWidth": { "type": "number", "description": "Matches walls whose profile width equals this value." },
+            "wallProfileWidthNot": { "type": "number" },
+            "wallProfileWidthLessThan": { "type": "number" },
+            "wallProfileWidthGreaterThan": { "type": "number" },
+            "wallProfileWidthLessOrEqual": { "type": "number" },
+            "wallProfileWidthGreaterOrEqual": { "type": "number" },
+            "objectLength": { "type": "number", "description": "Matches Object/Lamp elements whose length parameter ('A') equals this value." },
+            "objectLengthNot": { "type": "number" },
+            "objectLengthLessThan": { "type": "number" },
+            "objectLengthGreaterThan": { "type": "number" },
+            "objectLengthLessOrEqual": { "type": "number" },
+            "objectLengthGreaterOrEqual": { "type": "number" },
+            "jambThickness1": { "type": "number", "description": "Matches Door/Window elements whose jamb thickness 1 ('Epaisseur Montant1') equals this value." },
+            "jambThickness1Not": { "type": "number" },
+            "jambThickness1LessThan": { "type": "number" },
+            "jambThickness1GreaterThan": { "type": "number" },
+            "jambThickness1LessOrEqual": { "type": "number" },
+            "jambThickness1GreaterOrEqual": { "type": "number" },
+            "jambThickness2": { "type": "number", "description": "Matches Door/Window elements whose jamb thickness 2 ('Epaisseur Montant2') equals this value." },
+            "jambThickness2Not": { "type": "number" },
+            "jambThickness2LessThan": { "type": "number" },
+            "jambThickness2GreaterThan": { "type": "number" },
+            "jambThickness2LessOrEqual": { "type": "number" },
+            "jambThickness2GreaterOrEqual": { "type": "number" },
+            "curtainWallPanelOffset": { "type": "number", "description": "Matches Curtain Wall elements whose panel offset equals this value." },
+            "curtainWallPanelOffsetNot": { "type": "number" },
+            "curtainWallPanelOffsetLessThan": { "type": "number" },
+            "curtainWallPanelOffsetGreaterThan": { "type": "number" },
+            "curtainWallPanelOffsetLessOrEqual": { "type": "number" },
+            "curtainWallPanelOffsetGreaterOrEqual": { "type": "number" },
+            "stairRiserInclineAngle": { "type": "number", "description": "Matches stairs whose riser incline angle equals this value." },
+            "stairRiserInclineAngleNot": { "type": "number" },
+            "stairRiserInclineAngleLessThan": { "type": "number" },
+            "stairRiserInclineAngleGreaterThan": { "type": "number" },
+            "stairRiserInclineAngleLessOrEqual": { "type": "number" },
+            "stairRiserInclineAngleGreaterOrEqual": { "type": "number" },
+            "stairMinHeadroom": { "type": "number", "description": "Matches stairs whose minimum headroom height equals this value." },
+            "stairMinHeadroomNot": { "type": "number" },
+            "stairMinHeadroomLessThan": { "type": "number" },
+            "stairMinHeadroomGreaterThan": { "type": "number" },
+            "stairMinHeadroomLessOrEqual": { "type": "number" },
+            "stairMinHeadroomGreaterOrEqual": { "type": "number" },
+            "stairInvalidHeight": { "type": "boolean", "description": "Matches stairs whose 'Invalid height' status equals this value." },
+            "stairDefaultWidth": { "type": "number", "description": "Matches stairs whose default width equals this value." },
+            "stairDefaultWidthNot": { "type": "number" },
+            "stairDefaultWidthLessThan": { "type": "number" },
+            "stairDefaultWidthGreaterThan": { "type": "number" },
+            "stairDefaultWidthLessOrEqual": { "type": "number" },
+            "stairDefaultWidthGreaterOrEqual": { "type": "number" },
+            "stairSlope": { "type": "number", "description": "Matches stairs whose slope equals this value." },
+            "stairSlopeNot": { "type": "number" },
+            "stairSlopeLessThan": { "type": "number" },
+            "stairSlopeGreaterThan": { "type": "number" },
+            "stairSlopeLessOrEqual": { "type": "number" },
+            "stairSlopeGreaterOrEqual": { "type": "number" },
+            "stairMaxRiserHeight": { "type": "number", "description": "Matches stairs whose maximum riser height equals this value. Only equality is supported - not exhaustively tested against every comparison operator like other numeric fields." },
+            "stairMinRiserHeight": { "type": "number", "description": "Matches stairs whose minimum riser height equals this value. Only equality is supported." },
+            "stairMaxGoing": { "type": "number", "description": "Matches stairs whose maximum going (tread depth) equals this value. Only equality is supported." },
+            "stairMinGoing": { "type": "number", "description": "Matches stairs whose minimum going (tread depth) equals this value. Only equality is supported." },
+            "stairRiserCount": { "type": "integer", "description": "Matches stairs whose number of risers equals this value. Only equality is supported." },
+            "stairStepCount": { "type": "integer", "description": "Matches stairs whose number of steps equals this value. Only equality is supported." },
+            "stairStepCountPerFlight": { "type": "integer", "description": "Matches stairs whose number of steps per flight equals this value. Only equality is supported." },
+            "wallGeometryType": { "type": "string", "enum": ["Uniform", "Trapezoid", "Polygonal"], "description": "Matches walls whose geometry type equals this." },
+            "wallGeometryTypeNot": { "type": "string", "enum": ["Uniform", "Trapezoid", "Polygonal"] },
+            "wallReferenceLineOffset": { "type": "number", "description": "Matches walls whose reference line offset equals this value. Uses a different underlying mechanism than every other numeric field in this schema, reverse-engineered separately - support all 6 comparison operators like the rest." },
+            "wallReferenceLineOffsetNot": { "type": "number" },
+            "wallReferenceLineOffsetLessThan": { "type": "number" },
+            "wallReferenceLineOffsetGreaterThan": { "type": "number" },
+            "wallReferenceLineOffsetLessOrEqual": { "type": "number" },
+            "wallReferenceLineOffsetGreaterOrEqual": { "type": "number" },
+            "wallTopLine": { "type": "string", "description": "Matches walls whose ceiling line is this Line Type attribute (by name)." },
+            "wallTopLineNot": { "type": "string" },
+            "wallCutLine": { "type": "string", "description": "Matches walls whose cut line is this Line Type attribute (by name)." },
+            "wallCutLineNot": { "type": "string" },
+            "wallUncutLine": { "type": "string", "description": "Matches walls whose uncut line is this Line Type attribute (by name)." },
+            "wallUncutLineNot": { "type": "string" },
+            "wallHatchForegroundPen": { "type": "integer", "description": "Matches walls whose hatch foreground pen equals this plain pen index." },
+            "wallHatchForegroundPenNot": { "type": "integer" },
+            "wallContourPen": { "type": "integer", "description": "Matches walls whose 2D contour pen equals this plain pen index." },
+            "wallContourPenNot": { "type": "integer" },
+            "wallTopLinePen": { "type": "integer", "description": "Matches walls whose ceiling line pen equals this plain pen index." },
+            "wallTopLinePenNot": { "type": "integer" },
+            "wallCutHatchBackgroundPen": { "type": "integer", "description": "Matches walls whose cut hatch background pen equals this plain pen index." },
+            "wallCutHatchBackgroundPenNot": { "type": "integer" },
+            "wallHatchBackgroundPen": { "type": "integer", "description": "Matches walls whose hatch background pen equals this plain pen index." },
+            "wallHatchBackgroundPenNot": { "type": "integer" },
+            "wallUncutLinePen": { "type": "integer", "description": "Matches walls whose uncut line pen equals this plain pen index." },
+            "wallUncutLinePenNot": { "type": "integer" },
+            "wallOutsideSurface": { "type": "string", "description": "Matches walls whose outside face surface is this Surface attribute (by name)." },
+            "wallOutsideSurfaceNot": { "type": "string" },
+            "wallInsideSurface": { "type": "string", "description": "Matches walls whose inside face surface is this Surface attribute (by name)." },
+            "wallInsideSurfaceNot": { "type": "string" },
+            "wallSideSurface": { "type": "string", "description": "Matches walls whose side surface is this Surface attribute (by name)." },
+            "wallSideSurfaceNot": { "type": "string" },
+            "wallParentIdIs": { "type": "string", "description": "Matches walls whose parent element ID equals this string exactly." },
+            "wallParentIdIsNot": { "type": "string" },
+            "wallParentIdContains": { "type": "string" },
+            "wallParentIdNotContains": { "type": "string" },
+            "wallParentIdStartsWith": { "type": "string" },
+            "wallParentIdEndsWith": { "type": "string" },
+            "wallConnectedOpeningIdsIs": { "type": "string", "description": "Matches walls whose connected opening IDs list equals this string exactly." },
+            "wallConnectedOpeningIdsIsNot": { "type": "string" },
+            "wallConnectedOpeningIdsContains": { "type": "string" },
+            "wallConnectedOpeningIdsNotContains": { "type": "string" },
+            "wallConnectedOpeningIdsStartsWith": { "type": "string" },
+            "wallConnectedOpeningIdsEndsWith": { "type": "string" },
+            "libraryPartNameIs": { "type": "string", "description": "Matches elements whose library part name equals this string exactly." },
+            "libraryPartNameIsNot": { "type": "string" },
+            "libraryPartNameContains": { "type": "string" },
+            "libraryPartNameNotContains": { "type": "string" },
+            "libraryPartNameStartsWith": { "type": "string" },
+            "libraryPartNameEndsWith": { "type": "string" },
+            "subTypeNameIs": { "type": "string", "description": "Matches elements whose subtype name equals this string exactly." },
+            "subTypeNameIsNot": { "type": "string" },
+            "subTypeNameContains": { "type": "string" },
+            "subTypeNameNotContains": { "type": "string" },
+            "subTypeNameStartsWith": { "type": "string" },
+            "subTypeNameEndsWith": { "type": "string" },
+            "columnCoatingType": { "type": "string", "enum": ["Core", "Finish", "Other"], "description": "Matches columns whose coating type equals this." },
+            "columnCoatingTypeNot": { "type": "string", "enum": ["Core", "Finish", "Other"] },
+            "columnInclinationAngle": { "type": "number", "description": "Matches columns whose inclination angle equals this value (degrees)." },
+            "columnInclinationAngleNot": { "type": "number" },
+            "columnInclinationAngleLessThan": { "type": "number" },
+            "columnInclinationAngleGreaterThan": { "type": "number" },
+            "columnInclinationAngleLessOrEqual": { "type": "number" },
+            "columnInclinationAngleGreaterOrEqual": { "type": "number" },
+            "columnCrossSectionType": { "type": "string", "enum": ["Rectangular", "Circular", "Profiled"], "description": "Matches columns whose cross section type equals this." },
+            "columnCoreDiameter": { "type": "number", "description": "Matches columns whose core diameter equals this value." },
+            "columnCoreDiameterNot": { "type": "number" },
+            "columnCoreDiameterLessThan": { "type": "number" },
+            "columnCoreDiameterGreaterThan": { "type": "number" },
+            "columnCoreDiameterLessOrEqual": { "type": "number" },
+            "columnCoreDiameterGreaterOrEqual": { "type": "number" },
+            "columnCoatingThickness": { "type": "number", "description": "Matches columns whose coating thickness equals this value." },
+            "columnCoatingThicknessNot": { "type": "number" },
+            "columnCoatingThicknessLessThan": { "type": "number" },
+            "columnCoatingThicknessGreaterThan": { "type": "number" },
+            "columnCoatingThicknessLessOrEqual": { "type": "number" },
+            "columnCoatingThicknessGreaterOrEqual": { "type": "number" },
+            "columnBottomCrossSectionHeightCut": { "type": "number" },
+            "columnBottomCrossSectionHeightCutNot": { "type": "number" },
+            "columnBottomCrossSectionHeightCutLessThan": { "type": "number" },
+            "columnBottomCrossSectionHeightCutGreaterThan": { "type": "number" },
+            "columnBottomCrossSectionHeightCutLessOrEqual": { "type": "number" },
+            "columnBottomCrossSectionHeightCutGreaterOrEqual": { "type": "number" },
+            "columnBottomCrossSectionHeightPerpendicular": { "type": "number" },
+            "columnBottomCrossSectionHeightPerpendicularNot": { "type": "number" },
+            "columnBottomCrossSectionHeightPerpendicularLessThan": { "type": "number" },
+            "columnBottomCrossSectionHeightPerpendicularGreaterThan": { "type": "number" },
+            "columnBottomCrossSectionHeightPerpendicularLessOrEqual": { "type": "number" },
+            "columnBottomCrossSectionHeightPerpendicularGreaterOrEqual": { "type": "number" },
+            "columnTopCrossSectionHeightCut": { "type": "number" },
+            "columnTopCrossSectionHeightCutNot": { "type": "number" },
+            "columnTopCrossSectionHeightCutLessThan": { "type": "number" },
+            "columnTopCrossSectionHeightCutGreaterThan": { "type": "number" },
+            "columnTopCrossSectionHeightCutLessOrEqual": { "type": "number" },
+            "columnTopCrossSectionHeightCutGreaterOrEqual": { "type": "number" },
+            "columnTopCrossSectionHeightPerpendicular": { "type": "number" },
+            "columnTopCrossSectionHeightPerpendicularNot": { "type": "number" },
+            "columnTopCrossSectionHeightPerpendicularLessThan": { "type": "number" },
+            "columnTopCrossSectionHeightPerpendicularGreaterThan": { "type": "number" },
+            "columnTopCrossSectionHeightPerpendicularLessOrEqual": { "type": "number" },
+            "columnTopCrossSectionHeightPerpendicularGreaterOrEqual": { "type": "number" },
+            "columnProfileCoreHeight": { "type": "number" },
+            "columnProfileCoreHeightNot": { "type": "number" },
+            "columnProfileCoreHeightLessThan": { "type": "number" },
+            "columnProfileCoreHeightGreaterThan": { "type": "number" },
+            "columnProfileCoreHeightLessOrEqual": { "type": "number" },
+            "columnProfileCoreHeightGreaterOrEqual": { "type": "number" },
+            "columnCoreHeightDiameterRatio": { "type": "number" },
+            "columnCoreHeightDiameterRatioNot": { "type": "number" },
+            "columnCoreHeightDiameterRatioLessThan": { "type": "number" },
+            "columnCoreHeightDiameterRatioGreaterThan": { "type": "number" },
+            "columnCoreHeightDiameterRatioLessOrEqual": { "type": "number" },
+            "columnCoreHeightDiameterRatioGreaterOrEqual": { "type": "number" },
+            "columnBottomCrossSectionWidthCut": { "type": "number" },
+            "columnBottomCrossSectionWidthCutNot": { "type": "number" },
+            "columnBottomCrossSectionWidthCutLessThan": { "type": "number" },
+            "columnBottomCrossSectionWidthCutGreaterThan": { "type": "number" },
+            "columnBottomCrossSectionWidthCutLessOrEqual": { "type": "number" },
+            "columnBottomCrossSectionWidthCutGreaterOrEqual": { "type": "number" },
+            "columnBottomCrossSectionWidthPerpendicular": { "type": "number" },
+            "columnBottomCrossSectionWidthPerpendicularNot": { "type": "number" },
+            "columnBottomCrossSectionWidthPerpendicularLessThan": { "type": "number" },
+            "columnBottomCrossSectionWidthPerpendicularGreaterThan": { "type": "number" },
+            "columnBottomCrossSectionWidthPerpendicularLessOrEqual": { "type": "number" },
+            "columnBottomCrossSectionWidthPerpendicularGreaterOrEqual": { "type": "number" },
+            "columnTopCrossSectionWidthCut": { "type": "number" },
+            "columnTopCrossSectionWidthCutNot": { "type": "number" },
+            "columnTopCrossSectionWidthCutLessThan": { "type": "number" },
+            "columnTopCrossSectionWidthCutGreaterThan": { "type": "number" },
+            "columnTopCrossSectionWidthCutLessOrEqual": { "type": "number" },
+            "columnTopCrossSectionWidthCutGreaterOrEqual": { "type": "number" },
+            "columnTopCrossSectionWidthPerpendicular": { "type": "number" },
+            "columnTopCrossSectionWidthPerpendicularNot": { "type": "number" },
+            "columnTopCrossSectionWidthPerpendicularLessThan": { "type": "number" },
+            "columnTopCrossSectionWidthPerpendicularGreaterThan": { "type": "number" },
+            "columnTopCrossSectionWidthPerpendicularLessOrEqual": { "type": "number" },
+            "columnTopCrossSectionWidthPerpendicularGreaterOrEqual": { "type": "number" },
+            "columnCoreWidth": { "type": "number" },
+            "columnCoreWidthNot": { "type": "number" },
+            "columnCoreWidthLessThan": { "type": "number" },
+            "columnCoreWidthGreaterThan": { "type": "number" },
+            "columnCoreWidthLessOrEqual": { "type": "number" },
+            "columnCoreWidthGreaterOrEqual": { "type": "number" },
+            "columnProfileCoreWidth": { "type": "number" },
+            "columnProfileCoreWidthNot": { "type": "number" },
+            "columnProfileCoreWidthLessThan": { "type": "number" },
+            "columnProfileCoreWidthGreaterThan": { "type": "number" },
+            "columnProfileCoreWidthLessOrEqual": { "type": "number" },
+            "columnProfileCoreWidthGreaterOrEqual": { "type": "number" },
+            "columnCoveringHatch": { "type": "string", "description": "Matches columns whose covering hatch is this Fill attribute (by name)." },
+            "columnCoveringHatchNot": { "type": "string" },
+            "columnCoatingHatch": { "type": "string", "description": "Matches columns whose coating hatch is this Fill attribute (by name)." },
+            "columnCoatingHatchNot": { "type": "string" },
+            "columnCoreForegroundPen": { "type": "integer", "description": "Matches columns whose core foreground pen equals this plain pen index." },
+            "columnCoreForegroundPenNot": { "type": "integer" },
+            "columnCoatingForegroundPen": { "type": "integer", "description": "Matches columns whose coating foreground pen equals this plain pen index." },
+            "columnCoatingForegroundPenNot": { "type": "integer" },
+            "columnCoveringHatchForegroundPen": { "type": "integer", "description": "Matches columns whose covering hatch foreground pen equals this plain pen index." },
+            "columnCoveringHatchForegroundPenNot": { "type": "integer" },
+            "columnCoveringHatchBackgroundPen": { "type": "integer", "description": "Matches columns whose covering hatch background pen equals this plain pen index." },
+            "columnCoveringHatchBackgroundPenNot": { "type": "integer" },
+            "columnCoatingBackgroundPen": { "type": "integer", "description": "Matches columns whose coating background pen equals this plain pen index." },
+            "columnCoatingBackgroundPenNot": { "type": "integer" },
+            "columnCoreBackgroundPen": { "type": "integer", "description": "Matches columns whose core background pen equals this plain pen index." },
+            "columnCoreBackgroundPenNot": { "type": "integer" },
+            "columnHiddenLinePen": { "type": "integer", "description": "Matches columns whose hidden line pen equals this plain pen index." },
+            "columnHiddenLinePenNot": { "type": "integer" },
+            "columnHiddenLineType": { "type": "string", "description": "Matches columns whose hidden line type is this Line Type attribute (by name)." },
+            "columnHiddenLineTypeNot": { "type": "string" },
+            "columnCoreSurface": { "type": "string", "description": "Matches columns whose core surface is this Surface attribute (by name)." },
+            "columnCoreSurfaceNot": { "type": "string" },
+            "columnCoatingSurface": { "type": "string", "description": "Matches columns whose coating surface is this Surface attribute (by name)." },
+            "columnCoatingSurfaceNot": { "type": "string" },
+            "columnExtrusionSurface": { "type": "string", "description": "Matches columns whose extrusion surface is this Surface attribute (by name)." },
+            "columnExtrusionSurfaceNot": { "type": "string" },
+            "beamAxisPen": { "type": "integer", "description": "Matches beams whose axis pen equals this plain pen index." },
+            "beamAxisPenNot": { "type": "integer" },
+            "beamAxisLineType": { "type": "string", "description": "Matches beams whose axis line type is this Line Type attribute (by name)." },
+            "beamAxisLineTypeNot": { "type": "string" },
+            "beamEndSurface": { "type": "string", "description": "Matches beams whose end surface is this Surface attribute (by name)." },
+            "beamEndSurfaceNot": { "type": "string" },
+            "beamRightSurface": { "type": "string", "description": "Matches beams whose right surface is this Surface attribute (by name)." },
+            "beamRightSurfaceNot": { "type": "string" },
+            "beamLeftSurface": { "type": "string", "description": "Matches beams whose left surface is this Surface attribute (by name)." },
+            "beamLeftSurfaceNot": { "type": "string" },
+            "beamBottomSurface": { "type": "string", "description": "Matches beams whose bottom surface is this Surface attribute (by name)." },
+            "beamBottomSurfaceNot": { "type": "string" },
+            "beamTopSurface": { "type": "string", "description": "Matches beams whose top surface is this Surface attribute (by name)." },
+            "beamTopSurfaceNot": { "type": "string" },
+            "slabReferencePlaneLocation": { "type": "string", "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"], "description": "Matches slabs whose reference plane location equals this." },
+            "slabReferencePlaneLocationNot": { "type": "string", "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"] },
+            "slabEdgeAngle": { "type": "string", "enum": ["Vertical", "Custom"], "description": "Matches slabs whose edge angle mode equals this." },
+            "slabEdgeAngleNot": { "type": "string", "enum": ["Vertical", "Custom"] },
+            "slabDefaultEdgeAngle": { "type": "number", "description": "Matches slabs whose default edge angle equals this value (degrees)." },
+            "slabDefaultEdgeAngleNot": { "type": "number" },
+            "slabDefaultEdgeAngleLessThan": { "type": "number" },
+            "slabDefaultEdgeAngleGreaterThan": { "type": "number" },
+            "slabDefaultEdgeAngleLessOrEqual": { "type": "number" },
+            "slabDefaultEdgeAngleGreaterOrEqual": { "type": "number" },
+            "slabCutLinePen": { "type": "integer", "description": "Matches slabs whose cut line pen equals this plain pen index." },
+            "slabCutLinePenNot": { "type": "integer" },
+            "slabConstructionMaterialFill": { "type": "string", "description": "Matches slabs whose construction material fill is this Fill attribute (by name). Despite the field's label in the criteria editor, Archicad stores a Fill here, not a Building Material (checked on rules made in the editor)." },
+            "slabConstructionMaterialFillNot": { "type": "string" },
+            "roofCutBodyType": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"], "description": "Matches roofs whose cut body type equals this." },
+            "roofCutBodyTypeNot": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"] },
+            "roofLevelNumber": { "type": "integer", "description": "Matches roofs whose level number equals this value." },
+            "roofLevelNumberNot": { "type": "integer" },
+            "roofLevelNumberLessThan": { "type": "integer" },
+            "roofLevelNumberGreaterThan": { "type": "integer" },
+            "roofLevelNumberLessOrEqual": { "type": "integer" },
+            "roofLevelNumberGreaterOrEqual": { "type": "integer" },
+            "roofEaveOverhangType": { "type": "string", "enum": ["Offset", "Manual"], "description": "Matches roofs whose eave overhang type equals this." },
+            "roofEdgeAngle": { "type": "string", "enum": ["Vertical", "Perpendicular", "Custom"], "description": "Matches roofs whose edge angle mode equals this." },
+            "roofEdgeAngleNot": { "type": "string", "enum": ["Vertical", "Perpendicular", "Custom"] },
+            "roofEaveOverhang": { "type": "number", "description": "Matches roofs whose eave overhang equals this value." },
+            "roofEaveOverhangNot": { "type": "number" },
+            "roofEaveOverhangLessThan": { "type": "number" },
+            "roofEaveOverhangGreaterThan": { "type": "number" },
+            "roofEaveOverhangLessOrEqual": { "type": "number" },
+            "roofEaveOverhangGreaterOrEqual": { "type": "number" },
+            "roofGeometryType": { "type": "string", "enum": ["SinglePanel", "MultiplePanels"], "description": "Matches roofs whose geometry type equals this." },
+            "roofGeometryTypeNot": { "type": "string", "enum": ["SinglePanel", "MultiplePanels"] },
+            "roofPitch": { "type": "number", "description": "Matches roofs that have a pitch equal to this value (degrees) among their panels." },
+            "roofPitchNot": { "type": "number" },
+            "roofPitchLessThan": { "type": "number" },
+            "roofPitchGreaterThan": { "type": "number" },
+            "roofPitchLessOrEqual": { "type": "number" },
+            "roofPitchGreaterOrEqual": { "type": "number" },
+            "shellCutBodyType": { "type": "string", "enum": ["Editable", "ExtrudeUp", "ExtrudeDown"], "description": "Matches shells whose cut body type equals this." },
+            "shellTiltAngle": { "type": "number", "description": "Matches shells whose tilt angle equals this value (degrees)." },
+            "shellTiltAngleNot": { "type": "number" },
+            "shellTiltAngleLessThan": { "type": "number" },
+            "shellTiltAngleGreaterThan": { "type": "number" },
+            "shellTiltAngleLessOrEqual": { "type": "number" },
+            "shellTiltAngleGreaterOrEqual": { "type": "number" },
+            "shellGeometryType": { "type": "string", "enum": ["Extrude", "Revolved", "Ruled"], "description": "Matches shells whose geometry type equals this." },
+            "hatchFill": { "type": "string", "description": "Matches elements whose hatch is this Fill attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
+            "hatchFillNot": { "type": "string", "description": "Matches elements whose hatch is NOT this Fill attribute (by name)." },
+            "lineAttribute": { "type": "string", "description": "Matches elements whose contour/line is this Line Type attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
+            "lineAttributeNot": { "type": "string", "description": "Matches elements whose contour/line is NOT this Line Type attribute (by name)." },
+            "fontIs": { "type": "string", "description": "Matches elements whose font equals this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western') exactly. Applies to 2D annotation (Text/Label) elements - unlike every other field in this schema, this one and 'textPen*' are NOT combined with a 3D-model-element anchor when used alone or together, since they don't apply to 3D model elements." },
+            "fontContains": { "type": "string", "description": "Matches elements whose font is one of a list containing this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western') (ArchiCAD's 'contains' operator for a font field)." },
+            "fontNotContains": { "type": "string", "description": "Matches elements whose font is not one of a list containing this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western')." },
+            "penReplacement": { "type": "string", "enum": [ "None", "ForegroundOnly", "BackgroundOnly", "Both" ], "description": "Matches elements whose pen replacement rule equals this value." },
+            "penReplacementNot": { "type": "string", "enum": [ "None", "ForegroundOnly", "BackgroundOnly", "Both" ], "description": "Matches elements whose pen replacement rule does not equal this value." },
+            "linePenContains": { "type": "integer", "description": "Matches elements whose line pen number is this value (by plain pen number 1-255, not an attribute name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
+            "linePenNotContains": { "type": "integer", "description": "Matches elements whose line pen number is NOT this value (by plain pen number 1-255)." },
+            "textPenIs": { "type": "integer", "description": "Matches elements whose text pen number equals this value (by plain pen number 1-255). Applies to 2D annotation elements - see 'fontIs' for the anchor-exemption note." },
+            "textPenContains": { "type": "integer", "description": "Matches elements whose text pen number is this value (ArchiCAD's 'contains' operator for a pen field, by plain pen number 1-255)." },
+            "textPenNotContains": { "type": "integer", "description": "Matches elements whose text pen number is NOT this value (by plain pen number 1-255)." },
+            "hatchContourPen": { "type": "integer", "description": "Matches elements whose hatch contour pen number equals this value (by plain pen number 1-255). Unlike 'linePenContains', ArchiCAD offers strict is/is-not here, not contains/does-not-contain." },
+            "hatchContourPenNot": { "type": "integer", "description": "Matches elements whose hatch contour pen number does not equal this value (by plain pen number 1-255)." },
+            "openingEndSurface": { "type": "string", "description": "Matches Opening elements whose end surface equals this Surface attribute (by name)." },
+            "openingEndSurfaceNot": { "type": "string", "description": "Matches Opening elements whose end surface does not equal this Surface attribute (by name)." },
+            "openingExtrusionSurface": { "type": "string", "description": "Matches Opening elements whose extrusion surface equals this Surface attribute (by name)." },
+            "openingExtrusionSurfaceNot": { "type": "string", "description": "Matches Opening elements whose extrusion surface does not equal this Surface attribute (by name)." },
+            "curtainWallFrameCutLine": { "type": "string", "description": "Matches Curtain Wall elements whose frame cut line equals this Line Type attribute (by name)." },
+            "curtainWallFrameCutLineNot": { "type": "string", "description": "Matches Curtain Wall elements whose frame cut line does not equal this Line Type attribute (by name)." },
+            "curtainWallPanelCutLine": { "type": "string", "description": "Matches Curtain Wall elements whose panel cut line equals this Line Type attribute (by name)." },
+            "curtainWallPanelCutLineNot": { "type": "string", "description": "Matches Curtain Wall elements whose panel cut line does not equal this Line Type attribute (by name)." },
+            "curtainWallFrameCutLinePen": { "type": "integer", "description": "Matches Curtain Wall elements whose frame cut line pen number equals this value (by plain pen number 1-255)." },
+            "curtainWallFrameCutLinePenNot": { "type": "integer", "description": "Matches Curtain Wall elements whose frame cut line pen number does not equal this value." },
+            "curtainWallPanelCutLinePen": { "type": "integer", "description": "Matches Curtain Wall elements whose panel cut line pen number equals this value (by plain pen number 1-255)." },
+            "curtainWallPanelCutLinePenNot": { "type": "integer", "description": "Matches Curtain Wall elements whose panel cut line pen number does not equal this value." },
+            "constructionMaterial": { "type": "string", "description": "Matches elements built with this Building Material attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
+            "constructionMaterialNot": { "type": "string", "description": "Matches elements NOT built with this Building Material attribute (by name)." },
+            "surface": { "type": "string", "description": "Matches elements whose surface is this Surface (Material) attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
+            "surfaceNot": { "type": "string", "description": "Matches elements whose surface is NOT this Surface (Material) attribute (by name)." },
+            "constructionMaterialIdIs": { "type": "string", "description": "Matches elements whose construction material ID equals this string exactly." },
+            "constructionMaterialIdIsNot": { "type": "string", "description": "Matches elements whose construction material ID does not equal this string." },
+            "constructionMaterialIdContains": { "type": "string", "description": "Matches elements whose construction material ID contains this substring." },
+            "constructionMaterialIdNotContains": { "type": "string", "description": "Matches elements whose construction material ID does not contain this substring." },
+            "constructionMaterialIdStartsWith": { "type": "string", "description": "Matches elements whose construction material ID starts with this substring." },
+            "constructionMaterialIdEndsWith": { "type": "string", "description": "Matches elements whose construction material ID ends with this substring." },
+            "constructionMaterialNameIs": { "type": "string", "description": "Matches elements whose Building Material attribute name equals this string exactly." },
+            "constructionMaterialNameIsNot": { "type": "string", "description": "Matches elements whose Building Material attribute name does not equal this string." },
+            "constructionMaterialNameContains": { "type": "string", "description": "Matches elements whose Building Material attribute name contains this substring." },
+            "constructionMaterialNameNotContains": { "type": "string", "description": "Matches elements whose Building Material attribute name does not contain this substring." },
+            "constructionMaterialNameStartsWith": { "type": "string", "description": "Matches elements whose Building Material attribute name starts with this substring." },
+            "constructionMaterialNameEndsWith": { "type": "string", "description": "Matches elements whose Building Material attribute name ends with this substring." },
+            "surfaceNameIs": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name equals this string exactly." },
+            "surfaceNameIsNot": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name does not equal this string." },
+            "surfaceNameContains": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name contains this substring." },
+            "surfaceNameNotContains": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name does not contain this substring." },
+            "surfaceNameStartsWith": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name starts with this substring." },
+            "surfaceNameEndsWith": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name ends with this substring." },
+            "renovationFilterIs": { "type": "string", "description": "Matches elements whose Renovation Filter display status equals this filter name exactly." },
+            "renovationFilterIsNot": { "type": "string", "description": "Matches elements whose Renovation Filter display status does not equal this filter name." },
+            "structuralFunction": { "type": "string", "enum": [ "LoadBearing", "NonLoadBearing", "Undefined" ], "description": "Matches elements whose structural function equals this value." },
+            "structuralFunctionNot": { "type": "string", "enum": [ "LoadBearing", "NonLoadBearing", "Undefined" ], "description": "Matches elements whose structural function does not equal this value." },
+            "position": { "type": "string", "enum": [ "Exterior", "Interior", "Undefined" ], "description": "Matches elements whose position equals this value." },
+            "positionNot": { "type": "string", "enum": [ "Exterior", "Interior", "Undefined" ], "description": "Matches elements whose position does not equal this value." },
+            "variantStateIs": { "type": "string", "description": "Matches elements whose Variant State equals this string exactly (e.g. 'Main Model'). Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
+            "variantStateIsNot": { "type": "string", "description": "Matches elements whose Variant State does not equal this string. Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
+            "variantSetIs": { "type": "string", "description": "Matches elements whose Variant Set equals this string exactly (e.g. 'Main Model'). Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
+            "variantSetIsNot": { "type": "string", "description": "Matches elements whose Variant Set does not equal this string. Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
+            "elementIdIs": { "type": "string", "description": "Matches elements whose element ID equals this string exactly." },
+            "elementIdIsNot": { "type": "string", "description": "Matches elements whose element ID does not equal this string." },
+            "elementIdLessThan": { "type": "string", "description": "Matches elements whose element ID is less than this string (lexicographic comparison, stored as text)." },
+            "elementIdGreaterThan": { "type": "string", "description": "Matches elements whose element ID is greater than this string." },
+            "elementIdLessOrEqual": { "type": "string", "description": "Matches elements whose element ID is less than or equal to this string." },
+            "elementIdGreaterOrEqual": { "type": "string", "description": "Matches elements whose element ID is greater than or equal to this string." },
+            "elementIdContains": { "type": "string", "description": "Matches elements whose element ID contains this substring." },
+            "elementIdNotContains": { "type": "string", "description": "Matches elements whose element ID does not contain this substring." },
+            "elementIdStartsWith": { "type": "string", "description": "Matches elements whose element ID starts with this substring." },
+            "elementIdEndsWith": { "type": "string", "description": "Matches elements whose element ID ends with this substring." },
+            "uniqueIdIs": { "type": "string", "description": "Matches elements whose unique ID equals this string exactly." },
+            "uniqueIdIsNot": { "type": "string", "description": "Matches elements whose unique ID does not equal this string." },
+            "uniqueIdContains": { "type": "string", "description": "Matches elements whose unique ID contains this substring." },
+            "uniqueIdNotContains": { "type": "string", "description": "Matches elements whose unique ID does not contain this substring." },
+            "uniqueIdStartsWith": { "type": "string", "description": "Matches elements whose unique ID starts with this substring." },
+            "uniqueIdEndsWith": { "type": "string", "description": "Matches elements whose unique ID ends with this substring." },
+            "linkMainIdIs": { "type": "string", "description": "Matches elements whose link's main identifier equals this string exactly." },
+            "linkMainIdIsNot": { "type": "string", "description": "Matches elements whose link's main identifier does not equal this string." },
+            "linkMainIdLessThan": { "type": "string", "description": "Matches elements whose link's main identifier is less than this string." },
+            "linkMainIdGreaterThan": { "type": "string", "description": "Matches elements whose link's main identifier is greater than this string." },
+            "linkMainIdLessOrEqual": { "type": "string", "description": "Matches elements whose link's main identifier is less than or equal to this string." },
+            "linkMainIdGreaterOrEqual": { "type": "string", "description": "Matches elements whose link's main identifier is greater than or equal to this string." },
+            "linkMainIdContains": { "type": "string", "description": "Matches elements whose link's main identifier contains this substring." },
+            "linkMainIdNotContains": { "type": "string", "description": "Matches elements whose link's main identifier does not contain this substring." },
+            "linkMainIdStartsWith": { "type": "string", "description": "Matches elements whose link's main identifier starts with this substring." },
+            "linkMainIdEndsWith": { "type": "string", "description": "Matches elements whose link's main identifier ends with this substring." },
+            "linkedElementIdIs": { "type": "string", "description": "Matches elements whose 'linked element ID' equals this string exactly." },
+            "linkedElementIdIsNot": { "type": "string", "description": "Matches elements whose 'linked element ID' does not equal this string." },
+            "linkedElementIdLessThan": { "type": "string", "description": "Matches elements whose 'linked element ID' is less than this string." },
+            "linkedElementIdGreaterThan": { "type": "string", "description": "Matches elements whose 'linked element ID' is greater than this string." },
+            "linkedElementIdLessOrEqual": { "type": "string", "description": "Matches elements whose 'linked element ID' is less than or equal to this string." },
+            "linkedElementIdGreaterOrEqual": { "type": "string", "description": "Matches elements whose 'linked element ID' is greater than or equal to this string." },
+            "linkedElementIdContains": { "type": "string", "description": "Matches elements whose 'linked element ID' contains this substring." },
+            "linkedElementIdNotContains": { "type": "string", "description": "Matches elements whose 'linked element ID' does not contain this substring." },
+            "linkedElementIdStartsWith": { "type": "string", "description": "Matches elements whose 'linked element ID' starts with this substring." },
+            "linkedElementIdEndsWith": { "type": "string", "description": "Matches elements whose 'linked element ID' ends with this substring." },
+            "nameIs": { "type": "string", "description": "Matches elements whose name equals this string exactly." },
+            "nameIsNot": { "type": "string", "description": "Matches elements whose name does not equal this string." },
+            "nameContains": { "type": "string", "description": "Matches elements whose name contains this substring." },
+            "nameNotContains": { "type": "string", "description": "Matches elements whose name does not contain this substring." },
+            "nameStartsWith": { "type": "string", "description": "Matches elements whose name starts with this substring." },
+            "nameEndsWith": { "type": "string", "description": "Matches elements whose name ends with this substring." },
+            "hasLinkSource": { "type": "boolean", "description": "If true, matches elements linked to any link source." },
+            "hasLinkSourceNot": { "type": "boolean", "description": "If true, matches elements NOT linked to any link source." },
+            "missingVariant": { "type": "boolean", "description": "Matches elements whose 'missing variant' status equals this value." },
+            "profileStretchHeight": { "type": "number", "description": "Matches elements whose Complex Profile 'height stretch' modifier equals this value." },
+            "profileStretchHeightNot": { "type": "number", "description": "Matches elements whose Complex Profile 'height stretch' modifier does not equal this value." },
+            "profileStretchHeightLessThan": { "type": "number", "description": "Matches elements whose Complex Profile 'height stretch' modifier is less than this value." },
+            "profileStretchHeightGreaterThan": { "type": "number", "description": "Matches elements whose Complex Profile 'height stretch' modifier is greater than this value." },
+            "profileStretchHeightLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile 'height stretch' modifier is less than or equal to this value." },
+            "profileStretchHeightGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile 'height stretch' modifier is greater than or equal to this value." },
+            "profileStretchWidth": { "type": "number", "description": "Matches elements whose Complex Profile 'width stretch' modifier equals this value." },
+            "profileStretchWidthNot": { "type": "number", "description": "Matches elements whose Complex Profile 'width stretch' modifier does not equal this value." },
+            "profileStretchWidthLessThan": { "type": "number", "description": "Matches elements whose Complex Profile 'width stretch' modifier is less than this value." },
+            "profileStretchWidthGreaterThan": { "type": "number", "description": "Matches elements whose Complex Profile 'width stretch' modifier is greater than this value." },
+            "profileStretchWidthLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile 'width stretch' modifier is less than or equal to this value." },
+            "profileStretchWidthGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile 'width stretch' modifier is greater than or equal to this value." },
+            "profileNominalHeight": { "type": "number", "description": "Matches elements whose Complex Profile nominal height equals this value." },
+            "profileNominalHeightNot": { "type": "number", "description": "Matches elements whose Complex Profile nominal height does not equal this value." },
+            "profileNominalHeightLessThan": { "type": "number", "description": "Matches elements whose Complex Profile nominal height is less than this value." },
+            "profileNominalHeightGreaterThan": { "type": "number", "description": "Matches elements whose Complex Profile nominal height is greater than this value." },
+            "profileNominalHeightLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile nominal height is less than or equal to this value." },
+            "profileNominalHeightGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile nominal height is greater than or equal to this value." },
+            "profileTotalHeight": { "type": "number", "description": "Matches elements whose Complex Profile total height equals this value." },
+            "profileTotalHeightNot": { "type": "number", "description": "Matches elements whose Complex Profile total height does not equal this value." },
+            "profileTotalHeightLessThan": { "type": "number", "description": "Matches elements whose Complex Profile total height is less than this value." },
+            "profileTotalHeightGreaterThan": { "type": "number", "description": "Matches elements whose Complex Profile total height is greater than this value." },
+            "profileTotalHeightLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile total height is less than or equal to this value." },
+            "profileTotalHeightGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile total height is greater than or equal to this value." },
+            "profileTotalWidth": { "type": "number", "description": "Matches elements whose Complex Profile total width equals this value." },
+            "profileTotalWidthNot": { "type": "number", "description": "Matches elements whose Complex Profile total width does not equal this value." },
+            "profileTotalWidthLessThan": { "type": "number", "description": "Matches elements whose Complex Profile total width is less than this value." },
+            "profileTotalWidthGreaterThan": { "type": "number", "description": "Matches elements whose Complex Profile total width is greater than this value." },
+            "profileTotalWidthLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile total width is less than or equal to this value." },
+            "profileTotalWidthGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile total width is greater than or equal to this value." },
+            "profileNominalWidth": { "type": "number", "description": "Matches elements whose Complex Profile nominal width equals this value." },
+            "profileNominalWidthNot": { "type": "number", "description": "Matches elements whose Complex Profile nominal width does not equal this value." },
+            "profileNominalWidthLessThan": { "type": "number", "description": "Matches elements whose Complex Profile nominal width is less than this value." },
+            "profileNominalWidthGreaterThan": { "type": "number", "description": "Matches elements whose Complex Profile nominal width is greater than this value." },
+            "profileNominalWidthLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile nominal width is less than or equal to this value." },
+            "profileNominalWidthGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile nominal width is greater than or equal to this value." },
+            "profileParameter": {
+                "type": "object",
+                "description": "Matches elements by a custom Complex Profile modifier parameter, identified by its plain name as defined on that Complex Profile attribute (e.g. 'Debord tole') rather than a fixed field - use this for any profile modifier not covered by the profileStretchHeight/profileNominalWidth/... fields above. Provide 'name' and exactly one comparison operator.",
+                "properties": {
+                    "name": { "type": "string", "description": "The profile modifier parameter's name, exactly as defined on the Complex Profile attribute." },
+                    "equals": { "type": "number" },
+                    "notEquals": { "type": "number" },
+                    "lessThan": { "type": "number" },
+                    "greaterThan": { "type": "number" },
+                    "lessOrEqual": { "type": "number" },
+                    "greaterOrEqual": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [ "name" ]
+            },
+            "customPropertyBool": {
+                "type": "object",
+                "description": "Matches elements by a custom (user-defined) boolean property, identified by its plain name and the name of the property group it appears under (both exactly as shown in the Property Manager). Provide 'name', 'group', and exactly one of the operators below. The 6 'has.../is...' operators are available on every custom property type, not just boolean ones.",
+                "properties": {
+                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
+                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined (e.g. 'Generalites')." },
+                    "equals": { "type": "boolean", "description": "Matches if the property's value equals this." },
+                    "hasDefaultValue": { "type": "boolean", "description": "If true, matches elements where this property currently has its default value." },
+                    "hasCustomValue": { "type": "boolean", "description": "If true, matches elements where this property has a custom (overridden, non-default) value." },
+                    "isAvailable": { "type": "boolean", "description": "If true, matches elements where this property is available." },
+                    "isNotAvailable": { "type": "boolean", "description": "If true, matches elements where this property is not available." },
+                    "isUndefined": { "type": "boolean", "description": "If true, matches elements where this property is undefined." },
+                    "isNotUndefined": { "type": "boolean", "description": "If true, matches elements where this property is not undefined." }
+                },
+                "additionalProperties": false,
+                "required": [ "name", "group" ]
+            },
+            "customPropertyString": {
+                "type": "object",
+                "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+                "properties": {
+                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
+                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
+                    "equals": { "type": "string", "description": "Matches if the property's value equals this string exactly." },
+                    "notEquals": { "type": "string", "description": "Matches if the property's value does not equal this string." },
+                    "hasDefaultValue": { "type": "boolean" },
+                    "hasCustomValue": { "type": "boolean" },
+                    "isAvailable": { "type": "boolean" },
+                    "isNotAvailable": { "type": "boolean" },
+                    "isUndefined": { "type": "boolean" },
+                    "isNotUndefined": { "type": "boolean" }
+                },
+                "additionalProperties": false,
+                "required": [ "name", "group" ]
+            },
+            "customPropertyNumber": {
+                "type": "object",
+                "description": "Matches elements by a custom (user-defined) numeric property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+                "properties": {
+                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
+                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
+                    "equals": { "type": "number" },
+                    "notEquals": { "type": "number" },
+                    "lessThan": { "type": "number" },
+                    "greaterThan": { "type": "number" },
+                    "lessOrEqual": { "type": "number" },
+                    "greaterOrEqual": { "type": "number" },
+                    "hasDefaultValue": { "type": "boolean" },
+                    "hasCustomValue": { "type": "boolean" },
+                    "isAvailable": { "type": "boolean" },
+                    "isNotAvailable": { "type": "boolean" },
+                    "isUndefined": { "type": "boolean" },
+                    "isNotUndefined": { "type": "boolean" }
+                },
+                "additionalProperties": false,
+                "required": [ "name", "group" ]
+            },
+            "customPropertyInteger": {
+                "type": "object",
+                "description": "Matches elements by a custom (user-defined) integer property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+                "properties": {
+                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
+                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
+                    "equals": { "type": "integer" },
+                    "notEquals": { "type": "integer" },
+                    "lessThan": { "type": "integer" },
+                    "greaterThan": { "type": "integer" },
+                    "lessOrEqual": { "type": "integer" },
+                    "greaterOrEqual": { "type": "integer" },
+                    "hasDefaultValue": { "type": "boolean" },
+                    "hasCustomValue": { "type": "boolean" },
+                    "isAvailable": { "type": "boolean" },
+                    "isNotAvailable": { "type": "boolean" },
+                    "isUndefined": { "type": "boolean" },
+                    "isNotUndefined": { "type": "boolean" }
+                },
+                "additionalProperties": false,
+                "required": [ "name", "group" ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "GraphicOverrideCombinationIdOrError": {
+        "type": "object",
+        "description": "A graphic override combination identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GraphicOverrideCombinationIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GraphicOverrideFillTypes": {
+        "type": "object",
+        "description": "The fill types an override applies to.",
+        "properties": {
+            "cutFill": {
+                "type": "boolean",
+                "description": "Applies to cut fills."
+            },
+            "coverFill": {
+                "type": "boolean",
+                "description": "Applies to cover fills."
+            },
+            "draftingFill": {
+                "type": "boolean",
+                "description": "Applies to drafting fills."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutFill",
+            "coverFill",
+            "draftingFill"
+        ]
+    },
+    "GraphicOverrideSurfaceTypes": {
+        "type": "object",
+        "description": "The surface types an override applies to.",
+        "properties": {
+            "cutSurface": {
+                "type": "boolean",
+                "description": "Applies to cut surfaces."
+            },
+            "uncutSurface": {
+                "type": "boolean",
+                "description": "Applies to uncut surfaces."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutSurface",
+            "uncutSurface"
+        ]
+    },
+    "GraphicOverrideStyle": {
+        "type": "object",
+        "description": "What a graphic override rule overrides and how. A field that is left out is not overridden.",
+        "properties": {
+            "lineType": {
+                "$ref": "#/AttributeId",
+                "description": "The line type that replaces the line type of lines."
+            },
+            "lineMarkerTextPen": {
+                "type": "integer",
+                "description": "The pen index that replaces the pen of lines, markers and texts."
+            },
+            "fillType": {
+                "$ref": "#/AttributeId",
+                "description": "The fill type that replaces the fill type of fills."
+            },
+            "fillTypeAppliesTo": {
+                "$ref": "#/GraphicOverrideFillTypes",
+                "description": "The fills the fill type override applies to. Left out: all fills."
+            },
+            "fillForegroundPen": {
+                "type": "integer",
+                "description": "The pen index that replaces the foreground pen of fills."
+            },
+            "fillForegroundPenAppliesTo": {
+                "$ref": "#/GraphicOverrideFillTypes",
+                "description": "The fills the foreground pen override applies to. Left out: all fills."
+            },
+            "fillBackgroundPen": {
+                "type": "integer",
+                "description": "The pen index that replaces the background pen of fills. Use either this or fillBackgroundColor."
+            },
+            "fillBackgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "The color that replaces the background pen of fills. Use either this or fillBackgroundPen."
+            },
+            "fillBackgroundPenAppliesTo": {
+                "$ref": "#/GraphicOverrideFillTypes",
+                "description": "The fills the background pen override applies to. Left out: all fills."
+            },
+            "surface": {
+                "$ref": "#/AttributeId",
+                "description": "The surface that replaces the surface of elements. Use either this or surfaceColor."
+            },
+            "surfaceColor": {
+                "$ref": "#/ColorRGB",
+                "description": "The color that replaces the surface of elements. Use either this or surface."
+            },
+            "surfaceAppliesTo": {
+                "$ref": "#/GraphicOverrideSurfaceTypes",
+                "description": "The surfaces the surface override applies to. Left out: all surfaces."
+            },
+            "showSkinSeparators": {
+                "type": "boolean",
+                "description": "Show the skin separator lines."
+            },
+            "overridePenColorAndThickness": {
+                "type": "boolean",
+                "description": "Override the pen color and thickness."
+            },
+            "hiddenContours": {
+                "$ref": "#/GraphicOverrideSurfaceTypes",
+                "description": "The contours to hide when overrideContours is true."
+            },
+            "overrideContours": {
+                "type": "boolean",
+                "description": "Override the contour visibility."
+            }
         },
         "additionalProperties": false
     }
