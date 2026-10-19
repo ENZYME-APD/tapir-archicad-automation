@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:53 UTC",
+ "generatedAt": "2026-10-19 11:59 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1430,
   "not applicable": 468,
-  "in progress": 165,
+  "in progress": 168,
   "done": 743,
-  "claimed": 77
+  "claimed": 74
  },
  "items": [
   {
@@ -3967,9 +3967,14 @@
    "olderNames": [
     "ACAPI_Element_GetNoteAutotexts"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1181,
+     "title": "Add GetNoteAutotexts command (ACAPI_AutoText_GetNoteAutotexts)"
+    }
+   ],
    "issues": [
     {
      "number": 1166,
@@ -3994,9 +3999,14 @@
    "olderNames": [
     "ACAPI_Element_GetNoteKeywordForAutotextID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1179,
+     "title": "Add GetNoteAutoTextKeywords (ACAPI_AutoText_GetNoteKeywordForAutotextID)"
+    }
+   ],
    "issues": [
     {
      "number": 1168,
@@ -4295,6 +4305,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1178,
+     "title": "Add SetGraphicOverrideRuleGroupOrder command"
+    },
     {
      "number": 1176,
      "title": "Add RenameGraphicOverrideRuleGroups (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup)"
@@ -11775,6 +11789,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1178,
+     "title": "Add SetGraphicOverrideRuleGroupOrder command"
+    },
+    {
      "number": 1176,
      "title": "Add RenameGraphicOverrideRuleGroups (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup)"
     },
@@ -11810,6 +11828,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1178,
+     "title": "Add SetGraphicOverrideRuleGroupOrder command"
+    },
     {
      "number": 1176,
      "title": "Add RenameGraphicOverrideRuleGroups (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup)"
@@ -11944,9 +11966,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1178,
+     "title": "Add SetGraphicOverrideRuleGroupOrder command"
+    }
+   ],
    "issues": [
     {
      "number": 1165,
