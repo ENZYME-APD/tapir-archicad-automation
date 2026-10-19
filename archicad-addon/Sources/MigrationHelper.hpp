@@ -250,6 +250,13 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
 }
 
+// APIDb_GetHotlinkProxyElementTableID: par1 the instance guid, par2 the
+// proxy -> source element table, as AC27's ACAPI_Hotlink_GetHotlinkProxyElementTable.
+inline GSErrCode ACAPI_Hotlink_GetHotlinkProxyElementTable (const API_Guid* hotlinkGuid, GS::HashTable<API_Guid, API_Guid>* proxyElementTable)
+{
+    return ACAPI_Database (APIDb_GetHotlinkProxyElementTableID, (void*) hotlinkGuid, (void*) proxyElementTable);
+}
+
 inline GSErrCode ACAPI_Hotlink_CreateHotlinkNode (API_HotlinkNode* hotlinkNode)
 {
     return ACAPI_Database (APIDb_CreateHotlinkNodeID, hotlinkNode);
