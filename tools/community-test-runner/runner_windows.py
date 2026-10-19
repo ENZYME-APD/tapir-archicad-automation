@@ -152,24 +152,28 @@ class AddOnList:
             found += [p for p in Path(actual).rglob("TapirAddOn*") if to_url(p) not in disabled]
         return found
 
-    def swap_file(self) -> Path | None:
-        """The Tapir to swap instead of changing the list. Up to Archicad 28 a Tapir in the Add-Ons
+    def swap_files(self) -> list[Path]:
+        """The Tapirs to swap instead of changing the list. Up to Archicad 28 a Tapir in the Add-Ons
         folder can only be left out by putting it on 'Disable', and then the build does not load
-        either (#1150)."""
+        either (#1150). A list a test left changed counts as it was before that test."""
         if int(self.version) > COLLIDES_UP_TO:
-            return None
+            return []
         key = self.key()
-        disabled = set(entries(self.registry.read(key + "\\Disable")))
+        if self.backup_file.exists():
+            disable = json.loads(self.backup_file.read_text(encoding="utf-8"))["lists"]["Disable"]
+        else:
+            disable = self.registry.read(key + "\\Disable")
+        disabled = set(entries(disable))
         actual = self.registry.read(key).get("Actual Path", [""])[0]
         if not actual or not Path(actual).is_dir():
-            return None
-        return next((p for p in Path(actual).rglob("TapirAddOn*")
-                     if p.suffix.lower() in (".apx", ".bundle") and to_url(p) not in disabled), None)
+            return []
+        return [p for p in Path(actual).rglob("TapirAddOn*")
+                if p.suffix.lower() in (".apx", ".bundle") and to_url(p) not in disabled]
 
     def install(self, addon: Path) -> None:
         if self.backup_file.exists():
             raise RuntimeError(f"{self.backup_file} exists: a previous test did not finish; run 'restore' first")
-        swap = self.swap_file()
+        swap = ", ".join(str(p) for p in self.swap_files())
         if swap:
             raise RuntimeError(
                 f"Archicad {self.version} cannot load a test build while your Tapir is in its Add-Ons folder "

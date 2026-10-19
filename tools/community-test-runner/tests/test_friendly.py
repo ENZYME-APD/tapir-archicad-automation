@@ -87,19 +87,35 @@ class AddOnListTest(unittest.TestCase):
 
     def test_up_to_ac28_a_tapir_in_the_addons_folder_is_swapped_not_listed(self):
         ac28 = self.collision_list("28", in_folder=True)
-        self.assertEqual(ac28.swap_file().name, "TapirAddOn_AC28_Win.apx")
+        self.assertEqual([p.name for p in ac28.swap_files()], ["TapirAddOn_AC28_Win.apx"])
         before = json.dumps(self.registry.keys, sort_keys=True)
         with self.assertRaisesRegex(RuntimeError, "addonFile"):
             ac28.install(Path(self.tmp.name) / "build.apx")
         self.assertEqual(json.dumps(self.registry.keys, sort_keys=True), before)
         self.assertFalse(ac28.backup_file.exists())
-        self.assertIsNone(self.list.swap_file())  # AC30 tells the two paths apart
+        self.assertEqual(self.list.swap_files(), [])  # the add-on list worked on AC30 (#1088)
 
     def test_up_to_ac28_a_tapir_only_in_the_list_still_uses_the_list(self):
         ac26 = self.collision_list("26", in_folder=False)
-        self.assertIsNone(ac26.swap_file())
+        self.assertEqual(ac26.swap_files(), [])
         ac26.install(Path(self.tmp.name) / "build.apx")
         self.assertTrue(ac26.restore())
+
+    def test_a_list_left_changed_by_1150_still_shows_the_file_to_swap(self):
+        ac28 = self.collision_list("28", in_folder=True)
+        tapir = ac28.swap_files()[0]
+        key = KEY.replace("30.0.0 INT", "28.0.0 GER")
+        # what the earlier runner left after the dialog: the folder Tapir on Disable, the backup pending
+        ac28.backup_file.write_text(json.dumps({"key": key, "lists": {
+            "Include": self.registry.read(key + "\\Include"), "Disable": self.registry.read(key + "\\Disable")}}))
+        self.registry.write(key + "\\Disable", rw.numbered("Disable", [rw.to_url(tapir)]))
+        self.assertEqual(ac28.swap_files(), [tapir])
+
+    def test_every_tapir_in_the_addons_folder_is_found(self):
+        ac28 = self.collision_list("28", in_folder=True)
+        (Path(self.tmp.name) / "AC28" / "Tapir").mkdir()
+        (Path(self.tmp.name) / "AC28" / "Tapir" / "TapirAddOn_AC28_Win.apx").write_bytes(b"second")
+        self.assertEqual(len(ac28.swap_files()), 2)
 
     def test_restore_works_from_a_new_process(self):
         self.list.install(Path(self.tmp.name) / "b.apx")
@@ -134,7 +150,7 @@ class InstallationTest(unittest.TestCase):
                 unittest.mock.patch.object(rw, "dialogs", return_value=["Archicad-Umgebung"]) as dialogs, \
                 self.assertRaisesRegex(RuntimeError, "Archicad-Umgebung.*1150"):
             r.Installation(self.ac).start()
-        self.assertEqual(dialogs.call_count, 2)  # twice in a row, not the whole startTimeout
+        self.assertEqual(dialogs.call_count, 3)  # three polls in a row, not the whole startTimeout
 
     def test_no_administrator_rights_is_said_plainly(self):
         with unittest.mock.patch.object(r.shutil, "copy2", side_effect=PermissionError(13, "Access is denied")), \

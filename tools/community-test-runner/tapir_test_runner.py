@@ -468,11 +468,13 @@ class Installation:
             if port and Tapir(port).alive():
                 found["port"] = port
                 return True
-            # A dialog seen twice in a row (not a flash during the start) is waiting for a human.
+            # A modal dialog seen in three polls in a row (10 s and more, not a window that comes and goes
+            # during the start) is waiting for a human. A normal start shows none: its splash and palettes
+            # are other window classes.
             shown = rw.dialogs(archicad_pids(self.ac["archicadExe"])) if os.name == "nt" else []
             found["dialog"] = found.get("dialog", 0) + 1 if shown else 0
             found["title"] = shown[0] if shown else ""
-            return found["dialog"] >= 2
+            return found["dialog"] >= 3
         if not wait_for(ready, self.ac.get("startTimeout", 300), 5):
             raise RuntimeError(f"Archicad {self.ac['version']} did not answer with Tapir loaded within "
                                f"{self.ac.get('startTimeout', 300)} s; it may be waiting at a dialog (project recovery, "
