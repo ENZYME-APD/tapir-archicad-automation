@@ -267,7 +267,7 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   issue's author to test it in Archicad, and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main` (which it merges in), at most
   `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
-  (default 5) PRs per sweep. Then
+  (default 15) PRs per sweep. Then
   it labels the PR `needs-maintainer` and stops; removing the label hands the PR
   back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
@@ -277,7 +277,7 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   for issue fixes, first reviews and steward fix rounds, and
   `CLAUDE_ESCALATION_MODEL` (default `best`) only for the last steward fix round
   and one retry of an issue fix that did work but left no comment or PR.
-- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 4)
+- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 8)
   Claude runs of these workflows call the model at a time, oldest first; a run
   the API refuses on its first turn fails in its "Stop on a refused run" step
   with the error in its job summary; the hourly `retry` job of

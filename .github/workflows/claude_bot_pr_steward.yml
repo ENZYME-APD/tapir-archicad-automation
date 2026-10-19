@@ -46,7 +46,7 @@ name: Claude Bot PR Steward
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
 # - A sweep starts new work (builds, a review or a fix) on at most
-#   BOT_PR_SWEEP_BATCH pull requests (repository variable, default 5), so a
+#   BOT_PR_SWEEP_BATCH pull requests (repository variable, default 15), so a
 #   backlog is worked through over several hourly sweeps instead of
 #   flooding the runners. Work already running does not count: a pull
 #   request still building must not hold back one that only needs a fix.
@@ -91,7 +91,9 @@ jobs:
       vars.BOT_PR_STEWARD != 'false' &&
       (github.event_name == 'schedule' || inputs.pr_number == '')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # About half a minute per pull request it starts work on or has to wait
+    # for, so a full batch of BOT_PR_SWEEP_BATCH needs more than 15.
+    timeout-minutes: 30
     # One sweep at a time; a burst of starts collapses into one pending sweep.
     concurrency:
       group: bot-pr-sweep
@@ -107,16 +109,16 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
       MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '6' }}
-      BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '5' }}
+      BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '15' }}
     steps:
       - name: Sweep the bot's pull requests
         run: |
           set -euo pipefail
           case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=6 ;; esac
-          case "$BATCH" in ''|*[!0-9]*) BATCH=5 ;; esac
+          case "$BATCH" in ''|*[!0-9]*) BATCH=15 ;; esac
           busy=0
 
-          prs=$(gh pr list --repo "$REPO" --state open --base main --limit 200 \
+          prs=$(gh pr list --repo "$REPO" --state open --base main --limit 1000 \
             --json number,isDraft,headRefName,headRefOid,author,isCrossRepository,labels,mergeable,createdAt \
             --jq '[.[] | select((.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
                                and (.headRefName | startswith("claude/"))
@@ -507,10 +509,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do
