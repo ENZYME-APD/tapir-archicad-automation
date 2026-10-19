@@ -8,6 +8,9 @@
 #endif
 
 #include <cmath>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
 
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -411,6 +414,120 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     }
 
     return response;
+}
+
+GetNoteAutotextsCommand::GetNoteAutotextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetNoteAutotextsCommand::GetName () const
+{
+    return "GetNoteAutotexts";
+}
+
+GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "noteOwnerType": {
+                "$ref": "#/ElementType",
+                "description": "The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "noteOwnerType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "noteAutotexts": {
+                "type": "array",
+                "description": "The autotexts available in the notes of the given owner type, in ascending order of autotextId.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "autotextId": {
+                            "type": "integer",
+                            "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
+                        },
+                        "elementTypes": {
+                            "type": "array",
+                            "description": "The element types the autotext is available for.",
+                            "items": {
+                                "$ref": "#/ElementType"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "autotextId",
+                        "elementTypes"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "noteAutotexts"
+        ]
+    })";
+}
+
+GS::ObjectState GetNoteAutotextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::UniString noteOwnerTypeStr;
+    parameters.Get ("noteOwnerType", noteOwnerTypeStr);
+    const API_ElemTypeID noteOwnerTypeID = GetElementTypeFromNonLocalizedName (noteOwnerTypeStr);
+    if (noteOwnerTypeID == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid noteOwnerType.");
+    }
+
+    // dimAppear is left at its default (GS::NoValue).
+    std::unordered_map<API_NoteAutotextID, std::unordered_set<API_ElemType>> elemTypesForAutotextIDs;
+    const GSErrCode err = ACAPI_AutoText_GetNoteAutotexts (API_ElemType (noteOwnerTypeID), elemTypesForAutotextIDs);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the note autotexts.");
+    }
+
+    // The map is unordered, so the autotexts are sorted by id, and element types that differ
+    // only in variation are listed once, so the output is stable.
+    std::map<Int32, GS::Array<GS::UniString>> elemTypeNamesForAutotextIDs;
+    for (const auto& autotextIdAndElemTypes : elemTypesForAutotextIDs) {
+        GS::Array<GS::UniString>& elemTypeNames = elemTypeNamesForAutotextIDs[static_cast<Int32> (autotextIdAndElemTypes.first)];
+        for (const API_ElemType& elemType : autotextIdAndElemTypes.second) {
+            const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemType.typeID);
+            if (!elemTypeNames.Contains (elemTypeName)) {
+                elemTypeNames.Push (elemTypeName);
+            }
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("noteAutotexts");
+    for (const auto& autotextIdAndElemTypeNames : elemTypeNamesForAutotextIDs) {
+        GS::ObjectState noteAutotext;
+        noteAutotext.Add ("autotextId", autotextIdAndElemTypeNames.first);
+        const auto& elemTypesAdder = noteAutotext.AddList<GS::UniString> ("elementTypes");
+        for (const GS::UniString& elemTypeName : autotextIdAndElemTypeNames.second) {
+            elemTypesAdder (elemTypeName);
+        }
+        listAdder (noteAutotext);
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutotexts needs Archicad 26 or later.");
+#endif
 }
 
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
