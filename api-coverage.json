@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 16:51 UTC",
+ "generatedAt": "2026-10-19 16:54 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 1353,
+  "open": 1352,
   "not applicable": 469,
-  "claimed": 144,
-  "in progress": 174,
+  "claimed": 142,
+  "in progress": 177,
   "done": 743
  },
  "items": [
@@ -12724,9 +12724,14 @@
    "olderNames": [
     "APIAny_GetHierarchicalElementOwnerID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1211,
+     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
+    }
+   ],
    "issues": [
     {
      "number": 1207,
@@ -16285,9 +16290,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1209,
+     "title": "Add GetDimensionStandards command (read dimension standards)"
+    }
+   ],
    "issues": [
     {
      "number": 1206,
@@ -16309,9 +16319,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1209,
+     "title": "Add GetDimensionStandards command (read dimension standards)"
+    }
+   ],
    "issues": [
     {
      "number": 1206,
@@ -20702,10 +20717,15 @@
    "olderNames": [
     "APIEnv_GetSurveyPointTransformationID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1212,
+     "title": "Expose ACAPI_SurveyPoint_GetSurveyPointTransformation (project ↔ survey coordinates)"
+    }
+   ]
   },
   {
    "id": "ACAPI_SurveyPoint_IsSurveyPointLocked",
@@ -24732,6 +24752,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1211,
+     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
+    },
     {
      "number": 1146,
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
