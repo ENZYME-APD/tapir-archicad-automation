@@ -955,6 +955,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.7.2",
             "Gets all graphic override rule groups of the project with the rules they contain, empty groups included. Available from Archicad 27."
         );
+        err |= RegisterCommand<RenameGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.2",
+            "Renames graphic override rule groups, found by name. Their rules are kept. Available from Archicad 27."
+        );
         err |= RegisterCommand<DeleteGraphicOverrideRuleGroupsCommand> (
             attributeCommands, "1.7.2",
             "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27."
