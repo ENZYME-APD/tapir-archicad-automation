@@ -4910,6 +4910,89 @@ GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameter
         : CreateFailedExecutionResult (err, "Failed to unlock elements.");
 }
 
+RefreshElementsCommand::RefreshElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RefreshElementsCommand::GetName () const
+{
+    return "RefreshElements";
+}
+
+GS::Optional<GS::UniString> RefreshElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "force": {
+                "type": "boolean",
+                "description": "Forces the rebuild of GDL-based elements, which runs their parameter script. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RefreshElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// ACAPI_Element_RefreshElement is a non-undoable data structure modifier, so,
+// like the hotlink node functions in UpdateHotlinks, it is not wrapped in
+// ACAPI_CallUndoableCommand.
+GS::ObjectState RefreshElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    bool force = false;
+    parameters.Get ("force", force);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+
+        // The header is read from the current database, so an element of
+        // another database (or a deleted one) is reported here instead of
+        // being passed to the refresh with an incomplete header.
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not found in the current database (the floor plan, section or detail window that is open)."));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Element_RefreshElement (&elemHead, &force);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to refresh the element."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
+
 GetElementPreviewImageCommand::GetElementPreviewImageCommand () :
     CommandBase (CommonSchema::Used)
 {
