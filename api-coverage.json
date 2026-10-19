@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 05:18 UTC",
+ "generatedAt": "2026-10-19 05:27 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1454,
+  "open": 1456,
   "not applicable": 468,
   "in progress": 153,
   "done": 491,
-  "claimed": 65,
+  "claimed": 63,
   "merged": 252
  },
  "items": [
@@ -2836,12 +2836,7 @@
      "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
     }
    ],
-   "issues": [
-    {
-     "number": 925,
-     "title": "Add attribute folder commands: create, rename, delete, move attributes into folders"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_Delete",
@@ -2891,12 +2886,7 @@
      "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
     }
    ],
-   "issues": [
-    {
-     "number": 925,
-     "title": "Add attribute folder commands: create, rename, delete, move attributes into folders"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_DeleteMore",
@@ -3642,12 +3632,7 @@
      "title": "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands"
     }
    ],
-   "issues": [
-    {
-     "number": 925,
-     "title": "Add attribute folder commands: create, rename, delete, move attributes into folders"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_RemoveClassificationItem",
@@ -3703,12 +3688,7 @@
      "title": "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands"
     }
    ],
-   "issues": [
-    {
-     "number": 925,
-     "title": "Add attribute folder commands: create, rename, delete, move attributes into folders"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_Search",
@@ -13584,12 +13564,7 @@
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
    ],
-   "issues": [
-    {
-     "number": 919,
-     "title": "Add CreateLibraryParts command: create GDL objects from scripts and parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_EndSection",
@@ -14134,15 +14109,10 @@
    "olderNames": [
     "ACAPI_LibPart_NewSection"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 919,
-     "title": "Add CreateLibraryParts command: create GDL objects from scripts and parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_OpenParameters",
@@ -14305,12 +14275,7 @@
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
    ],
-   "issues": [
-    {
-     "number": 919,
-     "title": "Add CreateLibraryParts command: create GDL objects from scripts and parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_Search",
@@ -14358,15 +14323,10 @@
    "olderNames": [
     "ACAPI_LibPart_SetDetails_ParamDef"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 919,
-     "title": "Add CreateLibraryParts command: create GDL objects from scripts and parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_SetUpSect_2DDrawHdl",
@@ -19220,10 +19180,6 @@
     {
      "number": 960,
      "title": "Rendering: set the image size and resolution, report the current scene"
-    },
-    {
-     "number": 920,
-     "title": "Add rendering commands: list scenes, set the current scene, photo render to a file"
     }
    ]
   },
@@ -19290,12 +19246,7 @@
      "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
     }
    ],
-   "issues": [
-    {
-     "number": 920,
-     "title": "Add rendering commands: list scenes, set the current scene, photo render to a file"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Rendering_SetCurrentRenderingScene",
@@ -19327,12 +19278,7 @@
      "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
     }
    ],
-   "issues": [
-    {
-     "number": 920,
-     "title": "Add rendering commands: list scenes, set the current scene, photo render to a file"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Renovation_GetActualRenovationFilter",
@@ -19360,12 +19306,7 @@
      "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
     }
    ],
-   "issues": [
-    {
-     "number": 923,
-     "title": "Add renovation filter commands: list filters, get and set the active one"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Renovation_GetRenovationFilterName",
@@ -19403,10 +19344,6 @@
      "title": "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"
     },
     {
-     "number": 923,
-     "title": "Add renovation filter commands: list filters, get and set the active one"
-    },
-    {
      "number": 836,
      "title": "Feature request: Drawing Manager data for Drawing elements"
     }
@@ -19438,12 +19375,7 @@
      "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
     }
    ],
-   "issues": [
-    {
-     "number": 923,
-     "title": "Add renovation filter commands: list filters, get and set the active one"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Renovation_GetRenovationStatusName",
@@ -19494,12 +19426,7 @@
      "title": "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"
     }
    ],
-   "issues": [
-    {
-     "number": 923,
-     "title": "Add renovation filter commands: list filters, get and set the active one"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Resource_GetFixStr",
