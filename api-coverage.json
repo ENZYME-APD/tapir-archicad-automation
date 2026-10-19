@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-18 21:58 UTC",
+ "generatedAt": "2026-10-19 00:28 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "open": 1454,
   "not applicable": 468,
-  "in progress": 138,
+  "in progress": 153,
   "done": 491,
-  "claimed": 80,
+  "claimed": 65,
   "merged": 252
  },
  "items": [
@@ -4307,6 +4307,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1130,
+     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
+    },
+    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
@@ -5569,9 +5573,14 @@
    "olderNames": [
     "APIDb_GetDetailDatabasesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -5597,9 +5606,14 @@
    "olderNames": [
     "APIDb_GetDocumentFrom3DDatabasesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -5625,9 +5639,14 @@
    "olderNames": [
     "APIDb_GetElevationDatabasesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -5676,9 +5695,14 @@
    "olderNames": [
     "APIDb_GetInteriorElevationDatabasesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -5706,7 +5730,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -5767,7 +5796,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": []
   },
   {
@@ -5788,9 +5822,14 @@
    "olderNames": [
     "APIDb_GetSectionDatabasesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -5816,9 +5855,14 @@
    "olderNames": [
     "APIDb_GetWorksheetDatabasesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    }
+   ],
    "issues": [
     {
      "number": 1128,
@@ -6982,9 +7026,14 @@
    "olderNames": [
     "APIDb_GetFullDrawingContentBoxID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1131,
+     "title": "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"
+    }
+   ],
    "issues": [
     {
      "number": 1122,
@@ -8172,9 +8221,14 @@
    "olderNames": [
     "APIAny_ElemHasVisibleSkinID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1133,
+     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
+    }
+   ],
    "issues": [
     {
      "number": 1124,
@@ -8896,6 +8950,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1133,
+     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
+    },
+    {
+     "number": 1132,
+     "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
+    },
+    {
+     "number": 1131,
+     "title": "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"
+    },
+    {
      "number": 1110,
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     },
@@ -9469,9 +9535,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1132,
+     "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
+    }
+   ],
    "issues": [
     {
      "number": 1126,
@@ -17019,9 +17090,14 @@
    "olderNames": [
     "APIAny_DisposeRegularizedPolyID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1134,
+     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
+    }
+   ],
    "issues": [
     {
      "number": 1127,
@@ -17049,7 +17125,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1134,
+     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
+    }
+   ],
    "issues": []
   },
   {
@@ -17116,9 +17197,14 @@
    "olderNames": [
     "APIAny_RegularizePolygonID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1134,
+     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
+    }
+   ],
    "issues": [
     {
      "number": 1127,
@@ -17144,9 +17230,14 @@
    "olderNames": [
     "APIAny_RegularizePolylineID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1134,
+     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
+    }
+   ],
    "issues": [
     {
      "number": 1127,
@@ -21573,9 +21664,14 @@
    "olderNames": [
     "APIEnv_Change3DStyleID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1130,
+     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
+    }
+   ],
    "issues": [
     {
      "number": 1120,
@@ -21796,9 +21892,14 @@
    "olderNames": [
     "APIEnv_Create3DStyleID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1130,
+     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
+    }
+   ],
    "issues": [
     {
      "number": 1120,
@@ -21959,9 +22060,14 @@
    "olderNames": [
     "APIEnv_Get3DStyleID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1130,
+     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
+    }
+   ],
    "issues": [
     {
      "number": 1120,
@@ -22890,6 +22996,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    },
+    {
      "number": 1107,
      "title": "Add GetContainingDatabases command to find an element's database"
     },
@@ -23441,6 +23551,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1135,
+     "title": "Add GetDatabases command to list all databases of given types"
+    },
     {
      "number": 1123,
      "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
@@ -24150,6 +24264,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1134,
+     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
+    },
+    {
+     "number": 1133,
+     "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
+    },
     {
      "number": 1129,
      "title": "Add MeasureTexts command: measure text length before placing it"
