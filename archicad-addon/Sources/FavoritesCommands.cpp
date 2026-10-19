@@ -1481,3 +1481,102 @@ GS::ObjectState RenameFavoriteFolderCommand::Execute (const GS::ObjectState& par
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
 }
+
+MoveFavoritesCommand::MoveFavoritesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveFavoritesCommand::GetName () const
+{
+    return "MoveFavorites";
+}
+
+GS::Optional<GS::UniString> MoveFavoritesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "$ref": "#/Favorites"
+            },
+            "targetPath": {
+                "type": "array",
+                "description": "The path of the folder to move the Favorites into, in the format GetFavoriteFolders returns: the folder names from the root down. Empty for the root folder.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites",
+            "targetPath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveFavoritesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveFavoritesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> favorites;
+    GS::Array<GS::UniString> targetPath;
+    parameters.Get ("favorites", favorites);
+    parameters.Get ("targetPath", targetPath);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    GS::UniString errorMessage = "Failed to move the Favorites.";
+    const GSErrCode err = ACAPI_CallUndoableCommand ("MoveFavorites", [&]() -> GSErrCode {
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+        std::optional<ACAPI::Favorite::FavoriteFolder> targetFolder;
+        const GSErrCode findErr = FindFavoriteFolderByPath (manager, targetPath, targetFolder, errorMessage);
+        if (findErr != NoError) {
+            return findErr;
+        }
+
+        // A Favorite that cannot be found or moved does not stop the others.
+        for (const GS::UniString& favoriteName : favorites) {
+            const auto favorite = manager.GetFavoriteByName (favoriteName);
+            if (favorite.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (favorite.UnwrapErr ().kind, GS::UniString::Printf ("Favorite '%T' not found.", favoriteName.ToPrintf ())));
+                continue;
+            }
+
+            const auto moveResult = manager.MoveFavorite (favorite.Unwrap (), *targetFolder);
+            if (moveResult.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (moveResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to move Favorite '%T'.", favoriteName.ToPrintf ())));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
