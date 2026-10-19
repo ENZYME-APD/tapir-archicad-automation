@@ -684,3 +684,118 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
 
     return response;
 }
+
+GetMissingLibPartNamesCommand::GetMissingLibPartNamesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetMissingLibPartNamesCommand::GetName () const
+{
+    return "GetMissingLibPartNames";
+}
+
+GS::Optional<GS::UniString> GetMissingLibPartNamesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMissingLibPartNamesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libPartNames": {
+                "type": "array",
+                "description": "The library part name of each given element, in the order of the input, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "libPartName": {
+                                    "type": "string",
+                                    "description": "The name of the element's library part, also when the library containing it is not loaded."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "libPartName"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libPartNames"
+        ]
+    })";
+}
+
+GS::ObjectState GetMissingLibPartNamesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& libPartNames = response.AddList<GS::ObjectState> ("libPartNames");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            libPartNames (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            libPartNames (CreateErrorResponse (APIERR_BADID, "The given element was not found"));
+            continue;
+        }
+
+        switch (GetElemTypeId (elemHeader)) {
+            case API_ObjectID:
+            case API_LampID:
+            case API_WindowID:
+            case API_DoorID:
+                break;
+            default:
+                libPartNames (CreateErrorResponse (APIERR_BADPARS, "The given element is not an Object, Lamp, Window or Door"));
+                continue;
+        }
+
+        GS::UniString libPartName;
+        const GSErrCode err = ACAPI_LibraryPart_GetUnloadedLibpartName (&elemGuid, &libPartName);
+        if (err != NoError) {
+            libPartNames (CreateErrorResponse (err, "Failed to get the library part name of the element"));
+            continue;
+        }
+
+        GS::ObjectState libPartNameOfElement = CreateElementIdObjectState (elemGuid);
+        libPartNameOfElement.Add ("libPartName", libPartName);
+        libPartNames (libPartNameOfElement);
+    }
+
+    return response;
+}
