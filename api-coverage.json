@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 17:37 UTC",
+ "generatedAt": "2026-10-19 17:51 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 1257,
+  "open": 1234,
   "not applicable": 469,
-  "claimed": 216,
-  "in progress": 198,
+  "claimed": 229,
+  "in progress": 208,
   "done": 743
  },
  "items": [
@@ -3385,10 +3385,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1255,
+     "title": "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetClassificationItems",
@@ -3807,10 +3812,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1255,
+     "title": "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_IsPropertyDefinitionAvailable",
@@ -4668,6 +4678,14 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1269,
+     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
+    },
+    {
+     "number": 1257,
+     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
+    },
+    {
      "number": 1235,
      "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
     },
@@ -4845,6 +4863,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1254,
+     "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
+    },
     {
      "number": 1108,
      "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
@@ -6365,10 +6387,15 @@
    "olderNames": [
     "APIDb_RebuildCurrentDatabaseID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1258,
+     "title": "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_RebuildWindowValidator",
@@ -7863,9 +7890,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1260,
+     "title": "Add GetElementSetsOfElements command (ACAPI_ElementSet_Identify)"
+    }
+   ],
    "issues": [
     {
      "number": 1242,
@@ -7996,9 +8028,14 @@
    "olderNames": [
     "APIAny_CalcCoreOffsetToSideOffsetID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1270,
+     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
+    }
+   ],
    "issues": [
     {
      "number": 1247,
@@ -8024,9 +8061,14 @@
    "olderNames": [
     "APIAny_CalcSideOffsetToCoreOffsetID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1270,
+     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
+    }
+   ],
    "issues": [
     {
      "number": 1247,
@@ -8515,10 +8557,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1264,
+     "title": "Expose ACAPI_Element_Decompose (planes of a multi-plane roof)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Delete",
@@ -9451,6 +9498,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1270,
+     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
+    },
+    {
+     "number": 1267,
+     "title": "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"
+    },
+    {
      "number": 1167,
      "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
     },
@@ -10186,10 +10241,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1255,
+     "title": "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsClassificationItemVisibleDefault",
@@ -10207,10 +10267,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1255,
+     "title": "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionAvailable",
@@ -10249,10 +10314,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1262,
+     "title": "Expose ACAPI_Element_IsPropertyDefinitionAvailableDefault / VisibleDefault"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionValueEditable",
@@ -10363,10 +10433,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1262,
+     "title": "Expose ACAPI_Element_IsPropertyDefinitionAvailableDefault / VisibleDefault"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Merge_Elements",
@@ -12605,9 +12680,14 @@
    "olderNames": [
     "ACAPI_ElementGroup_GetAllGroupedElems"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1266,
+     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    }
+   ],
    "issues": [
     {
      "number": 1243,
@@ -12660,6 +12740,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1266,
+     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    },
+    {
      "number": 927,
      "title": "Add UngroupElements command and Grasshopper component"
     }
@@ -12687,6 +12771,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1266,
+     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    },
     {
      "number": 927,
      "title": "Add UngroupElements command and Grasshopper component"
@@ -12717,9 +12805,14 @@
    "olderNames": [
     "APIAny_GetMainGroupGuidID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1266,
+     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    }
+   ],
    "issues": [
     {
      "number": 1243,
@@ -12798,10 +12891,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1268,
+     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_Tool",
@@ -12855,9 +12953,14 @@
     "APIDo_CancelHierarchicalElemID",
     "APIIo_CancelHierarchicalElemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1269,
+     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
+    }
+   ],
    "issues": [
     {
      "number": 1246,
@@ -12884,9 +12987,14 @@
     "APIDo_EditHierarchicalElemID",
     "APIIo_EditHierarchicalElemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1269,
+     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
+    }
+   ],
    "issues": [
     {
      "number": 1246,
@@ -13105,9 +13213,14 @@
     "APIDo_OkHierarchicalElemID",
     "APIIo_OkHierarchicalElemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1269,
+     "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
+    }
+   ],
    "issues": [
     {
      "number": 1246,
@@ -13432,9 +13545,14 @@
    "olderNames": [
     "APIDb_GetHotlinkProxyElementTableID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1267,
+     "title": "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"
+    }
+   ],
    "issues": [
     {
      "number": 1245,
@@ -15854,10 +15972,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1256,
+     "title": "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_Get3DInfo",
@@ -15900,10 +16023,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1256,
+     "title": "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_GetComponent",
@@ -20361,10 +20489,15 @@
    "olderNames": [
     "APIDb_GetRVMChangeCustomSchemeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1261,
+     "title": "Expose ACAPI_Revision_GetRVMChangeCustomScheme (names of custom change fields)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Revision_GetRVMChangeFirstIssue",
@@ -21866,10 +21999,15 @@
    "olderNames": [
     "ACAPI_Element_DeleteUserData"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1268,
+     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserData_GetUserData",
@@ -21885,10 +22023,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1268,
+     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserData_SetUserData",
@@ -21904,10 +22047,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1268,
+     "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_CancelUserInput",
@@ -22419,10 +22567,15 @@
    "olderNames": [
     "APIEnv_Change3DWindowSetsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1258,
+     "title": "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ChangeAutoIntersect",
@@ -22475,10 +22628,15 @@
    "olderNames": [
     "APIEnv_ChangeDocumentFrom3DDefaultsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1259,
+     "title": "Expose ACAPI_View_GetDocumentFrom3DDefaults / ChangeDocumentFrom3DDefaults"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ChangeDocumentFrom3DSettings",
@@ -22867,10 +23025,15 @@
    "olderNames": [
     "APIEnv_Get3DWindowSetsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1258,
+     "title": "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_GetCurrentImage",
@@ -22916,10 +23079,15 @@
    "olderNames": [
     "APIEnv_GetDocumentFrom3DDefaultsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1259,
+     "title": "Expose ACAPI_View_GetDocumentFrom3DDefaults / ChangeDocumentFrom3DDefaults"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_GetDocumentFrom3DSettings",
@@ -23116,9 +23284,14 @@
    "olderNames": [
     "APIEnv_IsAutoGroupOnID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1266,
+     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    }
+   ],
    "issues": [
     {
      "number": 1243,
@@ -24334,6 +24507,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1267,
+     "title": "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"
+    },
+    {
      "number": 1236,
      "title": "Add ModelToScreen and ScreenToModel commands"
     },
@@ -24987,6 +25164,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1266,
+     "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    },
     {
      "number": 1121,
      "title": "Add GetCurrentLayerCombination command"
@@ -28194,10 +28375,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1254,
+     "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::MoveDesignOptionToOtherSet",
@@ -28228,10 +28414,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1254,
+     "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::RelinkElementToDesignOption",
@@ -28279,10 +28470,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1254,
+     "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::SetHotlinkDesignOptionTable",
@@ -31725,6 +31921,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1257,
+     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
+    },
+    {
      "number": 1240,
      "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
@@ -34806,10 +35006,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1265,
+     "title": "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::Modifier::AddLibrary",
