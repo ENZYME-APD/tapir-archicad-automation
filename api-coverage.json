@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 17:33 UTC",
+ "generatedAt": "2026-10-19 17:37 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 1281,
+  "open": 1257,
   "not applicable": 469,
-  "claimed": 192,
+  "claimed": 216,
   "in progress": 198,
   "done": 743
  },
@@ -9656,10 +9656,15 @@
    "olderNames": [
     "APIAny_GetOpeningTransformationID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1248,
+     "title": "Expose ACAPI_Element_GetOpeningTransformation (position and direction of an Opening element)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetPropertyDefinitions",
@@ -14173,10 +14178,15 @@
    "olderNames": [
     "APIAny_CheckLibPartSubtypeOfID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1251,
+     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain",
@@ -14196,10 +14206,15 @@
    "olderNames": [
     "APIAny_CheckLibPartSubtypeOfbyMainID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1251,
+     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_CloseParameters",
@@ -14396,10 +14411,15 @@
    "olderNames": [
     "ACAPI_LibPart_GetDetails"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1251,
+     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetElemLibPartUnId",
@@ -14530,10 +14550,15 @@
    "olderNames": [
     "APIAny_GetLibPartToolVariationID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1251,
+     "title": "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetLibPartUnIDStr",
@@ -30972,10 +30997,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementMarker",
@@ -30989,10 +31019,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementType",
@@ -31006,10 +31041,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetMemo",
@@ -31023,10 +31063,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetMemoMarker",
@@ -31040,10 +31085,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetName",
@@ -31091,10 +31141,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetPreviewImage",
@@ -31147,10 +31202,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::IsValid",
@@ -31669,7 +31729,12 @@
      "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1252,
+     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
+    }
+   ]
   },
   {
    "id": "ACAPI::FindViewByGuid",
@@ -32414,10 +32479,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1250,
+     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetBackwardMigrationScript",
@@ -32502,10 +32572,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1250,
+     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetForwardMigrationScript",
@@ -32574,10 +32649,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1250,
+     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetLicense",
@@ -33095,10 +33175,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1250,
+     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsInSubTypeOf",
@@ -33131,10 +33216,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1250,
+     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsPlaceable",
@@ -33149,10 +33239,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1250,
+     "title": "Expose ACAPI::Library::GSMObject metadata (description, keywords, author, placeable)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsSubType",
@@ -34123,10 +34218,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1249,
+     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetPackageID",
@@ -34141,10 +34241,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1249,
+     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetPackageMainVersion",
@@ -34159,10 +34264,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1249,
+     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetPackageMinACBuildNumber",
@@ -34177,10 +34287,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1249,
+     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetPackageMinACVersion",
@@ -34195,10 +34310,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1249,
+     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetPackageSubVersion",
@@ -34213,10 +34333,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1249,
+     "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetTWServerPath",
