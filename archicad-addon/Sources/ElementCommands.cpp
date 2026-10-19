@@ -12,6 +12,7 @@
 #include "Base64Converter.hpp"
 #ifdef ServerMainVers_2800
 #include "ACAPI/ZoneBoundaryQuery.hpp"
+#include "ACAPI/ZoneLabelingSettings.hpp"
 #endif
 
 #include <algorithm>
@@ -3522,6 +3523,65 @@ GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to update zones.");
+}
+
+SetZoneLabelingSettingsCommand::SetZoneLabelingSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetZoneLabelingSettingsCommand::GetName () const
+{
+    return "SetZoneLabelingSettings";
+}
+
+GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "automaticLabeling": {
+                "type": "boolean",
+                "description": "Turns the automatic labeling of Zones (placing a Label on each new Zone) on or off."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "automaticLabeling"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool automaticLabeling = false;
+    if (!parameters.Get ("automaticLabeling", automaticLabeling)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "automaticLabeling is missing.");
+    }
+
+#ifdef ServerMainVers_2800
+    ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
+
+    ACAPI::Result<void> modifyResult = settings.Modify (
+        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) -> GSErrCode {
+            modifier.SetAutomaticLabeling (automaticLabeling);
+            return NoError;
+        }
+    );
+
+    return modifyResult.IsOk ()
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the zone labeling settings.");
+#else
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
 }
 
 GetCollisionsCommand::GetCollisionsCommand () :
