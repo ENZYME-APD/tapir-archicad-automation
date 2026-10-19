@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 12:45 UTC",
+ "generatedAt": "2026-10-19 13:31 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1426,
+  "open": 1419,
   "not applicable": 468,
+  "claimed": 83,
   "in progress": 170,
-  "done": 743,
-  "claimed": 76
+  "done": 743
  },
  "items": [
   {
@@ -1381,10 +1381,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_AddLoadCaseToLoadCombination"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1192,
+     "title": "Expose ACAPI_Analytical_AddLoadCaseToLoadCombination"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_ConvertAnalyticalLinkToNonShortest",
@@ -1404,10 +1409,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_ConvertAnalyticalLinkToNonShortest"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1193,
+     "title": "Expose ACAPI_Analytical_ConvertAnalyticalLinkToNonShortest"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_CreateAnalyticalLoadCase",
@@ -1427,10 +1437,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCase"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1194,
+     "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadCase"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_CreateAnalyticalLoadCombination",
@@ -1450,10 +1465,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCombination"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1195,
+     "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadCombination"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_CreateAnalyticalLoadGroup",
@@ -1473,10 +1493,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadGroup"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1196,
+     "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadGroup"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_CreateElementFromCurveMember",
@@ -1496,10 +1521,15 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromCurveMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1197,
+     "title": "Expose ACAPI_Analytical_CreateElementFromCurveMember"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember",
@@ -1519,10 +1549,23 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSegmentedSurfaceMember"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1200,
+     "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
+    },
+    {
+     "number": 1199,
+     "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
+    },
+    {
+     "number": 1198,
+     "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_CreateElementFromSurfaceMember",
