@@ -1277,6 +1277,10 @@ GSErrCode Initialize (void)
             issueCommands, "1.1.9",
             "Retrieves all changes."
         );
+        err |= RegisterCommand<GetRevisionChangeCustomSchemeCommand> (
+            issueCommands, "1.7.3",
+            "Retrieves the custom fields of changes (the change custom scheme): the key and the name of each field. The keys are the customSchemeKey values in the customSchemeData of changes."
+        );
         err |= RegisterCommand<GetDocumentRevisionsCommand> (
             issueCommands, "1.1.9",
             "Retrieves all document revisions."
