@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:41 UTC",
+ "generatedAt": "2026-10-19 11:43 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1445,
+  "open": 1443,
   "not applicable": 468,
   "in progress": 162,
   "done": 491,
-  "claimed": 65,
+  "claimed": 67,
   "merged": 252
  },
  "items": [
@@ -6640,10 +6640,15 @@
    "olderNames": [
     "APIDb_DisposeCreationOrderTableID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1159,
+     "title": "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderGetNext",
@@ -6663,10 +6668,15 @@
    "olderNames": [
     "APIDb_DrawOrderGetNextID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1160,
+     "title": "Expose ACAPI_DrawOrder_DrawOrderGetNext"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderInit",
@@ -15516,10 +15526,6 @@
      "title": "GetViewSettings: return the \"stored in this view\" flags and the full transformation (split from #876)"
     },
     {
-     "number": 1047,
-     "title": "GetViewSettings: return the \"stored in this view\" flags and the full transformation (split from #876)"
-    },
-    {
      "number": 688,
      "title": "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values"
     }
@@ -23513,6 +23519,14 @@
     }
    ],
    "issues": [
+    {
+     "number": 1160,
+     "title": "Expose ACAPI_DrawOrder_DrawOrderGetNext"
+    },
+    {
+     "number": 1159,
+     "title": "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"
+    },
     {
      "number": 1158,
      "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
