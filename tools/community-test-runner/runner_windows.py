@@ -24,6 +24,9 @@ except ImportError:  # not Windows: the module still imports, so the tests and t
 
 ARCHICAD_KEY = r"Software\GRAPHISOFT\Archicad"
 LISTS = ("Include", "Disable")
+# Up to this version Archicad loads no add-on from 'Include' while the same add-on is on 'Disable'
+# at another path: it says some add-ons could not be loaded and loads neither (#1150).
+COLLIDES_UP_TO = 28
 CREDENTIAL_TARGET = "tapir-community-test-runner"
 
 
@@ -152,9 +155,33 @@ class AddOnList:
             found += [p for p in Path(actual).rglob("TapirAddOn*") if is_tapir(p) and to_url(p) not in disabled]
         return found
 
+    def swap_files(self) -> list[Path]:
+        """The Tapirs to swap instead of changing the list. Up to Archicad 28 a Tapir in the Add-Ons
+        folder can only be left out by putting it on 'Disable', and then the build does not load
+        either (#1150). A list a test left changed counts as it was before that test."""
+        if int(self.version) > COLLIDES_UP_TO:
+            return []
+        key = self.key()
+        if self.backup_file.exists():
+            disable = json.loads(self.backup_file.read_text(encoding="utf-8"))["lists"]["Disable"]
+        else:
+            disable = self.registry.read(key + "\\Disable")
+        disabled = set(entries(disable))
+        actual = self.registry.read(key).get("Actual Path", [""])[0]
+        if not actual or not Path(actual).is_dir():
+            return []
+        return [p for p in Path(actual).rglob("TapirAddOn*")
+                if p.suffix.lower() in (".apx", ".bundle") and to_url(p) not in disabled]
+
     def install(self, addon: Path) -> None:
         if self.backup_file.exists():
             raise RuntimeError(f"{self.backup_file} exists: a previous test did not finish; run 'restore' first")
+        swap = ", ".join(str(p) for p in self.swap_files())
+        if swap:
+            raise RuntimeError(
+                f"Archicad {self.version} cannot load a test build while your Tapir is in its Add-Ons folder "
+                f"({swap}): switched off there, it keeps the build from loading too (#1150). Run setup again, "
+                "which sets \"addonFile\" for this Archicad, then run the runner as administrator")
         key = self.key()
         saved = {kind: self.registry.read(f"{key}\\{kind}") for kind in LISTS}
         self.backup_file.write_text(json.dumps({"key": key, "lists": saved}, indent=1), encoding="utf-8")
@@ -175,6 +202,31 @@ class AddOnList:
             self.registry.write(f"{backup['key']}\\{kind}", {n: list(v) for n, v in backup["lists"][kind].items()})
         self.backup_file.unlink()
         return True
+
+
+def dialogs(pids: set[int]) -> list[str]:
+    """Titles of the modal dialogs these processes show: Archicad's own (DGModalDlgClass) and the
+    system's (#32770). Found by window class, not title, so it works in every language."""
+    if os.name != "nt" or not pids:
+        return []
+    from ctypes import wintypes
+    user32 = ctypes.windll.user32
+    found = []
+
+    @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+    def visit(hwnd, _):
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        if pid.value in pids and user32.IsWindowVisible(hwnd):
+            kind = ctypes.create_unicode_buffer(256)
+            user32.GetClassNameW(hwnd, kind, 256)
+            if kind.value in ("DGModalDlgClass", "#32770"):
+                title = ctypes.create_unicode_buffer(512)
+                user32.GetWindowTextW(hwnd, title, 512)
+                found.append(title.value or kind.value)
+        return True
+    user32.EnumWindows(visit, 0)
+    return found
 
 
 def stage_build(build: Path, version: str) -> Path:
