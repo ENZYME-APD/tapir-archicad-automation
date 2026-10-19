@@ -1174,6 +1174,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.1",
             "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
         );
+        err |= RegisterCommand<Get3DWindowSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection."
+        );
+        err |= RegisterCommand<Set3DWindowSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage."
+        );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
