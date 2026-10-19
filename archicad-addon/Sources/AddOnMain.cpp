@@ -388,6 +388,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
         );
+        err |= RegisterCommand<GetHierarchicalElementOwnersCommand> (
+            elementCommands, "1.7.3",
+            "Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether the given element is a main element, a subelement or not part of a hierarchical element."
+        );
         err |= RegisterCommand<GetConnectedElementsCommand> (
             elementCommands, "1.1.4",
             "Gets the elements hosted by (connected to) the given owner elements, filtered to the given element type: for example the Windows or Doors of a Wall, the frames, panels, junctions and accessories of a Curtain Wall, the risers, treads and structures of a Stair, or the posts, rails and panels of a Railing."
