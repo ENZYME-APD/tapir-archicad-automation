@@ -1164,6 +1164,96 @@ GS::ObjectState GetPenTablesCommand::Execute (const GS::ObjectState& parameters,
 }
 #endif
 
+GetCurrentPenTableCommand::GetCurrentPenTableCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurrentPenTableCommand::GetName () const
+{
+    return "GetCurrentPenTable";
+}
+
+GS::Optional<GS::UniString> GetCurrentPenTableCommand::GetInputParametersSchema () const
+{
+    return GS::NoValue;
+}
+
+GS::Optional<GS::UniString> GetCurrentPenTableCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The attribute index of the current Pen Table, as returned by Archicad."
+            },
+            "isPenTableAttribute": {
+                "type": "boolean",
+                "description": "True if the index refers to an existing Pen Table attribute. When false, attributeId and name are omitted; the pens in effect can not be read with GetPenTables."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the current Pen Table attribute."
+            },
+            "penCount": {
+                "type": "integer",
+                "description": "The number of pens in the current Pen Table. Omitted when it can not be read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "isPenTableAttribute"
+        ]
+    })";
+}
+
+GS::ObjectState GetCurrentPenTableCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_AttributeIndex penSetIndex = APIInvalidAttributeIndex;
+    GSErrCode err = ACAPI_Attribute_GetCurrPenSet (&penSetIndex);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current pen table.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("index", GetAttributeIndex (penSetIndex));
+
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = API_PenTableID;
+    attr.header.index = penSetIndex;
+    attr.header.uniStringNamePtr = &name;
+    const bool isPenTableAttribute = IsPositiveAttributeIndex (penSetIndex) && ACAPI_Attribute_Get (&attr) == NoError;
+    response.Add ("isPenTableAttribute", isPenTableAttribute);
+    if (isPenTableAttribute) {
+        response.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
+        response.Add ("name", name);
+    }
+
+#ifdef ServerMainVers_2700
+    UInt32 penCount = 0;
+    if (ACAPI_Attribute_GetPenNum (penCount) == NoError) {
+        response.Add ("penCount", (Int32) penCount);
+    }
+#else
+    // ACAPI_Attribute_GetPenNum is available since AC27; before that the pens of the attribute are counted.
+    if (isPenTableAttribute) {
+        API_AttributeDefExt penTableDefs = {};
+        if (ACAPI_Attribute_GetDefExt (API_PenTableID, penSetIndex, &penTableDefs) == NoError && penTableDefs.penTable_Items != nullptr) {
+            response.Add ("penCount", (Int32) (BMGetHandleSize ((GSHandle) penTableDefs.penTable_Items) / sizeof (API_PenType)));
+            ACAPI_DisposeAttrDefsHdlsExt (&penTableDefs);
+        }
+    }
+#endif
+
+    return response;
+}
+
 GetProfilesCommand::GetProfilesCommand () :
     CommandBase (CommonSchema::Used)
 {
