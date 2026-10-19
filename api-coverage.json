@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 17:11 UTC",
+ "generatedAt": "2026-10-19 17:33 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 1293,
+  "open": 1281,
   "not applicable": 469,
   "claimed": 192,
-  "in progress": 186,
+  "in progress": 198,
   "done": 743
  },
  "items": [
@@ -3267,6 +3267,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1239,
+     "title": "Add GetCurrentPenTable command (current pen set and pen count)"
+    },
+    {
      "number": 1221,
      "title": "Add GetAttributesFromProject: read attributes from another project or template file"
     },
@@ -3461,9 +3465,14 @@
    "olderNames": [
     "APIEnv_GetCurrPenSetID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1239,
+     "title": "Add GetCurrentPenTable command (current pen set and pen count)"
+    }
+   ],
    "issues": [
     {
      "number": 1229,
@@ -3536,6 +3545,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1239,
+     "title": "Add GetCurrentPenTable command (current pen set and pen count)"
+    },
     {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
@@ -3679,9 +3692,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1239,
+     "title": "Add GetCurrentPenTable command (current pen set and pen count)"
+    }
+   ],
    "issues": [
     {
      "number": 1229,
@@ -4649,6 +4667,14 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1235,
+     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
+    },
+    {
+     "number": 1233,
+     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
+    },
     {
      "number": 1204,
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
@@ -6740,6 +6766,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1234,
+     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
+    },
+    {
      "number": 1086,
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
     },
@@ -6807,6 +6837,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1239,
+     "title": "Add GetCurrentPenTable command (current pen set and pen count)"
+    },
     {
      "number": 1221,
      "title": "Add GetAttributesFromProject: read attributes from another project or template file"
@@ -6879,6 +6913,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1237,
+     "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
+    },
     {
      "number": 1214,
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
@@ -7825,10 +7863,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1242,
+     "title": "Expose ACAPI_ElementSet_Identify (find the element sets that contain an element)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_AddClassificationItem",
@@ -7953,10 +7996,15 @@
    "olderNames": [
     "APIAny_CalcCoreOffsetToSideOffsetID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1247,
+     "title": "Expose ACAPI_Element_CalcCoreOffsetToSideOffset / CalcSideOffsetToCoreOffset (reveal depth for windows/doors)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_CalcSideOffsetToCoreOffset",
@@ -7976,10 +8024,15 @@
    "olderNames": [
     "APIAny_CalcSideOffsetToCoreOffsetID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1247,
+     "title": "Expose ACAPI_Element_CalcCoreOffsetToSideOffset / CalcSideOffsetToCoreOffset (reveal depth for windows/doors)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_CatchChangeDefaults",
@@ -10212,9 +10265,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1238,
+     "title": "Add GetPropertyEditability command (property value editability and visibility)"
+    }
+   ],
    "issues": [
     {
      "number": 1228,
@@ -10238,9 +10296,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1238,
+     "title": "Add GetPropertyEditability command (property value editability and visibility)"
+    }
+   ],
    "issues": [
     {
      "number": 1228,
@@ -10264,9 +10327,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1238,
+     "title": "Add GetPropertyEditability command (property value editability and visibility)"
+    }
+   ],
    "issues": [
     {
      "number": 1228,
@@ -10453,9 +10521,14 @@
    "olderNames": [
     "APIDb_RefreshElementID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1235,
+     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
+    }
+   ],
    "issues": [
     {
      "number": 1224,
@@ -11176,7 +11249,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1241,
+     "title": "Add GetFavoriteDetails: audit a Favorite's classifications, properties and categories"
+    }
+   ],
    "issues": [
     {
      "number": 652,
@@ -11263,9 +11341,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1237,
+     "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
+    }
+   ],
    "issues": [
     {
      "number": 1230,
@@ -12517,10 +12600,15 @@
    "olderNames": [
     "ACAPI_ElementGroup_GetAllGroupedElems"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1243,
+     "title": "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_GetConnectedElements",
@@ -12624,10 +12712,15 @@
    "olderNames": [
     "APIAny_GetMainGroupGuidID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1243,
+     "title": "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_GetRootGroup",
@@ -12757,10 +12850,15 @@
     "APIDo_CancelHierarchicalElemID",
     "APIIo_CancelHierarchicalElemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1246,
+     "title": "Expose ACAPI_HierarchicalEditing_EditHierarchicalElem / OkHierarchicalElem / CancelHierarchicalElem"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_EditHierarchicalElem",
@@ -12781,10 +12879,15 @@
     "APIDo_EditHierarchicalElemID",
     "APIIo_EditHierarchicalElemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1246,
+     "title": "Expose ACAPI_HierarchicalEditing_EditHierarchicalElem / OkHierarchicalElem / CancelHierarchicalElem"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_GetHierarchicalElementOwner",
@@ -12997,10 +13100,15 @@
     "APIDo_OkHierarchicalElemID",
     "APIIo_OkHierarchicalElemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1246,
+     "title": "Expose ACAPI_HierarchicalEditing_EditHierarchicalElem / OkHierarchicalElem / CancelHierarchicalElem"
+    }
+   ]
   },
   {
    "id": "ACAPI_HierarchicalEditing_SolveStair",
@@ -13319,10 +13427,15 @@
    "olderNames": [
     "APIDb_GetHotlinkProxyElementTableID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1245,
+     "title": "Expose ACAPI_Hotlink_GetHotlinkProxyElementTable (source element of a hotlinked element)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkRootNodeGuid",
@@ -14204,6 +14317,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1244,
+     "title": "Add GetLibrariesOfLibParts command"
+    },
+    {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
@@ -14483,6 +14600,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1244,
+     "title": "Add GetLibrariesOfLibParts command"
+    },
+    {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
@@ -14533,6 +14654,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1234,
+     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
+    },
     {
      "number": 842,
      "title": "Fix CreateZoneCategories failing with \"Failed to create.\" for every input"
@@ -14901,6 +15026,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1234,
+     "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
+    },
     {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
@@ -19381,6 +19510,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1238,
+     "title": "Add GetPropertyEditability command (property value editability and visibility)"
+    },
+    {
      "number": 1149,
      "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
     },
@@ -22433,9 +22566,14 @@
    "olderNames": [
     "APIDb_CoordToPointID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1236,
+     "title": "Add ModelToScreen and ScreenToModel commands"
+    }
+   ],
    "issues": [
     {
      "number": 1225,
@@ -22953,10 +23091,15 @@
    "olderNames": [
     "APIEnv_IsAutoGroupOnID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1243,
+     "title": "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_IsAutoIntersectOn",
@@ -23026,9 +23169,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1236,
+     "title": "Add ModelToScreen and ScreenToModel commands"
+    }
+   ],
    "issues": [
     {
      "number": 1225,
@@ -23054,9 +23202,14 @@
    "olderNames": [
     "APIDb_PointToCoordID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1236,
+     "title": "Add ModelToScreen and ScreenToModel commands"
+    }
+   ],
    "issues": [
     {
      "number": 1225,
@@ -24155,6 +24308,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1236,
+     "title": "Add ModelToScreen and ScreenToModel commands"
+    },
     {
      "number": 1167,
      "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
@@ -31504,9 +31661,14 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1240,
+     "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
+    }
+   ],
    "issues": []
   },
   {
@@ -33805,9 +33967,18 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1244,
+     "title": "Add GetLibrariesOfLibParts command"
+    },
+    {
+     "number": 1233,
+     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
+    }
+   ],
    "issues": []
   },
   {
