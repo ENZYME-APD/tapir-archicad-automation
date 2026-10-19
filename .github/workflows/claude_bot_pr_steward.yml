@@ -153,13 +153,17 @@ jobs:
           # one minutes later, so an outage does not burn every attempt within
           # the hour. Under the cron period, so a run that failed just after
           # one hourly sweep is retried by the next one, not the one after.
-          # With $3 = any, a run that succeeded counts too: a review is
-          # started only while its head has no verdict, so the last review
-          # recorded none, whatever its conclusion.
+          # With $3 = any, a run that succeeded counts too, but only one
+          # created at or after $4 (when the head was pushed): a review is
+          # started only while its head has no verdict, so a review of this
+          # head recorded none, whatever its conclusion. An earlier head's
+          # review did, and must not hold back the new head's first one.
           failedRecently() {
-            local last
-            last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)" \
-              --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0]
+            local last from
+            from=$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+            if [[ "${4:-}" > "$from" ]]; then from=$4; fi
+            last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$from" \
+              --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0] // empty
                      | select(\"${3:-}\" == \"any\" or .conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\") | .updated_at")
             [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 3000 ]
           }
@@ -365,7 +369,7 @@ jobs:
                 handOver "$pr" "$total reviews of its latest commit recorded no verdict"
               elif [ "$failed" -ge 10 ]; then
                 handOver "$pr" "its review failed $failed times (see the runs' logs)"
-              elif failedRecently claude_pr_review.yml "$reviewTitle" any; then
+              elif failedRecently claude_pr_review.yml "$reviewTitle" any "$headSince"; then
                 echo "the last review recorded no verdict less than 50 minutes ago - waiting"
               else
                 gh workflow run claude_pr_review.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
