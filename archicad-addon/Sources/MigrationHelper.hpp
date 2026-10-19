@@ -491,6 +491,11 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
 
 #endif
 
+#if defined(ServerMainVers_2600) && !defined(ServerMainVers_2700)
+// Named ACAPI_Element_GetNoteKeywordForAutotextID in AC26; AC25 does not have it.
+#define ACAPI_AutoText_GetNoteKeywordForAutotextID ACAPI_Element_GetNoteKeywordForAutotextID
+#endif
+
 #ifndef ServerMainVers_2600
 
 inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier ifcTranslator, API_IFCRelationshipData ifcRelationshipData)

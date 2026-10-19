@@ -413,6 +413,110 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetNoteAutoTextKeywordsCommand::GetName () const
+{
+    return "GetNoteAutoTextKeywords";
+}
+
+GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextIds": {
+                "type": "array",
+                "description": "Numeric values of the API_NoteAutotextID enumeration of the Archicad API (the autotexts of dimension, label and other element notes).",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keywords": {
+                "type": "array",
+                "description": "One result per input id, in the same order.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "keyword": {
+                                    "type": "string",
+                                    "description": "The keyword of the note autotext."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "keyword"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keywords"
+        ]
+    })";
+}
+
+GS::ObjectState GetNoteAutoTextKeywordsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<Int32> autoTextIds;
+    if (!parameters.Get ("autoTextIds", autoTextIds) || autoTextIds.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'autoTextIds' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("keywords");
+    for (Int32 autoTextId : autoTextIds) {
+        if (autoTextId < 0) {
+            listAdder (CreateErrorResponse (APIERR_BADPARS, "Invalid autotext id."));
+            continue;
+        }
+
+        // The id is passed through as it is; an id the enumeration does not have is
+        // expected to be refused by Archicad with an error code.
+        GS::UniString keyword;
+        GSErrCode err = ACAPI_AutoText_GetNoteKeywordForAutotextID (static_cast<API_NoteAutotextID> (autoTextId), keyword);
+        if (err != NoError) {
+            listAdder (CreateErrorResponse (err, "Failed to get the keyword of this note autotext id."));
+        } else {
+            listAdder (GS::ObjectState ("keyword", keyword));
+        }
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutoTextKeywords requires Archicad 26 or later.");
+#endif
+}
+
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
     CommandBase (CommonSchema::Used)
 {
