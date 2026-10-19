@@ -6428,6 +6428,208 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
+// ============================================================================
+// GetOpeningTransformations
+// ============================================================================
+
+GetOpeningTransformationsCommand::GetOpeningTransformationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningTransformationsCommand::GetName () const
+{
+    return "GetOpeningTransformations";
+}
+
+GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openingTransformations": {
+                "type": "array",
+                "description": "The transformation of each given Opening, or an error, in the order of the input elements.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "globalToLocal": {
+                                    "type": "array",
+                                    "description": "The matrix as Archicad returns it (API_Tranmat, global to local): the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
+                                    "items": { "type": "number" },
+                                    "minItems": 12,
+                                    "maxItems": 12
+                                },
+                                "localToGlobal": {
+                                    "type": "array",
+                                    "description": "The inverse of globalToLocal, in the same layout. Missing when globalToLocal cannot be inverted.",
+                                    "items": { "type": "number" },
+                                    "minItems": 12,
+                                    "maxItems": 12
+                                },
+                                "origin": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "xAxis": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The local X axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "yAxis": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The local Y axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "zAxis": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The local Z axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "determinant": {
+                                    "type": "number",
+                                    "description": "The determinant of the 3x3 part of globalToLocal. Zero (or nearly) when it cannot be inverted."
+                                },
+                                "isMirrored": {
+                                    "type": "boolean",
+                                    "description": "True when the matrix is left-handed (negative determinant), which Archicad returns for a mirrored opening."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["elementId", "globalToLocal", "determinant", "isMirrored"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingTransformations"]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static void AddTranmat (GS::ObjectState& os, const char* name, const API_Tranmat& tranmat)
+{
+    const auto& values = os.AddList<double> (name);
+    for (UIndex i = 0; i < 12; ++i) {
+        values (tranmat.tmx[i]);
+    }
+}
+
+static double GetTranmatDeterminant (const API_Tranmat& m)
+{
+    const double* t = m.tmx;
+    return t[0] * (t[5] * t[10] - t[6] * t[9])
+         - t[1] * (t[4] * t[10] - t[6] * t[8])
+         + t[2] * (t[4] * t[9]  - t[5] * t[8]);
+}
+
+// The inverse of the affine map x' = A * x + b is x = A^-1 * x' - A^-1 * b.
+static API_Tranmat InvertTranmat (const API_Tranmat& m, double det)
+{
+    const double* t = m.tmx;
+    API_Tranmat inverse = {};
+    double* r = inverse.tmx;
+
+    r[0]  = (t[5] * t[10] - t[6] * t[9]) / det;
+    r[1]  = (t[2] * t[9]  - t[1] * t[10]) / det;
+    r[2]  = (t[1] * t[6]  - t[2] * t[5]) / det;
+    r[4]  = (t[6] * t[8]  - t[4] * t[10]) / det;
+    r[5]  = (t[0] * t[10] - t[2] * t[8]) / det;
+    r[6]  = (t[2] * t[4]  - t[0] * t[6]) / det;
+    r[8]  = (t[4] * t[9]  - t[5] * t[8]) / det;
+    r[9]  = (t[1] * t[8]  - t[0] * t[9]) / det;
+    r[10] = (t[0] * t[5]  - t[1] * t[4]) / det;
+
+    r[3]  = -(r[0] * t[3] + r[1] * t[7] + r[2]  * t[11]);
+    r[7]  = -(r[4] * t[3] + r[5] * t[7] + r[6]  * t[11]);
+    r[11] = -(r[8] * t[3] + r[9] * t[7] + r[10] * t[11]);
+
+    return inverse;
+}
+#endif
+
+GS::ObjectState GetOpeningTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& openingTransformations = response.AddList<GS::ObjectState> ("openingTransformations");
+
+    for (const GS::ObjectState& elementObj : elements) {
+        const GS::ObjectState* elementId = elementObj.Get ("elementId");
+        if (elementId == nullptr) {
+            openingTransformations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2700
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head header = {};
+        if (!LoadElementHeaderByGuid (elemGuid, header)) {
+            openingTransformations (CreateErrorResponse (APIERR_BADID, "Element not found"));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_OpeningID) {
+            openingTransformations (CreateErrorResponse (APIERR_BADID, "Element is not an Opening"));
+            continue;
+        }
+
+        API_Tranmat globalToLocal = {};
+        const GSErrCode err = ACAPI_Element_GetOpeningTransformation (&elemGuid, &globalToLocal);
+        if (err != NoError) {
+            openingTransformations (CreateErrorResponse (err, "Failed to get the transformation of the opening"));
+            continue;
+        }
+
+        const double det = GetTranmatDeterminant (globalToLocal);
+
+        GS::ObjectState transformation;
+        transformation.Add ("elementId", CreateGuidObjectState (elemGuid));
+        AddTranmat (transformation, "globalToLocal", globalToLocal);
+        if (std::abs (det) > 1e-12) {
+            const API_Tranmat localToGlobal = InvertTranmat (globalToLocal, det);
+            const double* l = localToGlobal.tmx;
+            AddTranmat (transformation, "localToGlobal", localToGlobal);
+            // The images of the local origin and of the local unit axes: the translation and the columns of the 3x3 part.
+            transformation.Add ("origin", Create3DCoordinateObjectState ({l[3], l[7], l[11]}));
+            transformation.Add ("xAxis", Create3DCoordinateObjectState ({l[0], l[4], l[8]}));
+            transformation.Add ("yAxis", Create3DCoordinateObjectState ({l[1], l[5], l[9]}));
+            transformation.Add ("zAxis", Create3DCoordinateObjectState ({l[2], l[6], l[10]}));
+        }
+        transformation.Add ("determinant", det);
+        transformation.Add ("isMirrored", det < 0.0);
+
+        openingTransformations (transformation);
+#else
+        openingTransformations (CreateErrorResponse (APIERR_NOTSUPPORTED, "GetOpeningTransformations requires Archicad 27 or later."));
+#endif
+    }
+
+    return response;
+}
+
 ModifyColumnsCommand::ModifyColumnsCommand () :
     CommandBase (CommonSchema::Used)
 {
