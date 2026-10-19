@@ -59,10 +59,19 @@ first, so after a crash or a power cut the next run, or `restore`, puts them bac
 with an `addonFile` (written by hand for the first version of the runner) still swap that file
 instead.
 
+**Archicad 25-28 with Tapir in the `Add-Ons` folder** (where the Tapir Installer puts it): these
+versions do not load an add-on from the list while the same add-on is switched off at its usual
+place; they say some add-ons could not be loaded and load neither (#1150). `setup` then sets
+`addonFile` for that Archicad, and the runner swaps that file, which needs administrator rights
+(run it as administrator). The add-on list worked this way on Archicad 30 (#1088); Archicad 29 is
+not tested yet. A Tapir that is only in the add-on list is no problem on any version.
+
 Ports follow the order in which Archicads start, so the runner asks each connection for its
 Archicad version and finds the right port itself. It never kills Archicad. If Archicad does not
 quit (a dialog, for instance), the runner stops and leaves the test build loaded; close Archicad
-and use **Put my add-on back** (or `restore`).
+and use **Put my add-on back** (or `restore`). A dialog during the start (project recovery,
+licence, add-ons that could not be loaded) stops it within seconds, naming the dialog, instead of
+waiting out `startTimeout`.
 
 ## Command line
 

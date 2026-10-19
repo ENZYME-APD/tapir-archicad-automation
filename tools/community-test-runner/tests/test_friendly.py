@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -72,6 +73,34 @@ class AddOnListTest(unittest.TestCase):
         self.assertEqual(json.dumps(self.registry.keys, sort_keys=True), self.original)
         self.assertFalse(self.list.restore())
 
+    def collision_list(self, version: str, in_folder: bool) -> rw.AddOnList:
+        key = KEY.replace("30.0.0 INT", f"{version}.0.0 GER")
+        folder = Path(self.tmp.name) / f"AC{version}"
+        (folder / "Sonstiges").mkdir(parents=True)
+        if in_folder:
+            (folder / "Sonstiges" / f"TapirAddOn_AC{version}_Win.apx").write_bytes(b"release")
+        (folder / "Sonstiges" / f"TapirAddOn_AC{version}_Win.apx.bak-1").write_bytes(b"old")
+        self.registry.keys[key] = {"Actual Path": [str(folder), 1]}
+        self.registry.keys[key + "\\Include"] = rw.numbered("Include", [] if in_folder else [rw.to_url(self.own)])
+        self.registry.keys[key + "\\Disable"] = rw.numbered("Disable", [])
+        return rw.AddOnList(version, self.registry, Path(self.tmp.name))
+
+    def test_up_to_ac28_a_tapir_in_the_addons_folder_is_swapped_not_listed(self):
+        ac28 = self.collision_list("28", in_folder=True)
+        self.assertEqual(ac28.swap_file().name, "TapirAddOn_AC28_Win.apx")
+        before = json.dumps(self.registry.keys, sort_keys=True)
+        with self.assertRaisesRegex(RuntimeError, "addonFile"):
+            ac28.install(Path(self.tmp.name) / "build.apx")
+        self.assertEqual(json.dumps(self.registry.keys, sort_keys=True), before)
+        self.assertFalse(ac28.backup_file.exists())
+        self.assertIsNone(self.list.swap_file())  # AC30 tells the two paths apart
+
+    def test_up_to_ac28_a_tapir_only_in_the_list_still_uses_the_list(self):
+        ac26 = self.collision_list("26", in_folder=False)
+        self.assertIsNone(ac26.swap_file())
+        ac26.install(Path(self.tmp.name) / "build.apx")
+        self.assertTrue(ac26.restore())
+
     def test_restore_works_from_a_new_process(self):
         self.list.install(Path(self.tmp.name) / "b.apx")
         fresh = rw.AddOnList("30", self.registry, Path(self.tmp.name))
@@ -82,6 +111,35 @@ class AddOnListTest(unittest.TestCase):
         path = Path(r"C:\Users\A B\Tapir #1\TapirAddOn_AC30_Win.apx")
         self.assertEqual(rw.to_url(path), "lan.flat:///C:/Users/A%20B/Tapir%20%231/TapirAddOn_AC30_Win.apx")
         self.assertEqual(rw.from_url(rw.to_url(path)), path)
+
+
+class InstallationTest(unittest.TestCase):
+    def setUp(self):
+        self.patches = [unittest.mock.patch.object(r, "archicad_running", return_value=False),
+                        unittest.mock.patch.object(r, "archicad_pids", return_value={1}),
+                        unittest.mock.patch.object(r.subprocess, "Popen"),
+                        unittest.mock.patch.object(r.time, "sleep")]
+        for p in self.patches:
+            p.start()
+        self.ac = {"version": "26", "archicadExe": "Archicad.exe", "blankTemplate": "t.tpl", "startTimeout": 30,
+                   "addonFile": str(Path(tempfile.gettempdir()) / "TapirAddOn_AC26_Win.apx")}
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+
+    def test_a_dialog_stops_the_start_and_is_named(self):
+        with unittest.mock.patch.object(r, "find_port", return_value=None), \
+                unittest.mock.patch.object(r.os, "name", "nt"), \
+                unittest.mock.patch.object(rw, "dialogs", return_value=["Archicad-Umgebung"]) as dialogs, \
+                self.assertRaisesRegex(RuntimeError, "Archicad-Umgebung.*1150"):
+            r.Installation(self.ac).start()
+        self.assertEqual(dialogs.call_count, 2)  # twice in a row, not the whole startTimeout
+
+    def test_no_administrator_rights_is_said_plainly(self):
+        with unittest.mock.patch.object(r.shutil, "copy2", side_effect=PermissionError(13, "Access is denied")), \
+                self.assertRaisesRegex(RuntimeError, "administrator"):
+            r.Installation(self.ac).install(Path("build.apx"))
 
 
 def tapir_call(command, params):

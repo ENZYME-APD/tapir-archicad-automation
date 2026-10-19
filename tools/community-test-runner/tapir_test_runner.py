@@ -435,9 +435,13 @@ class Installation:
         if self.addon is None:
             self.addon_list.install(rw.stage_build(build, str(self.ac["version"])))
             return
-        if not self.keep.exists():
-            shutil.copy2(self.addon, self.keep)
-        shutil.copy2(build, self.addon)
+        try:
+            if not self.keep.exists():
+                shutil.copy2(self.addon, self.keep)
+            shutil.copy2(build, self.addon)
+        except PermissionError as exc:
+            raise RuntimeError(f"cannot replace {self.addon} ({exc.strerror}): the Add-Ons folder of Archicad "
+                               f"{self.ac['version']} needs administrator rights; run the runner as administrator") from exc
 
     def pending(self) -> bool:
         """A test build is still in place (a test did not finish)."""
@@ -456,7 +460,7 @@ class Installation:
 
     def start(self) -> Tapir:
         subprocess.Popen([self.ac["archicadExe"], self.ac["blankTemplate"]])
-        found: dict[str, int] = {}
+        found: dict = {}
 
         def ready() -> bool:
             port = find_port(str(self.ac["version"]), [self.ac["port"]] if self.ac.get("port") else PORTS,
@@ -464,11 +468,19 @@ class Installation:
             if port and Tapir(port).alive():
                 found["port"] = port
                 return True
-            return False
+            # A dialog seen twice in a row (not a flash during the start) is waiting for a human.
+            shown = rw.dialogs(archicad_pids(self.ac["archicadExe"])) if os.name == "nt" else []
+            found["dialog"] = found.get("dialog", 0) + 1 if shown else 0
+            found["title"] = shown[0] if shown else ""
+            return found["dialog"] >= 2
         if not wait_for(ready, self.ac.get("startTimeout", 300), 5):
             raise RuntimeError(f"Archicad {self.ac['version']} did not answer with Tapir loaded within "
                                f"{self.ac.get('startTimeout', 300)} s; it may be waiting at a dialog (project recovery, "
                                "licence, update). Answer it, quit Archicad, then 'restore' puts your add-on back")
+        if "port" not in found:
+            raise RuntimeError(f"Archicad {self.ac['version']} shows a dialog ('{found['title']}') instead of answering "
+                               "with Tapir loaded. Answer it, quit Archicad, then 'restore' puts your add-on back. If it "
+                               "says some add-ons could not be loaded, see #1150 (set \"addonFile\")")
         tapir = Tapir(found["port"])
         running = archicad_version(tapir)
         if running != str(self.ac["version"]):
