@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:43 UTC",
+ "generatedAt": "2026-10-19 11:45 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1443,
+  "open": 1439,
   "not applicable": 468,
-  "in progress": 162,
+  "in progress": 163,
   "done": 491,
-  "claimed": 67,
+  "claimed": 70,
   "merged": 252
  },
  "items": [
@@ -6612,9 +6612,14 @@
    "olderNames": [
     "APIDb_CreationOrderGetNextID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1161,
+     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
+    }
+   ],
    "issues": [
     {
      "number": 1158,
@@ -6808,6 +6813,14 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1164,
+     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
+    },
+    {
+     "number": 1163,
+     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
+    },
     {
      "number": 1069,
      "title": "Expose ACAPI_DrawingPrimitive_ShapePrims"
@@ -11337,10 +11350,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1162,
+     "title": "Expose ACAPI_GraphicalOverride_ChangeOverrideRuleGroup"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_CreateOverrideCombination",
@@ -11530,10 +11548,15 @@
    "olderNames": [
     "APIAny_EnableRenovationOverrideID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1163,
+     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_EnableVisualOverride",
@@ -11553,10 +11576,15 @@
    "olderNames": [
     "APIAny_EnableVisualOverrideID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1164,
+     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_GetActualOverrideCombination",
@@ -11872,10 +11900,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1165,
+     "title": "Expose ACAPI_GraphicalOverride_SetOverrideRuleGroupOrder"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_SetOverrideRuleOrder",
@@ -23458,6 +23491,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1161,
+     "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
+    },
+    {
      "number": 1135,
      "title": "Add GetDatabases command to list all databases of given types"
     },
@@ -24232,6 +24269,14 @@
     }
    ],
    "issues": [
+    {
+     "number": 1164,
+     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
+    },
+    {
+     "number": 1163,
+     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
+    },
     {
      "number": 1092,
      "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
