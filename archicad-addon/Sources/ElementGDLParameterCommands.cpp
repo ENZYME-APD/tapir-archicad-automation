@@ -1321,6 +1321,34 @@ static GS::HashTable<GS::String, GS::UniString> GetParameterDisplayNames (Int32 
     return displayNames;
 }
 
+void AddLibPartAndGDLParameters (GS::ObjectState& os, Int32 libInd, API_AddParType** params)
+{
+    GS::HashTable<GS::String, GS::UniString> displayNames;
+    if (libInd > 0) {
+        AddMarkerLibPartDetails (os, libInd);
+        displayNames = GetParameterDisplayNames (libInd);
+    }
+
+    const GSSize nParams = params != nullptr ? BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType) : 0;
+    const auto& parameterListAdder = os.AddList<GS::ObjectState> ("parameters");
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& actParam = (*params)[ii];
+        if (actParam.typeID == APIParT_Separator) {
+            continue;
+        }
+
+        GS::ObjectState parameterDetails;
+        parameterDetails.Add ("name", actParam.name);
+        const GS::UniString* displayName = displayNames.GetPtr (GS::String (actParam.name));
+        parameterDetails.Add ("displayName", displayName != nullptr ? *displayName : GS::UniString (actParam.uDescname));
+        parameterDetails.Add ("index", actParam.index);
+        parameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+        AddValueAndDescriptions (parameterDetails, actParam);
+        AddParameterFlags (parameterDetails, actParam);
+        parameterListAdder (parameterDetails);
+    }
+}
+
 // Changes one parameter of the marker's parameter list in place. There is no parameter
 // interface (ACAPI_LibraryPart_OpenParameters) for a sub-element, so unlike
 // SetGDLParametersOfElements this writes the API_AddParType the marker was read with.
@@ -1489,73 +1517,7 @@ GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetRawResponse
                                 "type": "array",
                                 "description": "The GDL parameters of the marker.",
                                 "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the parameter."
-                                        },
-                                        "displayName": {
-                                            "type": "string",
-                                            "description": "The display name of the parameter."
-                                        },
-                                        "index": {
-                                            "type": "integer",
-                                            "description": "The index of the parameter."
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "description": "The type of the parameter."
-                                        },
-                                        "dimension1": {
-                                            "type": "integer",
-                                            "description": "The 1st dimension of array (in case of array value)."
-                                        },
-                                        "dimension2": {
-                                            "type": "integer",
-                                            "description": "The 2nd dimension of array (in case of array value)."
-                                        },
-                                        "value": {
-                                            "description": "The value of the parameter."
-                                        },
-                                        "valueDescription": {
-                                            "type": "string",
-                                            "description": "The value description for numeric parameter."
-                                        },
-                                        "itemDescriptions": {
-                                            "type": "array",
-                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "flags": {
-                                            "type": "array",
-                                            "description": "The flags of the parameter.",
-                                            "items": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "Hidden",
-                                                    "HiddenFromScript",
-                                                    "Disabled",
-                                                    "Child",
-                                                    "Unique",
-                                                    "Fixed",
-                                                    "BoldName",
-                                                    "Open"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "displayName",
-                                        "index",
-                                        "type",
-                                        "value",
-                                        "flags"
-                                    ]
+                                    "$ref": "#/StoredGDLParameter"
                                 }
                             }
                         },
@@ -1609,30 +1571,8 @@ GS::ObjectState GetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
             continue;
         }
 
-        const Int32 libInd = marker.subElem.object.libInd;
         GS::ObjectState markerParameters;
-        AddMarkerLibPartDetails (markerParameters, libInd);
-        const GS::HashTable<GS::String, GS::UniString> displayNames = GetParameterDisplayNames (libInd);
-
-        const GSSize nParams = BMGetHandleSize ((GSHandle) marker.memo.params) / sizeof (API_AddParType);
-        const auto& parameterListAdder = markerParameters.AddList<GS::ObjectState> ("parameters");
-        for (GSIndex ii = 0; ii < nParams; ++ii) {
-            const API_AddParType& actParam = (*marker.memo.params)[ii];
-            if (actParam.typeID == APIParT_Separator) {
-                continue;
-            }
-
-            GS::ObjectState parameterDetails;
-            parameterDetails.Add ("name", actParam.name);
-            const GS::UniString* displayName = displayNames.GetPtr (GS::String (actParam.name));
-            parameterDetails.Add ("displayName", displayName != nullptr ? *displayName : GS::UniString (actParam.uDescname));
-            parameterDetails.Add ("index", actParam.index);
-            parameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
-            AddValueAndDescriptions (parameterDetails, actParam);
-            AddParameterFlags (parameterDetails, actParam);
-            parameterListAdder (parameterDetails);
-        }
-
+        AddLibPartAndGDLParameters (markerParameters, marker.subElem.object.libInd, marker.memo.params);
         markerParametersListAdder (markerParameters);
     }
 

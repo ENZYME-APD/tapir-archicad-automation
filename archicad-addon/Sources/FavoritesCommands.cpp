@@ -1,4 +1,5 @@
 #include "FavoritesCommands.hpp"
+#include "ElementGDLParameterCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
@@ -1114,6 +1115,260 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
 
         return NoError;
     });
+
+    return response;
+}
+
+// ============================================================================
+// GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
+// (element type, the GDL parameters of its library part, its marker, its
+// sub-elements and its folder) without applying it to the tool defaults or
+// placing an element. Nothing is changed, so there is no undoable command.
+// ============================================================================
+
+// The library part index of the library part based element types; 0 for the others.
+static Int32 GetLibIndOfElement (const API_Element& element)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_ObjectID:      return element.object.libInd;
+        case API_LampID:        return element.lamp.libInd;
+        case API_WindowID:      return element.window.openingBase.libInd;
+        case API_DoorID:        return element.door.openingBase.libInd;
+        case API_SkylightID:    return element.skylight.openingBase.libInd;
+        case API_ZoneID:        return element.zone.libInd;
+        default:                return 0;
+    }
+}
+
+GetFavoriteSettingsCommand::GetFavoriteSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteSettingsCommand::GetName () const
+{
+    return "GetFavoriteSettings";
+}
+
+GS::Optional<GS::UniString> GetFavoriteSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "$ref": "#/Favorites"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoriteSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favoriteSettings": {
+                "type": "array",
+                "description": "The settings of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "favorite": {
+                                    "type": "string",
+                                    "description": "The name of the Favorite."
+                                },
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "folder": {
+                                    "type": "array",
+                                    "description": "The folder hierarchy of the Favorite in the Favorites palette. Empty for the root.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "libPart": {
+                                    "$ref": "#/LibPartDetails",
+                                    "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
+                                },
+                                "parameters": {
+                                    "type": "array",
+                                    "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
+                                    "items": {
+                                        "$ref": "#/StoredGDLParameter"
+                                    }
+                                },
+                                "marker": {
+                                    "type": "object",
+                                    "description": "The marker stored with a Window or Door Favorite. Absent when the Favorite has no marker - that is not an error.",
+                                    "properties": {
+                                        "libPart": {
+                                            "$ref": "#/LibPartDetails",
+                                            "description": "The library part of the marker. Absent when it could not be read."
+                                        },
+                                        "parameters": {
+                                            "type": "array",
+                                            "description": "The GDL parameters of the marker.",
+                                            "items": {
+                                                "$ref": "#/StoredGDLParameter"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "parameters"
+                                    ]
+                                },
+                                "subElements": {
+                                    "type": "array",
+                                    "description": "The sub-elements stored with the Favorite.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "subType": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "MainMarker",
+                                                    "Other"
+                                                ],
+                                                "description": "MainMarker for the main marker of the element; Other for any other kind of sub-element."
+                                            },
+                                            "elementType": {
+                                                "$ref": "#/ElementType"
+                                            },
+                                            "libPart": {
+                                                "$ref": "#/LibPartDetails",
+                                                "description": "The library part of the sub-element. Absent when it has none or it could not be read."
+                                            },
+                                            "parameters": {
+                                                "type": "array",
+                                                "description": "The GDL parameters of the sub-element.",
+                                                "items": {
+                                                    "$ref": "#/StoredGDLParameter"
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "subType",
+                                            "elementType",
+                                            "parameters"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "favorite",
+                                "elementType",
+                                "parameters",
+                                "subElements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoriteSettings"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> favorites;
+    parameters.Get ("favorites", favorites);
+
+    GS::ObjectState response;
+    const auto& favoriteSettingsAdder = response.AddList<GS::ObjectState> ("favoriteSettings");
+
+    for (const GS::UniString& favoriteName : favorites) {
+        API_Favorite favorite;
+        favorite.name = favoriteName;
+        favorite.memo.New ();
+        favorite.elementMarker.New ();
+        favorite.memoMarker.New ();
+        favorite.subElements.New ();
+        favorite.folder.New ();
+
+        // ACAPI_Favorite_Get may have allocated some of the handles even when it fails.
+        const GS::OnExit cleanup ([&]() {
+            if (favorite.memo.HasValue ()) {
+                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+            }
+            if (favorite.memoMarker.HasValue ()) {
+                ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+            }
+            if (favorite.subElements.HasValue ()) {
+                for (API_SubElement& subElement : *favorite.subElements) {
+                    ACAPI_DisposeElemMemoHdls (&subElement.memo);
+                }
+            }
+        });
+
+        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err != NoError) {
+            favoriteSettingsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
+            continue;
+        }
+
+        const API_ElemTypeID elemTypeId = GetElemTypeId (favorite.element.header);
+
+        GS::ObjectState favoriteSettings;
+        favoriteSettings.Add ("favorite", favoriteName);
+        favoriteSettings.Add ("elementType", GetElementTypeNonLocalizedName (elemTypeId));
+
+        if (favorite.folder.HasValue ()) {
+            const auto& folderAdder = favoriteSettings.AddList<GS::UniString> ("folder");
+            for (const GS::UniString& folderName : *favorite.folder) {
+                folderAdder (folderName);
+            }
+        }
+
+        AddLibPartAndGDLParameters (favoriteSettings,
+            GetLibIndOfElement (favorite.element),
+            favorite.memo.HasValue () ? favorite.memo->params : nullptr);
+
+        // Only windows and doors have a marker; a Favorite of theirs without one has no marker
+        // library part and no marker parameters, which is reported by leaving "marker" out.
+        if ((elemTypeId == API_WindowID || elemTypeId == API_DoorID) &&
+            favorite.elementMarker.HasValue () && favorite.memoMarker.HasValue ())
+        {
+            const Int32 markerLibInd = favorite.elementMarker->object.libInd;
+            API_AddParType** markerParams = favorite.memoMarker->params;
+            if (markerLibInd > 0 || markerParams != nullptr) {
+                GS::ObjectState marker;
+                AddLibPartAndGDLParameters (marker, markerLibInd, markerParams);
+                favoriteSettings.Add ("marker", marker);
+            }
+        }
+
+        const auto& subElementsAdder = favoriteSettings.AddList<GS::ObjectState> ("subElements");
+        if (favorite.subElements.HasValue ()) {
+            for (const API_SubElement& subElement : *favorite.subElements) {
+                const API_ElemTypeID subElemTypeId = GetElemTypeId (subElement.subElem.header);
+                GS::ObjectState subElementSettings;
+                subElementSettings.Add ("subType", GS::UniString ((subElement.subType & APISubElement_MainMarker) != 0 ? "MainMarker" : "Other"));
+                subElementSettings.Add ("elementType", GetElementTypeNonLocalizedName (subElemTypeId));
+                AddLibPartAndGDLParameters (subElementSettings, GetLibIndOfElement (subElement.subElem), subElement.memo.params);
+                subElementsAdder (subElementSettings);
+            }
+        }
+
+        favoriteSettingsAdder (favoriteSettings);
+    }
 
     return response;
 }
