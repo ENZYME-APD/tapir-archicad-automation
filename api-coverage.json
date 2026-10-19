@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 05:46 UTC",
+ "generatedAt": "2026-10-19 07:08 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1456,
+  "open": 1455,
   "not applicable": 468,
-  "in progress": 153,
+  "in progress": 155,
   "done": 491,
-  "claimed": 63,
+  "claimed": 62,
   "merged": 252
  },
  "items": [
@@ -4287,6 +4287,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1140,
+     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
+    },
+    {
      "number": 1130,
      "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
     },
@@ -7390,7 +7394,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1140,
+     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
+    }
+   ],
    "issues": [
     {
      "number": 944,
@@ -8366,9 +8375,14 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1140,
+     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9965,9 +9979,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1140,
+     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
+    }
+   ],
    "issues": [
     {
      "number": 944,
