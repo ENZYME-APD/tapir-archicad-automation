@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 16:54 UTC",
+ "generatedAt": "2026-10-19 17:02 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 1352,
+  "open": 1328,
   "not applicable": 469,
-  "claimed": 142,
-  "in progress": 177,
+  "claimed": 159,
+  "in progress": 184,
   "done": 743
  },
  "items": [
@@ -3346,10 +3346,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1216,
+     "title": "Expose ACAPI_Attribute_GetAttributesFromProject (read/load attributes from another .pln/.tpl)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetClassificationInSystem",
@@ -6852,6 +6857,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1214,
+     "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
+    },
+    {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     },
@@ -8326,6 +8335,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1214,
+     "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
@@ -8993,7 +9006,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1214,
+     "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
+    }
+   ],
    "issues": [
     {
      "number": 742,
@@ -12757,9 +12775,14 @@
    "olderNames": [
     "APIEnv_IsInBeamEditModeID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1213,
+     "title": "Add GetEditModeState command (hierarchical editing mode query)"
+    }
+   ],
    "issues": [
     {
      "number": 1208,
@@ -12785,9 +12808,14 @@
    "olderNames": [
     "APIEnv_IsInColumnEditModeID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1213,
+     "title": "Add GetEditModeState command (hierarchical editing mode query)"
+    }
+   ],
    "issues": [
     {
      "number": 1208,
@@ -12813,9 +12841,14 @@
    "olderNames": [
     "APIEnv_IsInCurtainWallEditModeID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1213,
+     "title": "Add GetEditModeState command (hierarchical editing mode query)"
+    }
+   ],
    "issues": [
     {
      "number": 1208,
@@ -12835,9 +12868,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1213,
+     "title": "Add GetEditModeState command (hierarchical editing mode query)"
+    }
+   ],
    "issues": [
     {
      "number": 1208,
@@ -12863,9 +12901,14 @@
    "olderNames": [
     "APIEnv_IsInStairEditModeID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1213,
+     "title": "Add GetEditModeState command (hierarchical editing mode query)"
+    }
+   ],
    "issues": [
     {
      "number": 1208,
@@ -12915,9 +12958,14 @@
    "olderNames": [
     "APIAny_SolveStairID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1214,
+     "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
+    }
+   ],
    "issues": [
     {
      "number": 1210,
@@ -14554,10 +14602,15 @@
    "olderNames": [
     "APIAny_GetUnloadedLibpartNameID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1218,
+     "title": "Expose ACAPI_LibraryPart_GetUnloadedLibpartName (name of a missing library part)"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_InstallESYMHandler",
@@ -20717,9 +20770,14 @@
    "olderNames": [
     "APIEnv_GetSurveyPointTransformationID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1215,
+     "title": "Add GetSurveyPointTransformation command"
+    }
+   ],
    "issues": [
     {
      "number": 1212,
@@ -31933,10 +31991,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1219,
+     "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::CreateNew",
@@ -31969,10 +32032,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Get2DVectorImage",
@@ -32005,10 +32073,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetAuthor",
@@ -32237,10 +32310,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetParameterDescriptions",
@@ -32273,10 +32351,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetParameters",
@@ -32327,10 +32410,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetSubTypeUnID",
@@ -32381,10 +32469,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Has2DVectorImage",
@@ -32417,10 +32510,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasBackwardMigrationScript",
@@ -32559,10 +32657,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasParameterScript",
@@ -32577,10 +32680,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasPreviewPicture",
@@ -32613,10 +32721,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1220,
+     "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsEditable",
@@ -33562,10 +33675,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetLocalizedName",
@@ -33777,10 +33895,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::IsEmbedded",
@@ -33795,10 +33918,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::IsLocal",
@@ -33813,10 +33941,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::IsMissing",
@@ -33830,10 +33963,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::IsPackage",
@@ -33848,10 +33986,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::IsServer",
@@ -33920,10 +34063,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::FindLibrary",
@@ -33956,10 +34104,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1219,
+     "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetGSMObjectOfLibPart",
@@ -33974,10 +34127,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1219,
+     "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibIndOfLibPart",
@@ -34082,10 +34240,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibraryTreePathOfLibPart",
@@ -34100,10 +34263,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1217,
+     "title": "Expose ACAPI::Library::LibraryManager::GetLibraryOfLibPart + Library flags (embedded / package / missing)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetTWID",
