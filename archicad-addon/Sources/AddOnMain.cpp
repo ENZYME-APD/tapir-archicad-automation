@@ -790,6 +790,14 @@ GSErrCode Initialize (void)
             classificationCommands, "1.0.7",
             "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
         );
+        err |= RegisterCommand<GetClassificationsOfElementDefaultsCommand> (
+            classificationCommands, "1.7.2",
+            "Returns the classification of the tool defaults (the settings new elements get) of the given element types in the given classification systems."
+        );
+        err |= RegisterCommand<SetClassificationsOfElementDefaultsCommand> (
+            classificationCommands, "1.7.2",
+            "Sets the classifications of the tool defaults (the settings new elements get) of the given element types. In order to set a default to unclassified, omit the classificationItemId field."
+        );
         err |= RegisterCommand<CreateClassificationSystemsCommand> (
             classificationCommands, "1.5.0",
             "Creates Classification Systems including Classification Items based on the given parameters."
