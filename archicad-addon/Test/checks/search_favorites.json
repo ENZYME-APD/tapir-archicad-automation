@@ -1,0 +1,36 @@
+{
+  "title": "SearchFavorites command",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "search favorites by query",
+      "command": "SearchFavorites",
+      "creates": false,
+      "params": {
+        "query": "Wall"
+      },
+      "expect": [
+        {
+          "path": "favorites",
+          "exists": true,
+          "name": "favorites array exists"
+        }
+      ]
+    },
+    {
+      "id": "search favorites with element type filter",
+      "command": "SearchFavorites",
+      "creates": false,
+      "params": {
+        "elementType": "Wall"
+      },
+      "expect": [
+        {
+          "path": "favorites",
+          "exists": true,
+          "name": "favorites filtered by element type"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "title": "Search properties, search favorites and get elements by criteria",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "search properties by query",
+      "command": "SearchProperties",
+      "creates": false,
+      "params": {
+        "query": "General"
+      },
+      "expect": [
+        {
+          "path": "properties[0].propertyId.guid",
+          "exists": true,
+          "name": "property guid found"
+        },
+        {
+          "path": "properties[0].propertyName",
+          "exists": true,
+          "name": "property name found"
+        }
+      ]
+    },
+    {
+      "id": "search favorites by query",
+      "command": "SearchFavorites",
+      "creates": false,
+      "params": {
+        "query": "Wall"
+      },
+      "expect": [
+        {
+          "path": "favorites",
+          "exists": true,
+          "name": "favorites array exists"
+        }
+      ]
+    },
+    {
+      "id": "create test wall",
+      "command": "CreateWalls",
+      "creates": true,
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "endCoordinate": {
+              "x": 5.0,
+              "y": 0.0
+            },
+            "height": 3.0
+          }
+        ]
+      },
+      "save": {
+        "wallId": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall created"
+        }
+      ]
+    },
+    {
+      "id": "create test slab",
+      "command": "CreateSlabs",
+      "creates": true,
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "thickness": 0.3,
+            "polygonCoordinates": [
+              {
+                "x": 10.0,
+                "y": 10.0
+              },
+              {
+                "x": 15.0,
+                "y": 10.0
+              },
+              {
+                "x": 15.0,
+                "y": 15.0
+              },
+              {
+                "x": 10.0,
+                "y": 15.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "slabId": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "slab created"
+        }
+      ]
+    },
+    {
+      "id": "filter wall elements by criteria",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": [
+          "Wall"
+        ]
+      },
+      "expect": [
+        {
+          "path": "count",
+          "eq": 1,
+          "name": "exactly one wall found"
+        },
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall guid exists in result"
+        }
+      ]
+    },
+    {
+      "id": "filter wall and slab elements by criteria",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": [
+          "Wall",
+          "Slab"
+        ]
+      },
+      "expect": [
+        {
+          "path": "count",
+          "eq": 2,
+          "name": "both wall and slab found"
+        }
+      ]
+    },
+    {
+      "id": "count-only criteria evaluation",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": [
+          "Wall"
+        ],
+        "countOnly": true
+      },
+      "expect": [
+        {
+          "path": "count",
+          "eq": 1,
+          "name": "count is 1"
+        }
+      ]
+    },
+    {
+      "id": "apply non-existent favorite returns proper execution result",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favoritesToApply": [
+          {
+            "favorite": "NonExistentFavorite_TapirCheck_XYZ",
+            "elementId": {
+              "guid": "${wallId}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "graceful failure for missing favorite"
+        }
+      ]
+    }
+  ]
+}

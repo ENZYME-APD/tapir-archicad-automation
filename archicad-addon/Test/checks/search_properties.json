@@ -1,0 +1,42 @@
+{
+  "title": "SearchProperties command",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "search properties by query",
+      "command": "SearchProperties",
+      "creates": false,
+      "params": {
+        "query": "General"
+      },
+      "expect": [
+        {
+          "path": "properties[0].propertyId.guid",
+          "exists": true,
+          "name": "property guid found"
+        },
+        {
+          "path": "properties[0].propertyName",
+          "exists": true,
+          "name": "property name found"
+        }
+      ]
+    },
+    {
+      "id": "search with limit",
+      "command": "SearchProperties",
+      "creates": false,
+      "params": {
+        "query": "a",
+        "limit": 5
+      },
+      "expect": [
+        {
+          "path": "properties",
+          "len": 5,
+          "name": "exactly 5 properties returned"
+        }
+      ]
+    }
+  ]
+}
