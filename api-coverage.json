@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:37 UTC",
+ "generatedAt": "2026-10-19 11:39 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1447,
+  "open": 1446,
   "not applicable": 468,
   "in progress": 161,
   "done": 491,
-  "claimed": 64,
+  "claimed": 65,
   "merged": 252
  },
  "items": [
@@ -56755,10 +56755,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1156,
+     "title": "Expose ACAPI::ZoneLabelingSettings::Modifier::SetAutomaticLabeling"
+    }
+   ]
   },
   {
    "id": "ACAPI::ZoneLabelingSettings::Modifier::SetSelectedFavorite",
