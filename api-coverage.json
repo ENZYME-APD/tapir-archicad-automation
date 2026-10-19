@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 17:51 UTC",
+ "generatedAt": "2026-10-19 18:15 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 1234,
   "not applicable": 469,
-  "claimed": 229,
-  "in progress": 208,
+  "claimed": 213,
+  "in progress": 224,
   "done": 743
  },
  "items": [
@@ -3812,9 +3812,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1276,
+     "title": "Add GetClassificationItemVisibility command"
+    }
+   ],
    "issues": [
     {
      "number": 1255,
@@ -4678,6 +4683,14 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1280,
+     "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
+    },
+    {
+     "number": 1275,
+     "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
+    },
+    {
      "number": 1269,
      "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
     },
@@ -5235,7 +5248,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1276,
+     "title": "Add GetClassificationItemVisibility command"
+    }
+   ],
    "issues": []
   },
   {
@@ -6941,6 +6959,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1274,
+     "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
+    },
+    {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
     },
@@ -8557,9 +8579,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1281,
+     "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
+    }
+   ],
    "issues": [
     {
      "number": 1264,
@@ -8849,6 +8876,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1281,
+     "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
+    },
     {
      "number": 1167,
      "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
@@ -9498,6 +9529,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1276,
+     "title": "Add GetClassificationItemVisibility command"
+    },
+    {
      "number": 1270,
      "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
     },
@@ -9610,6 +9645,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1281,
+     "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
+    },
+    {
      "number": 1095,
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     },
@@ -9711,9 +9750,14 @@
    "olderNames": [
     "APIAny_GetOpeningTransformationID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1271,
+     "title": "Add GetOpeningTransformations (read Opening placement via ACAPI_Element_GetOpeningTransformation)"
+    }
+   ],
    "issues": [
     {
      "number": 1248,
@@ -10241,9 +10285,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1276,
+     "title": "Add GetClassificationItemVisibility command"
+    }
+   ],
    "issues": [
     {
      "number": 1255,
@@ -10267,9 +10316,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1276,
+     "title": "Add GetClassificationItemVisibility command"
+    }
+   ],
    "issues": [
     {
      "number": 1255,
@@ -10314,9 +10368,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1279,
+     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
+    }
+   ],
    "issues": [
     {
      "number": 1262,
@@ -10433,9 +10492,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1279,
+     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
+    }
+   ],
    "issues": [
     {
      "number": 1262,
@@ -11330,6 +11394,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1274,
+     "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
+    },
     {
      "number": 1241,
      "title": "Add GetFavoriteDetails: audit a Favorite's classifications, properties and categories"
@@ -14296,9 +14364,14 @@
    "olderNames": [
     "APIAny_CheckLibPartSubtypeOfID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    }
+   ],
    "issues": [
     {
      "number": 1251,
@@ -14324,9 +14397,14 @@
    "olderNames": [
     "APIAny_CheckLibPartSubtypeOfbyMainID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    }
+   ],
    "issues": [
     {
      "number": 1251,
@@ -14450,6 +14528,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    },
+    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     },
@@ -14529,9 +14611,14 @@
    "olderNames": [
     "ACAPI_LibPart_GetDetails"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    }
+   ],
    "issues": [
     {
      "number": 1251,
@@ -14668,9 +14755,14 @@
    "olderNames": [
     "APIAny_GetLibPartToolVariationID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    }
+   ],
    "issues": [
     {
      "number": 1251,
@@ -15169,6 +15261,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    },
     {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
@@ -19663,6 +19759,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1279,
+     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
+    },
+    {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
@@ -20489,9 +20589,14 @@
    "olderNames": [
     "APIDb_GetRVMChangeCustomSchemeID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1278,
+     "title": "Add GetRevisionChangeCustomScheme command"
+    }
+   ],
    "issues": [
     {
      "number": 1261,
@@ -22567,9 +22672,14 @@
    "olderNames": [
     "APIEnv_Change3DWindowSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1277,
+     "title": "Add Get3DWindowSettings and Set3DWindowSettings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1258,
@@ -22628,9 +22738,14 @@
    "olderNames": [
     "APIEnv_ChangeDocumentFrom3DDefaultsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1280,
+     "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
+    }
+   ],
    "issues": [
     {
      "number": 1259,
@@ -23025,9 +23140,14 @@
    "olderNames": [
     "APIEnv_Get3DWindowSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1277,
+     "title": "Add Get3DWindowSettings and Set3DWindowSettings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1258,
@@ -23079,9 +23199,14 @@
    "olderNames": [
     "APIEnv_GetDocumentFrom3DDefaultsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1280,
+     "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
+    }
+   ],
    "issues": [
     {
      "number": 1259,
@@ -24507,6 +24632,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1278,
+     "title": "Add GetRevisionChangeCustomScheme command"
+    },
+    {
      "number": 1267,
      "title": "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"
     },
@@ -25165,6 +25294,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1280,
+     "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
+    },
+    {
+     "number": 1277,
+     "title": "Add Get3DWindowSettings and Set3DWindowSettings commands"
+    },
+    {
      "number": 1266,
      "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
     },
@@ -25255,6 +25392,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    },
     {
      "number": 1227,
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
@@ -34265,6 +34406,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1272,
+     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
+    },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
