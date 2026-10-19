@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:59 UTC",
+ "generatedAt": "2026-10-19 12:02 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1430,
+  "open": 1427,
   "not applicable": 468,
   "in progress": 168,
   "done": 743,
-  "claimed": 74
+  "claimed": 77
  },
  "items": [
   {
@@ -4306,6 +4306,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1186,
+     "title": "Add ActivateDesignOptionsInCombinations command"
+    },
+    {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
@@ -7360,10 +7364,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1182,
+     "title": "Expose ACAPI_ElementSet_Create"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementSet_Delete",
@@ -7381,10 +7390,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1183,
+     "title": "Expose ACAPI_ElementSet_Delete"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementSet_GetData",
@@ -7402,10 +7416,19 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1185,
+     "title": "Expose ACAPI_ElementSet_GetData"
+    },
+    {
+     "number": 1184,
+     "title": "Expose ACAPI_ElementSet_GetData"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementSet_Identify",
