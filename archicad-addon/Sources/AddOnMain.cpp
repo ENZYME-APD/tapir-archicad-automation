@@ -959,6 +959,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.7.2",
             "Deletes graphic override rule groups, found by name. A group that still contains rules is kept unless its rules are moved to another group or deleted with it. Available from Archicad 27."
         );
+        err |= RegisterCommand<SetGraphicOverrideRuleGroupOrderCommand> (
+            attributeCommands, "1.7.2",
+            "Sets the order of the graphic override rule groups, found by name. The groups not listed keep their order and follow the listed ones. Available from Archicad 27."
+        );
         AddCommandGroup (attributeCommands);
     }
 
