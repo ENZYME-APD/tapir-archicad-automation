@@ -356,6 +356,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering."
         );
+        err |= RegisterCommand<GetElementsInCreationOrderCommand> (
+            elementCommands, "1.7.2",
+            "Returns the identifier of every element of the current database, or of the given databases, in the order the elements were created."
+        );
         err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
             elementCommands, "1.0.7",
             "Adds/removes a number of elements to/from the current selection."

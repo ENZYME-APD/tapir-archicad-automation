@@ -465,6 +465,99 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
     })";
 }
 
+// The creation order table must be initialized before ACAPI_DrawOrder_CreationOrderGetNext and
+// disposed after it. GetNext signals the end of the table with an error code, so an error there
+// ends the list instead of failing it. The seen set guards against a table that would not end.
+template <typename ListProxyType>
+static GSErrCode GetElementsInCreationOrderFromCurrentDatabase (ListProxyType& elementsListProxy)
+{
+    GSErrCode err = ACAPI_DrawOrder_CreationOrderTableInit ();
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::HashSet<API_Guid> seenGuids;
+    API_Guid guid = APINULLGuid;
+    while (ACAPI_DrawOrder_CreationOrderGetNext (&guid) == NoError && guid != APINULLGuid) {
+        if (seenGuids.Contains (guid)) {
+            break;
+        }
+        seenGuids.Add (guid);
+        elementsListProxy (CreateElementIdObjectState (guid));
+        guid = APINULLGuid;
+    }
+
+    return ACAPI_DrawOrder_CreationOrderTableDispose ();
+}
+
+GetElementsInCreationOrderCommand::GetElementsInCreationOrderCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsInCreationOrderCommand::GetName () const
+{
+    return "GetElementsInCreationOrder";
+}
+
+GS::Optional<GS::UniString> GetElementsInCreationOrderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsInCreationOrderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ElementsWithExecutionResultsOrError"
+    })";
+}
+
+GS::ObjectState GetElementsInCreationOrderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    GS::Array<GS::ObjectState> databases;
+    bool databasesParameterExists = parameters.Get ("databases", databases);
+    if (!databasesParameterExists || databases.IsEmpty ()) {
+        const GSErrCode err = GetElementsInCreationOrderFromCurrentDatabase (elements);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the creation order table.");
+        }
+    }
+    else {
+        const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+        auto action = [&]() -> GSErrCode {
+            return GetElementsInCreationOrderFromCurrentDatabase (elements);
+        };
+        auto actionSuccess = [&]() -> void {
+            executionResultForDatabases (CreateSuccessfulExecutionResult ());
+        };
+        auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
+            executionResultForDatabases (CreateFailedExecutionResult (err, errMsg));
+        };
+
+        GSErrCode err = ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
+        }
+    }
+
+    return response;
+}
+
 GetDetailsOfElementsCommand::GetDetailsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

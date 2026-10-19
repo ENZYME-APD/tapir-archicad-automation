@@ -59,6 +59,10 @@
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
 
+#define ACAPI_DrawOrder_CreationOrderTableInit() ACAPI_Database (APIDb_CreationOrderTableInitID)
+#define ACAPI_DrawOrder_CreationOrderGetNext(par1) ACAPI_Database (APIDb_CreationOrderGetNextID, par1)
+#define ACAPI_DrawOrder_CreationOrderTableDispose() ACAPI_Database (APIDb_CreationOrderTableDisposeID)
+
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
 #define ACAPI_Revision_GetRVMDocumentRevisions(par1) ACAPI_Database (APIDb_GetRVMDocumentRevisionsID, par1)
