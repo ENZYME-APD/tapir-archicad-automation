@@ -122,6 +122,12 @@ In the log, and on GitHub:
 
 ## If something goes wrong
 
+**Nothing seems to happen.** Read the last line of the log. It says how many changes are marked
+for testing and whether Archicad is open. *"0 marked 'needs-test'"* means there is nothing for
+automatic testing to do yet; that's normal, and you can still select a row and click **Test
+selected**. *"Archicad 30 is open"* means tests wait until you close it. While the list is being
+read, the top line counts up (*Reading pull requests 43/100*); that takes about half a minute.
+
 **Archicad shows a question when the runner starts it** (for example *Project Recovery* after an
 earlier crash, or a licence message). The runner can't answer questions for you. Answer it
 yourself, close Archicad, then click **Put my add-on back**. Choose *Cancel* in Project Recovery
