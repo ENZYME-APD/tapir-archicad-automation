@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:47 UTC",
+ "generatedAt": "2026-10-19 11:49 UTC",
  "versions": [
   25,
   26,
@@ -9,11 +9,11 @@
   30
  ],
  "counts": {
-  "open": 1434,
+  "open": 1431,
   "not applicable": 468,
   "in progress": 164,
   "done": 491,
-  "claimed": 74,
+  "claimed": 77,
   "merged": 252
  },
  "items": [
@@ -26852,10 +26852,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1172,
+     "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination",
@@ -26868,10 +26873,19 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1174,
+     "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination"
+    },
+    {
+     "number": 1173,
+     "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modify",
@@ -26945,10 +26959,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1175,
+     "title": "Expose ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::CanBeMovedToOtherDesignOption",
