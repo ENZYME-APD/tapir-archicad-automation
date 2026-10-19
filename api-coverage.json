@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 11:39 UTC",
+ "generatedAt": "2026-10-19 11:41 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 1446,
+  "open": 1445,
   "not applicable": 468,
-  "in progress": 161,
+  "in progress": 162,
   "done": 491,
   "claimed": 65,
   "merged": 252
@@ -6612,10 +6612,15 @@
    "olderNames": [
     "APIDb_CreationOrderGetNextID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1158,
+     "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawOrder_DisposeCreationOrderTable",
@@ -15511,6 +15516,10 @@
      "title": "GetViewSettings: return the \"stored in this view\" flags and the full transformation (split from #876)"
     },
     {
+     "number": 1047,
+     "title": "GetViewSettings: return the \"stored in this view\" flags and the full transformation (split from #876)"
+    },
+    {
      "number": 688,
      "title": "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values"
     }
@@ -23505,6 +23514,10 @@
    ],
    "issues": [
     {
+     "number": 1158,
+     "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
+    },
+    {
      "number": 1082,
      "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
     },
@@ -26216,9 +26229,14 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1157,
+     "title": "Add SetZoneLabelingSettings command (automatic Zone labeling)"
+    }
+   ],
    "issues": []
   },
   {
@@ -51776,15 +51794,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1155,
-     "title": "Expose ACAPI::Modify"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Object::GetToken",
