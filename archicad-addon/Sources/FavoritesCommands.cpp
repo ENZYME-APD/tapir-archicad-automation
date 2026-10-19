@@ -742,6 +742,39 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                     ]
                 }
             },
+            "favorite": {
+                "type": "string",
+                "description": "Name of a single favorite to apply to all target elements in bulk."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional list of target elements when applying a single favorite. If omitted, all elements in the current database (or matching 'filter') are targeted."
+            },
+            "filter": {
+                "type": "object",
+                "description": "Optional server-side element filter when applying a single favorite in bulk.",
+                "properties": {
+                    "types": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/ElementType"
+                        }
+                    },
+                    "floorIndices": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "layerIndices": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
             "applySettings": {
                 "type": "boolean",
                 "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. Default is true."
@@ -759,10 +792,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 "description": "Whether to apply the Favorite's property values. Default is true."
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "favoritesToApply"
-        ]
+        "additionalProperties": false
     })";
 }
 
@@ -784,9 +814,6 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetRawResponseSchem
 
 GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> favoritesToApply;
-    parameters.Get ("favoritesToApply", favoritesToApply);
-
     bool applySettings = true;
     parameters.Get ("applySettings", applySettings);
     bool applyClassifications = true;
@@ -798,6 +825,134 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    GS::UniString singleFavoriteName;
+    const bool hasSingleFavorite = parameters.Get ("favorite", singleFavoriteName) && !singleFavoriteName.IsEmpty ();
+
+    if (hasSingleFavorite) {
+        API_Favorite favorite;
+        favorite.memo.New ();
+        favorite.properties.New ();
+        favorite.classifications.New ();
+        favorite.elemCategoryValues.New ();
+        favorite.name = singleFavoriteName;
+
+        GSErrCode favErr = ACAPI_Favorite_Get (&favorite);
+        if (favErr != NoError) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+            return CreateErrorResponse (favErr, GS::UniString::Printf ("Failed to get favorite '%T'.", singleFavoriteName.ToPrintf ()));
+        }
+
+        GS::Array<API_Guid> targetGuids;
+        if (parameters.Contains ("elements")) {
+            GS::Array<GS::ObjectState> elements;
+            parameters.Get ("elements", elements);
+            targetGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+        } else {
+            GSErrCode err = ACAPI_Element_GetElemList (API_ZombieElemID, &targetGuids);
+            if (err != NoError) {
+                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+                return CreateErrorResponse (err, "Failed to retrieve elements from database.");
+            }
+        }
+
+        // Apply server-side filter if present
+        const GS::ObjectState* filterObj = parameters.Get ("filter");
+        GS::Array<API_ElemTypeID> allowedTypes;
+        GS::Array<Int32> allowedFloors;
+        GS::Array<Int32> allowedLayers;
+
+        if (filterObj != nullptr) {
+            GS::Array<GS::UniString> typeStrs;
+            if (filterObj->Get ("types", typeStrs)) {
+                for (const GS::UniString& ts : typeStrs) {
+                    API_ElemTypeID tid = GetElementTypeFromNonLocalizedName (ts);
+                    if (tid != API_ZombieElemID) {
+                        allowedTypes.Push (tid);
+                    }
+                }
+            }
+            filterObj->Get ("floorIndices", allowedFloors);
+            filterObj->Get ("layerIndices", allowedLayers);
+        }
+
+        const API_ElemTypeID favTypeId = GetElemTypeId (favorite.element.header);
+
+        ACAPI_CallUndoableCommand ("ApplyFavoritesToElements", [&]() -> GSErrCode {
+            for (const API_Guid& targetGuid : targetGuids) {
+                API_Element targetElement = {};
+                targetElement.header.guid = targetGuid;
+                GSErrCode getErr = ACAPI_Element_Get (&targetElement);
+                if (getErr != NoError) {
+                    executionResults (CreateFailedExecutionResult (getErr, "Failed to find element"));
+                    continue;
+                }
+
+                // Filter checks
+                const API_ElemTypeID targetTypeId = GetElemTypeId (targetElement.header);
+                if (!allowedTypes.IsEmpty () && !allowedTypes.Contains (targetTypeId)) {
+                    continue;
+                }
+                if (!allowedFloors.IsEmpty () && !allowedFloors.Contains (targetElement.header.floorInd)) {
+                    continue;
+                }
+                if (!allowedLayers.IsEmpty () && !allowedLayers.Contains (GetAttributeIndex (targetElement.header.layer))) {
+                    continue;
+                }
+
+                if (favTypeId != targetTypeId) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "The Favorite's element type does not match the target element's type."));
+                    continue;
+                }
+
+                GSErrCode err = NoError;
+                if (applySettings) {
+                    API_Element mask = {};
+                    ACAPI_ELEMENT_MASK_SETFULL (mask);
+
+                    GS::Array<API_Guid> singleGuidList;
+                    singleGuidList.Push (targetGuid);
+
+                    const API_ElementMemo* memoToApply = MemoCarriesGeometry (targetElement.header)
+                        ? nullptr
+                        : favorite.memo.GetPtr ();
+
+                    err = ACAPI_Element_ChangeParameters (singleGuidList, &favorite.element, memoToApply, &mask);
+                }
+
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to apply favorite to element"));
+                    continue;
+                }
+
+                if (applyClassifications) {
+                    for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+                        ACAPI_Element_AddClassificationItem (targetGuid, pair.second);
+                    }
+                }
+
+                if (applyCategories) {
+                    for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+                        TAPIR_Element_SetCategoryValue (targetGuid, categoryValue);
+                    }
+                }
+
+                if (applyProperties) {
+                    ACAPI_Element_SetProperties (targetGuid, *favorite.properties);
+                }
+
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+
+            ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+            return NoError;
+        });
+
+        return response;
+    }
+
+    GS::Array<GS::ObjectState> favoritesToApply;
+    parameters.Get ("favoritesToApply", favoritesToApply);
 
     ACAPI_CallUndoableCommand ("ApplyFavoritesToElements", [&]() -> GSErrCode {
         for (const GS::ObjectState& item : favoritesToApply) {
@@ -1117,3 +1272,201 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
 
     return response;
 }
+
+SearchFavoritesCommand::SearchFavoritesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SearchFavoritesCommand::GetName () const
+{
+    return "SearchFavorites";
+}
+
+GS::Optional<GS::UniString> SearchFavoritesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Optional case-insensitive substring to search in favorite name or folder hierarchy."
+            },
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Optional filter by element type. If omitted, searches across all element types."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching favorites to return.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> SearchFavoritesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "List of matching favorites.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the favorite."
+                        },
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "folder": {
+                            "type": "array",
+                            "description": "The folder hierarchy of the favorite.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "elementType"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState SearchFavoritesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString query;
+    const bool hasQuery = parameters.Get ("query", query) && !query.IsEmpty ();
+    const GS::UniString queryLower = hasQuery ? query.GetLowerCased () : GS::EmptyUniString;
+
+    GS::Array<API_ElemTypeID> typesToQuery;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr) && !elementTypeStr.IsEmpty ()) {
+        const API_ElemTypeID elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elemType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+        typesToQuery.Push (elemType);
+    } else {
+        static const GS::Array<API_ElemTypeID> allSupportedTypes = {
+            API_WallID,
+            API_ColumnID,
+            API_BeamID,
+            API_WindowID,
+            API_DoorID,
+            API_ObjectID,
+            API_LampID,
+            API_SlabID,
+            API_RoofID,
+            API_MeshID,
+            API_DimensionID,
+            API_RadialDimensionID,
+            API_LevelDimensionID,
+            API_AngleDimensionID,
+            API_TextID,
+            API_LabelID,
+            API_ZoneID,
+            API_HatchID,
+            API_LineID,
+            API_PolyLineID,
+            API_ArcID,
+            API_CircleID,
+            API_SplineID,
+            API_HotspotID,
+            API_DrawingID,
+            API_CurtainWallID,
+            API_StairID,
+            API_RailingID,
+            API_OpeningID
+        };
+        typesToQuery = allSupportedTypes;
+    }
+
+    Int32 limit = 0;
+    const bool hasLimit = parameters.Get ("limit", limit) && limit > 0;
+
+    GS::ObjectState response;
+    const auto& favoritesList = response.AddList<GS::ObjectState> ("favorites");
+
+    Int32 matchCount = 0;
+
+    for (const API_ElemTypeID typeId : typesToQuery) {
+        if (hasLimit && matchCount >= limit) {
+            break;
+        }
+
+        short count = 0;
+        GS::Array<API_FavoriteFolderHierarchy> folders;
+        GS::Array<GS::UniString> names;
+
+#ifdef ServerMainVers_2600
+        GSErrCode err = ACAPI_Favorite_GetNum (typeId, &count, &folders, &names);
+#else
+        API_ElemVariationID variation = APIVarId_Generic;
+        GSErrCode err = ACAPI_Favorite_GetNum (typeId, variation, &count, &folders, &names);
+#endif
+        if (err != NoError || names.IsEmpty ()) {
+            continue;
+        }
+
+        const GS::UniString elementTypeName = GetElementTypeNonLocalizedName (typeId);
+
+        for (UIndex i = 0; i < names.GetSize (); ++i) {
+            if (hasLimit && matchCount >= limit) {
+                break;
+            }
+
+            const GS::UniString& favoriteName = names[i];
+            bool matches = !hasQuery;
+
+            if (hasQuery) {
+                if (favoriteName.GetLowerCased ().Contains (queryLower)) {
+                    matches = true;
+                } else if (i < folders.GetSize ()) {
+                    for (const GS::UniString& folderSegment : folders[i]) {
+                        if (folderSegment.GetLowerCased ().Contains (queryLower)) {
+                            matches = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!matches) {
+                continue;
+            }
+
+            GS::ObjectState favoriteItem;
+            favoriteItem.Add ("name", favoriteName);
+            favoriteItem.Add ("elementType", elementTypeName);
+
+            if (i < folders.GetSize () && !folders[i].IsEmpty ()) {
+                const auto& folderList = favoriteItem.AddList<GS::UniString> ("folder");
+                for (const GS::UniString& folderSegment : folders[i]) {
+                    folderList (folderSegment);
+                }
+            }
+
+            favoritesList (favoriteItem);
+            matchCount++;
+        }
+    }
+
+    return response;
+}
+

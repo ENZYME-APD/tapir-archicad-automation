@@ -1,6 +1,7 @@
 #include "ElementCommands.hpp"
 
 #include "ElementCreationCommands.hpp"
+#include "PropertyCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
 #include "Plane.hpp"
@@ -5635,3 +5636,346 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
 
     return response;
 }
+
+GetElementsByCriteriaCommand::GetElementsByCriteriaCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsByCriteriaCommand::GetName () const
+{
+    return "GetElementsByCriteria";
+}
+
+GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "types": {
+                "type": "array",
+                "description": "Optional filter for element types (e.g. ['Wall', 'Column']).",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "floorIndices": {
+                "type": "array",
+                "description": "Optional filter for story/floor indices (e.g. [0, 1]).",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "layerIndices": {
+                "type": "array",
+                "description": "Optional filter for layer attribute indices.",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "filters": {
+                "type": "array",
+                "description": "Optional Archicad API element filter flags.",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                }
+            },
+            "propertyCriteria": {
+                "type": "array",
+                "description": "Optional list of property evaluation criteria. All criteria must match (AND condition).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "propertyName": {
+                            "type": "string",
+                            "description": "Case-insensitive property definition name."
+                        },
+                        "operator": {
+                            "type": "string",
+                            "description": "Evaluation operator. Default is 'equals'.",
+                            "enum": [
+                                "equals",
+                                "notEquals",
+                                "contains",
+                                "greaterThan",
+                                "lessThan",
+                                "greaterOrEqual",
+                                "lessOrEqual",
+                                "hasAnyValue",
+                                "isUndefined"
+                            ]
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "Expected value as a string."
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "countOnly": {
+                "type": "boolean",
+                "description": "If true, only returns the count of matching elements without listing their GUIDs. Minimizes token usage."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching elements to return.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "count": {
+                "type": "integer",
+                "description": "Total number of matching elements."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "List of matching elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "count"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ElemFilterFlags filterFlags = APIFilt_None;
+    GS::Array<GS::UniString> filterStrings;
+    if (parameters.Get ("filters", filterStrings)) {
+        for (const GS::UniString& fs : filterStrings) {
+            filterFlags = filterFlags | ConvertFilterStringToFlag (fs);
+        }
+    }
+
+    GS::Array<API_ElemTypeID> allowedTypes;
+    GS::Array<GS::UniString> typeStrs;
+    if (parameters.Get ("types", typeStrs)) {
+        for (const GS::UniString& ts : typeStrs) {
+            API_ElemTypeID tid = GetElementTypeFromNonLocalizedName (ts);
+            if (tid != API_ZombieElemID) {
+                allowedTypes.Push (tid);
+            }
+        }
+    }
+
+    GS::Array<Int32> allowedFloors;
+    parameters.Get ("floorIndices", allowedFloors);
+
+    GS::Array<Int32> allowedLayers;
+    parameters.Get ("layerIndices", allowedLayers);
+
+    bool countOnly = false;
+    parameters.Get ("countOnly", countOnly);
+
+    Int32 limit = 0;
+    const bool hasLimit = parameters.Get ("limit", limit) && limit > 0;
+
+    struct ResolvedPropertyCriterion {
+        API_Guid propertyGuid = APINULLGuid;
+        GS::UniString operatorStr;
+        GS::UniString expectedValue;
+        double numericValue = 0.0;
+        bool isNumeric = false;
+    };
+
+    GS::Array<ResolvedPropertyCriterion> criteriaList;
+    GS::Array<GS::ObjectState> rawCriteria;
+    if (parameters.Get ("propertyCriteria", rawCriteria) && !rawCriteria.IsEmpty ()) {
+        GS::HashTable<GS::UniString, API_Guid> propNameToGuid;
+        GS::Array<API_PropertyGroup> groups;
+        ACAPI_Property_GetPropertyGroups (groups);
+        for (const API_PropertyGroup& grp : groups) {
+            GS::Array<API_PropertyDefinition> defs;
+            ACAPI_Property_GetPropertyDefinitions (grp.guid, defs);
+            for (const API_PropertyDefinition& def : defs) {
+                propNameToGuid.Add (def.name.GetLowerCased (), def.guid);
+            }
+        }
+
+        for (const GS::ObjectState& c : rawCriteria) {
+            ResolvedPropertyCriterion rpc;
+            const GS::ObjectState* propIdOs = c.Get ("propertyId");
+            if (propIdOs != nullptr) {
+                rpc.propertyGuid = GetGuidFromObjectState (*propIdOs);
+            } else {
+                GS::UniString propName;
+                if (c.Get ("propertyName", propName) && propNameToGuid.ContainsKey (propName.GetLowerCased ())) {
+                    rpc.propertyGuid = propNameToGuid[propName.GetLowerCased ()];
+                }
+            }
+
+            if (rpc.propertyGuid == APINULLGuid) {
+                continue;
+            }
+
+            if (!c.Get ("operator", rpc.operatorStr) || rpc.operatorStr.IsEmpty ()) {
+                rpc.operatorStr = "equals";
+            }
+
+            c.Get ("value", rpc.expectedValue);
+            char* endPtr = nullptr;
+            rpc.numericValue = std::strtod (rpc.expectedValue.ToCStr ().Get (), &endPtr);
+            rpc.isNumeric = (endPtr != rpc.expectedValue.ToCStr ().Get ());
+
+            criteriaList.Push (rpc);
+        }
+    }
+
+    GS::Array<API_Guid> candidateGuids;
+    if (allowedTypes.GetSize () == 1) {
+        ACAPI_Element_GetElemList (allowedTypes[0], &candidateGuids, filterFlags);
+    } else {
+        ACAPI_Element_GetElemList (API_ZombieElemID, &candidateGuids, filterFlags);
+    }
+
+    GS::Array<API_Guid> propGuidsToFetch;
+    for (const auto& crit : criteriaList) {
+        if (!propGuidsToFetch.Contains (crit.propertyGuid)) {
+            propGuidsToFetch.Push (crit.propertyGuid);
+        }
+    }
+
+    GS::ObjectState response;
+    auto elementsAdder = response.AddList<GS::ObjectState> ("elements");
+    Int32 matchCount = 0;
+
+    for (const API_Guid& elemGuid : candidateGuids) {
+        if (hasLimit && matchCount >= limit) {
+            break;
+        }
+
+        API_Elem_Head head = {};
+        head.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&head) != NoError) {
+            continue;
+        }
+
+        const API_ElemTypeID elemTypeId = GetElemTypeId (head);
+        if (!allowedTypes.IsEmpty () && !allowedTypes.Contains (elemTypeId)) {
+            continue;
+        }
+
+        if (!allowedFloors.IsEmpty () && !allowedFloors.Contains (head.floorInd)) {
+            continue;
+        }
+
+        if (!allowedLayers.IsEmpty () && !allowedLayers.Contains (GetAttributeIndex (head.layer))) {
+            continue;
+        }
+
+        if (!criteriaList.IsEmpty ()) {
+            GS::Array<API_Property> fetchedProperties;
+            GSErrCode propErr = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propGuidsToFetch, fetchedProperties);
+            if (propErr != NoError) {
+                continue;
+            }
+
+            GS::HashTable<API_Guid, const API_Property*> propMap;
+            for (const API_Property& fp : fetchedProperties) {
+                propMap.Add (fp.definition.guid, &fp);
+            }
+
+            bool allCriteriaPassed = true;
+            for (const auto& crit : criteriaList) {
+                if (!propMap.ContainsKey (crit.propertyGuid)) {
+                    allCriteriaPassed = false;
+                    break;
+                }
+
+                const API_Property* prop = propMap[crit.propertyGuid];
+                const bool isUndefined = prop->value.variantStatus == API_VariantStatusUserUndefined;
+
+                if (crit.operatorStr == "isUndefined") {
+                    if (!isUndefined) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    continue;
+                }
+
+                if (crit.operatorStr == "hasAnyValue") {
+                    if (isUndefined) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    continue;
+                }
+
+                if (isUndefined) {
+                    allCriteriaPassed = false;
+                    break;
+                }
+
+                GS::UniString actualStr;
+                GetPropertyValueString (*prop, actualStr);
+
+                if (crit.operatorStr == "equals") {
+                    if (actualStr.GetLowerCased () != crit.expectedValue.GetLowerCased ()) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                } else if (crit.operatorStr == "notEquals") {
+                    if (actualStr.GetLowerCased () == crit.expectedValue.GetLowerCased ()) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                } else if (crit.operatorStr == "contains") {
+                    if (!actualStr.GetLowerCased ().Contains (crit.expectedValue.GetLowerCased ())) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                } else if (crit.isNumeric) {
+                    char* endPtr = nullptr;
+                    double actualNum = std::strtod (actualStr.ToCStr ().Get (), &endPtr);
+                    if (endPtr == actualStr.ToCStr ().Get ()) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    if (crit.operatorStr == "greaterThan" && !(actualNum > crit.numericValue)) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    if (crit.operatorStr == "lessThan" && !(actualNum < crit.numericValue)) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    if (crit.operatorStr == "greaterOrEqual" && !(actualNum >= crit.numericValue)) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                    if (crit.operatorStr == "lessOrEqual" && !(actualNum <= crit.numericValue)) {
+                        allCriteriaPassed = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!allCriteriaPassed) {
+                continue;
+            }
+        }
+
+        matchCount++;
+        if (!countOnly) {
+            elementsAdder (CreateElementIdObjectState (elemGuid));
+        }
+    }
+
+    response.Add ("count", matchCount);
+    return response;
+}
+

@@ -364,6 +364,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Tests an elements by the given criterias."
         );
+        err |= RegisterCommand<GetElementsByCriteriaCommand> (
+            elementCommands, "1.7.3",
+            "Finds and evaluates elements matching property criteria, types, stories, layers, and status flags server-side. Supports countOnly to minimize token consumption."
+        );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
             "Gets the details of elements (geometry parameters, etc). When elements is omitted or empty, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried automatically. Use the optional fields parameter to project only the fields you need (e.g. elementId, type, id, floorIndex) and skip computing unneeded fields (such as heavy floorPlanPolygons)."
@@ -723,6 +727,10 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.4",
             "Delete existing favorites."
         );
+        err |= RegisterCommand<SearchFavoritesCommand> (
+            favoritesCommands, "1.7.3",
+            "Searches project favorites by keyword (matching favorite name or folder) and/or element type."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -731,6 +739,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetAllPropertiesCommand> (
             propertyCommands, "1.1.3",
             "Returns all user defined and built-in properties."
+        );
+        err |= RegisterCommand<SearchPropertiesCommand> (
+            propertyCommands, "1.7.3",
+            "Searches properties by name or group substring with optional filtering by property type, value type, and collection type."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
