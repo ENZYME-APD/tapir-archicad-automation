@@ -270,13 +270,13 @@ def start_hidden(args: list[str]) -> int:
         user32.CreateDesktopW.restype = ctypes.c_void_p
         _desktop_handle = user32.CreateDesktopW(DESKTOP, None, None, 0, _DESKTOP_ACCESS, None)
         if not _desktop_handle:
-            raise OSError(ctypes.get_last_error(), "could not create the runner's desktop")
+            raise OSError(ctypes.GetLastError(), "could not create the runner's desktop")
     info = _StartupInfo(cb=ctypes.sizeof(_StartupInfo), lpDesktop=f"WinSta0\\{DESKTOP}")
     process = _ProcessInformation()
     command = ctypes.create_unicode_buffer(" ".join(f'"{a}"' for a in args))
     if not kernel32.CreateProcessW(None, command, None, None, False, 0, None, None,
                                    ctypes.byref(info), ctypes.byref(process)):
-        raise OSError(ctypes.get_last_error(), f"could not start {args[0]}")
+        raise OSError(ctypes.GetLastError(), f"could not start {args[0]}")
     kernel32.CloseHandle(ctypes.c_void_p(process.hProcess))
     kernel32.CloseHandle(ctypes.c_void_p(process.hThread))
     return process.dwProcessId
@@ -288,21 +288,31 @@ def show_desktop(python: str) -> bool:
     desktop = _open_desktop(DESKTOP)
     if not desktop:
         return False
+    user32 = ctypes.windll.user32
     try:
-        start_back_button(python)
-        return bool(ctypes.windll.user32.SwitchDesktop(desktop))
+        if not user32.SwitchDesktop(desktop):
+            return False
+        if start_back_button(python):
+            return True
+        default = _open_desktop("Default")  # no way back from there: do not leave the tester on it
+        if default:
+            user32.SwitchDesktop(default)
+            user32.CloseDesktop(default)
+        return False
     finally:
-        ctypes.windll.user32.CloseDesktop(desktop)
+        user32.CloseDesktop(desktop)
 
 
-def start_back_button(python: str) -> None:
+def start_back_button(python: str) -> bool:
     info = _StartupInfo(cb=ctypes.sizeof(_StartupInfo), lpDesktop=f"WinSta0\\{DESKTOP}")
     process = _ProcessInformation()
     command = ctypes.create_unicode_buffer(f'"{python}" "{Path(__file__).resolve()}" back')
-    if ctypes.windll.kernel32.CreateProcessW(None, command, None, None, False, 0, None, None,
-                                             ctypes.byref(info), ctypes.byref(process)):
-        ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(process.hProcess))
-        ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(process.hThread))
+    if not ctypes.windll.kernel32.CreateProcessW(None, command, None, None, False, 0, None, None,
+                                                 ctypes.byref(info), ctypes.byref(process)):
+        return False
+    ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(process.hProcess))
+    ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(process.hThread))
+    return True
 
 
 def back_button() -> None:

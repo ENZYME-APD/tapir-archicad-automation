@@ -884,7 +884,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.mode == "show":
         if not rw.show_desktop(sys.executable):
-            sys.exit("nothing runs on the runner's desktop")
+            sys.exit("could not switch to the runner's desktop (nothing runs there?)")
         return 0
     if args.mode == "uninstall":
         return uninstall(Path(args.config) if args.config else default_config_path())
