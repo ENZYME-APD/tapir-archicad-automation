@@ -723,6 +723,12 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.4",
             "Delete existing favorites."
         );
+        err |= RegisterCommand<ReadFavoritesFileCommand> (
+            favoritesCommands, "1.7.3",
+            "Read the Favorites of a .prefs file or folder without importing them, returning the name, "
+            "element type and folder of each. Nothing in the project changes, so the result can be "
+            "compared with the project's Favorites before ImportFavorites."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
