@@ -16,7 +16,10 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 import tapir_test_runner as r  # noqa: E402
 
-CHECKS = sorted((HERE.parent / "checks").glob("*.json"))
+# the examples for still-open issues, plus the general checks FakeArchicad models (it has no graphic overrides)
+GENERAL = HERE.parents[2] / "archicad-addon" / "Test" / "checks"
+CHECKS = sorted([*(HERE.parent / "checks").glob("*.json"),
+                 *(p for p in GENERAL.glob("*.json") if not p.name.startswith("graphic_override"))], key=lambda p: p.name)
 
 
 class FakeArchicad:

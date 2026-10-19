@@ -47,7 +47,7 @@ DEFAULT_TIMEOUT = 60.0
 PORTS = range(19723, 19744)  # Archicad's JSON server takes the first free one, in start order
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULTS = {"repo": "ENZYME-APD/tapir-archicad-automation", "label": "needs-test",
-            "checkFolder": "archicad-addon/Test/checks/", "tokenEnv": "TAPIR_RUNNER_TOKEN",
+            "checkFolder": "archicad-addon/Test/checks/", "generalChecksRef": "main", "tokenEnv": "TAPIR_RUNNER_TOKEN",
             "pollMinutes": 15, "allowForks": False, "trustedForks": [], "archicads": []}
 
 
@@ -627,15 +627,31 @@ class GitHub:
             paths += [f["path"] for f in listed if f["name"].endswith(".json") and f["path"] not in paths]
         return paths
 
-    def check_files(self, number: int, sha: str, folder: str, dest: Path, every: bool = False) -> list[Path]:
-        """The check files, fetched at the pull request's head commit."""
-        found = []
-        for name in self.check_paths(number, folder, every, sha):
-            content = self._request(f"contents/{name}?ref={sha}")
+    def check_files(self, number: int, sha: str, folder: str, dest: Path, every: bool = False,
+                    general_ref: str = "main") -> tuple[list[Path], int]:
+        """The pull request's own check files (those it adds or changes, at its head commit). When it
+        has none, or with every, also the general checks: the rest of the folder on general_ref, so a
+        pull request without checks of its own is still tested. Returns the files and how many of
+        them are general checks."""
+        found: dict[str, Path] = {}
+
+        def fetch(name: str, ref: str) -> None:
+            content = self._request(f"contents/{name}?ref={ref}")
             path = dest / Path(name).name
             path.write_bytes(base64.b64decode(content["content"]))
-            found.append(path)
-        return found
+            found[Path(name).name] = path
+        for name in self.check_paths(number, folder):
+            fetch(name, sha)
+        own = len(found)
+        if every or not own:
+            try:
+                listed = self._request(f"contents/{folder.rstrip('/')}?ref={general_ref}")
+            except urllib.error.HTTPError:
+                listed = []
+            for f in listed:
+                if f["name"].endswith(".json") and f["name"] not in found:
+                    fetch(f["path"], general_ref)
+        return list(found.values()), len(found) - own
 
     def comment(self, number: int, body: str) -> None:
         self._request(f"issues/{number}/comments", {"body": body})
@@ -665,14 +681,21 @@ def test_pull(gh: GitHub, cfg: dict, pull: dict, ac: dict, login: str, post: boo
         return outcome(pull, ac, "skipped", f"already reported for {sha[:7]}")
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
-        checks = gh.check_files(number, sha, cfg.get("checkFolder", DEFAULTS["checkFolder"]), work, every)
-        if not checks:
-            return outcome(pull, ac, "skipped", "no check files" + ("" if every else " (--every-check runs the whole check folder)"))
         build = gh.build_artifact(sha, ac["version"], work)
         if build is None:
             return outcome(pull, ac, "skipped", f"no finished AC{ac['version']} build for {sha[:7]} yet")
+        checks, general = gh.check_files(number, sha, cfg.get("checkFolder", DEFAULTS["checkFolder"]), work, every,
+                                         cfg.get("generalChecksRef", DEFAULTS["generalChecksRef"]))
+        if not checks:
+            return outcome(pull, ac, "skipped", "no check files, and no general checks found")
         rows, version = run_installed(ac, build, checks)
     body = report(rows, ac["version"], version, sha)
+    if general:
+        first, _, rest = body.partition("\n")
+        own = len(checks) - general
+        body = (f"{first}\n\n_{'No checks of its own' if not own else f'{own} check file(s) of its own'}; "
+                f"also ran the {general} general check file(s) from "
+                f"`{cfg.get('generalChecksRef', DEFAULTS['generalChecksRef'])}`._\n{rest}")
     if post:
         gh.comment(number, body)
     return outcome(pull, ac, "tested", body.splitlines()[0], rows, body)
@@ -840,7 +863,7 @@ def main(argv: list[str] | None = None) -> int:
     t.add_argument("numbers", nargs="*", type=int)
     t.add_argument("--all", action="store_true", help="every open, non-draft pull request")
     t.add_argument("--ac", action="append", help="only this Archicad version (repeatable)")
-    t.add_argument("--every-check", action="store_true", help="run the whole check folder, not only the pull request's checks")
+    t.add_argument("--every-check", action="store_true", help="also run the general checks when the pull request has checks of its own (without, they always run)")
     t.add_argument("--no-post", action="store_true", help="print the report instead of commenting")
     t.add_argument("--retest", action="store_true", help="test again even if you already reported on this commit")
     t.add_argument("--brief", action="store_true", help="one line per pull request and version, plus failures")

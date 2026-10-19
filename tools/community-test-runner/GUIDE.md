@@ -95,7 +95,8 @@ is happening.
 - **Stop after this test:** finishes the current test, then stops.
 - **Put my add-on back:** use this if a test was interrupted (see *If something goes wrong*).
 - **Post results on GitHub:** untick it to try the runner without posting anything.
-- **Run every check:** also runs the general checks, not only the change's own.
+- **Also run the general checks…:** a change without checks of its own is always tested with the
+  general checks; tick this to run them for the others too.
 - **Settings:** asks the setup questions again.
 - **Help:** opens this guide.
 - Double-click a row to see the change on GitHub.
@@ -115,7 +116,6 @@ In the log, and on GitHub:
   information for the developers, not a problem on your side.
 - `skipped: no finished AC30 build` — GitHub hasn't built that version yet. It will be tested
   in a later round.
-- `skipped: no check files` — the change doesn't have checks yet.
 - `skipped: already reported` — you already tested this exact version.
 
 ---

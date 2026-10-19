@@ -27,7 +27,7 @@ yourself for this, never read the runner's source to use it, and never print ful
 | Is it set up? | `prs` (fails with "run setup first" if not; setup asks for a token, so the user runs `setup` themselves) |
 | What can be tested | `prs` → `#869 own \| bf11c1e \| labels - \| checks 2 \| builds AC25,…,30 \| last AC30 PASS 12/12 … \| title` |
 | Test chosen pull requests | `test 869 870 --ac 30 --brief --no-post` |
-| Test everything open | `test --all --brief --no-post` (add `--every-check` to also run the repo's whole check folder, for PRs without their own checks) |
+| Test everything open | `test --all --brief --no-post` (a PR without checks of its own runs the general checks from main; `--every-check` adds them for the others) |
 | Test again on the same commit | add `--retest` |
 | Test a local build | `trial --ac 30 --build archicad-addon/Build/AC30/RelWithDebInfo/TapirAddOn_AC30_Win.apx --brief` |
 | Archicad is already open with an empty untitled project | `check --brief` (this checkout's checks) or `check path/to/check.json --brief` |
@@ -44,8 +44,8 @@ editing that list yourself: it decides whose native code is installed on their c
 
 `#869 AC30 FAIL 10/12 build bf11c1e tapir 1.7.2` then `  x <check title> / <step id> / <what>: <actual> (want <expectation>)`.
 `skipped: no finished AC30 build` means CI has not built that commit (bot pull requests get no
-build today). `skipped: no check files` means the pull request has no checks; offer `--every-check`
-or writing one.
+build today). A report noting "general check file(s)" means the PR had no checks of its own; offer to write one
+for its new commands.
 
 ## Writing a check without reading other checks
 

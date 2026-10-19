@@ -71,7 +71,7 @@ class RunnerWindow:
         options = ttk.Frame(root, padding=(10, 0, 10, 6))
         options.pack(fill="x")
         ttk.Checkbutton(options, text="Post results on GitHub", variable=self.post).pack(side="left")
-        ttk.Checkbutton(options, text="Run every check, not only the change's own", variable=self.every).pack(side="left", padx=12)
+        ttk.Checkbutton(options, text="Also run the general checks when a change has its own", variable=self.every).pack(side="left", padx=12)
 
         self.log_box = tk.Text(root, height=9, wrap="word", state="disabled", padx=6, pady=4)
         self.log_box.pack(fill="both", padx=10, pady=(0, 10))

@@ -43,8 +43,8 @@ For each pull request and each Archicad version:
 1. skips it if you already reported on its current commit, or if its branch is in a fork you
    don't trust;
 2. fetches the pull request's check files (`archicad-addon/Test/checks/*.json` it adds or
-   changes; with `--every-check` or **Run every check**, the whole folder) and the add-on the
-   repository's **Archicad Add-On Build Check** built for that commit;
+   changes; without any, or with `--every-check`, also the **general checks**: that folder on `main`)
+   and the add-on the repository's **Archicad Add-On Build Check** built for that commit;
 3. loads that build instead of your Tapir, starts Archicad with the template, runs the checks,
    asks Archicad to quit, and puts your Tapir back;
 4. posts one comment whose first line can be read by a workflow:
@@ -133,7 +133,12 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
 - `minTapir` skips the file on older add-ons. `requiresEmpty` changes the element types that
   must be absent.
 
-`checks/` holds examples taken from the October 2026 verification of #747-#753.
+**General checks.** Everything in `archicad-addon/Test/checks/` on `main` is a general check: it
+runs for every pull request that has no checks of its own (and for all of them with
+`--every-check`), so each build is tested even before anyone writes a check for it. Only put
+checks there that pass on `main`. `checks/` in this folder holds two examples from the October 2026
+verification of #747-#753 for issues that are still open (#425, #749); they fail on `main` until
+those fixes are merged, then they move to the general checks.
 
 ## For Claude Code
 
