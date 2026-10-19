@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-19 17:02 UTC",
+ "generatedAt": "2026-10-19 17:07 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 1328,
+  "open": 1313,
   "not applicable": 469,
-  "claimed": 159,
-  "in progress": 184,
+  "claimed": 172,
+  "in progress": 186,
   "done": 743
  },
  "items": [
@@ -3267,6 +3267,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1221,
+     "title": "Add GetAttributesFromProject: read attributes from another project or template file"
+    },
+    {
      "number": 1121,
      "title": "Add GetCurrentLayerCombination command"
     },
@@ -3346,9 +3350,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1221,
+     "title": "Add GetAttributesFromProject: read attributes from another project or template file"
+    }
+   ],
    "issues": [
     {
      "number": 1216,
@@ -6789,6 +6798,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1221,
+     "title": "Add GetAttributesFromProject: read attributes from another project or template file"
+    },
+    {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
     }
@@ -8065,6 +8078,10 @@
    ],
    "issues": [
     {
+     "number": 1226,
+     "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
+    },
+    {
      "number": 913,
      "title": "Add ModifyCurtainWalls command"
     },
@@ -8263,10 +8280,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1226,
+     "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeMorphEdgeType",
@@ -10401,10 +10423,15 @@
    "olderNames": [
     "APIDb_RefreshElementID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1224,
+     "title": "Expose ACAPI_Element_RefreshElement (rebuild instances after a library change)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_RemoveClassificationItem",
@@ -14602,9 +14629,14 @@
    "olderNames": [
     "APIAny_GetUnloadedLibpartNameID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1227,
+     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
+    }
+   ],
    "issues": [
     {
      "number": 1218,
@@ -22366,10 +22398,15 @@
    "olderNames": [
     "APIDb_CoordToPointID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1225,
+     "title": "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Create3DStyle",
@@ -22954,10 +22991,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1225,
+     "title": "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_PointToCoord",
@@ -22977,10 +23019,15 @@
    "olderNames": [
     "APIDb_PointToCoordID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1225,
+     "title": "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Rebuild",
@@ -24810,6 +24857,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1227,
+     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
+    },
     {
      "number": 1211,
      "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
@@ -32333,10 +32384,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1223,
+     "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetParameterScript",
@@ -32374,10 +32430,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1223,
+     "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetPreviewPicture",
@@ -32744,10 +32805,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsHierarchicalPagesUsed",
@@ -33138,10 +33204,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Set2DVectorImage",
@@ -33174,10 +33245,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetAuthor",
@@ -33442,10 +33518,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetParameterScript",
@@ -33460,10 +33541,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetParameters",
@@ -33550,10 +33636,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetUIDefault",
@@ -33586,10 +33677,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1222,
+     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GetLibraryManager",
@@ -34204,10 +34300,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1223,
+     "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibraryByName",
