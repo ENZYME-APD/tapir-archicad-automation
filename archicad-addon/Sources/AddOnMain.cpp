@@ -1039,7 +1039,7 @@ GSErrCode Initialize (void)
             "Performs a receive operation on the currently opened Teamwork project."
         );
         err |= RegisterCommand<GetTeamworkProjectInfoCommand> (
-            teamworkCommands, "1.7.2",
+            teamworkCommands, "1.7.3",
             "Tells whether the opened project is a Teamwork project and whether it is online, and returns its BIMcloud server, project name and the current user (id and name)."
         );
         err |= RegisterCommand<ReserveElementsCommand> (
