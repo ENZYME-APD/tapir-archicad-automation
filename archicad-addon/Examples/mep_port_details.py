@@ -30,13 +30,12 @@ elementPorts = aclib.RunTapirCommand ('GetMEPPorts', {
     })['elementPorts']
 for portsOfElement in elementPorts:
     for port in portsOfElement.get ('ports', []):
-        print ('{} port {}: outer diameter {}, wall thickness {}, flange size {}, connectable {}'.format (
+        print ('{} port {}: outer diameter {}, wall thickness {}, flange size {}'.format (
             port['domain'],
             port['name'],
             port.get ('outerDiameter', '-'),
             port.get ('wallThickness', '-'),
-            port.get ('flangeSize', '-'),
-            port.get ('isPhysicallyConnectable', '-')))
+            port.get ('flangeSize', '-')))
 
 # Clean up
 aclib.RunTapirCommand ('DeleteElements', {

@@ -235,10 +235,6 @@
             "isPhysicallyConnected": {
                 "type": "boolean"
             },
-            "isPhysicallyConnectable": {
-                "type": "boolean",
-                "description": "Whether the port can be physically connected. Left out if it cannot be read."
-            },
             "outerDiameter": {
                 "type": "number",
                 "description": "The outer diameter of a piping port."

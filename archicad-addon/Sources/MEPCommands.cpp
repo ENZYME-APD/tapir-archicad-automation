@@ -307,15 +307,6 @@ static void AddPortNumberIfAvailable (GS::ObjectState& os, const char* name, Val
     }
 }
 
-template <typename Value>
-static void AddPortBoolIfAvailable (GS::ObjectState& os, const char* name, Value&& value)
-{
-    const auto boolValue = PortValueToOptional (std::forward<Value> (value));
-    if (boolValue.has_value ()) {
-        os.Add (name, static_cast<bool> (boolValue.value ()));
-    }
-}
-
 #endif
 
 GetMEPElementsCommand::GetMEPElementsCommand () :
@@ -629,7 +620,6 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
             portOs.Add ("domain", DomainToString (portDomain));
             portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port->GetMEPSystem ()));
             portOs.Add ("isPhysicallyConnected", port->IsPhysicallyConnected ());
-            AddPortBoolIfAvailable (portOs, "isPhysicallyConnectable", port->IsPhysicallyConnectable ());
 
             // The domain specific data. Cable carrier ports have no getters of their own.
             if (portDomain == Domain::Piping) {
