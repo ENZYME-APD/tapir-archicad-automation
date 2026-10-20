@@ -2686,6 +2686,8 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
     }
 
     // One ACAPI_Attribute_DeleteMore call per attribute type instead of one ACAPI_Attribute_Delete call per attribute.
+    // Archicad 25 has an older ACAPI_Attribute_DeleteMore, so there every attribute is deleted on its own below.
+#ifdef ServerMainVers_2600
     for (API_AttrTypeID typeID : typeIDs) {
         GS::Array<API_AttributeIndex> indexList;
         GS::Array<Int32> addedIndices;
@@ -2701,6 +2703,7 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
         }
         ACAPI_Attribute_DeleteMore (typeID, indexList);
     }
+#endif
 
     // ACAPI_Attribute_DeleteMore returns one error code for the whole list, so look up each attribute by its guid
     // again: one that still exists (the call failed or skipped it) is deleted on its own to get its own result.
