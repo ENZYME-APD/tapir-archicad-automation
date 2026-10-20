@@ -838,18 +838,19 @@ GS::ObjectState GetLibrariesOfLibPartsCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
-        ACAPI::Result<ACAPI::Library::LibPart> libPart = ACAPI::Result<ACAPI::Library::LibPart> (ACAPI::Library::LibPart ());
-        if (hasName) {
-            libPart = manager->GetLibPartByName (name);
-        } else {
-            Int32 libPartIndex = 0;
+        Int32 libPartIndex = 0;
+        if (hasGuid) {
             const GSErrCode findErr = FindLibPartIndexByGuid (GS::Guid (guidString), libPartIndex);
             if (findErr != NoError) {
                 librariesAdder (CreateLibraryErrorEntry (findErr, "Library part not found."));
                 continue;
             }
-            libPart = manager->GetLibPartByLibInd (libPartIndex);
         }
+
+        // Result and LibPart have no default constructor and no copy assignment.
+        const ACAPI::Result<ACAPI::Library::LibPart> libPart = hasName
+            ? manager->GetLibPartByName (name)
+            : manager->GetLibPartByLibInd (libPartIndex);
         if (libPart.IsErr ()) {
             librariesAdder (CreateLibraryErrorEntry (libPart.UnwrapErr ().kind, "Library part not found."));
             continue;
@@ -906,6 +907,7 @@ GS::ObjectState GetLibrariesOfLibPartsCommand::Execute (const GS::ObjectState& p
 
     return response;
 #else
+    UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
 }
