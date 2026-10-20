@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 07:58 UTC",
+ "generatedAt": "2026-10-20 08:25 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 146,
+  "open": 147,
   "not applicable": 469,
-  "claimed": 1271,
-  "in progress": 254,
+  "in progress": 291,
+  "claimed": 1233,
   "done": 743
  },
  "items": [
@@ -925,9 +925,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -951,9 +956,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1003,9 +1013,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1029,9 +1044,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1081,9 +1101,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1107,9 +1132,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1133,9 +1163,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1159,9 +1194,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1211,9 +1251,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1320,9 +1365,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -3265,7 +3315,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1347,
+     "title": "DeleteAttributes: delete each attribute type with one ACAPI_Attribute_DeleteMore call"
+    }
+   ],
    "issues": []
   },
   {
@@ -3313,9 +3368,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1347,
+     "title": "DeleteAttributes: delete each attribute type with one ACAPI_Attribute_DeleteMore call"
+    }
+   ],
    "issues": [
     {
      "number": 1334,
@@ -3837,6 +3897,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    },
+    {
      "number": 1333,
      "title": "[1/4] Add GetPropertyDefinitionsOfAttributes command"
     }
@@ -3885,9 +3949,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -3963,9 +4032,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -3989,9 +4063,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -4015,9 +4094,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -4827,6 +4911,34 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1359,
+     "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
+    },
+    {
+     "number": 1356,
+     "title": "[2/5] Add DeactivateDesignOptionsInCombinations command"
+    },
+    {
+     "number": 1355,
+     "title": "[2/6] Add SetIFCAttributesOfElements command (Archicad 25-27)"
+    },
+    {
+     "number": 1350,
+     "title": "[2/3] Add RunParameterScriptOfElements command"
+    },
+    {
+     "number": 1345,
+     "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
+    },
+    {
+     "number": 1344,
+     "title": "[1/6] Add GetProjectNotes and SetProjectNotes commands"
+    },
+    {
+     "number": 1343,
+     "title": "[1/5] Add DuplicateDesignOptionCombinations command"
+    },
     {
      "number": 1342,
      "title": "[1/4] Add DeleteSelectedElements command"
@@ -7135,6 +7247,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1351,
+     "title": "[2/4] Add TriangulatePolygonsOfElements command"
+    },
+    {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -9081,6 +9197,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1350,
+     "title": "[2/3] Add RunParameterScriptOfElements command"
+    },
+    {
+     "number": 1348,
+     "title": "Add GetElementFromUser: let the designer pick an element"
+    },
+    {
      "number": 1335,
      "title": "[1/3] Add GetHotspotsOfElements command"
     },
@@ -9775,6 +9899,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1351,
+     "title": "[2/4] Add TriangulatePolygonsOfElements command"
+    },
+    {
+     "number": 1348,
+     "title": "Add GetElementFromUser: let the designer pick an element"
+    },
+    {
      "number": 1329,
      "title": "[1/4] Add GetSkylightHolePolygons command"
     },
@@ -9902,6 +10034,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1351,
+     "title": "[2/4] Add TriangulatePolygonsOfElements command"
+    },
     {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
@@ -10644,9 +10780,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1352,
+     "title": "[2/3] Add includeAvailability to GetPropertyValuesOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1319,
@@ -10949,9 +11090,14 @@
    "olderNames": [
     "APIAny_NeigToCoordID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1348,
+     "title": "Add GetElementFromUser: let the designer pick an element"
+    }
+   ],
    "issues": [
     {
      "number": 1332,
@@ -11402,9 +11548,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1358,
+     "title": "[2/4] GetSolidElementLinks: report when each solid link was made (linkTime)"
+    }
+   ],
    "issues": [
     {
      "number": 1328,
@@ -14299,9 +14450,14 @@
    "olderNames": [
     "APIEnv_CopyFilesIntoLibraryID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1357,
+     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
+    }
+   ],
    "issues": [
     {
      "number": 1315,
@@ -14350,9 +14506,14 @@
    "olderNames": [
     "APIEnv_CreateFolderInLibraryID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1357,
+     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
+    }
+   ],
    "issues": [
     {
      "number": 1315,
@@ -14662,9 +14823,14 @@
    "olderNames": [
     "APIAny_RunGDLParScriptID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1350,
+     "title": "[2/3] Add RunParameterScriptOfElements command"
+    }
+   ],
    "issues": [
     {
      "number": 1317,
@@ -14895,6 +15061,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
     }
@@ -14970,6 +15140,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
     {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
@@ -15190,6 +15364,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
     }
@@ -15222,6 +15400,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
     {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
@@ -15288,6 +15470,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
     {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
@@ -15648,9 +15834,14 @@
    "olderNames": [
     "ACAPI_LibPart_PatternSearch"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    }
+   ],
    "issues": [
     {
      "number": 1316,
@@ -18651,10 +18842,6 @@
     {
      "number": 1127,
      "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    },
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
     }
    ]
   },
@@ -18767,10 +18954,6 @@
     {
      "number": 1127,
      "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    },
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
     }
    ]
   },
@@ -18804,10 +18987,6 @@
     {
      "number": 1127,
      "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    },
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
     }
    ]
   },
@@ -18829,9 +19008,14 @@
    "olderNames": [
     "APIAny_TriangulatePolyID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1351,
+     "title": "[2/4] Add TriangulatePolygonsOfElements command"
+    }
+   ],
    "issues": [
     {
      "number": 1314,
@@ -19910,9 +20094,14 @@
    "olderNames": [
     "APIEnv_ChangeProjectNotesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1344,
+     "title": "[1/6] Add GetProjectNotes and SetProjectNotes commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -19970,9 +20159,14 @@
    "olderNames": [
     "APIEnv_GetExportToleranceID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1359,
+     "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -19999,9 +20193,14 @@
     "ACAPI_Database_GetLast3DDefLevels",
     "APIDb_GetLast3DDefLevelsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1359,
+     "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -20096,9 +20295,14 @@
    "olderNames": [
     "APIEnv_GetProjectNotesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1344,
+     "title": "[1/6] Add GetProjectNotes and SetProjectNotes commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -20180,9 +20384,14 @@
     "ACAPI_Database_SetLast3DDefLevels",
     "APIDb_SetLast3DDefLevelsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1359,
+     "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -20243,6 +20452,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1357,
+     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
+    },
     {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
@@ -20429,6 +20642,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    },
+    {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -20587,7 +20804,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1354,
+     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -21566,10 +21788,6 @@
     {
      "number": 954,
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
-    },
-    {
-     "number": 949,
-     "title": "Add HideElements and ShowAllHiddenElements commands"
     }
    ],
    "issues": []
@@ -21602,10 +21820,6 @@
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
     {
-     "number": 949,
-     "title": "Add HideElements and ShowAllHiddenElements commands"
-    },
-    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -21630,9 +21844,14 @@
    "olderNames": [
     "APIAny_GetSelectedElementID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1348,
+     "title": "Add GetElementFromUser: let the designer pick an element"
+    }
+   ],
    "issues": [
     {
      "number": 1332,
@@ -21668,10 +21887,6 @@
     {
      "number": 954,
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
-    },
-    {
-     "number": 949,
-     "title": "Add HideElements and ShowAllHiddenElements commands"
     },
     {
      "number": 900,
@@ -22454,6 +22669,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
     }
@@ -23162,7 +23381,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1348,
+     "title": "Add GetElementFromUser: let the designer pick an element"
+    }
+   ],
    "issues": []
   },
   {
@@ -23610,14 +23834,9 @@
    "olderNames": [
     "APIEnv_ChangeShowHideStateID"
    ],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 949,
-     "title": "Add HideElements and ShowAllHiddenElements commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25391,9 +25610,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -25412,9 +25636,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -25433,9 +25662,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -25454,9 +25688,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -25479,6 +25718,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1359,
+     "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
+    },
     {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
@@ -25929,6 +26172,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1355,
+     "title": "[2/6] Add SetIFCAttributesOfElements command (Archicad 25-27)"
+    },
+    {
      "number": 1338,
      "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
     }
@@ -26122,9 +26369,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1355,
+     "title": "[2/6] Add SetIFCAttributesOfElements command (Archicad 25-27)"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -26225,6 +26477,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1359,
+     "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
+    },
+    {
+     "number": 1357,
+     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
+    },
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
+     "number": 1344,
+     "title": "[1/6] Add GetProjectNotes and SetProjectNotes commands"
+    },
+    {
      "number": 1341,
      "title": "[2/6] Add CheckLibraries and ResetLibraries commands"
     },
@@ -26297,10 +26565,6 @@
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     },
     {
-     "number": 949,
-     "title": "Add HideElements and ShowAllHiddenElements commands"
-    },
-    {
      "number": 943,
      "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
     },
@@ -26359,6 +26623,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
+     "number": 1351,
+     "title": "[2/4] Add TriangulatePolygonsOfElements command"
+    },
+    {
+     "number": 1350,
+     "title": "[2/3] Add RunParameterScriptOfElements command"
+    },
+    {
+     "number": 1348,
+     "title": "Add GetElementFromUser: let the designer pick an element"
+    },
     {
      "number": 1337,
      "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
@@ -27047,7 +27327,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -28104,9 +28389,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -28127,9 +28417,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -28171,9 +28466,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -28197,9 +28497,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1331,
@@ -28749,6 +29054,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    },
     {
      "number": 1305,
      "title": "[6/6] Add GetProductVersionInfo, Get3DCutawayStatus and Set3DCutawayStatus"
@@ -37851,6 +38160,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1346,
+     "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
+    },
     {
      "number": 1305,
      "title": "[6/6] Add GetProductVersionInfo, Get3DCutawayStatus and Set3DCutawayStatus"
@@ -65018,6 +65331,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1355,
+     "title": "[2/6] Add SetIFCAttributesOfElements command (Archicad 25-27)"
+    },
     {
      "number": 1338,
      "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
