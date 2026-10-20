@@ -730,14 +730,18 @@ static GS::UniString VariationIdToString (API_ElemVariationID variationID)
     return GS::UniString (s);
 }
 
-static GS::ObjectState CreateObjectDetails (const API_LibPartObjectDetails& details)
+// Templates, because before Archicad 27 the members of API_LibPartDetails have unnamed struct
+// types (API_LibPartObjectDetails and API_LibPartDoorWindowDetails do not exist there).
+template <typename ObjectDetails>
+static GS::ObjectState CreateObjectDetails (const ObjectDetails& details)
 {
     return GS::ObjectState (
         "fixSize", details.fixSize,
         "autoHotspot", details.autoHotspot);
 }
 
-static GS::ObjectState CreateDoorWindowDetails (const API_LibPartDoorWindowDetails& details)
+template <typename DoorWindowDetails>
+static GS::ObjectState CreateDoorWindowDetails (const DoorWindowDetails& details)
 {
     GS::ObjectState os;
     os.Add ("mirThick", static_cast<double> (details.mirThick));
