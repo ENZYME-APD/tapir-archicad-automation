@@ -992,6 +992,10 @@ GSErrCode Initialize (void)
             ifcCommands, "1.7.0",
             "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now."
         );
+        err |= RegisterCommand<GetIFCClassificationReferencesOfElementsCommand> (
+            ifcCommands, "1.7.3",
+            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description, the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. Available from Archicad 28."
+        );
         AddCommandGroup (ifcCommands);
     }
 
