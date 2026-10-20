@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 12:10 UTC",
+ "generatedAt": "2026-10-20 15:17 UTC",
  "versions": [
   25,
   26,
@@ -4979,6 +4979,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1286,
+     "title": "[4/4] Add DeleteFavoriteFolder command"
+    },
+    {
      "number": 1257,
      "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     }
@@ -5063,10 +5067,6 @@
     {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1286,
-     "title": "[4/4] Add DeleteFavoriteFolder command"
     },
     {
      "number": 1282,
@@ -8774,6 +8774,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1382,
+     "title": "Expose changing which library part a window/door marker uses"
+    },
+    {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
     },
@@ -10114,6 +10118,10 @@
     {
      "number": 958,
      "title": "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands"
+    },
+    {
+     "number": 954,
+     "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     },
     {
      "number": 917,
@@ -15724,7 +15732,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1382,
+     "title": "Expose changing which library part a window/door marker uses"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetNum",
@@ -15783,7 +15796,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1382,
+     "title": "Expose changing which library part a window/door marker uses"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetParams",
@@ -16225,7 +16243,12 @@
      "title": "Fix CreateZoneCategories failing with \"Failed to create.\" for every input"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1382,
+     "title": "Expose changing which library part a window/door marker uses"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_SetDetails_ParamDef",
