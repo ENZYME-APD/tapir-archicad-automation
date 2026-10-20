@@ -150,7 +150,9 @@ GS::ObjectState SetProjectDataCommand::Execute (const GS::ObjectState& parameter
 
     // One undo step for the whole call. The lambda reports success when any item was stored, so a
     // failed item does not roll back the others; each item carries its own result anyway.
-    ACAPI_CallUndoableCommand ("SetProjectData", [&] () -> GSErrCode {
+    bool executed = false;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("SetProjectData", [&] () -> GSErrCode {
+        executed = true;
         GSErrCode firstErr = NoError;
         bool anyStored = false;
         for (const GS::ObjectState& item : projectData) {
@@ -177,6 +179,10 @@ GS::ObjectState SetProjectDataCommand::Execute (const GS::ObjectState& parameter
         }
         return anyStored ? NoError : firstErr;
     });
+
+    if (!executed) {
+        return CreateErrorResponse (undoErr != NoError ? undoErr : APIERR_GENERAL, "Failed to start the undoable operation that stores the project data.");
+    }
 
     return response;
 }
@@ -340,7 +346,9 @@ GS::ObjectState DeleteProjectDataCommand::Execute (const GS::ObjectState& parame
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand ("DeleteProjectData", [&] () -> GSErrCode {
+    bool executed = false;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("DeleteProjectData", [&] () -> GSErrCode {
+        executed = true;
         GSErrCode firstErr = NoError;
         bool anyDeleted = false;
         for (const GS::UniString& key : keys) {
@@ -357,6 +365,10 @@ GS::ObjectState DeleteProjectDataCommand::Execute (const GS::ObjectState& parame
         }
         return anyDeleted ? NoError : firstErr;
     });
+
+    if (!executed) {
+        return CreateErrorResponse (undoErr != NoError ? undoErr : APIERR_GENERAL, "Failed to start the undoable operation that deletes the project data.");
+    }
 
     return response;
 }
