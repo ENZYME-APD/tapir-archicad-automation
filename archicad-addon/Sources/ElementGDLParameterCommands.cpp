@@ -1801,3 +1801,87 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
 
     return response;
 }
+
+RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RunParameterScriptOfElementsCommand::GetName () const
+{
+    return "RunParameterScriptOfElements";
+}
+
+GS::Optional<GS::UniString> RunParameterScriptOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> RunParameterScriptOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RunParameterScriptOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // Running the parameter script can change the element's parameters, so it runs in an
+    // undoable command like SetGDLParametersOfElements. The mask is left at its default (0).
+    ACAPI_CallUndoableCommand ("Run Parameter Script of Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            API_Element apiElement = {};
+            apiElement.header.guid = elemGuid;
+            GSErrCode err = ACAPI_Element_Get (&apiElement);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to find element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            err = ACAPI_LibraryManagement_RunGDLParScript (&apiElement.header);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to run the parameter script of element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
