@@ -386,7 +386,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
-            "Gets the subelements of the given hierarchical elements."
+            "Gets the subelements of the given hierarchical elements. From Archicad 27 the subelements of external hierarchical elements (for example MEP elements or elements of other add-ons) are returned as externalSubelements."
         );
         err |= RegisterCommand<GetConnectedElementsCommand> (
             elementCommands, "1.1.4",
