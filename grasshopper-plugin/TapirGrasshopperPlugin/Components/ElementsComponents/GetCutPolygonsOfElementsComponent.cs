@@ -108,10 +108,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
-                polygons.EnsurePath(new GH_Path(i));
 
                 if (JsonOutputHelp.IsError(item))
                 {
+                    polygons.EnsurePath(new GH_Path(i));
                     areas.Add(null);
                     cutHeights.Add(null);
                     errors.Add(JsonOutputHelp.ErrorMessage(item));
@@ -123,8 +123,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 cutHeights.Add(cutHeightOfElement);
                 errors.Add("");
 
-                if (!(item["polygons"] is JArray cutPolygons))
+                if (!(item["polygons"] is JArray cutPolygons) || cutPolygons.Count == 0)
                 {
+                    polygons.EnsurePath(new GH_Path(i));
                     continue;
                 }
 

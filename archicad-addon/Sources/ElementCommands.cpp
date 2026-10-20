@@ -4842,15 +4842,25 @@ static GSErrCode CutBodiesAtHeight (const GS::Array<Int32>& bodyIndices, double 
     return NoError;
 }
 
-// The height of the floor plan cut plane on the given story: the Cut Plane height of the Floor
-// Plan Cut Plane Settings is measured from the level of the story it is displayed on.
-static GS::Optional<double> GetFloorPlanCutHeightOfStory (short floorIndex, const Stories& stories)
+// The Cut Plane height of the Floor Plan Cut Plane Settings, measured from the level of the story
+// it is displayed on. It is a project setting, so it is read once per command.
+static GS::Optional<double> GetFloorPlanCutLevel ()
 {
     API_FloorPlanCutDefinition cutDefinition = {};
     if (ACAPI_ProjectSetting_GetPreferences (&cutDefinition, APIPrefs_FloorPlanCutPlaneDef) != NoError) {
         return GS::NoValue;
     }
-    return GetZPos (floorIndex, cutDefinition.currCutLevel, stories);
+    return cutDefinition.currCutLevel;
+}
+
+// The height of the floor plan cut plane on the given story, or no value when the story is not
+// found (GetZPos would silently treat the cut level as absolute then).
+static GS::Optional<double> GetFloorPlanCutHeightOfStory (short floorIndex, double cutLevel, const Stories& stories)
+{
+    if (stories.find (floorIndex) == stories.end ()) {
+        return GS::NoValue;
+    }
+    return GetZPos (floorIndex, cutLevel, stories);
 }
 
 #endif
@@ -4982,8 +4992,10 @@ GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState&
 
     // The stories are only needed to place the floor plan cut plane, and the lookup is not free.
     Stories stories;
+    GS::Optional<double> floorPlanCutLevel;
     if (!hasGivenCutHeight) {
         stories = GetStories ();
+        floorPlanCutLevel = GetFloorPlanCutLevel ();
     }
 
     GS::ObjectState response;
@@ -5006,9 +5018,13 @@ GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState&
 
         double cutHeight = givenCutHeight;
         if (!hasGivenCutHeight) {
-            const GS::Optional<double> storyCutHeight = GetFloorPlanCutHeightOfStory (elemHead.floorInd, stories);
+            if (!floorPlanCutLevel.HasValue ()) {
+                cutPolygonsOfElements (CreateErrorResponse (APIERR_GENERAL, "Failed to get the floor plan cut plane settings"));
+                continue;
+            }
+            const GS::Optional<double> storyCutHeight = GetFloorPlanCutHeightOfStory (elemHead.floorInd, *floorPlanCutLevel, stories);
             if (!storyCutHeight.HasValue ()) {
-                cutPolygonsOfElements (CreateErrorResponse (APIERR_GENERAL, "Failed to get the floor plan cut plane of the element's story"));
+                cutPolygonsOfElements (CreateErrorResponse (APIERR_GENERAL, "Failed to find the home story of the element"));
                 continue;
             }
             cutHeight = *storyCutHeight;
@@ -5016,6 +5032,10 @@ GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState&
 
         GS::Array<Int32> bodyIndices;
         err = CollectSolidBodyIndices (elemHead, bodyIndices);
+        // A subelement without a 3D model of its own (one hidden or filtered out of the 3D view) is
+        // skipped on purpose, the same way Get3DGeometryOfElements skips it: it is not cut on the
+        // floor plan either, and failing the whole Stair, Railing or Curtain Wall for it would hide
+        // the cut of the rest.
         if (ForEachSubelementHead (elemHead, [&bodyIndices] (const API_Elem_Head& subelemHead) { CollectSolidBodyIndices (subelemHead, bodyIndices); })) {
             // A hierarchical element may have no 3D model of its own (see Get3DGeometryOfElements);
             // its subelements' bodies are the answer.
