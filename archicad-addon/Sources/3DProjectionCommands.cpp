@@ -350,6 +350,12 @@ GS::ObjectState ShowElementsIn3DCommand::Execute (const GS::ObjectState& paramet
         if (guid == APINULLGuid) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: elementId is missing or invalid.");
         }
+        // Checked before the selection is cleared, so a wrong guid keeps the user's selection.
+        API_Elem_Head head = {};
+        head.guid = guid;
+        if (ACAPI_Element_GetHeader (&head) != NoError) {
+            return CreateFailedExecutionResult (APIERR_BADID, "Element not found.");
+        }
         neigs.Push (API_Neig (guid));
     }
 
