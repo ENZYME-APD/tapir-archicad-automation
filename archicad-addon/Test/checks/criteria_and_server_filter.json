@@ -1,0 +1,185 @@
+{
+  "title": "Server-side filtering: typed property criteria in GetElementsByCriteria, filter and fields in GetDetailsOfElements",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "thickness property id",
+      "command": "API.GetPropertyIds",
+      "creates": false,
+      "params": {
+        "properties": [
+          {
+            "type": "BuiltIn",
+            "nonLocalizedName": "General_Thickness"
+          }
+        ]
+      },
+      "save": {
+        "thicknessId": "properties[0].propertyId.guid"
+      },
+      "expect": [
+        {
+          "path": "properties[0].propertyId.guid",
+          "exists": true,
+          "name": "thickness property found"
+        }
+      ]
+    },
+    {
+      "id": "create a 0.2 m and a 0.4 m wall",
+      "command": "CreateWalls",
+      "creates": true,
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 0.0, "y": 0.0 },
+            "endCoordinate": { "x": 5.0, "y": 0.0 },
+            "height": 3.0,
+            "structureType": "Basic",
+            "thickness": 0.2
+          },
+          {
+            "begCoordinate": { "x": 0.0, "y": 5.0 },
+            "endCoordinate": { "x": 5.0, "y": 5.0 },
+            "height": 3.0,
+            "structureType": "Basic",
+            "thickness": 0.4
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 2,
+          "name": "two walls created"
+        }
+      ]
+    },
+    {
+      "id": "create a slab",
+      "command": "CreateSlabs",
+      "creates": true,
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "thickness": 0.3,
+            "polygonCoordinates": [
+              { "x": 10.0, "y": 10.0 },
+              { "x": 15.0, "y": 10.0 },
+              { "x": 15.0, "y": 15.0 },
+              { "x": 10.0, "y": 15.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 1,
+          "name": "slab created"
+        }
+      ]
+    },
+    {
+      "id": "greaterThan compares the typed value in meters",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": ["Wall"],
+        "propertyCriteria": [
+          { "propertyId": { "guid": "${thicknessId}" }, "operator": "greaterThan", "value": "0.3" }
+        ]
+      },
+      "expect": [
+        { "path": "count", "eq": 1, "name": "only the thick wall is thicker than 0.3 m" }
+      ]
+    },
+    {
+      "id": "equals compares numbers, not display text",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": ["Wall"],
+        "propertyCriteria": [
+          { "propertyId": { "guid": "${thicknessId}" }, "operator": "equals", "value": "0.2" }
+        ]
+      },
+      "expect": [
+        { "path": "count", "eq": 1, "name": "one wall is 0.2 m" }
+      ]
+    },
+    {
+      "id": "countOnly returns the count without the list",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": ["Wall"],
+        "countOnly": true,
+        "propertyCriteria": [
+          { "propertyId": { "guid": "${thicknessId}" }, "operator": "lessOrEqual", "value": "0.4" }
+        ]
+      },
+      "expect": [
+        { "path": "count", "eq": 2, "name": "both walls are at most 0.4 m" },
+        { "path": "elements", "len": 0, "name": "no elements listed" }
+      ]
+    },
+    {
+      "id": "a decimal comma is rejected instead of misread",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": ["Wall"],
+        "propertyCriteria": [
+          { "propertyId": { "guid": "${thicknessId}" }, "operator": "greaterThan", "value": "0,3" }
+        ]
+      },
+      "expect": [
+        { "path": "error.message", "contains": "is not a number", "name": "non-numeric value rejected" }
+      ]
+    },
+    {
+      "id": "unknown operator is rejected",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": ["Wall"],
+        "propertyCriteria": [
+          { "propertyId": { "guid": "${thicknessId}" }, "operator": "biggerThan", "value": "0.3" }
+        ]
+      },
+      "allowEnvelopeError": true,
+      "expect": [
+        { "path": "count", "exists": false, "name": "no result for an unknown operator" }
+      ]
+    },
+    {
+      "id": "GetDetailsOfElements filter and fields: walls only, only the asked fields",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "filter": { "types": ["Wall"], "floorIndices": [0] },
+        "fields": ["elementId", "type"]
+      },
+      "expect": [
+        { "path": "detailsOfElements", "len": 2, "name": "the two walls, not the slab" },
+        { "path": "detailsOfElements[0].type", "eq": "Wall", "name": "type returned" },
+        { "path": "detailsOfElements[0].floorPlanPolygons", "exists": false, "name": "floor plan polygons not computed" },
+        { "path": "detailsOfElements[0].details", "exists": false, "name": "details not computed" }
+      ]
+    },
+    {
+      "id": "GetDetailsOfElements filter by another type",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "filter": { "types": ["Slab"] },
+        "fields": ["elementId"]
+      },
+      "expect": [
+        { "path": "detailsOfElements", "len": 1, "name": "only the slab" }
+      ]
+    }
+  ]
+}
