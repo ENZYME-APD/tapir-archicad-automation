@@ -618,6 +618,69 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     return response;
 }
 
+static GS::ObjectState GetPropertyValuesWithStatusOfAttribute (const API_Attr_Head& attrHead, const GS::Array<GS::ObjectState>& properties, const GS::Array<API_PropertyDefinition>& definitions)
+{
+    if (attrHead.typeID == API_ZombieAttrID) {
+        return CreateErrorResponse (APIERR_BADID, "Attribute not found");
+    }
+
+    GSErrCode err = NoError;
+    GS::Array<API_Property> fetchedProperties;
+    if (!definitions.IsEmpty ()) {
+        err = ACAPI_Attribute_GetPropertyValues (attrHead, definitions, fetchedProperties);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get property values for attribute");
+        }
+    }
+
+    GS::HashTable<API_Guid, const API_Property*> propertyMap;
+    for (const API_Property& prop : fetchedProperties) {
+        if (!propertyMap.ContainsKey (prop.definition.guid)) {
+            propertyMap.Add (prop.definition.guid, &prop);
+        }
+    }
+
+    GS::ObjectState propertyValuesForAttribute;
+    const auto& propertyValues = propertyValuesForAttribute.AddList<GS::ObjectState> ("propertyValues");
+
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyValues (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+
+        if (!propertyMap.ContainsKey (propertyGuid)) {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+
+        GS::ObjectState propertyValueWithStatus;
+        propertyValueWithStatus.Add ("isAvailable", ACAPI_Attribute_IsPropertyDefinitionAvailable (attrHead, propertyGuid));
+        propertyValueWithStatus.Add ("isEditable", ACAPI_Attribute_IsPropertyDefinitionValueEditable (attrHead, propertyGuid));
+        propertyValueWithStatus.Add ("isVisible", ACAPI_Attribute_IsPropertyDefinitionVisible (attrHead, propertyGuid));
+
+        API_Property propertyValue = *propertyMap[propertyGuid];
+        if (propertyValue.status != API_Property_NotAvailable && propertyValue.status != API_Property_NotEvaluated) {
+            GS::UniString propertyValueString;
+            err = ACAPI_Property_GetPropertyValueString (propertyValue, &propertyValueString);
+
+            if (err != NoError) {
+                propertyValues (CreateErrorResponse (err, "Failed to get property value as string"));
+                continue;
+            }
+
+            propertyValueWithStatus.Add ("propertyValue", GS::ObjectState ("value", propertyValueString));
+        }
+
+        propertyValues (propertyValueWithStatus);
+    }
+
+    return propertyValuesForAttribute;
+}
+
 GetPropertyValuesOfAttributesCommand::GetPropertyValuesOfAttributesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -638,6 +701,10 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetInputParame
             },
             "properties": {
                 "$ref": "#/PropertyIds"
+            },
+            "includeStatus": {
+                "type": "boolean",
+                "description": "If true, each item also tells whether the property is available, editable and visible for the attribute, and a property without an available value is returned with its status and without a value instead of as an error. The default is false."
             }
         },
         "additionalProperties": false,
@@ -654,8 +721,65 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetRawResponse
         "type": "object",
         "properties": {
             "propertyValuesForAttributes": {
-                "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
+                "type": "array",
+                "description": "The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyValues": {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/PropertyValueArrayItem"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "A property value with its status, returned when includeStatus is true.",
+                                                "properties": {
+                                                    "propertyValue": {
+                                                        "$ref": "#/PropertyValue",
+                                                        "description": "Missing when the value is not available or not evaluated."
+                                                    },
+                                                    "isAvailable": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the property definition is available for the attribute."
+                                                    },
+                                                    "isEditable": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the value of the property is editable for the attribute."
+                                                    },
+                                                    "isVisible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the property definition is visible for the attribute."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "isAvailable",
+                                                    "isEditable",
+                                                    "isVisible"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyValues"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -673,8 +797,31 @@ GS::ObjectState GetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
     GS::Array<GS::ObjectState> properties;
     parameters.Get ("properties", properties);
 
+    bool includeStatus = false;
+    parameters.Get ("includeStatus", includeStatus);
+
     GS::ObjectState response;
     const auto& propertyValuesForAttributes = response.AddList<GS::ObjectState> ("propertyValuesForAttributes");
+
+    GS::Array<API_PropertyDefinition> definitions;
+    if (includeStatus) {
+        GS::HashSet<API_Guid> definitionGuids;
+        for (const GS::ObjectState& property : properties) {
+            const GS::ObjectState* propertyId = property.Get ("propertyId");
+            if (propertyId == nullptr) {
+                continue;
+            }
+
+            API_PropertyDefinition definition = {};
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            if (definitionGuids.Contains (definition.guid) || ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+                continue;
+            }
+
+            definitionGuids.Add (definition.guid);
+            definitions.Push (definition);
+        }
+    }
 
     for (const GS::ObjectState& attribute : attributeIds) {
         const GS::ObjectState* attributeId = attribute.Get ("attributeId");
@@ -684,6 +831,11 @@ GS::ObjectState GetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
         }
 
         const API_Guid attGuid = GetGuidFromObjectState (*attributeId);
+
+        if (includeStatus) {
+            propertyValuesForAttributes (GetPropertyValuesWithStatusOfAttribute (GetAttributeHeadFromGuid (attGuid), properties, definitions));
+            continue;
+        }
 
         GS::ObjectState propertyValuesForAttribute;
         const auto& propertyValues = propertyValuesForAttribute.AddList<GS::ObjectState> ("propertyValues");
