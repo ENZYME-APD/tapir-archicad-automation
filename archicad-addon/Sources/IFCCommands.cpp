@@ -994,6 +994,7 @@ static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::
     }
 }
 
+#ifdef ServerMainVers_2600
 // Archicad 26 and 27 give the texts as GS::Optional
 static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::Optional<GS::UniString>& value)
 {
@@ -1001,6 +1002,7 @@ static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::
         AddNonEmptyString (os, name, *value);
     }
 }
+#endif
 
 static GS::ObjectState ClassificationReferenceToObjectState (const API_IFCClassificationReference& classificationReference)
 {
