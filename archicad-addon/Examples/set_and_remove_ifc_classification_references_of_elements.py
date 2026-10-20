@@ -25,7 +25,7 @@ aclib.RunTapirCommand ('GetIFCClassificationReferencesOfElements', {
         'storedOnly': True
     })
 
-# Leave out identification to remove every stored reference of the classification
+# Without identification every stored reference of the classification would be removed
 aclib.RunTapirCommand ('RemoveIFCClassificationReferencesOfElements', {
         'elementIFCClassificationReferences': [{
             'elementId': element['elementId'],
