@@ -58,6 +58,7 @@
 
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
+#define ACAPI_Element_RefreshElement(par1, par2) ACAPI_Database (APIDb_RefreshElementID, par1, par2)
 
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
