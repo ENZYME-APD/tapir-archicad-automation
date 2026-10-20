@@ -353,15 +353,21 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
 #endif
     }
 
+    // windowType may be omitted when a databaseId is given: the database identifies its
+    // window, and ACAPI_Window_GetDatabaseInfo fills in its typeID below (#1384).
+    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
     GS::UniString windowTypeStr;
-    if (!parameters.Get ("windowType", windowTypeStr)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType.");
+    const bool hasWindowType = parameters.Get ("windowType", windowTypeStr);
+    if (!hasWindowType && databaseId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType or databaseId.");
     }
 
     API_WindowInfo windowInfo = {};
-    windowInfo.typeID = ConvertStringToWindowType (windowTypeStr);
-    if (windowInfo.typeID == API_ZombieWindowID) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
+    if (hasWindowType) {
+        windowInfo.typeID = ConvertStringToWindowType (windowTypeStr);
+        if (windowInfo.typeID == API_ZombieWindowID) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
+        }
     }
 
     Int32 storyIndex = 0;
@@ -406,7 +412,6 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
             : CreateFailedExecutionResult (err, "Failed to change active story.");
     }
 
-    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
     if (databaseId != nullptr) {
         API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
         GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
@@ -414,7 +419,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
             return CreateErrorResponse (err, "Failed to resolve target database.");
         }
 
-        if (targetDatabase.typeID != windowInfo.typeID) {
+        if (hasWindowType && targetDatabase.typeID != windowInfo.typeID) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "databaseId does not belong to the requested windowType.");
         }
 
