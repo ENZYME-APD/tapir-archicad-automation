@@ -1025,6 +1025,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
+        err |= RegisterCommand<CheckLibrariesCommand> (
+            libraryCommands, "1.7.3",
+            "Checks the loaded libraries with the Archicad API's library check. Returns the error the API reports, if any."
+        );
+        err |= RegisterCommand<ResetLibrariesCommand> (
+            libraryCommands, "1.7.3",
+            "Resets the loaded libraries with the Archicad API's library reset."
+        );
         AddCommandGroup (libraryCommands);
     }
 

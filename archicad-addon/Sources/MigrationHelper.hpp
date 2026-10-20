@@ -334,6 +334,16 @@ inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_Libra
     return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_CheckLibraries ()
+{
+    return ACAPI_Environment (APIEnv_CheckLibrariesID, nullptr);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_ResetLibraries ()
+{
+    return ACAPI_Environment (APIEnv_ResetLibrariesID, nullptr);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* location, GS::Array<API_Elem_Head>* elemHead = nullptr)
 {
     // AC25/26 take the element list as a handle (APIDo_SaveAsModuleFileID par2:
