@@ -7,7 +7,7 @@ elements = aclib.RunCommand ('API.GetAllElements', {})['elements']
 # an error item for each element.
 elementIFCAttributes = aclib.RunTapirCommand ('GetIFCAttributesOfElements', {
         'elements' : elements
-    })['elementIFCAttributes']
+    }, debug = False)['elementIFCAttributes']
 
 assert (len (elementIFCAttributes) == len (elements))
 
