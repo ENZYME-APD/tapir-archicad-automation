@@ -605,7 +605,7 @@ GSErrCode Initialize (void)
             "Modifies Door elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyOpeningsCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Modifies Opening elements: the width, the height and the base point CreateOpenings takes. Needs Archicad 28 or earlier; in Archicad 29 and later every item fails with a message saying so."
         );
         err |= RegisterCommand<ModifyMorphsCommand> (
