@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 21 % | 90 | 19 |  | 7 | 64 |  |  | 49 |
 | C++ API (ACAPI::, IFCAPI::) | 29 % | 1576 | 465 |  | 6 | 1105 |  |  | 255 |
 
-Archicad 25–30 DevKits; updated 2026-10-20 07:34 UTC.
+Archicad 25–30 DevKits; updated 2026-10-20 07:37 UTC.
 
 | | Status |
 |---|---|
@@ -141,13 +141,19 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_CreateExt` – Places a new Window, Door, Skylight, Section, Elevation, Interior Elevation, ChangeMarker, Detail, or Worksheet element with the specified marker into the current database. — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#481](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/481 "CreateWindows/CreateDoors on AC29: command returns a GUID but no opening is created (single item, no crash) — even with a valid favoriteName")
 - 🚧 `ACAPI_Element_Decompose` – Enumerates the planes of a Multi-plane Roof. — [#1281](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1281 "Add GetRoofPlanes: the single planes of multi-plane roofs"), [#1264](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1264 "Expose ACAPI_Element_Decompose (planes of a multi-plane roof)")
 - ✅ `ACAPI_Element_Delete` – Deletes a number of elements. — [#906](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/906 "Make the Element ID settable through SetDetailsOfElements and the Create* commands"), [#904](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/904 "DeleteElements deletes the zones of a call before the other elements (#901)"), [#751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/751 "DeleteElements: a guid that is not in the project no longer blocks the batch, and reports APIERR_BADID (#749)")
-- 🙋 `ACAPI_Element_DeleteSelected` – Deletes the selected elements. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_DeleteSelected` – Deletes the selected elements. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Element_DetachObserver` – Detaches the observer from the given element. — [#763](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/763 "Do not build the parent element in the element observer")
-- 🙋 `ACAPI_Element_DrawElement` – Shows/draws an existing element. <sub>(was `APIDb_DrawElementID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_DrawElement` – Shows/draws an existing element. <sub>(was `APIDb_DrawElementID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_Edit` – Transforms a set of elements. — [#915](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/915 "Add the MirrorElements command and its Grasshopper component"), [#912](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/912 "Add ElevateElements command (vertical move)"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#908](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/908 "Add ElevateElements command (vertical move)"), [#907](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/907 "Add MirrorElements command")
 - ✅ `ACAPI_Element_Elem2UIPriority` – Returns user interface priority for a building material connection priority. <sub>(was `APIAny_Elem2UIPriorityID`)</sub>
 - 🚧 `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub> — [#1133](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1133 "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"), [#1124](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1124 "Expose ACAPI_Element_ElemHasVisibleSkin (is an element visible under a Partial Structure Display mode)")
-- 🙋 `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria. — [#1035](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1035 "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"), [#917](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/917 "FilterElements: add layer, story and element type filters"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element")
 - ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "In-process Criteria Evaluator and Search Commands (#1253)"), [#1281](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1281 "Add GetRoofPlanes: the single planes of multi-plane roofs"), [#1167](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1167 "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"), [#1115](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1115 "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"), [#1095](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1095 "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"), [#1086](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1086 "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#940](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/940 "Add ModifyCurtainWalls command"), [#918](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/918 "Add the ModifyOpenings command"), [#905](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/905 "ApplyFavoritesToElements: optional keepFields to keep the target's ID, size, sill, reference line and top link"), [#899](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/899 "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"), [#827](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/827 "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"), [#813](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/813 "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"), [#756](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/756 "Rename Project Map viewpoints through their element and verify renames"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
 - 🙋 `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element. — [#942](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/942 "Graphic overrides: get and set the current window's override combination, read an element's effective override style")
@@ -158,15 +164,23 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetCollisions` – Returns the collisions between two groups.
 - 🚧 `ACAPI_Element_GetComponents` – Retrieves the components of an element. — [#1019](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1019 "Add element component commands: list components and read their properties"), [#1014](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1014 "Element components: list the building-material components of elements and read their properties")
 - 🙋 `ACAPI_Element_GetComponents_Obsolete` – Returns the components of the element. — [#1014](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1014 "Element components: list the building-material components of elements and read their properties")
-- 🙋 `ACAPI_Element_GetCompoundInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetCompoundInfoStringID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetCompoundInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetCompoundInfoStringID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetDefaults` – Retrieves the actual default settings for the element of type. — [#1214](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1214 "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"), [#742](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/742 "CreateLabels: Symbol labels are created without their GDL parameters"), [#652](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/652 "Drawing favorite fails every time"), [#531](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/531 "CreateWalls: a complex-profile Wall tool default silently overrides explicit parameters (defaults memo leak)")
 - ✅ `ACAPI_Element_GetDefaultsExt` – Retrieves the actual default settings for the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair element with its marker(s). You are also able to obtain the Curtain Wall and its sub-element default settings via this function. — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#413](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/413 "CreateDoors/CreateWindows fail with APIERR_REFUSEDPAR on Archicad 27 despite valid favorite")
-- 🙋 `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "In-process Criteria Evaluator and Search Commands (#1253)"), [#999](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/999 "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"), [#827](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/827 "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"), [#763](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/763 "Do not build the parent element in the element observer")
 - 🚧 `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub> — [#1106](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1106 "Add GetElementTypeNames: localized element type names"), [#1100](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1100 "Expose ACAPI_Element_GetElemTypeName (localized element type names)")
 - 🙋 `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub> — [#1103](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1103 "Expose ACAPI_Database_GetContainingDatabase and ACAPI_Element_GetElementFromAnywhere (find and read an element without switching windows)")
-- 🙋 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Element_GetElementURLRef` – Retrieves the URL reference assigned to an element. <sub>(was `APIDb_GetElementURLRefID`)</sub> — [#1007](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1007 "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"), [#987](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/987 "Element web links (URL references): get and set")
 - 🚧 `ACAPI_Element_GetElementsWithClassification` – Query elements with the given classification. — [#1101](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1101 "Add GetElementsByClassification command"), [#1098](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1098 "Expose ACAPI_Element_GetElementsWithClassification (all elements of one classification item in one call)")
 - ✅ `ACAPI_Element_GetExtent` – Returns the drawing extent of the current database. <sub>(was `APIDb_GetExtentID`)</sub>
@@ -174,22 +188,34 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "In-process Criteria Evaluator and Search Commands (#1253)"), [#1290](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1290 "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"), [#1276](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1276 "Add GetClassificationItemVisibility command"), [#1270](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1270 "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"), [#1267](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1267 "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"), [#1167](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1167 "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"), [#1133](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1133 "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"), [#1132](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1132 "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"), [#1131](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1131 "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"), [#1110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1110 "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"), [#1087](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1087 "Add GetCurtainWallAbsoluteBottoms command"), [#1038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1038 "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"), [#1036](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1036 "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"), [#1032](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1032 "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"), [#1021](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1021 "[2/3] Add GetReservationStatusOfElements and GrantElements Teamwork commands"), [#1007](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1007 "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"), [#999](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/999 "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"), [#958](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/958 "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands"), [#917](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/917 "FilterElements: add layer, story and element type filters")
 - 🚧 `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element. — [#1032](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1032 "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex")
 - ✅ `ACAPI_Element_GetMemo` — [#1281](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1281 "Add GetRoofPlanes: the single planes of multi-plane roofs"), [#1095](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1095 "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"), [#940](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/940 "Add ModifyCurtainWalls command"), [#906](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/906 "Make the Element ID settable through SetDetailsOfElements and the Create* commands"), [#905](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/905 "ApplyFavoritesToElements: optional keepFields to keep the target's ID, size, sill, reference line and top link"), [#826](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/826 "GetDetailsOfElements: read the settings of a Stair"), [#813](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/813 "Keep 2D GDL arrays intact on flat-list writes, apply Favorites to windows and doors, capture opening markers"), [#756](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/756 "Rename Project Map viewpoints through their element and verify renames"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"), [#811](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/811 "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"), [#742](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/742 "CreateLabels: Symbol labels are created without their GDL parameters")
-- 🙋 `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub> — [#1271](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1271 "Add GetOpeningTransformations (read Opening placement via ACAPI_Element_GetOpeningTransformation)"), [#1248](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1248 "Expose ACAPI_Element_GetOpeningTransformation (position and direction of an Opening element)")
 - ✅ `ACAPI_Element_GetPropertyDefinitions` – Retrieves all of the property definitions that are available for an element. — [#1019](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1019 "Add element component commands: list components and read their properties"), [#1014](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1014 "Element components: list the building-material components of elements and read their properties")
 - 🙋 `ACAPI_Element_GetPropertyDefinitionsOfDefaultElem` – Retrieves all of the property definitions that are available for an element default. — [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
-- 🙋 `ACAPI_Element_GetPropertyObjects` – Returns property objects of the element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetPropertyObjects` – Returns property objects of the element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `ACAPI_Element_GetPropertyValue` – Retrieves the specified property definition's value from the element. — [#1014](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1014 "Element components: list the building-material components of elements and read their properties")
-- 🙋 `ACAPI_Element_GetPropertyValueOfDefaultElem` – Retrieves the value of the specified property definition. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetPropertyValueOfDefaultElem` – Retrieves the value of the specified property definition. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetPropertyValues` – Retrieves the specified property definitions with values. — [#1014](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1014 "Element components: list the building-material components of elements and read their properties")
 - ✅ `ACAPI_Element_GetPropertyValuesByGuid` – Retrieves the specified property definitions (defined by their GUIDs) with values. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "In-process Criteria Evaluator and Search Commands (#1253)"), [#1019](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1019 "Add element component commands: list components and read their properties"), [#1014](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1014 "Element components: list the building-material components of elements and read their properties")
 - 🚧 `ACAPI_Element_GetPropertyValuesOfDefaultElem` – Retrieves the values of the specified property definitions. — [#968](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/968 "[1/3] Add Get/SetPropertyValuesOfElementDefaults"), [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
-- 🙋 `ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid` – Retrieves the values of the specified property definitions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid` – Retrieves the values of the specified property definitions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetQuantities` – Returns information on the quantities parameters of an element. — [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection")
 - ✅ `ACAPI_Element_GetRelations`
 - ✅ `ACAPI_Element_GetRoomImage` – Returns the image of the given room. <sub>(was `APIAny_GetRoomImageID`)</sub>
-- 🙋 `ACAPI_Element_GetSkylightHolePolygon` – Returns the polygon data of a Skylight hole contour. <sub>(was `APIAny_GetSkylightHolePolygonID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetSkylightHolePolygon` – Returns the polygon data of a Skylight hole contour. <sub>(was `APIAny_GetSkylightHolePolygonID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Element_GetSurfaceQuantities` – Returns information of the given elements surfaces. — [#999](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/999 "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"), [#945](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/945 "Add GetSurfaceQuantitiesOfElements: covered and exposed surface areas between elements")
 - 🚧 `ACAPI_Element_GetSyTran` – Obtains the transformation parameters of an actual instance of a library part. — [#1132](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1132 "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"), [#1126](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1126 "Expose ACAPI_Element_GetSyTran (placement transformation of windows, doors, objects, lamps, zones)")
 - 🚧 `ACAPI_Element_GetTextLineLength` – Returns the length of a line of text in mms. <sub>(was `APIAny_GetTextLineLengthID`)</sub> — [#1129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1129 "Add MeasureTexts command: measure text length before placing it"), [#1119](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1119 "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)")
@@ -198,7 +224,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_InstallElementObserver` – Installs an element observer function which receives notifications on elements' changes. <sub>(was `ACAPI_Notify_InstallElementObserver`)</sub>
 - 🚧 `ACAPI_Element_IsClassificationItemVisible` – Tells whether a classification item is visible for an element. — [#1276](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1276 "Add GetClassificationItemVisibility command"), [#1255](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1255 "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read")
 - 🚧 `ACAPI_Element_IsClassificationItemVisibleDefault` – Tells whether a classification item is visible for an element default. — [#1276](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1276 "Add GetClassificationItemVisibility command"), [#1255](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1255 "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read")
-- 🙋 `ACAPI_Element_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an element. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Element_IsPropertyDefinitionAvailableDefault` – Tells whether a property definition is available for an element default. — [#1279](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1279 "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"), [#1262](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1262 "Expose ACAPI_Element_IsPropertyDefinitionAvailableDefault / VisibleDefault")
 - 🚧 `ACAPI_Element_IsPropertyDefinitionValueEditable` – Tells whether the value of the property can be modified for the specified element. If the elemGuid argument is APINULLGuid, it tells whether the property definition's default value is editable. — [#1238](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1238 "Add GetPropertyEditability command (property value editability and visibility)"), [#1228](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1228 "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)")
 - 🚧 `ACAPI_Element_IsPropertyDefinitionValueEditableDefault` – Tells whether the value of the property can be modified for the specified tool default. — [#1238](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1238 "Add GetPropertyEditability command (property value editability and visibility)"), [#1228](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1228 "Expose ACAPI_Element_IsPropertyDefinitionValueEditable (+Default)")
@@ -207,15 +235,21 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_Element_Merge_Elements` – Merge elements given in the array. — [#1006](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1006 "Add MergeElements, UnmergeElements and GetMergedElements commands"), [#986](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/986 "Element merge: merge elements, read merges, remove a merge")
 - 🚧 `ACAPI_Element_Merge_GetMergedElements` – Get the merged elements of the given element in the array. — [#1006](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1006 "Add MergeElements, UnmergeElements and GetMergedElements commands"), [#986](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/986 "Element merge: merge elements, read merges, remove a merge")
 - 🚧 `ACAPI_Element_Merge_Remove` – Remove the merge connection from the given elements. — [#1006](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1006 "Add MergeElements, UnmergeElements and GetMergedElements commands"), [#986](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/986 "Element merge: merge elements, read merges, remove a merge")
-- 🙋 `ACAPI_Element_NeigIDToElemType` – Returns the element type assigned to a neig. <sub>(was `ACAPI_Goodies_NeigIDToElemType`, `APIAny_NeigIDToElemTypeID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_NeigToCoord` – Returns the coordinate of a neig. <sub>(was `APIAny_NeigToCoordID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_NeigIDToElemType` – Returns the element type assigned to a neig. <sub>(was `ACAPI_Goodies_NeigIDToElemType`, `APIAny_NeigIDToElemTypeID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_NeigToCoord` – Returns the coordinate of a neig. <sub>(was `APIAny_NeigToCoordID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Element_RefreshElement` – Rebuilds (refreshes) a library part instance. <sub>(was `APIDb_RefreshElementID`)</sub> — [#1235](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1235 "Add RefreshElements command (ACAPI_Element_RefreshElement)"), [#1224](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1224 "Expose ACAPI_Element_RefreshElement (rebuild instances after a library change)")
 - ✅ `ACAPI_Element_RemoveClassificationItem` – Removes a classification from an element.
 - 🚧 `ACAPI_Element_RemoveClassificationItemDefault` – Removes a classification from an element. — [#1140](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1140 "[2/3] Get/SetClassificationsOfElementDefaults commands"), [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
 - 🚧 `ACAPI_Element_RoomReductions` – Returns reduction data assigned to a room in the current database. <sub>(was `APIDb_RoomReductionsID`)</sub> — [#1036](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1036 "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area")
 - 🚧 `ACAPI_Element_SearchElementByCoord` – Searches for an element by coordinate. <sub>(was `APIAny_SearchElementByCoordID`)</sub> — [#966](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/966 "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate")
 - 🚧 `ACAPI_Element_SetElementURLRef` – Assigns a URL reference to an element. <sub>(was `APIDb_SetElementURLRefID`)</sub> — [#1007](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1007 "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"), [#987](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/987 "Element web links (URL references): get and set")
-- 🙋 `ACAPI_Element_SetEmptyHoleUnId` – Sets the unique ID of the empty hole. <sub>(was `APIAny_SetEmptyHoleUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_SetEmptyHoleUnId` – Sets the unique ID of the empty hole. <sub>(was `APIAny_SetEmptyHoleUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_SetProperties` – Sets the specified properties for the given values on an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_SetPropertiesOfDefaultElem` – Sets the specified properties for the given values on an element default.
 - ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element.
@@ -226,9 +260,13 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SolidLink_GetOperation` – Retrieves the operation code of a Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_GetOperators` – Retrieves the operator elements linked to a target element.
 - ✅ `ACAPI_Element_SolidLink_GetTargets` – Retrieves the target elements linked to an operator element.
-- 🙋 `ACAPI_Element_SolidLink_GetTime` – Retrieves the creation time of a Solid Operation Link. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_SolidLink_GetTime` – Retrieves the creation time of a Solid Operation Link. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_SolidLink_Remove` – Discontinues a Solid Operation Link.
-- 🙋 `ACAPI_Element_SolidOperation_Create` – Creates a new Solid Operation. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_SolidOperation_Create` – Creates a new Solid Operation. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_Trim_Elements` – Trim elements given in the array with Roof(s) and/or Shell(s) are contained in the array.
 - ✅ `ACAPI_Element_Trim_ElementsWith` – Trim elements given in the array with the given Roof or Shell with the type of trim.
 - ✅ `ACAPI_Element_Trim_GetTrimType` – Get the type of trimming connection between the given elements.
@@ -236,22 +274,44 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_Trim_GetTrimmingElements` – Get the trimming elements of the given element in the array.
 - ✅ `ACAPI_Element_Trim_Remove` – Remove the trimming connection from the given elements.
 - ✅ `ACAPI_Element_UI2ElemPriority` – Returns user building material connection priority for a interface priority. <sub>(was `APIAny_UI2ElemPriorityID`)</sub>
-- 🙋 `ACAPI_Element_DrwGuidToLinkId` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_DrwGuidToLinkId` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetElemListByIFCIdentifier` <sub>AC25–28</sub> – Get elements having a certain IFC identifier
-- 🙋 `ACAPI_Element_GetIFCAttributes` <sub>AC25–28</sub> – Get IFC attributes of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_GetIFCClassificationReferences` <sub>AC25–28</sub> – Get IFC classificationreferences of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetIFCAttributes` <sub>AC25–28</sub> – Get IFC attributes of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_GetIFCClassificationReferences` <sub>AC25–28</sub> – Get IFC classificationreferences of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetIFCIdentifier` <sub>AC25–28</sub> – Get IFC Identifier of an element
 - ✅ `ACAPI_Element_GetIFCProperties` <sub>AC25–28</sub> – Get IFC properties of an element
-- 🙋 `ACAPI_Element_GetIFCPropertyValuePrimitiveType` <sub>AC25–27</sub> – Get the primitive type of an IFC type. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_GetIFCPropertyValuePrimitiveType` <sub>AC25–27</sub> – Get the primitive type of an IFC type. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_GetIFCType` <sub>AC25–27</sub> – Get IFC type and IfcTypeObject IFC type of an element
-- 🙋 `ACAPI_Element_LinkIdToDrwGuid` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_RemoveIFCClassificationReference` <sub>AC25–28</sub> – Remove IFC classificationreference of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_RemoveIFCProperty` <sub>AC25–28</sub> – Remove IFC property of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_SetIFCAttribute` <sub>AC25–28</sub> – Set IFC attribute of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_SetIFCClassificationReference` <sub>AC25–28</sub> – Set IFC classificationreference of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_LinkIdToDrwGuid` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_RemoveIFCClassificationReference` <sub>AC25–28</sub> – Remove IFC classificationreference of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_RemoveIFCProperty` <sub>AC25–28</sub> – Remove IFC property of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_SetIFCAttribute` <sub>AC25–28</sub> – Set IFC attribute of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_SetIFCClassificationReference` <sub>AC25–28</sub> – Set IFC classificationreference of an element — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Element_SetIFCProperty` <sub>AC25–28</sub> – Set IFC property of an element
-- 🙋 `ACAPI_Element_ShapePrims` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Element_UnIdToGuid` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Element_ShapePrims` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Element_UnIdToGuid` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Analytical
 
@@ -320,13 +380,19 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - 🚧 `ACAPI_Attribute_AddClassificationItem` – Classifies an attribute. — [#1008](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1008 "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"), [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove")
 - ✅ `ACAPI_Attribute_Create` — [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input"), [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
-- 🙋 `ACAPI_Attribute_CreateAttributeFolderPicker` <sub>AC26–30</sub> – Enables the attribute folder picker functionality for a push check. If the user clicks the push check, the picker will open. Attributes folder pickers can be used to choose an attribute folder. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_CreateAttributeFolderPicker` <sub>AC26–30</sub> – Enables the attribute folder picker functionality for a push check. If the user clicks the push check, the picker will open. Attributes folder pickers can be used to choose an attribute folder. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_CreateExt`
 - 🚧 `ACAPI_Attribute_CreateFolder` <sub>AC26–30</sub> – Creates attribute folders. To create a folder, its full path has to be provided. The command will create all folders along the path, if they do not exist. — [#1024](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1024 "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands"), [#953](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/953 "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands")
 - ✅ `ACAPI_Attribute_Delete` – Deletes an attribute.
 - 🚧 `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains. — [#1024](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1024 "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands"), [#953](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/953 "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands")
-- 🙋 `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#1239](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1239 "Add GetCurrentPenTable command (current pen set and pen count)"), [#1221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1221 "Add GetAttributesFromProject: read attributes from another project or template file"), [#1121](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1121 "Add GetCurrentLayerCombination command"), [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table"), [#916](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/916 "Add ActivateLayerCombination command and Grasshopper component"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#899](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/899 "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"), [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element"), [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input"), [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination")
 - ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database. — [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table"), [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input")
 - 🚧 `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file. — [#1221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1221 "Add GetAttributesFromProject: read attributes from another project or template file"), [#1216](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1216 "Expose ACAPI_Attribute_GetAttributesFromProject (read/load attributes from another .pln/.tpl)")
@@ -334,37 +400,63 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_Attribute_GetClassificationItems` – Retrieves all of the classifications of an attribute. — [#1008](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1008 "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"), [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove")
 - 🚧 `ACAPI_Attribute_GetCreationInfo` <sub>AC30</sub> – Retrieves creation metadata for an attribute. — [#997](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/997 "GetAttributesByType: report attribute creation info on Archicad 30"), [#948](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/948 "GetAttributesByType: add attribute creation info on Archicad 30 (method, source, creator, time)")
 - 🚧 `ACAPI_Attribute_GetCurrPenSet` – Get current pen set index. <sub>(was `APIEnv_GetCurrPenSetID`)</sub> — [#1239](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1239 "Add GetCurrentPenTable command (current pen set and pen count)"), [#1229](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1229 "Expose ACAPI_Attribute_GetCurrPenSet / GetPenNum (which pen set is active)")
-- 🙋 `ACAPI_Attribute_GetCurrentAttributeSetReader` <sub>AC26–30</sub> – Returns an attribute reader for the currently used attribute set. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_GetCurrentAttributeSetReader` <sub>AC26–30</sub> – Returns an attribute reader for the currently used attribute set. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_GetDef` – Retrieves extended information for an attribute. — [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input")
 - ✅ `ACAPI_Attribute_GetDefExt` – Retrieves extended information for an attribute. — [#1239](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1239 "Add GetCurrentPenTable command (current pen set and pen count)"), [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table")
-- 🙋 `ACAPI_Attribute_GetFirstValidAttribute` <sub>AC27–30</sub> – Returns the first valid attribute index. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_GetFirstValidAttribute` <sub>AC27–30</sub> – Returns the first valid attribute index. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid. — [#1026](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1026 "[3/4] Add folderPath to GetAttributesByType"), [#1024](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1024 "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands"), [#953](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/953 "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands")
 - 🚧 `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type. — [#1026](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1026 "[3/4] Add folderPath to GetAttributesByType")
 - ✅ `ACAPI_Attribute_GetNum` – Returns the number of instances of a given type of attribute.
 - 🙋 `ACAPI_Attribute_GetPen` <sub>AC27–30</sub> – Returns a pen by index from the active pen table. — [#951](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/951 "Add ModifyPens: change single pens of the active pen table")
 - 🚧 `ACAPI_Attribute_GetPenNum` <sub>AC27–30</sub> – Get the number of pens in the active pen table. — [#1239](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1239 "Add GetCurrentPenTable command (current pen set and pen count)"), [#1229](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1229 "Expose ACAPI_Attribute_GetCurrPenSet / GetPenNum (which pen set is active)")
-- 🙋 `ACAPI_Attribute_GetPropertyDefinitions` – Retrieves all of the built-in property definitions that are available for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_GetPropertyDefinitions` – Retrieves all of the built-in property definitions that are available for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_GetPropertyValue` – Retrieves the property value of the property definition.
-- 🙋 `ACAPI_Attribute_GetPropertyValues` – Retrieves the property values of the property definitions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_GetPropertyValues` – Retrieves the property values of the property definitions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_GetPropertyValuesByGuid` – Retrieves the property values of the property definitions.
 - 🚧 `ACAPI_Attribute_IsClassificationItemVisible` – Tells whether a classification item is visible for an attribute. — [#1276](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1276 "Add GetClassificationItemVisibility command"), [#1255](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1255 "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read")
-- 🙋 `ACAPI_Attribute_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Attribute_IsPropertyDefinitionValueEditable` – Tells whether a property definition is editable for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Attribute_IsPropertyDefinitionVisible` – Tells whether a property definition is visible for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Attribute_IsPropertyDefinitionValueEditable` – Tells whether a property definition is editable for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Attribute_IsPropertyDefinitionVisible` – Tells whether a property definition is visible for an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_Modify` – Modifies an attribute. — [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input")
 - ✅ `ACAPI_Attribute_ModifyExt` – Modifies an attribute. — [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table")
 - 🙋 `ACAPI_Attribute_ModifyPen` <sub>AC27–30</sub> – Modify a pen by index in the active pen table. — [#951](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/951 "Add ModifyPens: change single pens of the active pen table")
-- 🙋 `ACAPI_Attribute_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple attributes. If the property is not available for at least one of the given attribute then returns with an error without changing any property value. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple attributes. If the property is not available for at least one of the given attribute then returns with an error without changing any property value. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders. — [#1024](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1024 "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands")
 - 🚧 `ACAPI_Attribute_RemoveClassificationItem` – Removes a classification from an attribute. — [#1008](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1008 "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"), [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove")
 - 🚧 `ACAPI_Attribute_RenameFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains. — [#1024](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1024 "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands")
 - ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name. — [#1066](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1066 "Add GetFontsByName command exposing ACAPI_Font_SearchFont")
-- 🙋 `ACAPI_Attribute_SetProperties` – Sets the specified built-in properties for the given values on an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_SetProperties` – Sets the specified built-in properties for the given values on an attribute. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Attribute_SetProperty` – Sets the property value of the property definition.
-- 🙋 `ACAPI_Attribute_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given attributes (it is created if it does not exist). — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Attribute_DeleteProperty` <sub>AC27</sub> – Makes a property definition unavailable for all of given attributes. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Attribute_GetUserData` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Attribute_SetUserData` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Attribute_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given attributes (it is created if it does not exist). — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Attribute_DeleteProperty` <sub>AC27</sub> – Makes a property definition unavailable for all of given attributes. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Attribute_GetUserData` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Attribute_SetUserData` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## View
 
@@ -381,7 +473,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_View_CoordToPoint` – Converts a model coordinate to screen coordinate in the current database. <sub>(was `APIDb_CoordToPointID`)</sub> — [#1236](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1236 "Add ModelToScreen and ScreenToModel commands"), [#1225](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1225 "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)")
 - 🚧 `ACAPI_View_Create3DStyle` – Creates a new 3D style. <sub>(was `APIEnv_Create3DStyleID`)</sub> — [#1130](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1130 "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"), [#1120](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1120 "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921")
 - 🚧 `ACAPI_View_CreateGhostRecord` – Create a new Trace (ghost) database. <sub>(was `APIEnv_CreateGhostRecordID`)</sub> — [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands")
-- 🙋 `ACAPI_View_DeleteGhostRecord` – Deletes a Virtual Trace (ghost) record. <sub>(was `APIEnv_DeleteGhostRecordID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_View_DeleteGhostRecord` – Deletes a Virtual Trace (ghost) record. <sub>(was `APIEnv_DeleteGhostRecordID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_View_Get3DCuttingPlanes` – Retrieves the 3D cutting plane settings. <sub>(was `APIEnv_Get3DCuttingPlanesID`)</sub> — [#1139](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1139 "Set3DCutPlanes: switch the cut off with an empty array; add Get3DCutPlanes"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
 - 🙋 `ACAPI_View_Get3DImageSets` – Returns the 3D image item settings. <sub>(was `APIEnv_Get3DImageSetsID`)</sub> — [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
 - ✅ `ACAPI_View_Get3DProjectionSets` – Returns information on the 3D projection settings. <sub>(was `APIEnv_Get3DProjectionSetsID`)</sub> — [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
@@ -393,7 +487,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🙋 `ACAPI_View_GetDocumentFrom3DSettings` – Returns the 3D document settings of the specified database. <sub>(was `APIEnv_GetDocumentFrom3DSettingsID`)</sub> — [#1048](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1048 "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
 - 🚧 `ACAPI_View_GetGhostRecord` – Retrieve a Trace record from the database. <sub>(was `APIEnv_GetGhostRecordID`)</sub> — [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands"), [#936](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/936 "Get and set ghost story settings")
 - 🚧 `ACAPI_View_GetGhostStorySettings` – Retrieves the current ghost story settings. <sub>(was `APIEnv_GetGhostStorySettingsID`)</sub> — [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands"), [#936](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/936 "Get and set ghost story settings")
-- 🙋 `ACAPI_View_GetShowHideState` – Returns the visibility of application. <sub>(was `APIEnv_GetShowHideStateID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_View_GetShowHideState` – Returns the visibility of application. <sub>(was `APIEnv_GetShowHideStateID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_View_GetZoom` – Returns the actual zoom parameters of the current database. <sub>(was `APIDb_GetZoomID`)</sub>
 - ✅ `ACAPI_View_GoToView` – Switches to the given navigator view. <sub>(was `APIDo_GoToViewID`)</sub> — [#648](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/648 "Resync the source view's 2D transform before relinking a Drawing"), [#645](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/645 "ChangeDrawingLink produces a Drawing showing the wrong model content (position wrong, orientation right)")
 - 🚧 `ACAPI_View_IsAutoGroupOn` – Returns the current state of the autogroup mode. <sub>(was `APIEnv_IsAutoGroupOnID`)</sub> — [#1266](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1266 "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"), [#1243](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1243 "Expose ACAPI_Grouping_GetMainGroupGuid / GetAllGroupedElems (+ IsAutoGroupOn)")
@@ -403,12 +499,18 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_View_PointToCoord` – Converts a screen coordinate into a model coordinate in the current database. <sub>(was `APIDb_PointToCoordID`)</sub> — [#1236](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1236 "Add ModelToScreen and ScreenToModel commands"), [#1225](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1225 "Expose ACAPI_View_ModelToScreen / CoordToPoint / PointToCoord (model ↔ screen coordinates)")
 - ✅ `ACAPI_View_Rebuild` – Rebuilds the content of the current window. <sub>(was `APIDo_RebuildID`)</sub> — [#984](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/984 "Add ZoomToElements (2D and 3D)")
 - ✅ `ACAPI_View_Redraw` – Redraws the content of the current window. <sub>(was `APIDo_RedrawID`)</sub>
-- 🙋 `ACAPI_View_ResetZoom` <sub>AC27–30</sub> – Restores the zoom parameters of the current database by a given number of steps. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_View_ResetZoom` <sub>AC27–30</sub> – Restores the zoom parameters of the current database by a given number of steps. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_View_SetCurrent3DStyle` – Sets an existing style as active. <sub>(was `APIEnv_SetCurrent3DStyleID`)</sub> — [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#1120](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1120 "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"), [#921](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/921 "Add 3D style commands and show selection / all in 3D")
-- 🙋 `ACAPI_View_SetZoom` – Sets the zoom box of the current database. <sub>(was `APIDb_SetZoomID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_View_SetZoom` – Sets the zoom box of the current database. <sub>(was `APIDb_SetZoomID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_View_ShowAllIn3D` – Activates the 3D window and shows the whole model. <sub>(was `APIDo_ShowAllIn3DID`, `APIIo_ShowAllIn3DID`)</sub> — [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#921](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/921 "Add 3D style commands and show selection / all in 3D")
 - 🚧 `ACAPI_View_ShowSelectionIn3D` – Activates the 3D window and shows the selected elements. <sub>(was `APIDo_ShowSelectionIn3DID`, `APIIo_ShowSelectionIn3DID`)</sub> — [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#921](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/921 "Add 3D style commands and show selection / all in 3D")
-- 🙋 `ACAPI_View_StoreViewSettings` – Stores or restores the current view settings. <sub>(was `APIDb_StoreViewSettingsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_View_StoreViewSettings` – Stores or restores the current view settings. <sub>(was `APIDb_StoreViewSettingsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_View_Zoom` – Performs a zoom operation. <sub>(was `APIDo_ZoomID`)</sub> — [#833](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/833 "Add ZoomToBox command to zoom the current 2D window to a model box")
 - ✅ `ACAPI_View_ZoomToElements` – Zoom to the given elements. <sub>(was `APIDo_ZoomToElementsID`)</sub> — [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements")
 - 🚧 `ACAPI_View_ZoomToSelected` – Zooming to the actual selection. (Even in 3D.) <sub>(was `APIDo_ZoomToSelectedID`)</sub> — [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements"), [#984](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/984 "Add ZoomToElements (2D and 3D)")
@@ -420,57 +522,105 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_LibraryPart_CheckLibPartSubtypeOf` – Checks whether a library part unique ID refers to a subtype of another. <sub>(was `APIAny_CheckLibPartSubtypeOfID`)</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1251](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1251 "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)")
 - 🚧 `ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain` – Checks whether a library part unique ID refers to a subtype of another. <sub>(was `APIAny_CheckLibPartSubtypeOfbyMainID`)</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1251](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1251 "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)")
 - ✅ `ACAPI_LibraryPart_CloseParameters` – Closes the Library Part parameter list opened for editing. <sub>(was `APIAny_CloseParametersID`)</sub> — [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element")
-- 🙋 `ACAPI_LibraryPart_CompareLibPartUnIds` – Compares two library part unique IDs. <sub>(was `APIAny_CompareLibPartUnIdsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_CompareLibPartUnIds` – Compares two library part unique IDs. <sub>(was `APIAny_CompareLibPartUnIdsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_LibraryPart_Create` <sub>AC27–30</sub> – Starts to create a new Library Part from scratch. — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
-- 🙋 `ACAPI_LibraryPart_EndSection` – Closes the last opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_EndSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_EndSection` – Closes the last opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_EndSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryPart_Get` <sub>AC27–30</sub> – Returns the data for a registered library part. — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1244](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1244 "Add GetLibrariesOfLibParts command"), [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
 - ✅ `ACAPI_LibraryPart_GetActParameters` – Returns the actual (edited) values of a Library Part parameter list opened to edit. <sub>(was `APIAny_GetActParametersID`)</sub> — [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element")
-- 🙋 `ACAPI_LibraryPart_GetBuiltInLibpartUnId` – Retrieves the GUID of a built-in library part. <sub>(was `APIAny_GetBuiltInLibpartUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_GetBuiltInLibpartUnId` – Retrieves the GUID of a built-in library part. <sub>(was `APIAny_GetBuiltInLibpartUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_LibraryPart_GetDetails` – Returns the detailed parameters of a registered Library Part. <sub>(was `ACAPI_LibPart_GetDetails`)</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1251](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1251 "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)")
-- 🙋 `ACAPI_LibraryPart_GetElemLibPartUnId` – Returns the library part unique identifier of the GDL based element (object/lamp/window/door). <sub>(was `APIAny_GetElemLibPartUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_GetHotspots` <sub>AC27–30</sub> – Retrieves the hotspots of a registered Library Part. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_GetLastValidEmbeddedLPName` – Retrieves the last valid embedded library location. <sub>(was `APIIo_GetLastValidEmbeddedLPNameID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_GetLibPartLockStatus` – Returns the current lock status of the given library part. <sub>(was `APIEnv_GetLibPartLockStatusID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_GetLibPartRefGuid` – This function is used to obtain the reference guid of a library part. <sub>(was `APIEnv_GetLibPartRefGuidID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_GetElemLibPartUnId` – Returns the library part unique identifier of the GDL based element (object/lamp/window/door). <sub>(was `APIAny_GetElemLibPartUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_GetHotspots` <sub>AC27–30</sub> – Retrieves the hotspots of a registered Library Part. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_GetLastValidEmbeddedLPName` – Retrieves the last valid embedded library location. <sub>(was `APIIo_GetLastValidEmbeddedLPNameID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_GetLibPartLockStatus` – Returns the current lock status of the given library part. <sub>(was `APIEnv_GetLibPartLockStatusID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_GetLibPartRefGuid` – This function is used to obtain the reference guid of a library part. <sub>(was `APIEnv_GetLibPartRefGuidID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_LibraryPart_GetLibPartToolVariation` – Returns the library part's creator element type and variation ID. <sub>(was `APIAny_GetLibPartToolVariationID`)</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1251](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1251 "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)")
-- 🙋 `ACAPI_LibraryPart_GetLibPartUnIDStr` – This function is used to obtain the given library part's own unique ID. <sub>(was `APIEnv_GetLibPartUnIDStrID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_GetLibPartUnIDStr` – This function is used to obtain the given library part's own unique ID. <sub>(was `APIEnv_GetLibPartUnIDStrID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryPart_GetMarkerParent` – Returns the parent ID of the marker, in the parentUnID member of the libPart structure. <sub>(was `ACAPI_Goodies_GetMarkerParent`, `APIAny_GetMarkerParentID`)</sub>
 - ✅ `ACAPI_LibraryPart_GetNum` <sub>AC27–30</sub> – Returns the number of registered library parts. — [#1244](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1244 "Add GetLibrariesOfLibParts command"), [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
 - ✅ `ACAPI_LibraryPart_GetParamValues` – Returns the possible values defined for a Library Part parameter. <sub>(was `APIAny_GetParamValuesID`)</sub>
 - ✅ `ACAPI_LibraryPart_GetParams` – Returns the default parameters of a registered Library Part. <sub>(was `ACAPI_LibPart_GetParams`)</sub> — [#1234](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1234 "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"), [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input"), [#743](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/743 "CreateLabels: Symbol labels get their library part parameters (#742)"), [#742](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/742 "CreateLabels: Symbol labels are created without their GDL parameters")
-- 🙋 `ACAPI_LibraryPart_GetSect_2DDrawHdl` – Returns the 2D binary (drawing) section data created from API elements. <sub>(was `ACAPI_LibPart_GetSect_2DDrawHdl`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_GetSect_2DDrawHdl` – Returns the 2D binary (drawing) section data created from API elements. <sub>(was `ACAPI_LibPart_GetSect_2DDrawHdl`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_LibraryPart_GetSect_ParamDef` – Prepares the parameter section data to save into a Library Part. <sub>(was `ACAPI_LibPart_GetSect_ParamDef`)</sub> — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
-- 🙋 `ACAPI_LibraryPart_GetSection` – Returns an existing section of a registered Library Part. <sub>(was `ACAPI_LibPart_GetSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_GetSectionList` – Returns the list of sections contained by a registered Library. <sub>(was `ACAPI_LibPart_GetSectionList`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_GetSection` – Returns an existing section of a registered Library Part. <sub>(was `ACAPI_LibPart_GetSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_GetSectionList` – Returns the list of sections contained by a registered Library. <sub>(was `ACAPI_LibPart_GetSectionList`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_LibraryPart_GetUnloadedLibpartName` – Retrieves the name of a Libpart, even if the library is unloaded. <sub>(was `APIAny_GetUnloadedLibpartNameID`)</sub> — [#1227](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1227 "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"), [#1218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1218 "Expose ACAPI_LibraryPart_GetUnloadedLibpartName (name of a missing library part)")
 - ➖ `ACAPI_LibraryPart_InstallESYMHandler` <sub>AC27–30</sub> – Installs a callback for handling external symbols. *(event handlers, not commands)*
-- 🙋 `ACAPI_LibraryPart_NewSection` – Opens a new section to write into the Library Part under creation. <sub>(was `ACAPI_LibPart_NewSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_NewSection` – Opens a new section to write into the Library Part under creation. <sub>(was `ACAPI_LibPart_NewSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryPart_OpenParameters` – Opens a Library Part parameter list for editing. <sub>(was `APIAny_OpenParametersID`)</sub> — [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element"), [#743](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/743 "CreateLabels: Symbol labels get their library part parameters (#742)")
-- 🙋 `ACAPI_LibraryPart_PatternSearch` – Searches for registered Library Parts in the loaded libraries. <sub>(was `ACAPI_LibPart_PatternSearch`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_PatternSearch` – Searches for registered Library Parts in the loaded libraries. <sub>(was `ACAPI_LibPart_PatternSearch`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryPart_Register` – Registers a Library Part. <sub>(was `ACAPI_LibPart_Register`)</sub>
-- 🙋 `ACAPI_LibraryPart_RegisterAll` – Registers an array of Library Parts. <sub>(was `ACAPI_LibPart_RegisterAll`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_RegisterESYM` <sub>AC27–30</sub> – Registers an external symbol type with Archicad. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_RegisterSubtype` <sub>AC27–30</sub> – Registers a new library part subtype. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_RegisterAll` – Registers an array of Library Parts. <sub>(was `ACAPI_LibPart_RegisterAll`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_RegisterESYM` <sub>AC27–30</sub> – Registers an external symbol type with Archicad. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_RegisterSubtype` <sub>AC27–30</sub> – Registers a new library part subtype. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_LibraryPart_Save` <sub>AC27–30</sub> – Saves the Library Part that has been created and registers it. — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
 - ✅ `ACAPI_LibraryPart_Search` <sub>AC27–30</sub> – Searches for a registered Library Part in the loaded libraries. — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1234](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1234 "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"), [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"), [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input")
-- 🙋 `ACAPI_LibraryPart_SetDetails_ParamDef` – Sets the detail parameters of a Library Part parameter section handle. <sub>(was `ACAPI_LibPart_SetDetails_ParamDef`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_SetUpSect_2DDrawHdl` – Sets up an empty 2D binary (drawing) section to fill up from API elements. <sub>(was `ACAPI_LibPart_SetUpSect_2DDrawHdl`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_ShapePrims` <sub>AC27–30</sub> – Virtually draws the shape of a registered Library Part. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_UpdateSection` – Updates a section of a registered Library Part. <sub>(was `ACAPI_LibPart_UpdateSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryPart_WriteSection` – Writes data into an opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_WriteSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryPart_SetDetails_ParamDef` – Sets the detail parameters of a Library Part parameter section handle. <sub>(was `ACAPI_LibPart_SetDetails_ParamDef`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_SetUpSect_2DDrawHdl` – Sets up an empty 2D binary (drawing) section to fill up from API elements. <sub>(was `ACAPI_LibPart_SetUpSect_2DDrawHdl`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_ShapePrims` <sub>AC27–30</sub> – Virtually draws the shape of a registered Library Part. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_UpdateSection` – Updates a section of a registered Library Part. <sub>(was `ACAPI_LibPart_UpdateSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryPart_WriteSection` – Writes data into an opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_WriteSection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Navigator
 
 - 🚧 `ACAPI_Navigator_ChangeCurrLayerComb` – Activates a layer combination. <sub>(was `APIEnv_ChangeCurrLayerCombID`)</sub> — [#916](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/916 "Add ActivateLayerCombination command and Grasshopper component")
 - ✅ `ACAPI_Navigator_ChangeLayoutSets` – Changes the settings of the current layout in Archicad. <sub>(was `APIEnv_ChangeLayoutSetsID`)</sub> — [#885](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/885 "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"), [#765](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/765 "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"), [#884](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/884 "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"), [#764](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/764 "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success")
 - ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub> — [#885](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/885 "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"), [#756](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/756 "Rename Project Map viewpoints through their element and verify renames"), [#884](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/884 "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"), [#764](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/764 "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"), [#755](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/755 "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works")
-- 🙋 `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#1047](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1047 "GetViewSettings: return the stored in this view flags and the full transformation (split from #876)"), [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - 🚧 `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub> — [#1102](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1102 "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"), [#1099](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1099 "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)")
 - 🙋 `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub> — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
 - ✅ `ACAPI_Navigator_CloneProjectMapItemToViewMap` – Clones a Navigator item from the project map to view map. <sub>(was `APINavigator_CloneProjectMapItemToViewMapID`)</sub> — [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
 - ✅ `ACAPI_Navigator_CreateLayout` – Creates a new layout. <sub>(was `APIEnv_CreateLayoutID`)</sub>
-- 🙋 `ACAPI_Navigator_CreateNavigatorVPItem` – Creates a new Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_CreateNavigatorVPItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_CreateNavigatorVPItem` – Creates a new Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_CreateNavigatorVPItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_CreateSubSet` – Creates the Subset in the Layout Book. <sub>(was `APIDb_CreateSubSetID`)</sub> — [#1105](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1105 "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)")
 - 🚧 `ACAPI_Navigator_DeleteNavigatorVPItem` – Deletes a Navigator viewpoint root, group or leaf node from the Project Map. <sub>(was `APINavigator_DeleteNavigatorVPItemID`)</sub> — [#691](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/691 "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"), [#1039](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1039 "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today Failed to delete navigator item.)"), [#690](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/690 "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items")
 - ✅ `ACAPI_Navigator_DeleteNavigatorView` – Deletes the given navigator view. <sub>(was `APINavigator_DeleteNavigatorViewID`)</sub> — [#1050](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1050 "DeleteNavigatorItems: delete independent worksheets and details of the Project Map"), [#1039](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1039 "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today Failed to delete navigator item.)"), [#690](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/690 "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items")
@@ -480,15 +630,25 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_Navigator_GetCurrLayerComb` – Retrieves the index of the current layer combination. <sub>(was `APIEnv_GetCurrLayerCombID`)</sub> — [#1121](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1121 "Add GetCurrentLayerCombination command"), [#1116](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1116 "Expose ACAPI_Navigator_GetCurrLayerComb (which layer combination the current window uses)")
 - ✅ `ACAPI_Navigator_GetLayoutBook` – Retrieves the Book Settings. <sub>(was `APIDb_GetLayoutBookID`)</sub>
 - ✅ `ACAPI_Navigator_GetLayoutSets` – Returns the settings of a layout. <sub>(was `APIEnv_GetLayoutSetsID`)</sub> — [#885](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/885 "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"), [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#765](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/765 "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"), [#884](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/884 "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"), [#764](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/764 "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success")
-- 🙋 `ACAPI_Navigator_GetNavigatorChildNum` – Retrieves the number of children of a navigator item. <sub>(was `APINavigator_GetNavigatorChildNumID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_GetNavigatorChildNum` – Retrieves the number of children of a navigator item. <sub>(was `APINavigator_GetNavigatorChildNumID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_GetNavigatorChildrenItems` – Retrieves the child items of a navigator item. <sub>(was `APINavigator_GetNavigatorChildrenItemsID`)</sub> — [#885](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/885 "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"), [#761](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/761 "CreateLayout: let the caller choose the new layout's place in its subset")
 - ✅ `ACAPI_Navigator_GetNavigatorItem` – Retrieves a navigator item. <sub>(was `APINavigator_GetNavigatorItemID`)</sub> — [#1112](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1112 "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"), [#885](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/885 "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"), [#841](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/841 "DeleteNavigatorItems: report a refused delete as a failure instead of success"), [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#765](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/765 "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"), [#761](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/761 "CreateLayout: let the caller choose the new layout's place in its subset"), [#756](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/756 "Rename Project Map viewpoints through their element and verify renames"), [#755](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/755 "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works")
-- 🙋 `ACAPI_Navigator_GetNavigatorParentItem` – Retrieves the parent item of a navigator item. <sub>(was `APINavigator_GetNavigatorParentItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_GetNavigatorParentItem` – Retrieves the parent item of a navigator item. <sub>(was `APINavigator_GetNavigatorParentItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_GetNavigatorSet` – Retrieves information about a Project Navigator Map or Publisher Set. <sub>(was `APINavigator_GetNavigatorSetID`)</sub> — [#885](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/885 "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"), [#761](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/761 "CreateLayout: let the caller choose the new layout's place in its subset")
 - ✅ `ACAPI_Navigator_GetNavigatorSetNum` – Retrieves the number of Publisher Sets. <sub>(was `APINavigator_GetNavigatorSetNumID`)</sub>
-- 🙋 `ACAPI_Navigator_GetNavigatorVPItem` – Gets information about an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_GetNavigatorVPItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Navigator_GetNavigatorVPItemChildren` – Gets the list of child viewpoint groups/nodes of a Navigator viewpoint root or group. <sub>(was `APINavigator_GetNavigatorVPItemChildrenID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Navigator_GetNavigatorVPRootGroups` – Gets the list of Navigator viewpoint roots. <sub>(was `APINavigator_GetNavigatorVPRootGroupsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_GetNavigatorVPItem` – Gets information about an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_GetNavigatorVPItemID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Navigator_GetNavigatorVPItemChildren` – Gets the list of child viewpoint groups/nodes of a Navigator viewpoint root or group. <sub>(was `APINavigator_GetNavigatorVPItemChildrenID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Navigator_GetNavigatorVPRootGroups` – Gets the list of Navigator viewpoint roots. <sub>(was `APINavigator_GetNavigatorVPRootGroupsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_GetNavigatorView` – Retrieves a navigator view. <sub>(was `APINavigator_GetNavigatorViewID`)</sub> — [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
 - 🚧 `ACAPI_Navigator_GetStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_GetStructureDisplayID`)</sub> — [#1102](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1102 "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"), [#1099](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1099 "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)")
 - 🚧 `ACAPI_Navigator_GetSubSet` – Retrieves the Subset settings of the given Layout Subset. <sub>(was `APIDb_GetSubSetID`)</sub> — [#1112](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1112 "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"), [#1105](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1105 "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)")
@@ -498,14 +658,20 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_ModelViewOptions_GetNum` <sub>AC27–30</sub> – Get the number of API_ModelViewOptions.
 - 🙋 `ACAPI_Navigator_ModelViewOptions_Search` <sub>AC27–30</sub> – Search an API_ModelViewOptions_Head by name or index. — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
 - ✅ `ACAPI_Navigator_NewNavigatorView` – Creates a new Navigator View. <sub>(was `APINavigator_NewNavigatorViewID`)</sub>
-- 🙋 `ACAPI_Navigator_RegisterCallbackInterface` – Registers an object with virtual functions that are implemented by the AddOn. These are called by Archicad when certain events happen relating to the navigator items that are registered by the AddOn. <sub>(was `APINavigator_RegisterCallbackInterfaceID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_RegisterCallbackInterface` – Registers an object with virtual functions that are implemented by the AddOn. These are called by Archicad when certain events happen relating to the navigator items that are registered by the AddOn. <sub>(was `APINavigator_RegisterCallbackInterfaceID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_SearchNavigatorItem` – Searches the navigator items of the requested database. <sub>(was `APINavigator_SearchNavigatorItemID`)</sub> — [#1050](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1050 "DeleteNavigatorItems: delete independent worksheets and details of the Project Map"), [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#761](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/761 "CreateLayout: let the caller choose the new layout's place in its subset")
-- 🙋 `ACAPI_Navigator_SetMasterLayoutOnLayout` – Sets the layout context of current database for drawing. <sub>(was `APIAny_SetMasterLayoutOnLayoutID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Navigator_SetMasterLayoutOnLayout` – Sets the layout context of current database for drawing. <sub>(was `APIAny_SetMasterLayoutOnLayoutID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Navigator_SetNavigatorItemPosition` – With this function a navigator item can be moved to another place. It can be used with items on the layout map and on the view maps (in case of teamworking on the public and on the users' own view map as well. <sub>(was `APINavigator_SetNavigatorItemPositionID`)</sub> — [#761](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/761 "CreateLayout: let the caller choose the new layout's place in its subset")
 
 ## General
 
-- 🙋 `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ➖ `ACAPI_CallCommand` – Performs an operation without opening an undoable session. *(add-on infrastructure)*
 - ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "In-process Criteria Evaluator and Search Commands (#1253)"), [#1286](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1286 "[4/4] Add DeleteFavoriteFolder command"), [#1282](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1282 "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"), [#1280](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1280 "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"), [#1275](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1275 "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"), [#1269](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1269 "Add EditHierarchicalElement and FinishHierarchicalEditing commands"), [#1257](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1257 "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"), [#1235](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1235 "Add RefreshElements command (ACAPI_Element_RefreshElement)"), [#1233](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1233 "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"), [#1204](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1204 "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"), [#1188](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1188 "Add CreateElementSets command (ACAPI_ElementSet_Create)"), [#1186](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1186 "Add ActivateDesignOptionsInCombinations command"), [#1178](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1178 "Add SetGraphicOverrideRuleGroupOrder command"), [#1176](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1176 "Add RenameGraphicOverrideRuleGroups (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup)"), [#1149](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1149 "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"), [#1148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1148 "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"), [#1140](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1140 "[2/3] Get/SetClassificationsOfElementDefaults commands"), [#1130](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1130 "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"), [#1115](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1115 "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"), [#1113](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1113 "Add Get/SetDesignOptionCombinationOfViews commands"), [#1095](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1095 "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"), [#1075](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1075 "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"), [#1035](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1035 "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"), [#1028](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1028 "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"), [#1025](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1025 "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"), [#1018](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1018 "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"), [#1016](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1016 "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"), [#1012](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1012 "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"), [#1011](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1011 "Support Archicad 29 and 30 in ModifyOpenings"), [#1010](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1010 "[2/3] Project Info fields on Archicad 30: rename and move fields, create in a group, delete by field id"), [#1008](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1008 "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"), [#1007](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1007 "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"), [#1006](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1006 "Add MergeElements, UnmergeElements and GetMergedElements commands"), [#1000](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1000 "[1/3] Project Info groups on Archicad 30: get, create, rename, delete and move groups"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#973](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/973 "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"), [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands"), [#970](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/970 "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"), [#969](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/969 "Add the ImportMarkupsFromPDF command"), [#968](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/968 "[1/3] Add Get/SetPropertyValuesOfElementDefaults"), [#964](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/964 "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"), [#961](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/961 "[1/3] Store custom script data in the project: SetProjectData, GetProjectData, DeleteProjectData"), [#958](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/958 "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands"), [#956](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/956 "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#927](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/927 "Add UngroupElements command and Grasshopper component"), [#915](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/915 "Add the MirrorElements command and its Grasshopper component"), [#912](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/912 "Add ElevateElements command (vertical move)"), [#899](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/899 "Zones: expose height, base offset, top link and floor thickness; add ModifyZones"), [#761](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/761 "CreateLayout: let the caller choose the new layout's place in its subset"), [#756](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/756 "Rename Project Map viewpoints through their element and verify renames"), [#1254](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1254 "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"), [#1108](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1108 "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"), [#1092](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1092 "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"), [#1048](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1048 "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"), [#1015](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1015 "Get and set the drawing scale of the current window"), [#1013](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1013 "Element categories: read and set Structural Function, Position and Renovation Status"), [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove"), [#924](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/924 "Hotlinks: break and delete hotlink nodes, report missing sources"), [#914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/914 "Add UngroupElements command"), [#908](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/908 "Add ElevateElements command (vertical move)"), [#907](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/907 "Add MirrorElements command"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands") *(add-on infrastructure)*
 - ➖ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#1234](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1234 "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"), [#1086](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1086 "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"), [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"), [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element"), [#842](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/842 "Fix CreateZoneCategories failing with Failed to create. for every input"), [#743](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/743 "CreateLabels: Symbol labels get their library part parameters (#742)") *(memory management)*
@@ -524,7 +690,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. *(add-on infrastructure)*
 - ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. *(add-on infrastructure)*
 - ➖ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on. *(add-on preferences)*
-- 🙋 `ACAPI_GetReleaseNumber` — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_GetReleaseNumber` — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ➖ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. — [#1301](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1301 "[3/6] Add GetOpeningFloorPlanParameters, SetOpeningFloorPlanParameters and GetOpeningDefault"), [#1300](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1300 "[2/6] Add the SetOpeningDetails command"), [#1299](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1299 "[1/6] Add GetOpeningDetails: Opening geometry, extrusion parameters and connections (AC29-30)"), [#1204](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1204 "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"), [#1011](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1011 "Support Archicad 29 and 30 in ModifyOpenings") *(add-on infrastructure)*
 - ➖ `ACAPI_KeepInMemory` *(add-on infrastructure)*
 - ➖ `ACAPI_RefreshTeamworkReserveInterface` – Refreshes the registered teamwork interface. *(event handlers, not commands)*
@@ -535,12 +703,24 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_UnregisterModelessWindow` – Ends the registration of an add-on's modeless palette with the API. *(user interface)*
 - ➖ `ACAPI_UnregisterTeamworkReserveInterface` – Unregisters a previously registered interface. *(event handlers, not commands)*
 - ➖ `ACAPI_WriteReport` – Writes a report string into the Report Window or into a custom alert window. *(report window of the add-on)*
-- ✅ `ACAPI_Automate` <sub>AC25–26</sub> — [#1004](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1004 "Let PhotoRender set the image size and resolution, report the current rendering scene"), [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#952](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/952 "Add the NewProject command"), [#943](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/943 "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"), [#833](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/833 "Add ZoomToBox command to zoom the current 2D window to a model box"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist"), [#984](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/984 "Add ZoomToElements (2D and 3D)"), [#928](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/928 "Add NewProject command")
-- ✅ `ACAPI_Database` <sub>AC25–26</sub> — [#1278](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1278 "Add GetRevisionChangeCustomScheme command"), [#1267](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1267 "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"), [#1236](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1236 "Add ModelToScreen and ScreenToModel commands"), [#1235](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1235 "Add RefreshElements command (ACAPI_Element_RefreshElement)"), [#1167](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1167 "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"), [#1161](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1161 "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"), [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1123](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1123 "Add GetCoordinateOrigins command (virtual origin offset and user origin)"), [#1112](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1112 "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"), [#1107](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1107 "Add GetContainingDatabases command to find an element's database"), [#1085](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1085 "GetDetailsOfElements: report isDegenerate for curtain wall panels"), [#1036](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1036 "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"), [#1018](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1018 "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"), [#1016](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1016 "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"), [#1007](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1007 "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"), [#998](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/998 "GetHotlinks: list the placed instances of each hotlink node"), [#973](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/973 "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"), [#956](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/956 "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"), [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"), [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist"), [#1187](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1187 "Expose ACAPI_Window_AddTextWindowContent"), [#1160](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1160 "Expose ACAPI_DrawOrder_DrawOrderGetNext"), [#1159](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1159 "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"), [#1158](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1158 "Expose ACAPI_DrawOrder_CreationOrderGetNext"), [#1082](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1082 "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"), [#1074](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1074 "Expose ACAPI_DrawOrder_DrawOrderInit"), [#1073](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1073 "Expose ACAPI_DrawOrder_DrawOrderTerm"), [#1072](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1072 "Expose ACAPI_DrawOrder_InitCreationOrderTable"), [#1070](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1070 "Expose ACAPI_DrawingPrimitive_DrawStoryControl"), [#1015](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1015 "Get and set the drawing scale of the current window"), [#1013](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1013 "Element categories: read and set Structural Function, Position and Renovation Status"), [#988](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/988 "Line and fill consolidation, and the list of used attributes"), [#987](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/987 "Element web links (URL references): get and set"), [#983](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/983 "GetHotlinks: list the placed instances of each hotlink node"), [#976](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/976 "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"), [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
-- ✅ `ACAPI_Environment` <sub>AC25–26</sub> — [#1280](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1280 "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"), [#1277](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1277 "Add Get3DWindowSettings and Set3DWindowSettings commands"), [#1266](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1266 "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"), [#1239](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1239 "Add GetCurrentPenTable command (current pen set and pen count)"), [#1121](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1121 "Add GetCurrentLayerCombination command"), [#1028](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1028 "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"), [#1025](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1025 "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"), [#1004](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1004 "Let PhotoRender set the image size and resolution, report the current rendering scene"), [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands"), [#970](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/970 "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"), [#967](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/967 "[1/3] Add GetSunSettings and CalculateSunPosition"), [#964](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/964 "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"), [#962](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/962 "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#949](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/949 "Add HideElements and ShowAllHiddenElements commands"), [#943](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/943 "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"), [#916](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/916 "Add ActivateLayerCombination command and Grasshopper component"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist"), [#1171](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1171 "Expose ACAPI_Drawing_GetNumberingGridLines"), [#938](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/938 "Get/SetGeoLocation: survey point visibility and lock"), [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
-- ✅ `ACAPI_Goodies` <sub>AC25–26</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1227](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1227 "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"), [#1211](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1211 "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"), [#1146](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1146 "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"), [#1134](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1134 "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"), [#1133](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1133 "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"), [#1129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1129 "Add MeasureTexts command: measure text length before placing it"), [#1095](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1095 "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"), [#1094](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1094 "Add GetAllAutoTextKeys and InterpretAutoTexts commands"), [#1087](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1087 "Add GetCurtainWallAbsoluteBottoms command"), [#1086](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1086 "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"), [#1084](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1084 "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"), [#967](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/967 "[1/3] Add GetSunSettings and CalculateSunPosition"), [#966](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/966 "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"), [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"), [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist"), [#1164](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1164 "Expose ACAPI_GraphicalOverride_EnableVisualOverride"), [#1163](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1163 "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"), [#1092](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1092 "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"), [#1091](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1091 "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"), [#1083](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1083 "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"), [#1081](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1081 "Expose ACAPI_CurtainWall_GetCWSubElemParams"), [#1080](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1080 "Expose ACAPI_CurtainWall_GetCWHeight"), [#976](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/976 "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)")
-- ✅ `ACAPI_Interface` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- ✅ `ACAPI_Navigator` <sub>AC25–26</sub> — [#691](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/691 "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist"), [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
+- ✅ `ACAPI_Automate` <sub>AC25–26</sub> — [#1004](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1004 "Let PhotoRender set the image size and resolution, report the current rendering scene"), [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#952](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/952 "Add the NewProject command"), [#943](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/943 "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"), [#833](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/833 "Add ZoomToBox command to zoom the current 2D window to a model box"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail."), [#984](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/984 "Add ZoomToElements (2D and 3D)"), [#928](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/928 "Add NewProject command")
+- ✅ `ACAPI_Database` <sub>AC25–26</sub> — [#1278](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1278 "Add GetRevisionChangeCustomScheme command"), [#1267](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1267 "Add GetHotlinkProxyElementTable (source element of a hotlinked element)"), [#1236](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1236 "Add ModelToScreen and ScreenToModel commands"), [#1235](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1235 "Add RefreshElements command (ACAPI_Element_RefreshElement)"), [#1167](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1167 "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"), [#1161](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1161 "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"), [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1123](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1123 "Add GetCoordinateOrigins command (virtual origin offset and user origin)"), [#1112](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1112 "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"), [#1107](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1107 "Add GetContainingDatabases command to find an element's database"), [#1085](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1085 "GetDetailsOfElements: report isDegenerate for curtain wall panels"), [#1036](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1036 "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"), [#1018](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1018 "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"), [#1016](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1016 "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"), [#1007](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1007 "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"), [#998](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/998 "GetHotlinks: list the placed instances of each hotlink node"), [#973](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/973 "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"), [#956](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/956 "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"), [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"), [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail."), [#1187](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1187 "Expose ACAPI_Window_AddTextWindowContent"), [#1160](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1160 "Expose ACAPI_DrawOrder_DrawOrderGetNext"), [#1159](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1159 "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"), [#1158](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1158 "Expose ACAPI_DrawOrder_CreationOrderGetNext"), [#1082](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1082 "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"), [#1074](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1074 "Expose ACAPI_DrawOrder_DrawOrderInit"), [#1073](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1073 "Expose ACAPI_DrawOrder_DrawOrderTerm"), [#1072](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1072 "Expose ACAPI_DrawOrder_InitCreationOrderTable"), [#1070](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1070 "Expose ACAPI_DrawingPrimitive_DrawStoryControl"), [#1015](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1015 "Get and set the drawing scale of the current window"), [#1013](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1013 "Element categories: read and set Structural Function, Position and Renovation Status"), [#988](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/988 "Line and fill consolidation, and the list of used attributes"), [#987](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/987 "Element web links (URL references): get and set"), [#983](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/983 "GetHotlinks: list the placed instances of each hotlink node"), [#976](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/976 "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"), [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
+- ✅ `ACAPI_Environment` <sub>AC25–26</sub> — [#1280](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1280 "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"), [#1277](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1277 "Add Get3DWindowSettings and Set3DWindowSettings commands"), [#1266](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1266 "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"), [#1239](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1239 "Add GetCurrentPenTable command (current pen set and pen count)"), [#1121](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1121 "Add GetCurrentLayerCombination command"), [#1028](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1028 "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"), [#1025](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1025 "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"), [#1004](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1004 "Let PhotoRender set the image size and resolution, report the current rendering scene"), [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands"), [#970](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/970 "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"), [#967](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/967 "[1/3] Add GetSunSettings and CalculateSunPosition"), [#964](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/964 "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"), [#962](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/962 "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#949](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/949 "Add HideElements and ShowAllHiddenElements commands"), [#943](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/943 "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"), [#916](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/916 "Add ActivateLayerCombination command and Grasshopper component"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail."), [#1171](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1171 "Expose ACAPI_Drawing_GetNumberingGridLines"), [#938](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/938 "Get/SetGeoLocation: survey point visibility and lock"), [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
+- ✅ `ACAPI_Goodies` <sub>AC25–26</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1227](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1227 "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"), [#1211](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1211 "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"), [#1146](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1146 "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"), [#1134](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1134 "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"), [#1133](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1133 "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"), [#1129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1129 "Add MeasureTexts command: measure text length before placing it"), [#1095](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1095 "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"), [#1094](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1094 "Add GetAllAutoTextKeys and InterpretAutoTexts commands"), [#1087](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1087 "Add GetCurtainWallAbsoluteBottoms command"), [#1086](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1086 "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"), [#1084](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1084 "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"), [#967](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/967 "[1/3] Add GetSunSettings and CalculateSunPosition"), [#966](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/966 "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"), [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"), [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail."), [#1164](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1164 "Expose ACAPI_GraphicalOverride_EnableVisualOverride"), [#1163](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1163 "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"), [#1092](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1092 "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"), [#1091](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1091 "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"), [#1083](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1083 "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"), [#1081](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1081 "Expose ACAPI_CurtainWall_GetCWSubElemParams"), [#1080](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1080 "Expose ACAPI_CurtainWall_GetCWHeight"), [#976](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/976 "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)")
+- ✅ `ACAPI_Interface` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- ✅ `ACAPI_Navigator` <sub>AC25–26</sub> — [#691](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/691 "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"), [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail."), [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination"), [#876](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/876 "Feature request: Get/Set view commands")
 
 ## AddOnIntegration
 
@@ -581,20 +761,30 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Database
 
-- 🙋 `ACAPI_Database_BuildWindowValidator` – Registers a new window validator for the given guid. <sub>(was `APIDb_BuildWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Database_BuildWindowValidator` – Registers a new window validator for the given guid. <sub>(was `APIDb_BuildWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Database_ChangeCurrentDatabase` – Changes the current (active) database. <sub>(was `APIDb_ChangeCurrentDatabaseID`)</sub> — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands")
-- 🙋 `ACAPI_Database_CheckWindowValidator` – Cheks the already added list of elements and checksums form the validator (identified by the guid) against the lists from the parameter if there was any changes. <sub>(was `APIDb_CheckWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Database_CheckWindowValidator` – Cheks the already added list of elements and checksums form the validator (identified by the guid) against the lists from the parameter if there was any changes. <sub>(was `APIDb_CheckWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Database_DeleteDatabase` – Deletes an independent detail, worksheet, layout, or master layout database. <sub>(was `APIDb_DeleteDatabaseID`)</sub> — [#1050](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1050 "DeleteNavigatorItems: delete independent worksheets and details of the Project Map"), [#1039](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1039 "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today Failed to delete navigator item.)"), [#690](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/690 "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items")
-- 🙋 `ACAPI_Database_DoClip` – Clips the elements created during a clipping session. <sub>(was `APIDb_DoClipID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Database_DoClip` – Clips the elements created during a clipping session. <sub>(was `APIDb_DoClipID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Database_GetContainingDatabase` – Obtains the unique ID of database contains the given element. <sub>(was `APIDb_GetContainingDatabaseID`)</sub> — [#1107](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1107 "Add GetContainingDatabases command to find an element's database"), [#1103](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1103 "Expose ACAPI_Database_GetContainingDatabase and ACAPI_Element_GetElementFromAnywhere (find and read an element without switching windows)")
 - ✅ `ACAPI_Database_GetCurrentDatabase` – Returns the identifier of the current (active) database. <sub>(was `APIDb_GetCurrentDatabaseID`)</sub> — [#972](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/972 "Add GetGhostStorySettings and SetGhostStorySettings commands"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#833](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/833 "Add ZoomToBox command to zoom the current 2D window to a model box")
-- 🙋 `ACAPI_Database_GetDBUnIdFromGuid` – Returns the old database identifiers from the database GUID. <sub>(was `APIDb_GetDBUnIdFromGuidID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Database_GetDBUnIdFromGuid` – Returns the old database identifiers from the database GUID. <sub>(was `APIDb_GetDBUnIdFromGuidID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `ACAPI_Database_GetDatabasesForType` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given type. — [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
 - 🙋 `ACAPI_Database_GetDatabasesForTypes` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given types. — [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
 - 🚧 `ACAPI_Database_GetDetailDatabases` – Returns the list of unique IDs of all detail databases. <sub>(was `APIDb_GetDetailDatabasesID`)</sub> — [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
 - 🚧 `ACAPI_Database_GetDocumentFrom3DDatabases` – Returns the list of unique IDs of all document 3D databases. <sub>(was `APIDb_GetDocumentFrom3DDatabasesID`)</sub> — [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
 - 🚧 `ACAPI_Database_GetElevationDatabases` – Returns all the elevation databases in the project. <sub>(was `APIDb_GetElevationDatabasesID`)</sub> — [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
-- 🙋 `ACAPI_Database_GetGuidFromDBUnId` – Returns the GUID from old database identifiers. <sub>(was `APIDb_GetGuidFromDBUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Database_GetGuidFromDBUnId` – Returns the GUID from old database identifiers. <sub>(was `APIDb_GetGuidFromDBUnIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Database_GetInteriorElevationDatabases` – Returns all the interior elevation databases in the project. <sub>(was `APIDb_GetInteriorElevationDatabasesID`)</sub> — [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
 - ✅ `ACAPI_Database_GetLayoutDatabases` – Returns the list of unique IDs of all layout databases. <sub>(was `APIDb_GetLayoutDatabasesID`)</sub> — [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1128](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1128 "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)")
 - 🚧 `ACAPI_Database_GetLocOrigo` – Returns the local origin of the current database. <sub>(was `APIDb_GetLocOrigoID`)</sub> — [#1123](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1123 "Add GetCoordinateOrigins command (virtual origin offset and user origin)"), [#1117](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1117 "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)")
@@ -605,10 +795,18 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_Database_ModifyDatabase` – Modifies the parameters of an independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_ModifyDatabaseID`)</sub> — [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#755](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/755 "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works")
 - ✅ `ACAPI_Database_NewDatabase` – Creates a new independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_NewDatabaseID`)</sub>
 - 🙋 `ACAPI_Database_RebuildCurrentDatabase` – Rebuilds the current database, even it's associated window is in the background. <sub>(was `APIDb_RebuildCurrentDatabaseID`)</sub> — [#1258](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1258 "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)")
-- 🙋 `ACAPI_Database_RebuildWindowValidator` – Sets the element and checksum list for an already added validator with given guid. <sub>(was `APIDb_RebuildWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Database_RedrawCurrentDatabase` – Redraws the current database, even it's associated window is in the background. <sub>(was `APIDb_RedrawCurrentDatabaseID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Database_StartClippingSession` – Sets up a clipping session for newly created elements to be clipped. <sub>(was `APIDb_StartClippingSessionID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Database_StopClippingSession` – Stops clipping elements. <sub>(was `APIDb_StopClippingSessionID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Database_RebuildWindowValidator` – Sets the element and checksum list for an already added validator with given guid. <sub>(was `APIDb_RebuildWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Database_RedrawCurrentDatabase` – Redraws the current database, even it's associated window is in the background. <sub>(was `APIDb_RedrawCurrentDatabaseID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Database_StartClippingSession` – Sets up a clipping session for newly created elements to be clipped. <sub>(was `APIDb_StartClippingSessionID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Database_StopClippingSession` – Stops clipping elements. <sub>(was `APIDb_StopClippingSessionID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Install
 
@@ -641,30 +839,52 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Teamwork
 
 - ✅ `ACAPI_Teamwork_FindLockableObjectSet` – Retrieves the unique identifier of a lockable object set with a string identifier. <sub>(was `ACAPI_TeamworkControl_FindLockableObjectSet`)</sub>
-- 🙋 `ACAPI_Teamwork_GetHotlinkCacheManagementOwner` – Provides the current owner of the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Teamwork_GetHotlinkCacheManagementOwner` – Provides the current owner of the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Teamwork_GetLockableStatus` – Retrieves the reservation status of a lockable object set. <sub>(was `ACAPI_TeamworkControl_GetLockableStatus`)</sub> — [#1021](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1021 "[2/3] Add GetReservationStatusOfElements and GrantElements Teamwork commands")
-- 🙋 `ACAPI_Teamwork_GetTWAccessRight` – Returns if the current user has the specified access right. <sub>(was `APIEnv_GetTWAccessRightID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Teamwork_GetTWOwner` – Retrieves the TeamWork owner of a given database. <sub>(was `APIDb_GetTWOwnerID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Teamwork_GetTWAccessRight` – Returns if the current user has the specified access right. <sub>(was `APIEnv_GetTWAccessRightID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Teamwork_GetTWOwner` – Retrieves the TeamWork owner of a given database. <sub>(was `APIDb_GetTWOwnerID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Teamwork_GetTeamworkProjectDetails` – Extracts details from the given location about the teamwork project. <sub>(was `ACAPI_TeamworkControl_GetTeamworkProjectDetails`)</sub> — [#955](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/955 "[1/3] Teamwork: add the GetTeamworkProjectInfo command"), [#791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/791 "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files")
 - ✅ `ACAPI_Teamwork_GetUsernameFromId` – Retrieves the username of a user identified by a short id in a Teamwork project. <sub>(was `ACAPI_TeamworkControl_GetUsernameFromId`)</sub> — [#1021](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1021 "[2/3] Add GetReservationStatusOfElements and GrantElements Teamwork commands"), [#955](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/955 "[1/3] Teamwork: add the GetTeamworkProjectInfo command")
 - 🚧 `ACAPI_Teamwork_GrantElements` – In teamwork mode this function grants the specified elements to the given user. <sub>(was `ACAPI_Element_GrantElements`)</sub> — [#1021](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1021 "[2/3] Add GetReservationStatusOfElements and GrantElements Teamwork commands")
-- 🙋 `ACAPI_Teamwork_HasConnection` – Tells whether the currently opened project is a Teamwork project. <sub>(was `ACAPI_TeamworkControl_HasConnection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Teamwork_HasCreateRight` – Checks whether the current Teamwork user has access right to create a certain type of object. <sub>(was `ACAPI_TeamworkControl_HasCreateRight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Teamwork_HasDeleteModifyRight` – Checks whether the current Teamwork user has access right to delete or modify a certain type of object. <sub>(was `ACAPI_TeamworkControl_HasDeleteModifyRight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Teamwork_HasConnection` – Tells whether the currently opened project is a Teamwork project. <sub>(was `ACAPI_TeamworkControl_HasConnection`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Teamwork_HasCreateRight` – Checks whether the current Teamwork user has access right to create a certain type of object. <sub>(was `ACAPI_TeamworkControl_HasCreateRight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Teamwork_HasDeleteModifyRight` – Checks whether the current Teamwork user has access right to delete or modify a certain type of object. <sub>(was `ACAPI_TeamworkControl_HasDeleteModifyRight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Teamwork_IsOnline` – Tells whether the client is online connected to the BIM server. <sub>(was `ACAPI_TeamworkControl_IsOnline`)</sub> — [#955](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/955 "[1/3] Teamwork: add the GetTeamworkProjectInfo command")
-- 🙋 `ACAPI_Teamwork_IsServerLibPart` – Tells whether the given location refers to a BIM Server Library Part. <sub>(was `ACAPI_TeamworkControl_IsServerLibPart`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Teamwork_ProjectSharing` – Returns the project sharing data in the case of a TeamWork project. <sub>(was `APIEnv_ProjectSharingID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Teamwork_IsServerLibPart` – Tells whether the given location refers to a BIM Server Library Part. <sub>(was `ACAPI_TeamworkControl_IsServerLibPart`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Teamwork_ProjectSharing` – Returns the project sharing data in the case of a TeamWork project. <sub>(was `APIEnv_ProjectSharingID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Teamwork_ReceiveChanges` – Receives changes from the BIMcloud server. <sub>(was `ACAPI_TeamworkControl_ReceiveChanges`)</sub>
 - ✅ `ACAPI_Teamwork_ReleaseElements` – Releases elements in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReleaseElements`)</sub>
 - ✅ `ACAPI_Teamwork_ReleaseHotlinkCacheManagement` – Releases the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReleaseHotlinkCacheManagement`)</sub>
 - ✅ `ACAPI_Teamwork_ReleaseLockable` – Releases a lockable object set in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReleaseLockable`)</sub>
-- 🙋 `ACAPI_Teamwork_RemoveLibraries` <sub>AC29–30</sub> – Remove libraries from the BIMcloud server. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Teamwork_RemoveLibraries` <sub>AC29–30</sub> – Remove libraries from the BIMcloud server. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Teamwork_ReserveElements` – Reserves elements in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveElements`)</sub>
 - ✅ `ACAPI_Teamwork_ReserveHotlinkCacheManagement` – Reserves the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveHotlinkCacheManagement`)</sub>
 - ✅ `ACAPI_Teamwork_ReserveLockable` – Reserves a lockable object set in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveLockable`)</sub>
 - ✅ `ACAPI_Teamwork_SendChanges` – Sends changes to the BIMcloud server. <sub>(was `ACAPI_TeamworkControl_SendChanges`)</sub>
-- 🙋 `ACAPI_Teamwork_SendReleaseCommentMail` – Sends the release comment mail. <sub>(was `ACAPI_TeamworkReserveInterface_SendReleaseCommentMail`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Teamwork_UploadLibraries` <sub>AC29–30</sub> – Uploads the given libraries to the BIMcloud server. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Teamwork_SendReleaseCommentMail` – Sends the release comment mail. <sub>(was `ACAPI_TeamworkReserveInterface_SendReleaseCommentMail`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Teamwork_UploadLibraries` <sub>AC29–30</sub> – Uploads the given libraries to the BIMcloud server. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## GraphicalOverride
 
@@ -721,51 +941,121 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## AddOnObject
 
-- 🙋 `ACAPI_AddOnObject_CreateClientOnlyObject` – Creates an AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_CreateObject` – Creates an AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_CreateUniqueObject` – Creates a Unique AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_CreateUniqueObjectMore` – Creates more Unique AddOnObjects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_DeleteObject` – Retrieves an attribute from the database. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_ExistsObject` – Determines if the project database contains the specified AddOnObject or not. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GetClientOnlyObjectGuidFromName` – Returns the GUID of the specified object. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GetObjectContent` – Retrieves the content and the name of the specified AddOnObject from the project database. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GetObjectGuidFromName` – Returns the GUID of the specified object. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GetObjectList` – Returns the list of the AddOnObjects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GetTeamworkOwnerId` – Returns the ownerId of the specified object in teamwork mode. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GetUniqueObjectGuidFromName` – Returns the GUID of the specified Unique AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_GrantObjects` – In teamwork mode this function grants the specified objects to the given user. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_AddOnObject_CreateClientOnlyObject` – Creates an AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_CreateObject` – Creates an AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_CreateUniqueObject` – Creates a Unique AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_CreateUniqueObjectMore` – Creates more Unique AddOnObjects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_DeleteObject` – Retrieves an attribute from the database. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_ExistsObject` – Determines if the project database contains the specified AddOnObject or not. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GetClientOnlyObjectGuidFromName` – Returns the GUID of the specified object. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GetObjectContent` – Retrieves the content and the name of the specified AddOnObject from the project database. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GetObjectGuidFromName` – Returns the GUID of the specified object. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GetObjectList` – Returns the list of the AddOnObjects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GetTeamworkOwnerId` – Returns the ownerId of the specified object in teamwork mode. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GetUniqueObjectGuidFromName` – Returns the GUID of the specified Unique AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_GrantObjects` – In teamwork mode this function grants the specified objects to the given user. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ➖ `ACAPI_AddOnObject_InstallAddOnObjectConvertNewFormatHandler` <sub>AC27–30</sub> – Installs a callback procedure for converting old-format AddOnObject data into the current format. *(event handlers, not commands)*
 - ➖ `ACAPI_AddOnObject_InstallAddOnObjectMergeHandler` <sub>AC27–30</sub> – Installs a callback procedure for handling the AddOnObject merge operations. *(event handlers, not commands)*
 - ➖ `ACAPI_AddOnObject_InstallAddOnObjectSaveOldFormatHandler` <sub>AC27–30</sub> – Installs a callback procedure for converting AddOnObject data into an older format. *(event handlers, not commands)*
-- 🙋 `ACAPI_AddOnObject_ModifyObject` – Modifies the content and/or the name of the specified AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_AddOnObject_ModifyObject` – Modifies the content and/or the name of the specified AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ➖ `ACAPI_AddOnObject_RegisterAddOnObjectHandler` <sub>AC27–30</sub> – Registers the add-on to be called for merging and converting its custom data stored in AddOnObjects. *(event handlers, not commands)*
-- 🙋 `ACAPI_AddOnObject_ReleaseObjects` – In teamwork mode this function releases the specified objects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_RequestObjects` – In teamwork mode this function sends a request mail in order to request the specified objects from the owners. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_ReserveObjects` – In teamwork mode this function reserves the specified objects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AddOnObject_SetUIProperties` – Sets various UI properties of an AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_AddOnObject_ReleaseObjects` – In teamwork mode this function releases the specified objects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_RequestObjects` – In teamwork mode this function sends a request mail in order to request the specified objects from the owners. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_ReserveObjects` – In teamwork mode this function reserves the specified objects. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AddOnObject_SetUIProperties` – Sets various UI properties of an AddOnObject. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## LibraryManagement
 
-- 🙋 `ACAPI_LibraryManagement_AddLibraries` – Registers a new folder into the list of active libraries. <sub>(was `APIEnv_AddLibrariesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_ChangeGDLDate` – Changes GDL environment date (GDL_PROJECT_DATE). <sub>(was `APIEnv_ChangeGDLDateID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_CheckLibraries` – Checks the currently loaded libraries. <sub>(was `APIEnv_CheckLibrariesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_CopyFilesIntoLibrary` – Copies files into a folder inside a loaded library. <sub>(was `APIEnv_CopyFilesIntoLibraryID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_CreateCopyOfGdlUserGlobalsHandle` – Returns a copy of the current GDL globals. <sub>(was `APIEnv_CreateCopyOfGdlUserGlobalsHandleID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_CreateFolderInLibrary` – Creates a new folder inside a loaded library. <sub>(was `APIEnv_CreateFolderInLibraryID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryManagement_AddLibraries` – Registers a new folder into the list of active libraries. <sub>(was `APIEnv_AddLibrariesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_ChangeGDLDate` – Changes GDL environment date (GDL_PROJECT_DATE). <sub>(was `APIEnv_ChangeGDLDateID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_CheckLibraries` – Checks the currently loaded libraries. <sub>(was `APIEnv_CheckLibrariesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_CopyFilesIntoLibrary` – Copies files into a folder inside a loaded library. <sub>(was `APIEnv_CopyFilesIntoLibraryID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_CreateCopyOfGdlUserGlobalsHandle` – Returns a copy of the current GDL globals. <sub>(was `APIEnv_CreateCopyOfGdlUserGlobalsHandleID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_CreateFolderInLibrary` – Creates a new folder inside a loaded library. <sub>(was `APIEnv_CreateFolderInLibraryID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryManagement_DeleteEmbeddedLibItem` – Deletes the given embedded library item (folder or library part). <sub>(was `APIEnv_DeleteEmbeddedLibItemID`)</sub> — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
-- 🙋 `ACAPI_LibraryManagement_DeleteEmbeddedLibItems` – Delete embeded lib items. <sub>(was `APIEnv_DeleteEmbeddedLibItemsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_DestroyCopyOfGdlUserGlobalsHandle` – Destroys the previously copied GDL globals handle. <sub>(was `APIEnv_DestroyCopyOfGdlUserGlobalsHandleID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_GetGDLDate` – Returns GDL environment date information (GDL_PROJECT_DATE). <sub>(was `APIEnv_GetGDLDateID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_GetLibPartOrigLocation` <sub>AC27–30</sub> – Returns the original location of a library part. <sub>(was `APIEnv_GetLibPartOrigLocationID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryManagement_DeleteEmbeddedLibItems` – Delete embeded lib items. <sub>(was `APIEnv_DeleteEmbeddedLibItemsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_DestroyCopyOfGdlUserGlobalsHandle` – Destroys the previously copied GDL globals handle. <sub>(was `APIEnv_DestroyCopyOfGdlUserGlobalsHandleID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_GetGDLDate` – Returns GDL environment date information (GDL_PROJECT_DATE). <sub>(was `APIEnv_GetGDLDateID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_GetLibPartOrigLocation` <sub>AC27–30</sub> – Returns the original location of a library part. <sub>(was `APIEnv_GetLibPartOrigLocationID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryManagement_GetLibraries` – Returns the list of loaded libraries. <sub>(was `APIEnv_GetLibrariesID`)</sub>
-- 🙋 `ACAPI_LibraryManagement_InterpretGDLScript3D` – Interprets a 3D GDL script with the same settings as GDL Editor. <sub>(was `APIAny_InterpretGDLScript3DID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_NewLibDial` – Instructs the user to select a new library folder in a dialog. <sub>(was `APIEnv_NewLibDialID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_OpenLibraryPart` <sub>AC27–30</sub> – Opens the given library part in the Library Part Editor window. <sub>(was `APIDo_OpenLibraryPartID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_OverwriteLibPart` – Sets the overwrite mode for the library part create function. <sub>(was `APIEnv_OverwriteLibPartID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_ResetLibraries` – Resets the loaded libraries. <sub>(was `APIEnv_ResetLibrariesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_LibraryManagement_RunGDLParScript` – Run GDL parameter script. <sub>(was `APIAny_RunGDLParScriptID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryManagement_InterpretGDLScript3D` – Interprets a 3D GDL script with the same settings as GDL Editor. <sub>(was `APIAny_InterpretGDLScript3DID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_NewLibDial` – Instructs the user to select a new library folder in a dialog. <sub>(was `APIEnv_NewLibDialID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_OpenLibraryPart` <sub>AC27–30</sub> – Opens the given library part in the Library Part Editor window. <sub>(was `APIDo_OpenLibraryPartID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_OverwriteLibPart` – Sets the overwrite mode for the library part create function. <sub>(was `APIEnv_OverwriteLibPartID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_ResetLibraries` – Resets the loaded libraries. <sub>(was `APIEnv_ResetLibrariesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_LibraryManagement_RunGDLParScript` – Run GDL parameter script. <sub>(was `APIAny_RunGDLParScriptID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibraryManagement_SetLibraries` – Changes the list of loaded libraries. <sub>(was `APIEnv_SetLibrariesID`)</sub>
-- 🙋 `ACAPI_LibraryManagement_UsableGDLString` – Determines whether the string is a GDL keyword or reserved symbol. <sub>(was `APIAny_UsableGDLStringID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibraryManagement_UsableGDLString` – Determines whether the string is a GDL keyword or reserved symbol. <sub>(was `APIAny_UsableGDLStringID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Register
 
@@ -791,13 +1081,23 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## ProjectOperation
 
-- 🙋 `ACAPI_ProjectOperation_AdditionalFileWasCreated` – Informs Archicad about the additional file created during exporting or publishing. Required for handling them with the target file. (E.g., uploading to BIMcloud together.) <sub>(was `ACAPI_Inform_AdditionalFileWasCreated`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ProjectOperation_AdditionalFileWasCreated` – Informs Archicad about the additional file created during exporting or publishing. Required for handling them with the target file. (E.g., uploading to BIMcloud together.) <sub>(was `ACAPI_Inform_AdditionalFileWasCreated`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ➖ `ACAPI_ProjectOperation_CatchProjectEvent` – Register or unregister your add-on to be notified of application and project events. <sub>(was `ACAPI_Notify_CatchProjectEvent`)</sub> — [#965](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/965 "[1/2] Add element change tracking: CaptureElementState, GetElementChangesSince, ReleaseElementState") *(event handlers, not commands)*
 - ✅ `ACAPI_ProjectOperation_Close` – Closes the current project window. <sub>(was `APIDo_CloseID`)</sub>
-- 🙋 `ACAPI_ProjectOperation_GetMiscAppInfo` – Gets miscellaneous information about application. <sub>(was `APIEnv_GetMiscAppInfoID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ProjectOperation_GetMiscPlotterInfo` – Gets miscellaneous information about plotter. <sub>(was `APIEnv_GetMiscPlotterInfoID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ProjectOperation_GetMiscPrinterInfo` – Gets miscellaneous information about current printer. <sub>(was `APIEnv_GetMiscPrinterInfoID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ProjectOperation_GetPrinterPars` – Retrieves the current printer settings. <sub>(was `APIEnv_GetPrinterParsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ProjectOperation_GetMiscAppInfo` – Gets miscellaneous information about application. <sub>(was `APIEnv_GetMiscAppInfoID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ProjectOperation_GetMiscPlotterInfo` – Gets miscellaneous information about plotter. <sub>(was `APIEnv_GetMiscPlotterInfoID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ProjectOperation_GetMiscPrinterInfo` – Gets miscellaneous information about current printer. <sub>(was `APIEnv_GetMiscPrinterInfoID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ProjectOperation_GetPrinterPars` – Retrieves the current printer settings. <sub>(was `APIEnv_GetPrinterParsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_ProjectOperation_NewProject` – Opens a new plan. <sub>(was `APIDo_NewProjectID`)</sub> — [#952](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/952 "Add the NewProject command"), [#928](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/928 "Add NewProject command")
 - ✅ `ACAPI_ProjectOperation_Open` – Opens a new project file. <sub>(was `APIDo_OpenID`)</sub> — [#793](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/793 "Add a command to open a Teamwork/BIMcloud project by launching a new Archicad instance"), [#791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/791 "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files")
 - ✅ `ACAPI_ProjectOperation_Print` – Prints the content of the current window. <sub>(was `APIDo_PrintID`)</sub>
@@ -855,8 +1155,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Classification_DeleteClassificationSystem` – Deletes a classification system.
 - ✅ `ACAPI_Classification_GetClassificationItem` – Retrieves a classification item identified by its guid. — [#1276](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1276 "Add GetClassificationItemVisibility command")
 - ✅ `ACAPI_Classification_GetClassificationItemChildren` – Retrieves the children of a classification item.
-- 🙋 `ACAPI_Classification_GetClassificationItemParent` – Retrieves the parent of a classification item. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Classification_GetClassificationItemSystem` – Retrieves the system of a classification item. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Classification_GetClassificationItemParent` – Retrieves the parent of a classification item. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Classification_GetClassificationItemSystem` – Retrieves the system of a classification item. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Classification_GetClassificationSystem` – Retrieves a classification system identified by its guid or by its name and edition version.
 - ✅ `ACAPI_Classification_GetClassificationSystemRootItems` – Retrieves the root items of a classification system. — [#1052](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1052 "Graphic override criterion: library part element types, new fields and operators (on top of #994)")
 - ✅ `ACAPI_Classification_GetClassificationSystems` – Retrieves all of the classification systems in the plan. — [#1052](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1052 "Graphic override criterion: library part element types, new fields and operators (on top of #994)")
@@ -867,17 +1171,33 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🙋 `ACAPI_Window_AddTextWindowContent` – Adds new lines to the content of a text window. <sub>(was `APIDb_AddTextWindowContentID`)</sub> — [#1187](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1187 "Expose ACAPI_Window_AddTextWindowContent")
 - 🙋 `ACAPI_Window_ChangeGridSettings` – Changes the grid setting parameters of the current database. <sub>(was `APIDb_ChangeGridSettingsID`)</sub> — [#935](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/935 "Get and set snap grid and auto-intersect settings")
 - ✅ `ACAPI_Window_ChangeWindow` – Changes the current (active) window. <sub>(was `APIDo_ChangeWindowID`)</sub> — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#648](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/648 "Resync the source view's 2D transform before relinking a Drawing")
-- 🙋 `ACAPI_Window_Check` – Runs the selected checks of the Action Center. <sub>(was `ACAPI_ActionCenter_Check`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Window_CloseWindow` – Closes a window. <sub>(was `APIDb_CloseWindowID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Window_DestroyWindowValidator` – Destroys an already registered validator for the given guid. <sub>(was `APIDb_DestroyWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Window_Check` – Runs the selected checks of the Action Center. <sub>(was `ACAPI_ActionCenter_Check`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Window_CloseWindow` – Closes a window. <sub>(was `APIDb_CloseWindowID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Window_DestroyWindowValidator` – Destroys an already registered validator for the given guid. <sub>(was `APIDb_DestroyWindowValidatorID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Window_GetCurrentWindow` – Returns the identifier of the current (active) window. <sub>(was `APIDb_GetCurrentWindowID`)</sub> — [#1016](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1016 "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"), [#648](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/648 "Resync the source view's 2D transform before relinking a Drawing")
 - ✅ `ACAPI_Window_GetDatabaseInfo` – Retrieves information of the given database. <sub>(was `APIDb_GetDatabaseInfoID`)</sub> — [#1135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1135 "Add GetDatabases command to list all databases of given types"), [#1107](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1107 "Add GetContainingDatabases command to find an element's database"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#825](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/825 "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"), [#756](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/756 "Rename Project Map viewpoints through their element and verify renames")
 - 🙋 `ACAPI_Window_GetGridSettings` – Returns the grid setting parameters of the current database. <sub>(was `APIDb_GetGridSettingsID`)</sub> — [#935](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/935 "Get and set snap grid and auto-intersect settings")
-- 🙋 `ACAPI_Window_GetOwnWindows` – Returns the ids of the opened windows in an array. <sub>(was `APIDb_GetOwnWindowsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Window_NewWindow` – Opens a new window. <sub>(was `APIDb_NewWindowID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Window_ResetCurrentDatabase` – Deletes the database elements of the current window and sets up a new, empty environment. <sub>(was `APIDb_ResetCurrentDatabaseID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Window_ResetCurrentWindow` – Deletes the database elements of the current window and sets up a new, empty environment. <sub>(was `APIDb_ResetCurrentWindowID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Window_SetWindowId` – Changes the guid of a previously registered window. Useful when replacing already opened windows by reusing their window object. <sub>(was `APIDb_SetWindowIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Window_GetOwnWindows` – Returns the ids of the opened windows in an array. <sub>(was `APIDb_GetOwnWindowsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Window_NewWindow` – Opens a new window. <sub>(was `APIDb_NewWindowID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Window_ResetCurrentDatabase` – Deletes the database elements of the current window and sets up a new, empty environment. <sub>(was `APIDb_ResetCurrentDatabaseID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Window_ResetCurrentWindow` – Deletes the database elements of the current window and sets up a new, empty environment. <sub>(was `APIDb_ResetCurrentWindowID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Window_SetWindowId` – Changes the guid of a previously registered window. Useful when replacing already opened windows by reusing their window object. <sub>(was `APIDb_SetWindowIdID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Notification
 
@@ -973,15 +1293,23 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Drawing
 
 - 🚧 `ACAPI_Drawing_ChangeDrawingScale` – Changes the drawing scale. <sub>(was `APIDb_ChangeDrawingScaleID`)</sub> — [#1016](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1016 "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"), [#1015](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1015 "Get and set the drawing scale of the current window")
-- 🙋 `ACAPI_Drawing_ChangeMarkerDrawingEnabled` – Sets whether attached objects (window/door markers, drawing titles, etc.) should be processed and returned during primitive decomposition. <sub>(was `APIEnv_ChangeMarkerDrawingEnabledID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Drawing_ChangeMarkerDrawingEnabled` – Sets whether attached objects (window/door markers, drawing titles, etc.) should be processed and returned during primitive decomposition. <sub>(was `APIEnv_ChangeMarkerDrawingEnabledID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Drawing_CheckDrawingStatus` – Checks whether the given drawing is up-to-date. <sub>(was `APIDb_CheckDrawingStatusID`)</sub> — [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/836 "Feature request: Drawing Manager data for Drawing elements")
 - 🚧 `ACAPI_Drawing_GetDrawingLink` – Returns various information about a drawing link. <sub>(was `APIDb_GetDrawingLinkID`)</sub> — [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/836 "Feature request: Drawing Manager data for Drawing elements")
 - 🚧 `ACAPI_Drawing_GetDrawingScale` – Returns the drawing scale of the current database. <sub>(was `APIDb_GetDrawingScaleID`)</sub> — [#1016](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1016 "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"), [#1015](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1015 "Get and set the drawing scale of the current window")
 - 🚧 `ACAPI_Drawing_GetFullDrawingContentBox` – Returns the full boundary box of an IDF database. <sub>(was `APIDb_GetFullDrawingContentBoxID`)</sub> — [#1131](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1131 "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"), [#1122](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1122 "Expose ACAPI_Drawing_GetFullDrawingContentBox (full content box of a placed drawing)")
 - 🙋 `ACAPI_Drawing_GetNumberingGridLines` – Retrieves the lines of the grid-based drawing numbering system. <sub>(was `APIEnv_GetNumberingGridLinesID`)</sub> — [#1171](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1171 "Expose ACAPI_Drawing_GetNumberingGridLines")
-- 🙋 `ACAPI_Drawing_IsMarkerDrawingEnabled` – Checks whether attached objects (window/door markers, drawing titles, etc.) are processed and returned during primitive decomposition. <sub>(was `APIEnv_IsMarkerDrawingEnabledID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Drawing_StartDrawingData` – Redirects element creation into a temporary database for creating drawing data. <sub>(was `APIDb_StartDrawingDataID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Drawing_StopDrawingData` – Finalizes the direct creation of drawing elements. <sub>(was `APIDb_StopDrawingDataID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Drawing_IsMarkerDrawingEnabled` – Checks whether attached objects (window/door markers, drawing titles, etc.) are processed and returned during primitive decomposition. <sub>(was `APIEnv_IsMarkerDrawingEnabledID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Drawing_StartDrawingData` – Redirects element creation into a temporary database for creating drawing data. <sub>(was `APIDb_StartDrawingDataID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Drawing_StopDrawingData` – Finalizes the direct creation of drawing elements. <sub>(was `APIDb_StopDrawingDataID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Drawing_Update_Drawings` <sub>AC27–30</sub>
 
 ## Grouping
@@ -1000,16 +1328,28 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## ProjectSetting
 
-- 🙋 `ACAPI_ProjectSetting_ChangeProjectNotes` – Changes the data of the 'Project Info' dialog. <sub>(was `APIEnv_ChangeProjectNotesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ProjectSetting_ChangeProjectNotes` – Changes the data of the 'Project Info' dialog. <sub>(was `APIEnv_ChangeProjectNotesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_ProjectSetting_ChangeStorySettings` – Modifies the story structure. <sub>(was `APIEnv_ChangeStorySettingsID`)</sub> — [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#648](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/648 "Resync the source view's 2D transform before relinking a Drawing")
-- 🙋 `ACAPI_ProjectSetting_GetExportTolerance` – Returns information on curve tracing parameters. <sub>(was `APIEnv_GetExportToleranceID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ProjectSetting_GetLast3DDefLevels` – Retrieves the 3D default levels for the construction elems. <sub>(was `ACAPI_Database_GetLast3DDefLevels`, `APIDb_GetLast3DDefLevelsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ProjectSetting_GetExportTolerance` – Returns information on curve tracing parameters. <sub>(was `APIEnv_GetExportToleranceID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ProjectSetting_GetLast3DDefLevels` – Retrieves the 3D default levels for the construction elems. <sub>(was `ACAPI_Database_GetLast3DDefLevels`, `APIDb_GetLast3DDefLevelsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_ProjectSetting_GetOffset` – Returns the offset of the origin of the virtual coordinate system. <sub>(was `APIDb_GetOffsetID`)</sub> — [#1123](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1123 "Add GetCoordinateOrigins command (virtual origin offset and user origin)"), [#1117](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1117 "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)")
 - ✅ `ACAPI_ProjectSetting_GetPreferences` <sub>AC27–30</sub> – Returns the preferences data. — [#1038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1038 "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"), [#1028](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1028 "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"), [#1025](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1025 "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"), [#964](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/964 "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)")
-- 🙋 `ACAPI_ProjectSetting_GetProjectNotes` – Returns information about the 'Project Info' dialog. <sub>(was `APIEnv_GetProjectNotesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ProjectSetting_GetSplineMaxDist` – Returns the maximal distance of a spline segment and a set of coordinates. <sub>(was `APIAny_GetSplineMaxDistID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ProjectSetting_GetProjectNotes` – Returns information about the 'Project Info' dialog. <sub>(was `APIEnv_GetProjectNotesID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ProjectSetting_GetSplineMaxDist` – Returns the maximal distance of a spline segment and a set of coordinates. <sub>(was `APIAny_GetSplineMaxDistID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_ProjectSetting_GetStorySettings` – Returns the data of the installed stories. <sub>(was `APIEnv_GetStorySettingsID`)</sub> — [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#648](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/648 "Resync the source view's 2D transform before relinking a Drawing")
-- 🙋 `ACAPI_ProjectSetting_SetLast3DDefLevels` – Sets the 3D default levels for the passed construction element types. <sub>(was `ACAPI_Database_SetLast3DDefLevels`, `APIDb_SetLast3DDefLevelsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ProjectSetting_SetLast3DDefLevels` – Sets the 3D default levels for the passed construction element types. <sub>(was `ACAPI_Database_SetLast3DDefLevels`, `APIDb_SetLast3DDefLevelsID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_ProjectSetting_SetPreferences` <sub>AC27–30</sub> – Adjusts the preferences. — [#1028](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1028 "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"), [#1025](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1025 "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"), [#964](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/964 "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)")
 
 ## Dialog
@@ -1081,13 +1421,27 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_IFC_GetIFCExportTranslatorsList` – Returns the valid IFC Export Translators. <sub>(was `APIAny_GetIFCExportTranslatorsListID`)</sub> — [#1310](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1310 "GetIFCExportTranslators marks the wrong translator as preview")
 - ✅ `ACAPI_IFC_GetIFCRelationshipData` – It generates an IFC Relationship Data based on the input IFC Translator parameter. <sub>(was `APIAny_GetIFCRelationshipDataID`)</sub>
-- 🙋 `ACAPI_IFC_InvokeIFCExportSettingsDlg` <sub>AC28–30</sub> – It opens a dialog where a View and an IFC Export Translator can be selected. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_IFC_APIGuidToIFCGuid` <sub>AC26–27</sub> – It converts an @ref API_Guid to an IfcGloballyUniqueId string. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_IFC_ComplementIFCDifferenceAndMergeIFCRelationshipData` <sub>AC26–27</sub> – Augments the ifcDifference with previously deleted items and merges olderIfcRelationshipData with newerIfcRelationshipData. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_IFC_GetIFCDifference` <sub>AC26–27</sub> – Generates an IFC Difference based on the input parameters. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_IFC_GetIFCDifferenceState` <sub>AC26–27</sub> – Generates an IFC Difference based on the input parameters. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_IFC_IFCGuidToAPIGuid` <sub>AC26–27</sub> – It converts an @ref API_Guid to an IfcGloballyUniqueId string. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_IFC_InvokeIFCDifferenceExportSettingsDlg` <sub>AC26–27</sub> – It opens a dialog where a View and an IFC Export Translator can be selected. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_IFC_InvokeIFCExportSettingsDlg` <sub>AC28–30</sub> – It opens a dialog where a View and an IFC Export Translator can be selected. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_IFC_APIGuidToIFCGuid` <sub>AC26–27</sub> – It converts an @ref API_Guid to an IfcGloballyUniqueId string. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_IFC_ComplementIFCDifferenceAndMergeIFCRelationshipData` <sub>AC26–27</sub> – Augments the ifcDifference with previously deleted items and merges olderIfcRelationshipData with newerIfcRelationshipData. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_IFC_GetIFCDifference` <sub>AC26–27</sub> – Generates an IFC Difference based on the input parameters. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_IFC_GetIFCDifferenceState` <sub>AC26–27</sub> – Generates an IFC Difference based on the input parameters. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_IFC_IFCGuidToAPIGuid` <sub>AC26–27</sub> – It converts an @ref API_Guid to an IfcGloballyUniqueId string. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_IFC_InvokeIFCDifferenceExportSettingsDlg` <sub>AC26–27</sub> – It opens a dialog where a View and an IFC Export Translator can be selected. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Polygon
 
@@ -1096,26 +1450,38 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_Polygon_DisposeRegularizedPoly` – Deallocates handles in an @ref API_RegularizedPoly struct. <sub>(was `APIAny_DisposeRegularizedPolyID`)</sub> — [#1134](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1134 "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"), [#1127](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1127 "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)")
 - ✅ `ACAPI_Polygon_InsertPolyNode` – Inserts a node into a polygon. <sub>(was `APIAny_InsertPolyNodeID`)</sub> — [#1134](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1134 "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)")
 - ✅ `ACAPI_Polygon_InsertSubPoly` – Inserts a whole subpolygon (hole) into a polygon. <sub>(was `APIAny_InsertSubPolyID`)</sub>
-- 🙋 `ACAPI_Polygon_PolygonId2SurfaceType` – Converts a picture to another image format. <sub>(was `APIAny_PolygonId2SurfaceTypeID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Polygon_PolygonId2SurfaceType` – Converts a picture to another image format. <sub>(was `APIAny_PolygonId2SurfaceTypeID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Polygon_RegularizePolygon` – Regularizes a polygon and returns the regularized polygons. <sub>(was `APIAny_RegularizePolygonID`)</sub> — [#1134](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1134 "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"), [#1127](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1127 "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)")
 - 🚧 `ACAPI_Polygon_RegularizePolyline` – Regularizes a polyline and returns the regularized polyline. <sub>(was `APIAny_RegularizePolylineID`)</sub> — [#1134](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1134 "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"), [#1127](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1127 "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)")
-- 🙋 `ACAPI_Polygon_TriangulatePoly` – Decomposes a polygon into triangles. <sub>(was `APIAny_TriangulatePolyID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Polygon_TriangulatePoly` – Decomposes a polygon into triangles. <sub>(was `APIAny_TriangulatePolyID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## ModelAccess
 
-- 🙋 `ACAPI_ModelAccess_DecomposePgon` – Decomposes a polygon of the 3D model into convex polygons. <sub>(was `ACAPI_3D_DecomposePgon`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ModelAccess_DecomposePgon` – Decomposes a polygon of the 3D model into convex polygons. <sub>(was `ACAPI_3D_DecomposePgon`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `ACAPI_ModelAccess_GenerateModelWithSeparateComponents` <sub>AC28–30</sub> – Generates a model with separate components of the given elements, and switches to that model for subsequent operations. The operation will not be executed if the active sight is the sight of 3D window. — [#1256](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1256 "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)")
 - ✅ `ACAPI_ModelAccess_Get3DInfo` – Retrieves information on the 3D data of an element. <sub>(was `ACAPI_Element_Get3DInfo`)</sub> — [#1038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1038 "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements")
 - 🙋 `ACAPI_ModelAccess_GetBuildingMaterial` <sub>AC28–30</sub> – Returns the attribute index of the material of a specific body of an element. — [#1256](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1256 "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)")
 - ✅ `ACAPI_ModelAccess_GetComponent` – Retrieves a component from the 3D model of Archicad. <sub>(was `ACAPI_3D_GetComponent`)</sub> — [#1038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1038 "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements")
 - 🙋 `ACAPI_ModelAccess_GetConnectionTable` <sub>AC28–30</sub> – Returns a table of connected elements and the connecting polygons. — [#1093](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1093 "Expose ACAPI_ModelAccess_GetConnectionTable (contact surfaces between elements, to check wall joins)")
-- 🙋 `ACAPI_ModelAccess_GetNum` <sub>AC27–30</sub> – Returns the number of existing 3D components. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ModelAccess_GetTextureCoord` – Returns the texture coordinates of the given surface point. <sub>(was `APIAny_GetTextureCoordID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ModelAccess_GetNum` <sub>AC27–30</sub> – Returns the number of existing 3D components. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ModelAccess_GetTextureCoord` – Returns the texture coordinates of the given surface point. <sub>(was `APIAny_GetTextureCoordID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Body
 
 - ✅ `ACAPI_Body_AddEdge` – Adds a vertex to the body data object. — [#729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/729 "Fix CreateMorphs size box: no per-face surface override, outward bottom face")
-- 🙋 `ACAPI_Body_AddPolyNormal` – Adds a polygon normal vector to the body data object. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Body_AddPolyNormal` – Adds a polygon normal vector to the body data object. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Body_AddPolygon` – Adds a polygon to the body data object. — [#729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/729 "Fix CreateMorphs size box: no per-face surface override, outward bottom face"), [#728](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/728 "`CreateMorphs` with `size`: every face gets the building material index as its surface override (wrong surface in 3D)")
 - ✅ `ACAPI_Body_AddVertex` – Adds a vertex to the body data object.
 - ✅ `ACAPI_Body_Create` – Initializes a new body data object for editing.
@@ -1136,11 +1502,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - 🚧 `ACAPI_LibPart_Create` <sub>AC25–26</sub> — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
 - ✅ `ACAPI_LibPart_Get` <sub>AC25–26</sub>
-- 🙋 `ACAPI_LibPart_GetHotspots` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibPart_GetHotspots` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_LibPart_GetNum` <sub>AC25–26</sub>
 - 🚧 `ACAPI_LibPart_Save` <sub>AC25–26</sub> — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
 - ✅ `ACAPI_LibPart_Search` <sub>AC25–26</sub>
-- 🙋 `ACAPI_LibPart_ShapePrims` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_LibPart_ShapePrims` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## MenuItem
 
@@ -1165,10 +1535,18 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - 🚧 `ACAPI_CuttingPlane_GetCutPolygonInfo` – Cuts a body with a plane and returns the cutting surface and area. <sub>(was `ACAPI_3D_GetCutPolygonInfo`)</sub> — [#1038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1038 "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements")
 - 🙋 `ACAPI_CuttingPlane_GetCutPolygonInfo_New` <sub>AC28–30</sub> – Cuts a body with a plane and returns the cutting surface and area. — [#1060](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1060 "Expose ACAPI_CuttingPlane_GetCutPolygonInfo_New")
-- 🙋 `ACAPI_CuttingPlane_Is3DCutawayEnabled` <sub>AC27</sub> – Returns whether the 3DCutaway is enabled. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_CuttingPlane_IsCuttingPlanesVisible` <sub>AC27</sub> – Returns whether the Cutting Planes are visible. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_CuttingPlane_Set3DCutawayStatus` <sub>AC27</sub> – Turns the 3DCutaway on/off. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_CuttingPlane_SetCuttingPlanesVisibility` <sub>AC27</sub> – Shows or hides the Cutting Planes. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_CuttingPlane_Is3DCutawayEnabled` <sub>AC27</sub> – Returns whether the 3DCutaway is enabled. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_CuttingPlane_IsCuttingPlanesVisible` <sub>AC27</sub> – Returns whether the Cutting Planes are visible. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_CuttingPlane_Set3DCutawayStatus` <sub>AC27</sub> – Turns the 3DCutaway on/off. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_CuttingPlane_SetCuttingPlanesVisibility` <sub>AC27</sub> – Shows or hides the Cutting Planes. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## DrawOrder
 
@@ -1182,10 +1560,14 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## ElementLink
 
 - 🚧 `ACAPI_ElementLink_GetLinkFlags` – Retrieves the link flags associated with the link between the two elements. <sub>(was `ACAPI_Element_GetLinkFlags`)</sub> — [#958](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/958 "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands")
-- 🙋 `ACAPI_ElementLink_GetLinkedPropertyObjects` – Retrieves property objects linked to an element or the element default. <sub>(was `ACAPI_Element_GetLinkedPropertyObjects`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ElementLink_GetLinkedPropertyObjects` – Retrieves property objects linked to an element or the element default. <sub>(was `ACAPI_Element_GetLinkedPropertyObjects`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_ElementLink_GetLinks` – Returns a list of elements linked to the given element. <sub>(was `ACAPI_Element_GetLinks`)</sub> — [#958](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/958 "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands")
 - 🚧 `ACAPI_ElementLink_Link` – Links one element to another. <sub>(was `ACAPI_Element_Link`)</sub> — [#958](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/958 "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands")
-- 🙋 `ACAPI_ElementLink_SetLinkedPropertyObjects` – Link property objects to an element or the element default. <sub>(was `ACAPI_Element_SetLinkedPropertyObjects`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ElementLink_SetLinkedPropertyObjects` – Link property objects to an element or the element default. <sub>(was `ACAPI_Element_SetLinkedPropertyObjects`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_ElementLink_Unlink` – Removes the link from the second element to the first. <sub>(was `ACAPI_Element_Unlink`)</sub> — [#958](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/958 "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands")
 
 ## OldListing
@@ -1201,19 +1583,35 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - 🚧 `ACAPI_Selection_DeselectAll` – Adds/removes a number of elements to/from the current selection. <sub>(was `ACAPI_Element_DeselectAll`)</sub> — [#963](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/963 "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#949](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/949 "Add HideElements and ShowAllHiddenElements commands")
 - ✅ `ACAPI_Selection_Get` – Returns information on the selection, and the selected elements. — [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements"), [#963](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/963 "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"), [#949](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/949 "Add HideElements and ShowAllHiddenElements commands"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection")
-- 🙋 `ACAPI_Selection_GetSelectedElement` – Converts an @ref API_Neig structure to an @ref API_Guid. <sub>(was `APIAny_GetSelectedElementID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Selection_GetSelectedElement` – Converts an @ref API_Neig structure to an @ref API_Guid. <sub>(was `APIAny_GetSelectedElementID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI_Selection_Select` – Adds/removes a number of elements to/from the current selection. <sub>(was `ACAPI_Element_Select`)</sub> — [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements"), [#954](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/954 "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"), [#949](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/949 "Add HideElements and ShowAllHiddenElements commands"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#314](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/314 "Bug: ChangeSelectionOfElements is really slow")
 - 🚧 `ACAPI_Selection_SetMarquee` – Changes the current marquee selection. — [#963](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/963 "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands")
-- 🙋 `ACAPI_Selection_SetSelectedElementNeig` – Converts an @ref API_Guid structure to an @ref API_Neig. <sub>(was `APIAny_SetSelectedElementNeigID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Selection_SetSelectedElementNeig` – Converts an @ref API_Guid structure to an @ref API_Neig. <sub>(was `APIAny_SetSelectedElementNeigID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Sight
 
-- 🙋 `ACAPI_Sight_CreateSight` – Creates a new sight for 3D operations. <sub>(was `ACAPI_3D_CreateSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Sight_DeleteSight` – Deletes the supplied sight. <sub>(was `ACAPI_3D_DeleteSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Sight_GetCurrentWindowSight` – Returns the current window sight. <sub>(was `ACAPI_3D_GetCurrentWindowSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Sight_GetSelectedSightModel` <sub>AC28–30</sub> – Returns the model of the selected sight. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Sight_SelectSight` – Switches to the supplied 3D sight for subsequent operations. <sub>(was `ACAPI_3D_SelectSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Sight_Switch3DSight` – Switches between different 3D databases. <sub>(was `APIDb_Switch3DSightID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Sight_CreateSight` – Creates a new sight for 3D operations. <sub>(was `ACAPI_3D_CreateSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Sight_DeleteSight` – Deletes the supplied sight. <sub>(was `ACAPI_3D_DeleteSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Sight_GetCurrentWindowSight` – Returns the current window sight. <sub>(was `ACAPI_3D_GetCurrentWindowSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Sight_GetSelectedSightModel` <sub>AC28–30</sub> – Returns the model of the selected sight. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Sight_SelectSight` – Switches to the supplied 3D sight for subsequent operations. <sub>(was `ACAPI_3D_SelectSight`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Sight_Switch3DSight` – Switches between different 3D databases. <sub>(was `APIDb_Switch3DSightID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## ModulData
 
@@ -1236,7 +1634,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🚧 `ACAPI_Renovation_GetActualRenovationFilter` – Returns the current renovation filter. <sub>(was `APIDb_GetActualRenovationFilterID`)</sub> — [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands")
 - 🚧 `ACAPI_Renovation_GetRenovationFilterName` – Returns the name of the renovation filter. <sub>(was `APIAny_GetRenovationFilterNameID`)</sub> — [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands"), [#837](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/837 "Expose Drawing Manager data for Drawings and the renovation filter name of views"), [#976](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/976 "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"), [#836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/836 "Feature request: Drawing Manager data for Drawing elements")
 - 🚧 `ACAPI_Renovation_GetRenovationFilters` – Returns the array of renovation filters. <sub>(was `APIDb_GetRenovationFiltersID`)</sub> — [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands")
-- 🙋 `ACAPI_Renovation_GetRenovationStatusName` – Returns the name of the renovation status. <sub>(was `APIAny_GetRenovationStatusNameID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Renovation_GetRenovationStatusName` – Returns the name of the renovation status. <sub>(was `APIAny_GetRenovationStatusNameID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🚧 `ACAPI_Renovation_SetActualRenovationFilter` – Changes the current renovation filter. <sub>(was `APIDb_SetActualRenovationFilterID`)</sub> — [#947](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/947 "[1/2] Add GetRenovationFilters and SetActiveRenovationFilter commands")
 
 ## SurveyPoint
@@ -1276,15 +1676,27 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## AttributeList
 
-- 🙋 `ACAPI_AttributeList_AddProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AttributeList_DeleteProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_AttributeList_ModifyPropertyValue` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_AttributeList_AddProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AttributeList_DeleteProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_AttributeList_ModifyPropertyValue` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Conversion
 
-- 🙋 `ACAPI_Conversion_ConvertMimePicture` – Converts a picture to another image format using MIME types. <sub>(was `APIAny_ConvertMimePictureID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Conversion_ConvertPicture` – Converts a picture to another image format. <sub>(was `APIAny_ConvertPictureID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Conversion_GetConvertedUnitValue` – Returns the value of a physical property (length/area/volume/angle) in the unit of the given Project Preference. <sub>(was `APIEnv_GetConvertedUnitValueID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Conversion_ConvertMimePicture` – Converts a picture to another image format using MIME types. <sub>(was `APIAny_ConvertMimePictureID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Conversion_ConvertPicture` – Converts a picture to another image format. <sub>(was `APIAny_ConvertPictureID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Conversion_GetConvertedUnitValue` – Returns the value of a physical property (length/area/volume/angle) in the unit of the given Project Preference. <sub>(was `APIEnv_GetConvertedUnitValueID`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## DrawingPrimitive
 
@@ -1296,13 +1708,21 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_ElementGroup_Create` <sub>AC25–26</sub>
 - 🚧 `ACAPI_ElementGroup_GetUserData` <sub>AC25–26</sub> — [#1065](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1065 "Add GetUserDataOfGroups command (ACAPI_Grouping_GetUserData)")
-- 🙋 `ACAPI_ElementGroup_SetUserData` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ElementGroup_SetUserData` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## ElementList
 
-- 🙋 `ACAPI_ElementList_AddProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ElementList_DeleteProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ElementList_ModifyPropertyValue` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ElementList_AddProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ElementList_DeleteProperty` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ElementList_ModifyPropertyValue` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Font
 
@@ -1312,9 +1732,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## ListData
 
-- 🙋 `ACAPI_ListData_Get` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ListData_GetNum` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_ListData_Search` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_ListData_Get` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ListData_GetNum` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_ListData_Search` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## MarkUp
 
@@ -1324,9 +1750,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Preferences
 
-- 🙋 `ACAPI_Preferences_Platform` – Returns the stored preferences of the add-on. <sub>(was `ACAPI_GetPreferences_Platform`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Preferences_SetOldVersion` <sub>AC28–30</sub> – Defines custom preferences data to be saved into older project file versions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI_Preferences_OldVersion` <sub>AC27</sub> – Defines custom preferences data to be saved into older project file versions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_Preferences_Platform` – Returns the stored preferences of the add-on. <sub>(was `ACAPI_GetPreferences_Platform`)</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Preferences_SetOldVersion` <sub>AC28–30</sub> – Defines custom preferences data to be saved into older project file versions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI_Preferences_OldVersion` <sub>AC27</sub> – Defines custom preferences data to be saved into older project file versions. — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## Resource
 
@@ -1374,7 +1806,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## SetPreferences
 
-- 🙋 `ACAPI_SetPreferences_OldVersion` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI_SetPreferences_OldVersion` <sub>AC25–26</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## C++ MEPAPI
 
@@ -3007,63 +3441,139 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## C++ IFCInOutAPI
 
-- 🙋 `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::Attribute::GetValue` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::Attribute::GetValueType` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
-- 🙋 `IFCAPI::Classification::GetDescription` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::Classification::GetEdition` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist"), [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
-- 🙋 `IFCAPI::Classification::GetEditionDate` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::Classification::GetLocation` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::Classification::GetDescription` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::Classification::GetEdition` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail."), [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
+- 🙋 `IFCAPI::Classification::GetEditionDate` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::Classification::GetLocation` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::Classification::GetName` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::Classification::GetSource` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::ClassificationReference::GetDescription` <sub>AC29–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::ClassificationReference::GetIdentification` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
-- 🙋 `IFCAPI::ClassificationReference::GetIfcRelAssociatesClassificationName` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ClassificationReference::GetIfcRelAssociatesClassificationName` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `IFCAPI::ClassificationReference::GetLocation` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::ClassificationReference::GetName` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - 🙋 `IFCAPI::ClassificationReference::GetReferencedSource` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
-- 🙋 `IFCAPI::ClassificationReference::GetSort` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::GetHookManager` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ClassificationReference::GetSort` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::GetHookManager` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::GetObjectAccessor` <sub>AC28–30</sub> — [#1309](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1309 "[3/3] Add GetIFCClassificationReferencesOfElements command"), [#1307](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1307 "[1/3] Add GetIFCAttributesOfElements command")
-- 🙋 `IFCAPI::GetPropertyBuilder` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::AssignObjects` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::CreateIfcGroup` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::GetIfcRelAssignsToGroup` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::GetIfcRelReferencedInSpatialStructure` <sub>AC30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::GetIfcRelServicesBuildings` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::ReferenceObjects` <sub>AC30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookAssignments::ServiceBuildings` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterAssignmentsHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterTypeObjectAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterTypeObjectClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::RegisterTypeObjectPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterAssignmentsHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterTypeObjectAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterTypeObjectClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::HookManager::UnregisterTypeObjectPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::GetPropertyBuilder` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::AssignObjects` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::CreateIfcGroup` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::GetIfcRelAssignsToGroup` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::GetIfcRelReferencedInSpatialStructure` <sub>AC30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::GetIfcRelServicesBuildings` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::ReferenceObjects` <sub>AC30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookAssignments::ServiceBuildings` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterAssignmentsHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterTypeObjectAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterTypeObjectClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::RegisterTypeObjectPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterAssignmentsHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterTypeObjectAttributeHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterTypeObjectClassificationReferenceHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::HookManager::UnregisterTypeObjectPropertyHook` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::ObjectAccessor::CreateElementObjectID` <sub>AC28–30</sub>
-- 🙋 `IFCAPI::ObjectAccessor::CreateIfcBuildingObjectID` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ObjectAccessor::CreateIfcBuildingObjectID` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::ObjectAccessor::CreateIfcBuildingStoreyObjectID` <sub>AC28–30</sub>
-- 🙋 `IFCAPI::ObjectAccessor::CreateIfcProjectObjectID` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::ObjectAccessor::CreateIfcSiteObjectID` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ObjectAccessor::CreateIfcProjectObjectID` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::ObjectAccessor::CreateIfcSiteObjectID` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::ObjectAccessor::FindElementsByGlobalId` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetAPIElementID` <sub>AC28–30</sub>
-- 🙋 `IFCAPI::ObjectAccessor::GetAssignments` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ObjectAccessor::GetAssignments` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::ObjectAccessor::GetExternalGlobalId` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetGlobalId` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetIFCType` <sub>AC28–30</sub>
-- 🙋 `IFCAPI::ObjectAccessor::GetStoryIndex` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ObjectAccessor::GetStoryIndex` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::ObjectAccessor::GetTypeObjectIFCType` <sub>AC28–30</sub>
-- 🙋 `IFCAPI::ObjectID::GenerateHashValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::ObjectID::GenerateHashValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::Property::GetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetPropertySetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetTyped` <sub>AC28–30</sub>
@@ -3075,18 +3585,42 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `IFCAPI::PropertyBoundedValue::GetLowerBoundValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyBoundedValue::GetSetPointValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyBoundedValue::GetUpperBoundValue` <sub>AC28–30</sub>
-- 🙋 `IFCAPI::PropertyBuilder::CreateAttribute` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreateClassification` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreateClassificationReference` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreateDefaultValue` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreateEmptyValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyBoundedValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyEnumeratedValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyListValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreatePropertySingleValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyTableValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyBuilder::CreateValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `IFCAPI::PropertyEnumeratedValue::GetEnumerationReference` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `IFCAPI::PropertyBuilder::CreateAttribute` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreateClassification` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreateClassificationReference` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreateDefaultValue` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreateEmptyValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyBoundedValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyEnumeratedValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyListValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreatePropertySingleValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreatePropertyTableValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyBuilder::CreateValue` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `IFCAPI::PropertyEnumeratedValue::GetEnumerationReference` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `IFCAPI::PropertyEnumeratedValue::GetEnumerationValues` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyListValue::GetListValues` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertySingleValue::GetNominalValue` <sub>AC28–30</sub>
@@ -3113,7 +3647,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::GetStatus` <sub>AC28–30</sub> — [#1108](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1108 "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846")
 - 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly` <sub>AC28</sub> — [#1172](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1172 "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly")
 - 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination` <sub>AC28</sub> — [#1174](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1174 "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination"), [#1173](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1173 "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination")
-- 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modify` <sub>AC28</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modify` <sub>AC28</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::SetMainModelOnly` <sub>AC29–30</sub> — [#1108](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1108 "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846")
 - 🙋 `ACAPI::DesignOptions::DesignOptionCombinationViewSettings::SetStandardCombination` <sub>AC29–30</sub> — [#1108](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1108 "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846")
 - 🙋 `ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination` <sub>AC29–30</sub> — [#1175](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1175 "Expose ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination")
@@ -3121,11 +3657,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::CreateDesignOption` <sub>AC29–30</sub>
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::CreateDesignOptionCombination` <sub>AC29–30</sub>
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::CreateDesignOptionSet` <sub>AC29–30</sub>
-- 🙋 `ACAPI::DesignOptions::DesignOptionManager::DeactivateDesignOptionInCombination` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptions::DesignOptionManager::DeactivateDesignOptionInCombination` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::DeleteDesignOption` <sub>AC29–30</sub>
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::DeleteDesignOptionCombination` <sub>AC29–30</sub>
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::DeleteDesignOptionSet` <sub>AC29–30</sub>
-- 🙋 `ACAPI::DesignOptions::DesignOptionManager::DuplicateDesignOptionCombination` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptions::DesignOptionManager::DuplicateDesignOptionCombination` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::GetActiveDesignOptionsOfCombination` <sub>AC29–30</sub>
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::GetAllDesignOptions` <sub>AC29–30</sub>
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::GetAvailableDesignOptionCombinations` <sub>AC28</sub>
@@ -3137,7 +3677,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::GetElementsOfDesignOption` <sub>AC29–30</sub>
 - 🙋 `ACAPI::DesignOptions::DesignOptionManager::GetHotlinkDesignOptionTable` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
 - 🙋 `ACAPI::DesignOptions::DesignOptionManager::GetHotlinkInstanceDesignOptionTable` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
-- 🙋 `ACAPI::DesignOptions::DesignOptionManager::GetTWID` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptions::DesignOptionManager::GetTWID` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `ACAPI::DesignOptions::DesignOptionManager::MoveDesignOptionSet` <sub>AC29–30</sub> — [#1254](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1254 "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet")
 - ✅ `ACAPI::DesignOptions::DesignOptionManager::MoveDesignOptionToOtherSet` <sub>AC29–30</sub>
 - 🙋 `ACAPI::DesignOptions::DesignOptionManager::MoveDesignOptionWithinSet` <sub>AC29–30</sub> — [#1254](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1254 "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet")
@@ -3149,9 +3691,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::DesignOptions::DesignOptionSet::GetName` <sub>AC29–30</sub>
 - 🙋 `ACAPI::DesignOptions::DesignOptionSet::IsEditable` <sub>AC29–30</sub> — [#1111](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1111 "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail")
 - ✅ `ACAPI::DesignOptions::DesignOptionSet::SetName` <sub>AC29–30</sub>
-- 🙋 `ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckCreationRights` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckModificationAndDeletionRights` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckProjectExistanceAndWindowType` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckCreationRights` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckModificationAndDeletionRights` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckProjectExistanceAndWindowType` <sub>AC29–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `ACAPI::DesignOptions::HotlinkDesignOptionTable::ActivateCombination` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
 - 🙋 `ACAPI::DesignOptions::HotlinkDesignOptionTable::ActivateOptionInSet` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
 - 🙋 `ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateCombination` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
@@ -3164,16 +3712,30 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🙋 `ACAPI::DesignOptions::HotlinkDesignOptionTable::GetOptionsNamesOfSet` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
 - 🙋 `ACAPI::DesignOptions::HotlinkDesignOptionTable::GetSetsNames` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
 - 🙋 `ACAPI::DesignOptions::HotlinkDesignOptionTable::SetFilterMode` <sub>AC29–30</sub> — [#1109](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1109 "Expose the design option table of hotlinks (which options a hotlinked module shows)")
-- 🙋 `ACAPI::DesignOptions::Modify` <sub>AC28</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptions::Modify` <sub>AC28</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## C++ KeynoteAPI
 
-- 🙋 `ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteFolderChanges` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteItemChanges` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::API_IKeynoteFolderEventHandler::Dispatch` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::API_IKeynoteFolderEventHandler::GetName` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::API_IKeynoteItemEventHandler::Dispatch` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::API_IKeynoteItemEventHandler::GetName` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteFolderChanges` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteItemChanges` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::API_IKeynoteFolderEventHandler::Dispatch` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::API_IKeynoteFolderEventHandler::GetName` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::API_IKeynoteItemEventHandler::Dispatch` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::API_IKeynoteItemEventHandler::GetName` <sub>AC28–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI::Keynote::CreateKeynoteManager` <sub>AC28–30</sub>
 - ✅ `ACAPI::Keynote::KeynoteFolder::AddItem` <sub>AC28–30</sub>
 - ✅ `ACAPI::Keynote::KeynoteFolder::AddSubFolder` <sub>AC28–30</sub>
@@ -3210,12 +3772,22 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::DesignOptionCombination::GetName` <sub>AC27</sub>
 - 🙋 `ACAPI::DesignOptionCombinationViewSettings::GetName` <sub>AC27</sub> — [#1169](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1169 "Expose ACAPI::DesignOptionCombinationViewSettings::GetName")
 - 🙋 `ACAPI::DesignOptionCombinationViewSettings::GetStatus` <sub>AC27</sub> — [#1170](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1170 "Expose ACAPI::DesignOptionCombinationViewSettings::GetStatus")
-- 🙋 `ACAPI::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::DesignOptionCombinationViewSettings::Modify` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::DesignOptionCombinationViewSettings::Modify` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `ACAPI::DesignOptionManager::GetAvailableDesignOptionCombinations` <sub>AC27</sub>
-- 🙋 `ACAPI::DesignOptionManager::GetDesignOptionCombinationSettingsOf` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `ACAPI::Modify` <sub>AC27–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `ACAPI::DesignOptionManager::GetDesignOptionCombinationSettingsOf` <sub>AC27</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `ACAPI::Modify` <sub>AC27–30</sub> — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## C++ RoomBoundaryManagerAPI
 
@@ -3236,36 +3808,70 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## AC25/26 command ids (APIIo)
 
-- 🙋 `APIIo_AreCuttingPlanesVisibleID` <sub>AC28–30</sub> – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIIo_HighlightElementsID` <sub>AC25</sub> – par1: const GS::HashTable<API_Guid, API_RGBAColor>* (elems) par2: bool* (wireframe3D) — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIIo_Is3DCutawayEnabledID` – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIIo_IsCuttingPlanesVisibleID` <sub>AC25–27</sub> – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIIo_NewSettingsDialogID` <sub>AC28–30</sub> – par1: API_Guid* par2: [UShort*] (index of sub tool) — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIIo_Set3DCutawayStatusID` – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIIo_SetCuttingPlanesVisibilityID` – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `APIIo_AreCuttingPlanesVisibleID` <sub>AC28–30</sub> – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIIo_HighlightElementsID` <sub>AC25</sub> – par1: const GS::HashTable<API_Guid, API_RGBAColor>* (elems) par2: bool* (wireframe3D) — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIIo_Is3DCutawayEnabledID` – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIIo_IsCuttingPlanesVisibleID` <sub>AC25–27</sub> – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIIo_NewSettingsDialogID` <sub>AC28–30</sub> – par1: API_Guid* par2: [UShort*] (index of sub tool) — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIIo_Set3DCutawayStatusID` – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIIo_SetCuttingPlanesVisibilityID` – par1: bool* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## AC25/26 command ids (APIAny)
 
-- 🙋 `APIAny_APIGuidToIFCGuidID` <sub>AC25</sub> – par1: const API_Guid* par2: GS::UniString* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIAny_ElemTypeToNeigID` <sub>AC25</sub> – par1: API_ElemTypeID par2: API_NeigID* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIAny_GetIFCDifferenceID` <sub>AC25</sub> – par1: API_IFCDifferenceGeneratorState* par2: API_IFCDifferenceGeneratorState* par3: API_IFCDifference* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIAny_GetIFCDifferenceStateID` <sub>AC25</sub> – par1: API_Guid* par2: API_IFCTranslatorIdentifier* par3: API_IFCDifferenceGeneratorState* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIAny_IFCGuidToAPIGuidID` <sub>AC25</sub> – par1: const GS::UniString* par2: API_Guid* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
-- 🙋 `APIAny_InvokeIFCDifferenceExportSettingsDlgID` <sub>AC25</sub> – par1: API_Guid* par2: API_IFCTranslatorIdentifier* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `APIAny_APIGuidToIFCGuidID` <sub>AC25</sub> – par1: const API_Guid* par2: GS::UniString* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIAny_ElemTypeToNeigID` <sub>AC25</sub> – par1: API_ElemTypeID par2: API_NeigID* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIAny_GetIFCDifferenceID` <sub>AC25</sub> – par1: API_IFCDifferenceGeneratorState* par2: API_IFCDifferenceGeneratorState* par3: API_IFCDifference* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIAny_GetIFCDifferenceStateID` <sub>AC25</sub> – par1: API_Guid* par2: API_IFCTranslatorIdentifier* par3: API_IFCDifferenceGeneratorState* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIAny_IFCGuidToAPIGuidID` <sub>AC25</sub> – par1: const GS::UniString* par2: API_Guid* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
+- 🙋 `APIAny_InvokeIFCDifferenceExportSettingsDlgID` <sub>AC25</sub> – par1: API_Guid* par2: API_IFCTranslatorIdentifier* — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 
 ## AC25/26 command ids (APIEnv)
 
-- 🙋 `APIEnv_CheckDongleID` <sub>AC25</sub> – par1: API_DongleContent* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `APIEnv_CheckDongleID` <sub>AC25</sub> – par1: API_DongleContent* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - 🙋 `APIEnv_GetMainWindowHWNDID` <sub>AC27–30</sub> — [#1071](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1071 "Expose APIEnv_GetMainWindowHWNDID")
 - ➖ `APIEnv_GetPreferencesID` – par1: API_WorkingUnitPrefs...* par2: API_PrefsTypeID *(add-on preferences)*
-- 🙋 `APIEnv_ProtectionDataID` <sub>AC25</sub> – par1: API_ProtectionInfo* par2: GS::UniString* (configurationNumber) — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `APIEnv_ProtectionDataID` <sub>AC25</sub> – par1: API_ProtectionInfo* par2: GS::UniString* (configurationNumber) — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ➖ `APIEnv_SetPreferencesID` <sub>AC27–30</sub> *(add-on preferences)*
 
 ## AC25/26 command ids (APIDo)
 
-- 🙋 `APIDo_LoadLibrariesID` <sub>AC25–26</sub> – par1: const GS::Array<API_LibraryInfo>* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `APIDo_LoadLibrariesID` <sub>AC25–26</sub> – par1: const GS::Array<API_LibraryInfo>* par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
 - ✅ `APIDo_SaveID` – par1: [API_FileSavePars*] par2: [API_SavePars_...*]
 
 ## AC25/26 command ids (APIDb)
 
-- 🙋 `APIDb_ReSetZoomID` – par1: short* (numOfStepsBack) par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist")
+- 🙋 `APIDb_ReSetZoomID` – par1: short* (numOfStepsBack) par2: --- — [#1311](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1311 "Expose the last 296 open Archicad API items on the coverage checklist
+
+All the remaining ones. Last nail.")
