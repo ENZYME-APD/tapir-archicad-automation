@@ -467,14 +467,21 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
 
 // ACAPI_DrawOrder_CreationOrderGetNext replaces the given guid with the next one in creation
 // order, starting from the first for APINULLGuid. It signals the end with an error code or
-// APINULLGuid, so that ends the list instead of failing it. The seen set guards against a
-// sequence that would not end.
+// APINULLGuid, so that ends the list instead of failing it. Errors saying the table cannot be
+// read in the current database fail it. The seen set guards against a sequence that would not end.
 template <typename ListProxyType>
 static GSErrCode GetElementsInCreationOrderFromCurrentDatabase (ListProxyType& elementsListProxy)
 {
     GS::HashSet<API_Guid> seenGuids;
     API_Guid guid = APINULLGuid;
-    while (ACAPI_DrawOrder_CreationOrderGetNext (&guid) == NoError && guid != APINULLGuid) {
+    while (true) {
+        const GSErrCode err = ACAPI_DrawOrder_CreationOrderGetNext (&guid);
+        if (err == APIERR_BADDATABASE || err == APIERR_NOTSUPPORTED || err == APIERR_NOPLAN || err == APIERR_BADPARS) {
+            return err;
+        }
+        if (err != NoError || guid == APINULLGuid) {
+            break;
+        }
         if (seenGuids.Contains (guid)) {
             break;
         }
