@@ -159,6 +159,7 @@ static GS::HashTable<API_Guid, GS::Array<GS::UniString>> GetAttributeFolderPaths
     GS::HashTable<API_Guid, GS::Array<GS::UniString>> folderPathsByAttribute;
     API_AttributeFolder rootFolder;
     rootFolder.typeID = typeID;
+    // API_AttributeFolder::guid is a GS::Guid (unlike API_Attr_Head::guid), so the root folder is selected by GS::NULLGuid.
     rootFolder.guid = GS::NULLGuid;
     if (ACAPI_Attribute_GetFolder (rootFolder) == NoError) {
         CollectAttributeFolderPaths (rootFolder, folderPathsByAttribute);
