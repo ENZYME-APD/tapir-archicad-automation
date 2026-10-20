@@ -1344,7 +1344,8 @@ GS::ObjectState CreateFavoriteFolderCommand::Execute (const GS::ObjectState& par
 
     GS::ObjectState response;
     GS::UniString errorMessage = "Failed to create the Favorite folder.";
-    const GSErrCode err = ACAPI_CallUndoableCommand ("CreateFavoriteFolder", [&]() -> GSErrCode {
+    // The Favorite folder functions need a NotUndoable command scope.
+    const GSErrCode err = ACAPI_CallCommand ("CreateFavoriteFolder", [&]() -> GSErrCode {
         const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
         std::optional<ACAPI::Favorite::FavoriteFolder> parentFolder;
         const GSErrCode findErr = FindFavoriteFolderByPath (manager, parentPath, parentFolder, errorMessage);
@@ -1445,12 +1446,35 @@ GS::ObjectState RenameFavoriteFolderCommand::Execute (const GS::ObjectState& par
 
     GS::ObjectState response;
     GS::UniString errorMessage = "Failed to rename the Favorite folder.";
-    const GSErrCode err = ACAPI_CallUndoableCommand ("RenameFavoriteFolder", [&]() -> GSErrCode {
+    // The Favorite folder functions need a NotUndoable command scope.
+    const GSErrCode err = ACAPI_CallCommand ("RenameFavoriteFolder", [&]() -> GSErrCode {
         const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+        std::optional<ACAPI::Favorite::FavoriteFolder> parentFolder;
+        const GSErrCode findParentErr = FindFavoriteFolderByPath (manager, parentPath, parentFolder, errorMessage);
+        if (findParentErr != NoError) {
+            return findParentErr;
+        }
+
         std::optional<ACAPI::Favorite::FavoriteFolder> folder;
         const GSErrCode findErr = FindFavoriteFolderByPath (manager, path, folder, errorMessage);
         if (findErr != NoError) {
             return findErr;
+        }
+
+        // The folder is looked up by its new path after the rename, so a
+        // sibling with the new name would be found instead of it.
+        if (newName != path.GetLast ()) {
+            for (const ACAPI::Favorite::FavoriteFolder& sibling : parentFolder->GetSubFolders ()) {
+                const auto siblingName = sibling.GetName ();
+                if (siblingName.IsErr ()) {
+                    errorMessage = "Failed to get the name of a Favorite folder.";
+                    return siblingName.UnwrapErr ().kind;
+                }
+                if (siblingName.Unwrap () == newName) {
+                    errorMessage = GS::UniString::Printf ("A Favorite folder named '%T' already exists in the same folder.", newName.ToPrintf ());
+                    return APIERR_NAMEALREADYUSED;
+                }
+            }
         }
 
         const auto renameResult = manager.RenameFolder (*folder, newName);
@@ -1546,7 +1570,8 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
 
     GS::ObjectState response;
     GS::UniString errorMessage = "Failed to delete the Favorite folder.";
-    const GSErrCode err = ACAPI_CallUndoableCommand ("DeleteFavoriteFolder", [&]() -> GSErrCode {
+    // The Favorite folder functions need a NotUndoable command scope.
+    const GSErrCode err = ACAPI_CallCommand ("DeleteFavoriteFolder", [&]() -> GSErrCode {
         const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
         std::optional<ACAPI::Favorite::FavoriteFolder> folder;
         const GSErrCode findErr = FindFavoriteFolderByPath (manager, path, folder, errorMessage);
