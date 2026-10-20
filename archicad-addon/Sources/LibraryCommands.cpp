@@ -979,3 +979,137 @@ GS::ObjectState CompareLibraryPartUnIdsCommand::Execute (const GS::ObjectState& 
     response.Add ("sameRevisionGuid", APIGuidFromString (revisionGuid1.c_str ()) == APIGuidFromString (revisionGuid2.c_str ()));
     return response;
 }
+
+SearchLibraryPartsCommand::SearchLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SearchLibraryPartsCommand::GetName () const
+{
+    return "SearchLibraryParts";
+}
+
+GS::Optional<GS::UniString> SearchLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ancestorUnId": {
+                "type": "string",
+                "description": "The unique ID of the ancestor library part, '{main GUID}-{revision GUID}', as GetLibraryPartIdentities returns it. Only the library parts derived from it are found."
+            },
+            "pattern": {
+                "type": "string",
+                "description": "The name pattern to match, with * as wildcard, for example 'Chair*'. Use '*' to find every library part derived from the ancestor."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ancestorUnId",
+            "pattern"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SearchLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts found. Archicad returns at most 50.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the library part, as GetAvailableLibraryParts returns it."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the library part."
+                        },
+                        "fileName": {
+                            "type": "string",
+                            "description": "The file name of the library part."
+                        },
+                        "unId": {
+                            "type": "string",
+                            "description": "The unique ID of the library part, '{main GUID}-{revision GUID}'."
+                        },
+                        "parentUnId": {
+                            "type": "string",
+                            "description": "The unique ID of the parent of the library part."
+                        },
+                        "typeId": {
+                            "$ref": "#/LibraryPartType"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "unId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState SearchLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString ancestorUnId;
+    GS::UniString pattern;
+    parameters.Get ("ancestorUnId", ancestorUnId);
+    parameters.Get ("pattern", pattern);
+
+    std::string mainGuid;
+    std::string revisionGuid;
+    if (!SplitLibPartUnId (ancestorUnId.ToCStr ().Get (), mainGuid, revisionGuid)) {
+        return CreateErrorResponse (APIERR_BADPARS, "A library part unique ID has the form '{main GUID}-{revision GUID}'.");
+    }
+
+    API_LibPart ancestor = {};
+    CHTruncate (ancestorUnId.ToCStr ().Get (), ancestor.ownUnID, sizeof (ancestor.ownUnID));
+
+    // The API fills at most 50 results.
+    constexpr Int32 maxResults = 50;
+    API_LibPart results[maxResults] = {};
+    Int32 numFound = 0;
+    const GSErrCode err = ACAPI_LibraryPart_PatternSearch (&ancestor, pattern, results, &numFound);
+
+    GS::ObjectState response;
+    const auto& libraryParts = response.AddList<GS::ObjectState> ("libraryParts");
+    if (err == NoError) {
+        for (Int32 i = 0; i < numFound && i < maxResults; ++i) {
+            const API_LibPart& libPart = results[i];
+            GS::ObjectState libraryPart;
+            libraryPart.Add ("index", static_cast<Int32> (libPart.index));
+            libraryPart.Add ("name", GS::UniString (libPart.docu_UName));
+            libraryPart.Add ("fileName", GS::UniString (libPart.file_UName));
+            libraryPart.Add ("unId", GS::UniString (libPart.ownUnID));
+            libraryPart.Add ("parentUnId", GS::UniString (libPart.parentUnID));
+            libraryPart.Add ("typeId", LibPartTypeIdToString (libPart.typeID));
+            libraryParts (libraryPart);
+        }
+    }
+
+    // The results were zero-initialised, so a location the API did not allocate is nullptr.
+    for (API_LibPart& libPart : results) {
+        delete libPart.location;
+        libPart.location = nullptr;
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to search the library parts derived from " + ancestorUnId + ".");
+    }
+
+    return response;
+}

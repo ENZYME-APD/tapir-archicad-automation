@@ -396,6 +396,11 @@ inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfM
     return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
 }
 
+inline GSErrCode ACAPI_LibraryPart_PatternSearch (const API_LibPart* ancestor, const GS::UniString& pattern, API_LibPart result[50], Int32* numFound)
+{
+    return ACAPI_LibPart_PatternSearch (ancestor, pattern, result, numFound);
+}
+
 inline GSErrCode ACAPI_LibraryPart_OpenParameters (API_ParamOwnerType* paramOwner)
 {
     return ACAPI_Goodies (APIAny_OpenParametersID, paramOwner);

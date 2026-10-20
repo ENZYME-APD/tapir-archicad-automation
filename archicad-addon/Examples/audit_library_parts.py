@@ -16,3 +16,11 @@ if len (unIds) >= 2:
             'unId2': unId2
         }, debug = False)
         print (response)
+
+# The library parts derived from the first one, matched by name.
+if unIds:
+    response = aclib.RunTapirCommand ('SearchLibraryParts', {
+        'ancestorUnId': unIds[0],
+        'pattern': '*'
+    }, debug = False)
+    print (response)
