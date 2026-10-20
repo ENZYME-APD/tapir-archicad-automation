@@ -1,7 +1,7 @@
 import aclib
 
 # External hierarchical elements (for example MEP elements or elements of other add-ons)
-# return their subelements as externalSubelements from Archicad 27.
+# return their subelements as externalSubelements from Archicad 28.
 mainElements = aclib.RunCommand ('API.GetAllElements', {})['elements']
 response = aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {
         'elements' : mainElements

@@ -2813,7 +2813,7 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetRawR
                         },
                         "externalSubelements": {
                             "$ref": "#/Elements",
-                            "description": "The subelements of an external hierarchical element (for example an MEP element or an element of another add-on). Available from Archicad 27."
+                            "description": "The subelements of an external hierarchical element (for example an MEP element or an element of another add-on). Available from Archicad 28."
                         }
                     },
                     "additionalProperties": false,
@@ -2859,7 +2859,7 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
 
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
 
-#ifdef ServerMainVers_2700
+#ifdef ServerMainVers_2800
         API_Elem_Head header = {};
         header.guid = elemGuid;
         if (ACAPI_Element_GetHeader (&header) == NoError && GetElemTypeId (header) == API_ExternalElemID) {
