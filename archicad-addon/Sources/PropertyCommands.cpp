@@ -855,36 +855,26 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
                 continue;
             }
 
-            // The values are set with one ACAPI_Attribute_SetProperties call per attribute,
-            // so a property that cannot be set must be left out of that call.
-            GS::Array<API_Property> propertiesToSet;
-            GS::Array<GSIndex> resultIndicesToSet;
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (attGuid, propertyValue.definition.guid);
                 if (!resultIndices.ContainsKey (guidPair) || propertyValue.status == API_Property_NotAvailable) {
                     continue;
                 }
 
-                const GSIndex resultIndex = resultIndices[guidPair];
-                const GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
+                GS::ObjectState& result = results[resultIndices[guidPair]];
+                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
                 if (err != NoError) {
-                    results[resultIndex] = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
+                    result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
                     continue;
                 }
 
-                propertiesToSet.Push (propertyValue);
-                resultIndicesToSet.Push (resultIndex);
-            }
+                err = ACAPI_Attribute_SetProperty (attrHead, propertyValue);
+                if (err != NoError) {
+                    result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
+                    continue;
+                }
 
-            if (propertiesToSet.IsEmpty ()) {
-                continue;
-            }
-
-            const GSErrCode err = ACAPI_Attribute_SetProperties (attrHead, propertiesToSet);
-            for (const GSIndex resultIndex : resultIndicesToSet) {
-                results[resultIndex] = (err == NoError)
-                    ? CreateSuccessfulExecutionResult ()
-                    : CreateFailedExecutionResult (err, "Failed to set property values for attribute");
+                result = CreateSuccessfulExecutionResult ();
             }
         }
 
