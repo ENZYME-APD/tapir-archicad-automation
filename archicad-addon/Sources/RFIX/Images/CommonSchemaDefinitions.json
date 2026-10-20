@@ -5832,7 +5832,7 @@
             },
             "description": {
                 "type": "string",
-                "description": "The description of the classification reference."
+                "description": "The description of the classification reference. Given only in Archicad 29 and later, missing when it has no value."
             },
             "referencedSource": {
                 "type": "object",

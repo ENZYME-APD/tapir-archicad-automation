@@ -972,7 +972,9 @@ static GS::ObjectState ClassificationReferenceToObjectState (const IFCAPI::Class
     AddOptionalString (ifcClassificationReference, "identification", classificationReference.GetIdentification ());
     AddOptionalString (ifcClassificationReference, "name", classificationReference.GetName ());
     AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
+#ifdef ServerMainVers_2900
     AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
+#endif
 
     const IFCAPI::Classification referencedSource = classificationReference.GetReferencedSource ();
     GS::ObjectState referencedSourceObject ("name", referencedSource.GetName ());
@@ -989,6 +991,14 @@ static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::
 {
     if (!value.IsEmpty ()) {
         os.Add (name, value);
+    }
+}
+
+// Archicad 26 and 27 give the texts as GS::Optional
+static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::Optional<GS::UniString>& value)
+{
+    if (value.HasValue ()) {
+        AddNonEmptyString (os, name, *value);
     }
 }
 
