@@ -409,7 +409,7 @@ GSErrCode Initialize (void)
             "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
         );
         err |= RegisterCommand<SetZoneLabelingSettingsCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Turns the automatic labeling of Zones on or off. Available from Archicad 28."
         );
         err |= RegisterCommand<GetCollisionsCommand> (

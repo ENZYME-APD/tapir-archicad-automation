@@ -3570,9 +3570,8 @@ GS::ObjectState SetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& 
     ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
 
     ACAPI::Result<void> modifyResult = settings.Modify (
-        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) -> GSErrCode {
-            modifier.SetAutomaticLabeling (automaticLabeling);
-            return NoError;
+        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) {
+            return modifier.SetAutomaticLabeling (automaticLabeling);
         }
     );
 
