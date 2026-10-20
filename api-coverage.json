@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 01:16 UTC",
+ "generatedAt": "2026-10-20 01:36 UTC",
  "versions": [
   25,
   26,
@@ -19829,6 +19829,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1292,
+     "title": "In-process Criteria Evaluator and Search Commands (#1253)"
+    },
     {
      "number": 1279,
      "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
