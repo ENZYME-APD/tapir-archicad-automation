@@ -16,3 +16,6 @@ if len (unIds) >= 2:
             'unId2': unId2
         }, debug = False)
         print (response)
+
+response = aclib.RunTapirCommand ('GetLastValidEmbeddedLibraryPartName', {}, debug = False)
+print (response)

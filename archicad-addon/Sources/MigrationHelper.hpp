@@ -446,6 +446,11 @@ inline bool ACAPI_Teamwork_IsServerLibPart (const IO::Location& location)
     return ACAPI_TeamworkControl_IsServerLibPart (location);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetLastValidEmbeddedLPName (GS::UniString* name, IO::Location* location)
+{
+    return ACAPI_Interface (APIIo_GetLastValidEmbeddedLPNameID, name, location);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);

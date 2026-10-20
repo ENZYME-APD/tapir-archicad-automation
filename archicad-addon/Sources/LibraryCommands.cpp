@@ -979,3 +979,50 @@ GS::ObjectState CompareLibraryPartUnIdsCommand::Execute (const GS::ObjectState& 
     response.Add ("sameRevisionGuid", APIGuidFromString (revisionGuid1.c_str ()) == APIGuidFromString (revisionGuid2.c_str ()));
     return response;
 }
+
+GetLastValidEmbeddedLibraryPartNameCommand::GetLastValidEmbeddedLibraryPartNameCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLastValidEmbeddedLibraryPartNameCommand::GetName () const
+{
+    return "GetLastValidEmbeddedLibraryPartName";
+}
+
+GS::Optional<GS::UniString> GetLastValidEmbeddedLibraryPartNameCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the last valid library part of the embedded library."
+            },
+            "path": {
+                "type": "string",
+                "description": "The path of the file of that library part."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "path"
+        ]
+    })";
+}
+
+GS::ObjectState GetLastValidEmbeddedLibraryPartNameCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString name;
+    IO::Location location;
+    const GSErrCode err = ACAPI_LibraryPart_GetLastValidEmbeddedLPName (&name, &location);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the last valid library part of the embedded library.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("name", name);
+    response.Add ("path", location.ToDisplayText ());
+    return response;
+}

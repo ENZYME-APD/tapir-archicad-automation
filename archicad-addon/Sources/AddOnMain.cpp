@@ -1033,6 +1033,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same."
         );
+        err |= RegisterCommand<GetLastValidEmbeddedLibraryPartNameCommand> (
+            libraryCommands, "1.7.3",
+            "Gets the name and file path of the last valid library part of the embedded library."
+        );
         AddCommandGroup (libraryCommands);
     }
 
