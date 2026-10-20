@@ -2736,7 +2736,9 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
 
             API_ContentPars contentPars = {};
             contentPars.head = element.header;
-            // from and range are in/out pointers, content a terminated C string; all kept alive for the call.
+            // from and range are in/out pointers, content a terminated C string (char*, as the builds show); all
+            // kept alive for the call. The content is passed as UTF-8; that Archicad reads it as UTF-8 and not in
+            // the system code page is unverified, so non-ASCII content must be checked in Archicad.
             contentPars.from = &from;
             contentPars.range = &range;
             const auto contentCStr = content.ToCStr (CC_UTF8);
