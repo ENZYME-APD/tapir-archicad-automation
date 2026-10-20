@@ -781,6 +781,13 @@ static GS::ObjectState CreateEditModeStateItem (bool inEditMode, const API_Guid&
     }
     return item;
 }
+
+// The ACAPI_HierarchicalEditing_IsIn*EditMode functions take the flag as bool* before Archicad 29 and as bool& from Archicad 29.
+#if defined (ServerMainVers_2900)
+#define EDIT_MODE_FLAG(flag) (flag)
+#else
+#define EDIT_MODE_FLAG(flag) (&(flag))
+#endif
 #endif
 
 GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
@@ -801,7 +808,7 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
 
     bool inEditMode = false;
     API_Guid editedElement = APINULLGuid;
-    err = ACAPI_HierarchicalEditing_IsInCurtainWallEditMode (inEditMode, &editedElement);
+    err = ACAPI_HierarchicalEditing_IsInCurtainWallEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to query the curtain wall editing mode.");
     }
@@ -809,7 +816,7 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
 
     inEditMode = false;
     editedElement = APINULLGuid;
-    err = ACAPI_HierarchicalEditing_IsInStairEditMode (inEditMode, &editedElement);
+    err = ACAPI_HierarchicalEditing_IsInStairEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to query the stair editing mode.");
     }
@@ -817,7 +824,7 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
 
     inEditMode = false;
     editedElement = APINULLGuid;
-    err = ACAPI_HierarchicalEditing_IsInBeamEditMode (inEditMode, &editedElement);
+    err = ACAPI_HierarchicalEditing_IsInBeamEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to query the beam editing mode.");
     }
@@ -825,7 +832,7 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
 
     inEditMode = false;
     editedElement = APINULLGuid;
-    err = ACAPI_HierarchicalEditing_IsInColumnEditMode (inEditMode, &editedElement);
+    err = ACAPI_HierarchicalEditing_IsInColumnEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to query the column editing mode.");
     }
