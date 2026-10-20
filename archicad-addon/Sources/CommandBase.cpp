@@ -509,7 +509,8 @@ API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& 
     }
     GS::ObjectState originOs;
     if (os.Get ("origin", originOs)) {
-        orientation.origo = Get2DCoordinateFromObjectState (originOs);
+        originOs.Get ("x", orientation.origo.x);
+        originOs.Get ("y", orientation.origo.y);
     }
     os.Get ("matrix00", orientation.matrix00);
     os.Get ("matrix10", orientation.matrix10);
