@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 21 % | 90 | 19 |  | 7 | 8 | 56 |  | 49 |
 | C++ API (ACAPI::, IFCAPI::) | 29 % | 1576 | 465 |  | 6 | 1037 | 68 |  | 255 |
 
-Archicad 25–30 DevKits; updated 2026-10-20 07:05 UTC.
+Archicad 25–30 DevKits; updated 2026-10-20 07:15 UTC.
 
 | | Status |
 |---|---|
@@ -1079,7 +1079,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## IFC
 
-- ✅ `ACAPI_IFC_GetIFCExportTranslatorsList` – Returns the valid IFC Export Translators. <sub>(was `APIAny_GetIFCExportTranslatorsListID`)</sub>
+- ✅ `ACAPI_IFC_GetIFCExportTranslatorsList` – Returns the valid IFC Export Translators. <sub>(was `APIAny_GetIFCExportTranslatorsListID`)</sub> — [#1310](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1310 "GetIFCExportTranslators marks the wrong translator as preview")
 - ✅ `ACAPI_IFC_GetIFCRelationshipData` – It generates an IFC Relationship Data based on the input IFC Translator parameter. <sub>(was `APIAny_GetIFCRelationshipDataID`)</sub>
 - ⬜ `ACAPI_IFC_InvokeIFCExportSettingsDlg` <sub>AC28–30</sub> – It opens a dialog where a View and an IFC Export Translator can be selected.
 - ⬜ `ACAPI_IFC_APIGuidToIFCGuid` <sub>AC26–27</sub> – It converts an @ref API_Guid to an IfcGloballyUniqueId string.
@@ -3027,7 +3027,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🙋 `IFCAPI::ClassificationReference::GetReferencedSource` <sub>AC28–30</sub> — [#1306](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1306 "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)")
 - ⬜ `IFCAPI::ClassificationReference::GetSort` <sub>AC29–30</sub>
 - ⬜ `IFCAPI::GetHookManager` <sub>AC28–30</sub>
-- ✅ `IFCAPI::GetObjectAccessor` <sub>AC28–30</sub>
+- ✅ `IFCAPI::GetObjectAccessor` <sub>AC28–30</sub> — [#1309](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1309 "[3/3] Add GetIFCClassificationReferencesOfElements command"), [#1307](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1307 "[1/3] Add GetIFCAttributesOfElements command")
 - ⬜ `IFCAPI::GetPropertyBuilder` <sub>AC28–30</sub>
 - ⬜ `IFCAPI::HookAssignments::AssignObjects` <sub>AC28–30</sub>
 - ⬜ `IFCAPI::HookAssignments::CreateIfcGroup` <sub>AC28–30</sub>
