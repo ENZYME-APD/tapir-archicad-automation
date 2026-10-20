@@ -2736,11 +2736,11 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
 
             API_ContentPars contentPars = {};
             contentPars.head = element.header;
-            contentPars.from = from;
-            contentPars.range = range;
-            // The new piece as a terminated UTF-16 string, kept alive for the call.
-            std::vector<GS::uchar_t> contentChars (content.GetLength () + 1, 0);
-            GS::ucscpy (contentChars.data (), content.ToUStr ().Get ());
+            // from and range are in/out pointers, content a terminated C string; all kept alive for the call.
+            contentPars.from = &from;
+            contentPars.range = &range;
+            const auto contentCStr = content.ToCStr (CC_UTF8);
+            std::vector<char> contentChars (contentCStr.Get (), contentCStr.Get () + Strlen32 (contentCStr.Get ()) + 1);
             contentPars.content = contentChars.data ();
 
             err = ACAPI_Element_ChangeContent (&contentPars);
