@@ -35,10 +35,10 @@
 #include "ACAPI/MEPDuctReferenceSet.hpp"
 #include "ACAPI/MEPRigidSegment.hpp"
 #include "ACAPI/MEPFlexibleSegment.hpp"
-#include "ACAPI/MEPElbow.hpp"
 #include "ACAPI/MEPBranch.hpp"
 #include "ACAPI/MEPTransition.hpp"
 #ifdef ServerMainVers_2900
+#include "ACAPI/MEPElbow.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
 #include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctTransitionPreferenceTable.hpp"
@@ -705,7 +705,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
         "properties": {
             "elementDetails": {
                 "type": "array",
-                "description": "The details of the given MEP elements, in the order of the input, or an error for an element that is not an MEP element. A value that cannot be read is left out.",
+                "description": "The details of the given MEP elements, in the order of the input, or an error for an element that is not an MEP element, and in Archicad 28 for an elbow. A value that cannot be read is left out.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -743,11 +743,11 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                                 },
                                 "factorRadius": {
                                     "type": "number",
-                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow."
+                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow, from Archicad 29."
                                 },
                                 "preferenceTableId": {
                                     "$ref": "#/Guid",
-                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow, and Transition from Archicad 29."
+                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow and Transition, from Archicad 29."
                                 },
                                 "branchAngle": {
                                     "type": "number",
@@ -855,8 +855,7 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
                 }
             }
         } else if (typeName == "Elbow") {
-            // In Archicad 28 the elbows are bends (see GetMEPElementTypeName); they are read through the
-            // Elbow class as well, and give an error if that does not work.
+#ifdef ServerMainVers_2900
             ACAPI::Result<ACAPI::MEP::Elbow> elbow = ACAPI::MEP::Elbow::Get (elemId);
             if (elbow.IsErr ()) {
                 elementDetails (CreateErrorResponse (elbow.UnwrapErr ().kind, "Failed to get the elbow."));
@@ -866,6 +865,11 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
             AddNumberIfAvailable (detailsOs, "insulationThickness", elbow->GetInsulationThickness ());
             AddGuidIfAvailable (detailsOs, "preferenceTableId", elbow->GetPreferenceTable ());
             AddElementIdIfAvailable (detailsOs, "routingNodeId", elbow->GetRoutingNodeId ());
+#else
+            // Archicad 28 has no Elbow class; its elbows are bends (see GetMEPElementTypeName).
+            elementDetails (CreateErrorResponse (APIERR_NOTSUPPORTED, "The details of elbows are available from Archicad 29."));
+            continue;
+#endif
         } else if (typeName == "Branch") {
             ACAPI::Result<ACAPI::MEP::Branch> branch = ACAPI::MEP::Branch::Get (elemId);
             if (branch.IsErr ()) {
