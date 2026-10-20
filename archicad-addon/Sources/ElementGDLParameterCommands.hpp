@@ -84,7 +84,7 @@ public:
 class GetCalculatedParametersOfCurtainWallSubElementsCommand : public CommandBase
 {
 public:
-    SetMarkerParametersOfElementsCommand ();
+    GetCalculatedParametersOfCurtainWallSubElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
