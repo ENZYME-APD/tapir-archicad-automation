@@ -5849,6 +5849,18 @@
                     "edition": {
                         "type": "string",
                         "description": "The edition of the classification. Missing when it has no value."
+                    },
+                    "editionDate": {
+                        "type": "string",
+                        "description": "The edition date of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The description of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value."
+                    },
+                    "location": {
+                        "type": "string",
+                        "description": "The location of the classification, for example a URL. Given only in Archicad 25, 26 and 27, missing when it has no value."
                     }
                 },
                 "additionalProperties": false,
@@ -5858,7 +5870,7 @@
             },
             "source": {
                 "type": "string",
-                "description": "Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element).",
+                "description": "Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element). Missing in Archicad 25, 26 and 27, where the storedOnly input chooses between the stored references and all of them.",
                 "enum": [
                     "preview",
                     "local"
@@ -5867,8 +5879,7 @@
         },
         "additionalProperties": false,
         "required": [
-            "referencedSource",
-            "source"
+            "referencedSource"
         ]
     },
     "ElementIFCClassificationReferences": {

@@ -928,6 +928,10 @@ GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::Get
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "storedOnly": {
+                "type": "boolean",
+                "description": "Return only the classification references stored on the elements, not the ones Archicad would generate on IFC export. Used only in Archicad 25, 26 and 27. Default: false."
             }
         },
         "additionalProperties": false,
@@ -979,12 +983,43 @@ static GS::ObjectState ClassificationReferenceToObjectState (const IFCAPI::Class
     ifcClassificationReference.Add ("source", GS::UniString (source));
     return ifcClassificationReference;
 }
+#else
+// Empty texts are left out of the object, as the IFCAPI leaves out the values it does not have
+static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::UniString& value)
+{
+    if (!value.IsEmpty ()) {
+        os.Add (name, value);
+    }
+}
+
+static GS::ObjectState ClassificationReferenceToObjectState (const API_IFCClassificationReference& classificationReference)
+{
+    GS::ObjectState ifcClassificationReference;
+    AddNonEmptyString (ifcClassificationReference, "identification", classificationReference.identification);
+    AddNonEmptyString (ifcClassificationReference, "name", classificationReference.name);
+    AddNonEmptyString (ifcClassificationReference, "location", classificationReference.location);
+
+    const API_IFCClassification& referencedSource = classificationReference.referencedSource;
+    GS::ObjectState referencedSourceObject ("name", referencedSource.name);
+    AddNonEmptyString (referencedSourceObject, "edition", referencedSource.edition);
+    AddNonEmptyString (referencedSourceObject, "editionDate", referencedSource.editionDate);
+    AddNonEmptyString (referencedSourceObject, "description", referencedSource.description);
+    AddNonEmptyString (referencedSourceObject, "location", referencedSource.location);
+    ifcClassificationReference.Add ("referencedSource", referencedSourceObject);
+
+    return ifcClassificationReference;
+}
 #endif
 
 GS::ObjectState GetIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+
+#ifndef ServerMainVers_2800
+    bool storedOnly = false;
+    parameters.Get ("storedOnly", storedOnly);
+#endif
 
     GS::ObjectState response;
     const auto& elementIFCClassificationReferences = response.AddList<GS::ObjectState> ("elementIFCClassificationReferences");
@@ -1032,7 +1067,20 @@ GS::ObjectState GetIFCClassificationReferencesOfElementsCommand::Execute (const 
 
         elementIFCClassificationReferences (elemIFCClassificationReferences);
 #else
-        elementIFCClassificationReferences (CreateErrorResponse (APIERR_NOTSUPPORTED, "Getting IFC classification references is available from Archicad 28."));
+        GS::Array<API_IFCClassificationReference> classificationReferences;
+        const GSErrCode err = ACAPI_Element_GetIFCClassificationReferences (elemGuid, storedOnly, &classificationReferences);
+        if (err != NoError) {
+            elementIFCClassificationReferences (CreateErrorResponse (err, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCClassificationReferences = CreateElementIdObjectState (elemGuid);
+        const auto& ifcClassificationReferences = elemIFCClassificationReferences.AddList<GS::ObjectState> ("ifcClassificationReferences");
+        for (const API_IFCClassificationReference& classificationReference : classificationReferences) {
+            ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference));
+        }
+
+        elementIFCClassificationReferences (elemIFCClassificationReferences);
 #endif
     }
 
