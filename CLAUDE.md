@@ -285,7 +285,10 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   per hour, `CLAUDE_RETRY=false` turns it off), and the steward neither counts
   failed review or fix runs as rounds nor starts one within 50 minutes of a
   failure, nor a review within 50 minutes of one that recorded no verdict on
-  the same head (three such reviews hand the PR over).
+  the same head (`BOT_PR_MAX_EMPTY_REVIEWS`, default 8, such reviews hand the
+  PR over). A review posts its summary from `.review-context/summary.md`, and
+  a step after it posts that file when the review's own `gh pr comment` did
+  not, so a refused command no longer loses the verdict.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
