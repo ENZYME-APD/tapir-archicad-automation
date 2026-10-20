@@ -974,11 +974,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementsByIFCIdsCommand> (
             ifcCommands, "1.5.1",
-            "Retrieves the elements by the given IFC identifiers."
+            "Retrieves the elements by the given IFC identifiers. Accepts IFC GlobalIds in every Archicad version."
         );
         err |= RegisterCommand<GetIFCIdsOfElementsCommand> (
             ifcCommands, "1.5.1",
-            "Retrieves the IFC identifiers of the given elements."
+            "Retrieves the IFC identifiers of the given elements. Before Archicad 28 it also returns their IFC GlobalIds."
         );
         err |= RegisterCommand<GetIFCTypeOfElementsCommand> (
             ifcCommands, "1.5.1",

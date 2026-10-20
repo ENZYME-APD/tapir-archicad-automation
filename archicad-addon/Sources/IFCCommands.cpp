@@ -10,6 +10,22 @@
 #include "ACAPI/IFCPropertyAccessor.hpp"
 #endif
 
+#ifndef ServerMainVers_2800
+
+// An IFC GlobalId is the 22 character base64 form of a GUID
+static const USize IFCGlobalIdLength = 22;
+
+static GS::UniString IFCGlobalIdOf (const API_Guid& guid)
+{
+    GS::UniString ifcGlobalId;
+    if (guid == APINULLGuid || ACAPI_IFC_APIGuidToIFCGuid (guid, ifcGlobalId) != NoError) {
+        return GS::EmptyUniString;
+    }
+    return ifcGlobalId;
+}
+
+#endif
+
 GetElementsByIFCIdsCommand::GetElementsByIFCIdsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -27,7 +43,7 @@ GS::Optional<GS::UniString> GetElementsByIFCIdsCommand::GetInputParametersSchema
         "properties": {
             "ifcIds": {
                 "type": "array",
-                "description": "A list of IFC identifiers to get the corresponding elements for.",
+                "description": "A list of IFC identifiers to get the corresponding elements for. Each one is either an IFC GlobalId (22 characters) or, before Archicad 28, the 36 character GUID form that GetIFCIdsOfElements returns there as ifcId.",
                 "items": {
                     "type": "string"
                 }
@@ -81,9 +97,17 @@ GS::ObjectState GetElementsByIFCIdsCommand::Execute (const GS::ObjectState& para
             }
         }
 #else
-        const API_Guid apiGuid = APIGuidFromString (ifcId.ToCStr ());
+        API_Guid apiGuid = APINULLGuid;
+        GSErrCode err = NoError;
+        if (ifcId.GetLength () == IFCGlobalIdLength) {
+            err = ACAPI_IFC_IFCGuidToAPIGuid (ifcId, apiGuid);
+        } else {
+            apiGuid = APIGuidFromString (ifcId.ToCStr ());
+        }
         GS::Array<API_Guid> elemGuids;
-        auto err = ACAPI_Element_GetElemListByIFCIdentifier (&apiGuid, &apiGuid, elemGuids);
+        if (err == NoError) {
+            err = ACAPI_Element_GetElemListByIFCIdentifier (&apiGuid, &apiGuid, elemGuids);
+        }
         if (err == NoError) {
             for (auto& elemGuid : elemGuids) {
                 elements (CreateElementIdObjectState (elemGuid));
@@ -186,6 +210,8 @@ GS::ObjectState GetIFCIdsOfElementsCommand::Execute (const GS::ObjectState& para
 
         elemIFCIds.Add ("ifcId", APIGuidToString (ifcId));
         elemIFCIds.Add ("externalIFCId", APIGuidToString (externalIFCId));
+        elemIFCIds.Add ("ifcGlobalId", IFCGlobalIdOf (ifcId));
+        elemIFCIds.Add ("externalIFCGlobalId", IFCGlobalIdOf (externalIFCId));
 #endif
 
         elementIFCIds (elemIFCIds);

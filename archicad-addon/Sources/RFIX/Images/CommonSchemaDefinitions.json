@@ -5744,10 +5744,20 @@
                 "$ref": "#/ElementId"
             },
             "ifcId": {
-                "type": "string"
+                "type": "string",
+                "description": "The IFC identifier of the element. From Archicad 28 it is the IFC GlobalId (22 characters); before Archicad 28 it is the same identifier in the 36 character GUID form, and ifcGlobalId gives its GlobalId."
             },
             "externalIFCId": {
-                "type": "string"
+                "type": "string",
+                "description": "The external IFC identifier of the element, in the same form as ifcId."
+            },
+            "ifcGlobalId": {
+                "type": "string",
+                "description": "The IFC GlobalId (22 characters) of ifcId. Only returned before Archicad 28, where ifcId is in the GUID form; from Archicad 28 ifcId already is the GlobalId."
+            },
+            "externalIFCGlobalId": {
+                "type": "string",
+                "description": "The IFC GlobalId (22 characters) of externalIFCId, empty when the element has no external IFC identifier. Only returned before Archicad 28."
             }
         },
         "additionalProperties": false,
