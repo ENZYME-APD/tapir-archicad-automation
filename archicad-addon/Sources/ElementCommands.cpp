@@ -4827,14 +4827,13 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
     if (err == APIERR_REFUSEDPAR) {
         return CreateErrorResponse (err, "Only polygonal element types can be searched by coordinate (for example Slab, Roof, Mesh, Zone or Hatch).");
     }
-    if (err == APIERR_BADDATABASE) {
+    if (err != NoError) {
         return CreateErrorResponse (err, "Failed to search for an element at the coordinate.");
     }
 
-    // APIERR_BADPARS (both pointers are valid here) and any other failure is Archicad's way of
-    // saying that there is nothing at the point.
+    // A successful search leaves the guid null when there is nothing at the point.
     GS::ObjectState response;
-    const bool found = (err == NoError && elemGuid != APINULLGuid);
+    const bool found = (elemGuid != APINULLGuid);
     response.Add ("found", found);
     if (found) {
         response.Add ("elementId", CreateGuidObjectState (elemGuid));
