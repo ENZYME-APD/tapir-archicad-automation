@@ -406,9 +406,9 @@ inline GSErrCode ACAPI_LibraryPart_GetActParameters (API_GetParamsType* theParam
     return ACAPI_Goodies (APIAny_GetActParametersID, theParams);
 }
 
-inline GSErrCode ACAPI_LibraryManagement_UsableGDLString (const GS::UniString& str)
+inline GSErrCode ACAPI_LibraryManagement_UsableGDLString (const char* str)
 {
-    return ACAPI_Goodies (APIAny_UsableGDLStringID, (void*) &str);
+    return ACAPI_Goodies (APIAny_UsableGDLStringID, (void*) str);
 }
 
 inline GSErrCode ACAPI_LibraryPart_ChangeAParameter (API_ChangeParamType* changeParamType)

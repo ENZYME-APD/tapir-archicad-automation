@@ -745,8 +745,13 @@ GS::ObjectState IsUsableGDLStringCommand::Execute (const GS::ObjectState& parame
 
     // ACAPI_LibraryManagement_UsableGDLString returns NoError when the string is usable
     // in GDL and an error code when it is not.
+    // It takes a GS::UniString from Archicad 30 and a C string before.
     for (const GS::UniString& str : strings) {
+#ifdef ServerMainVers_3000
         results (ACAPI_LibraryManagement_UsableGDLString (str) == NoError);
+#else
+        results (ACAPI_LibraryManagement_UsableGDLString (str.ToCStr ().Get ()) == NoError);
+#endif
     }
 
     return response;
