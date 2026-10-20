@@ -684,3 +684,70 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
 
     return response;
 }
+
+IsUsableGDLStringCommand::IsUsableGDLStringCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String IsUsableGDLStringCommand::GetName () const
+{
+    return "IsUsableGDLString";
+}
+
+GS::Optional<GS::UniString> IsUsableGDLStringCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "strings": {
+                "type": "array",
+                "description": "The strings to check.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "strings"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> IsUsableGDLStringCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item for each given string, in the same order: true if Archicad accepts the string for use in GDL, false otherwise.",
+                "items": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState IsUsableGDLStringCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> strings;
+    parameters.Get ("strings", strings);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<bool> ("results");
+
+    // ACAPI_LibraryManagement_UsableGDLString returns NoError when the string is usable
+    // in GDL and an error code when it is not.
+    for (const GS::UniString& str : strings) {
+        results (ACAPI_LibraryManagement_UsableGDLString (str) == NoError);
+    }
+
+    return response;
+}
