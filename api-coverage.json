@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 07:37 UTC",
+ "generatedAt": "2026-10-20 07:58 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,10 @@
   30
  ],
  "counts": {
-  "claimed": 1445,
+  "open": 146,
   "not applicable": 469,
-  "in progress": 226,
+  "claimed": 1271,
+  "in progress": 254,
   "done": 743
  },
  "items": [
@@ -31,15 +32,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnAddOnCommunication_AddMDCLParameter",
@@ -934,8 +930,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -960,8 +956,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -986,8 +982,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1012,8 +1008,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1038,8 +1034,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1064,8 +1060,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1090,8 +1086,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1116,8 +1112,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1142,8 +1138,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1168,8 +1164,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1194,8 +1190,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1220,8 +1216,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1246,8 +1242,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1329,8 +1325,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1374,8 +1370,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1400,8 +1396,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1426,8 +1422,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -1452,8 +1448,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1323,
+     "title": "Expose add-on objects as a project data store (key/value data saved in the project)"
     }
    ]
   },
@@ -3196,15 +3192,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_CreateExt",
@@ -3327,8 +3318,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1334,
+     "title": "Expose deleting many attributes at once and fast attribute enumeration"
     }
    ]
   },
@@ -3351,8 +3342,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1334,
+     "title": "Expose deleting many attributes at once and fast attribute enumeration"
     }
    ]
   },
@@ -3609,15 +3600,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetDef",
@@ -3694,8 +3680,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1334,
+     "title": "Expose deleting many attributes at once and fast attribute enumeration"
     }
    ]
   },
@@ -3847,13 +3833,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1333,
+     "title": "[1/4] Add GetPropertyDefinitionsOfAttributes command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -3899,8 +3890,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -3977,8 +3968,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -4003,8 +3994,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -4029,8 +4020,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -4129,8 +4120,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -4262,8 +4253,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -4676,15 +4667,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Body_AddPolygon",
@@ -4841,6 +4827,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1342,
+     "title": "[1/4] Add DeleteSelectedElements command"
+    },
     {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
@@ -5469,8 +5459,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -5495,8 +5485,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -5652,15 +5642,10 @@
    "olderNames": [
     "APIAny_ConvertMimePictureID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Conversion_ConvertPicture",
@@ -5680,15 +5665,10 @@
    "olderNames": [
     "APIAny_ConvertPictureID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Conversion_GetConvertedUnitValue",
@@ -5713,8 +5693,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -5919,15 +5899,10 @@
    "olderNames": [
     "APIDb_BuildWindowValidatorID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_ChangeCurrentDatabase",
@@ -5979,15 +5954,10 @@
    "olderNames": [
     "APIDb_CheckWindowValidatorID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_DeleteDatabase",
@@ -6044,15 +6014,10 @@
    "olderNames": [
     "APIDb_DoClipID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetContainingDatabase",
@@ -6141,15 +6106,10 @@
    "olderNames": [
     "APIDb_GetDBUnIdFromGuidID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetDatabasesForType",
@@ -6316,15 +6276,10 @@
    "olderNames": [
     "APIDb_GetGuidFromDBUnIdID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetInteriorElevationDatabases",
@@ -6654,15 +6609,10 @@
    "olderNames": [
     "APIDb_RebuildWindowValidatorID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_RedrawCurrentDatabase",
@@ -6682,15 +6632,10 @@
    "olderNames": [
     "APIDb_RedrawCurrentDatabaseID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_StartClippingSession",
@@ -6710,15 +6655,10 @@
    "olderNames": [
     "APIDb_StartClippingSessionID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_StopClippingSession",
@@ -6738,15 +6678,10 @@
    "olderNames": [
     "APIDb_StopClippingSessionID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_ActivateSessionReport",
@@ -7634,15 +7569,10 @@
    "olderNames": [
     "APIEnv_ChangeMarkerDrawingEnabledID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_CheckDrawingStatus",
@@ -7822,15 +7752,10 @@
    "olderNames": [
     "APIEnv_IsMarkerDrawingEnabledID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_StartDrawingData",
@@ -7850,15 +7775,10 @@
    "olderNames": [
     "APIDb_StartDrawingDataID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_StopDrawingData",
@@ -7878,15 +7798,10 @@
    "olderNames": [
     "APIDb_StopDrawingDataID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_Update_Drawings",
@@ -7953,15 +7868,10 @@
    "olderNames": [
     "ACAPI_Element_GetLinkedPropertyObjects"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementLink_GetLinks",
@@ -8037,15 +7947,10 @@
    "olderNames": [
     "ACAPI_Element_SetLinkedPropertyObjects"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementLink_Unlink",
@@ -8928,13 +8833,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1342,
+     "title": "[1/4] Add DeleteSelectedElements command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1328,
+     "title": "Expose solid operations that create elements, more quantities, external hierarchical sub-elements and delete-selected"
     }
    ]
   },
@@ -8982,15 +8892,10 @@
    "olderNames": [
     "APIDb_DrawElementID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Edit",
@@ -9113,8 +9018,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
     }
    ]
   },
@@ -9175,6 +9080,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1335,
+     "title": "[1/3] Add GetHotspotsOfElements command"
+    },
     {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
@@ -9454,13 +9363,18 @@
    "olderNames": [
     "APIDb_GetCompoundInfoStringID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1326,
+     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1312,
+     "title": "Expose element info strings and library part / creator tool IDs"
     }
    ]
   },
@@ -9550,15 +9464,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElemCreatorToolUnId",
@@ -9578,13 +9487,18 @@
    "olderNames": [
     "APIAny_GetElemCreatorToolUnIdID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1326,
+     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1312,
+     "title": "Expose element info strings and library part / creator tool IDs"
     }
    ]
   },
@@ -9706,13 +9620,18 @@
    "olderNames": [
     "APIDb_GetElementInfoStringID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1326,
+     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1312,
+     "title": "Expose element info strings and library part / creator tool IDs"
     }
    ]
   },
@@ -9855,6 +9774,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1329,
+     "title": "[1/4] Add GetSkylightHolePolygons command"
+    },
     {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
@@ -10046,8 +9969,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1328,
+     "title": "Expose solid operations that create elements, more quantities, external hierarchical sub-elements and delete-selected"
     }
    ]
   },
@@ -10072,8 +9995,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1328,
+     "title": "Expose solid operations that create elements, more quantities, external hierarchical sub-elements and delete-selected"
     }
    ]
   },
@@ -10183,15 +10106,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyValue",
@@ -10240,8 +10158,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1319,
+     "title": "Expose property values of element defaults, property availability and batch property changes of elements"
     }
    ]
   },
@@ -10353,13 +10271,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1336,
+     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1319,
+     "title": "Expose property values of element defaults, property availability and batch property changes of elements"
     }
    ]
   },
@@ -10451,13 +10374,18 @@
    "olderNames": [
     "APIAny_GetSkylightHolePolygonID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1329,
+     "title": "[1/4] Add GetSkylightHolePolygons command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
    ]
   },
@@ -10721,8 +10649,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1319,
+     "title": "Expose property values of element defaults, property availability and batch property changes of elements"
     }
    ]
   },
@@ -10998,8 +10926,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
     }
    ]
   },
@@ -11026,8 +10954,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
     }
    ]
   },
@@ -11223,15 +11151,10 @@
    "olderNames": [
     "APIAny_SetEmptyHoleUnIdID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetProperties",
@@ -11484,8 +11407,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1328,
+     "title": "Expose solid operations that create elements, more quantities, external hierarchical sub-elements and delete-selected"
     }
    ]
   },
@@ -11531,8 +11454,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1328,
+     "title": "Expose solid operations that create elements, more quantities, external hierarchical sub-elements and delete-selected"
     }
    ]
   },
@@ -12384,8 +12307,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -14238,15 +14161,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_KeepInMemory",
@@ -14292,8 +14210,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14315,13 +14233,18 @@
    "olderNames": [
     "APIEnv_ChangeGDLDateID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1325,
+     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14343,13 +14266,18 @@
    "olderNames": [
     "APIEnv_CheckLibrariesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1341,
+     "title": "[2/6] Add CheckLibraries and ResetLibraries commands"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14376,8 +14304,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14399,15 +14327,10 @@
    "olderNames": [
     "APIEnv_CreateCopyOfGdlUserGlobalsHandleID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_CreateFolderInLibrary",
@@ -14432,8 +14355,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14488,8 +14411,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14511,15 +14434,10 @@
    "olderNames": [
     "APIEnv_DestroyCopyOfGdlUserGlobalsHandleID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_GetGDLDate",
@@ -14539,13 +14457,18 @@
    "olderNames": [
     "APIEnv_GetGDLDateID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1325,
+     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14570,8 +14493,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14616,15 +14539,10 @@
    "olderNames": [
     "APIAny_InterpretGDLScript3DID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_NewLibDial",
@@ -14644,15 +14562,10 @@
    "olderNames": [
     "APIEnv_NewLibDialID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_OpenLibraryPart",
@@ -14670,15 +14583,10 @@
    "olderNames": [
     "APIDo_OpenLibraryPartID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_OverwriteLibPart",
@@ -14698,15 +14606,10 @@
    "olderNames": [
     "APIEnv_OverwriteLibPartID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_ResetLibraries",
@@ -14726,13 +14629,18 @@
    "olderNames": [
     "APIEnv_ResetLibrariesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1341,
+     "title": "[2/6] Add CheckLibraries and ResetLibraries commands"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -14759,8 +14667,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1317,
+     "title": "Expose library part hotspots, parameter script runs and GDL string checks"
     }
    ]
   },
@@ -14810,8 +14718,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1317,
+     "title": "Expose library part hotspots, parameter script runs and GDL string checks"
     }
    ]
   },
@@ -14983,13 +14891,18 @@
    "olderNames": [
     "APIAny_CompareLibPartUnIdsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15035,15 +14948,10 @@
    "olderNames": [
     "ACAPI_LibPart_EndSection"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_Get",
@@ -15062,6 +14970,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    },
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
@@ -15128,8 +15040,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15184,13 +15096,18 @@
    "olderNames": [
     "APIAny_GetElemLibPartUnIdID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1326,
+     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1312,
+     "title": "Expose element info strings and library part / creator tool IDs"
     }
    ]
   },
@@ -15208,13 +15125,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1335,
+     "title": "[1/3] Add GetHotspotsOfElements command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1317,
+     "title": "Expose library part hotspots, parameter script runs and GDL string checks"
     }
    ]
   },
@@ -15241,8 +15163,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15264,13 +15186,18 @@
    "olderNames": [
     "APIEnv_GetLibPartLockStatusID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15292,13 +15219,18 @@
    "olderNames": [
     "APIEnv_GetLibPartRefGuidID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15353,13 +15285,18 @@
    "olderNames": [
     "APIEnv_GetLibPartUnIDStrID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15497,15 +15434,10 @@
    "olderNames": [
     "ACAPI_LibPart_GetSect_2DDrawHdl"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_ParamDef",
@@ -15558,8 +15490,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15586,8 +15518,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15661,15 +15593,10 @@
    "olderNames": [
     "ACAPI_LibPart_NewSection"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_OpenParameters",
@@ -15726,8 +15653,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -15772,15 +15699,10 @@
    "olderNames": [
     "ACAPI_LibPart_RegisterAll"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_RegisterESYM",
@@ -15796,15 +15718,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_RegisterSubtype",
@@ -15820,15 +15737,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_Save",
@@ -15908,15 +15820,10 @@
    "olderNames": [
     "ACAPI_LibPart_SetDetails_ParamDef"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_SetUpSect_2DDrawHdl",
@@ -15936,15 +15843,10 @@
    "olderNames": [
     "ACAPI_LibPart_SetUpSect_2DDrawHdl"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_ShapePrims",
@@ -15960,15 +15862,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_UpdateSection",
@@ -15988,15 +15885,10 @@
    "olderNames": [
     "ACAPI_LibPart_UpdateSection"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_WriteSection",
@@ -16016,15 +15908,10 @@
    "olderNames": [
     "ACAPI_LibPart_WriteSection"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Licensing_CatchLicenseBorrowStatusChange",
@@ -16690,8 +16577,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
    ]
   },
@@ -16839,8 +16726,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
    ]
   },
@@ -16867,8 +16754,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
    ]
   },
@@ -17155,8 +17042,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -17327,8 +17214,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -17635,13 +17522,18 @@
    "olderNames": [
     "APINavigator_GetNavigatorChildNumID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1339,
+     "title": "[1/4] Add GetNavigatorParentItems and child counts in GetNavigatorItemTree"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -17752,13 +17644,18 @@
    "olderNames": [
     "APINavigator_GetNavigatorParentItemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1339,
+     "title": "[1/4] Add GetNavigatorParentItems and child counts in GetNavigatorItemTree"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -17840,8 +17737,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -17868,8 +17765,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -17896,8 +17793,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -18154,15 +18051,10 @@
    "olderNames": [
     "APINavigator_RegisterCallbackInterfaceID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_SearchNavigatorItem",
@@ -18223,8 +18115,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
    ]
   },
@@ -18759,6 +18651,10 @@
     {
      "number": 1127,
      "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
+    },
+    {
+     "number": 1127,
+     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
     }
    ]
   },
@@ -18836,8 +18732,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
    ]
   },
@@ -18868,6 +18764,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1127,
+     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
+    },
     {
      "number": 1127,
      "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
@@ -18904,6 +18804,10 @@
     {
      "number": 1127,
      "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
+    },
+    {
+     "number": 1127,
+     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
     }
    ]
   },
@@ -18930,8 +18834,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
    ]
   },
@@ -18953,15 +18857,10 @@
    "olderNames": [
     "ACAPI_GetPreferences_Platform"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Preferences_SetOldVersion",
@@ -18976,15 +18875,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProcessWindow_CloseProcessWindow",
@@ -19591,15 +19485,10 @@
    "olderNames": [
     "ACAPI_Inform_AdditionalFileWasCreated"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_CatchProjectEvent",
@@ -19675,8 +19564,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -19703,8 +19592,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -19731,8 +19620,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -19759,8 +19648,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -19873,6 +19762,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1340,
+     "title": "[1/5] Add GetTeamworkStatus command"
+    },
     {
      "number": 1021,
      "title": "[2/3] Add GetReservationStatusOfElements and GrantElements Teamwork commands"
@@ -20022,8 +19915,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -20082,8 +19975,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -20111,8 +20004,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -20208,8 +20101,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -20231,15 +20124,10 @@
    "olderNames": [
     "APIAny_GetSplineMaxDistID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectSetting_GetStorySettings",
@@ -20297,8 +20185,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -21243,8 +21131,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
    ]
   },
@@ -21747,8 +21635,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
     }
    ]
   },
@@ -21846,8 +21734,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
     }
    ]
   },
@@ -21911,15 +21799,10 @@
    "olderNames": [
     "ACAPI_3D_CreateSight"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Sight_DeleteSight",
@@ -21939,15 +21822,10 @@
    "olderNames": [
     "ACAPI_3D_DeleteSight"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Sight_GetCurrentWindowSight",
@@ -21967,15 +21845,10 @@
    "olderNames": [
     "ACAPI_3D_GetCurrentWindowSight"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Sight_GetSelectedSightModel",
@@ -21990,15 +21863,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Sight_SelectSight",
@@ -22018,15 +21886,10 @@
    "olderNames": [
     "ACAPI_3D_SelectSight"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Sight_Switch3DSight",
@@ -22046,15 +21909,10 @@
    "olderNames": [
     "APIDb_Switch3DSightID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_SurveyPoint_GetSurveyPointTransformation",
@@ -22260,13 +22118,18 @@
    "olderNames": [
     "ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1340,
+     "title": "[1/5] Add GetTeamworkStatus command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22321,8 +22184,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22349,8 +22212,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22417,7 +22280,12 @@
      "title": "[1/3] Teamwork: add the GetTeamworkProjectInfo command"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_GrantElements",
@@ -22465,13 +22333,18 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasConnection"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1340,
+     "title": "[1/5] Add GetTeamworkStatus command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22498,8 +22371,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22526,8 +22399,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22577,13 +22450,18 @@
    "olderNames": [
     "ACAPI_TeamworkControl_IsServerLibPart"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -22605,13 +22483,18 @@
    "olderNames": [
     "APIEnv_ProjectSharingID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1340,
+     "title": "[1/5] Add GetTeamworkStatus command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22724,8 +22607,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -22839,15 +22722,10 @@
    "olderNames": [
     "ACAPI_TeamworkReserveInterface_SendReleaseCommentMail"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_UploadLibraries",
@@ -22866,8 +22744,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
     }
    ]
   },
@@ -23854,15 +23732,10 @@
    "olderNames": [
     "APIEnv_DeleteGhostRecordID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DCuttingPlanes",
@@ -24231,15 +24104,10 @@
    "olderNames": [
     "APIEnv_GetShowHideStateID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetZoom",
@@ -24262,7 +24130,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1313,
+     "title": "Expose SetZoom and ResetZoom (zoom to a box, zoom back)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_GoToView",
@@ -24511,13 +24384,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1324,
+     "title": "Add SetZoom and ResetZoom commands (zoom to a box, zoom back)"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1313,
+     "title": "Expose SetZoom and ResetZoom (zoom to a box, zoom back)"
     }
    ]
   },
@@ -24576,13 +24454,18 @@
    "olderNames": [
     "APIDb_SetZoomID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1324,
+     "title": "Add SetZoom and ResetZoom commands (zoom to a box, zoom back)"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1313,
+     "title": "Expose SetZoom and ResetZoom (zoom to a box, zoom back)"
     }
    ]
   },
@@ -24672,15 +24555,10 @@
    "olderNames": [
     "APIDb_StoreViewSettingsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Zoom",
@@ -24877,15 +24755,10 @@
    "olderNames": [
     "ACAPI_ActionCenter_Check"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_CloseWindow",
@@ -24905,15 +24778,10 @@
    "olderNames": [
     "APIDb_CloseWindowID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_DestroyWindowValidator",
@@ -24933,15 +24801,10 @@
    "olderNames": [
     "APIDb_DestroyWindowValidatorID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_GetCurrentWindow",
@@ -24964,6 +24827,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1324,
+     "title": "Add SetZoom and ResetZoom commands (zoom to a box, zoom back)"
+    },
     {
      "number": 1016,
      "title": "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"
@@ -25065,15 +24932,10 @@
    "olderNames": [
     "APIDb_GetOwnWindowsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_NewWindow",
@@ -25093,15 +24955,10 @@
    "olderNames": [
     "APIDb_NewWindowID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_ResetCurrentDatabase",
@@ -25121,15 +24978,10 @@
    "olderNames": [
     "APIDb_ResetCurrentDatabaseID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_ResetCurrentWindow",
@@ -25149,15 +25001,10 @@
    "olderNames": [
     "APIDb_ResetCurrentWindowID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_SetWindowId",
@@ -25177,15 +25024,10 @@
    "olderNames": [
     "APIDb_SetWindowIdID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_WriteReport",
@@ -25362,8 +25204,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -25384,8 +25226,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -25406,8 +25248,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -25427,8 +25269,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -25448,8 +25290,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1318,
+     "title": "Expose property definitions and availability of attributes, and batch property changes"
     }
    ]
   },
@@ -25465,15 +25307,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_SetUserData",
@@ -25487,15 +25324,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Automate",
@@ -25539,10 +25371,6 @@
    ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    },
-    {
      "number": 984,
      "title": "Add ZoomToElements (2D and 3D)"
     },
@@ -25568,8 +25396,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -25589,8 +25417,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -25610,8 +25438,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -25631,8 +25459,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -25651,6 +25479,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1326,
+     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
+    },
+    {
+     "number": 1324,
+     "title": "Add SetZoom and ResetZoom commands (zoom to a box, zoom back)"
+    },
     {
      "number": 1278,
      "title": "Add GetRevisionChangeCustomScheme command"
@@ -25738,8 +25574,20 @@
    ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
+    },
+    {
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
+    },
+    {
+     "number": 1313,
+     "title": "Expose SetZoom and ResetZoom (zoom to a box, zoom back)"
+    },
+    {
+     "number": 1312,
+     "title": "Expose element info strings and library part / creator tool IDs"
     },
     {
      "number": 1187,
@@ -25956,15 +25804,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementList_AddProperty",
@@ -25983,8 +25826,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1319,
+     "title": "Expose property values of element defaults, property availability and batch property changes of elements"
     }
    ]
   },
@@ -26005,8 +25848,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1319,
+     "title": "Expose property values of element defaults, property availability and batch property changes of elements"
     }
    ]
   },
@@ -26027,8 +25870,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1319,
+     "title": "Expose property values of element defaults, property availability and batch property changes of elements"
     }
    ]
   },
@@ -26044,15 +25887,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElemListByIFCIdentifier",
@@ -26087,13 +25925,18 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1338,
+     "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26116,8 +25959,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26177,8 +26020,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26212,15 +26055,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_RemoveIFCClassificationReference",
@@ -26241,8 +26079,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26265,8 +26103,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26289,8 +26127,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26313,8 +26151,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26349,15 +26187,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_UnIdToGuid",
@@ -26371,15 +26204,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Environment",
@@ -26396,6 +26224,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1341,
+     "title": "[2/6] Add CheckLibraries and ResetLibraries commands"
+    },
+    {
+     "number": 1340,
+     "title": "[1/5] Add GetTeamworkStatus command"
+    },
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    },
+    {
+     "number": 1325,
+     "title": "[1/6] Add GetGDLDate and SetGDLDate commands"
+    },
     {
      "number": 1280,
      "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
@@ -26467,8 +26311,20 @@
    ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
+    },
+    {
+     "number": 1322,
+     "title": "Expose Teamwork connection, access rights, owners and BIMcloud library upload"
+    },
+    {
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
+    },
+    {
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     },
     {
      "number": 1171,
@@ -26503,6 +26359,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    },
+    {
+     "number": 1329,
+     "title": "[1/4] Add GetSkylightHolePolygons command"
+    },
+    {
+     "number": 1326,
+     "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
+    },
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
@@ -26570,8 +26438,32 @@
    ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
+    },
+    {
+     "number": 1327,
+     "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
+    },
+    {
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
+    },
+    {
+     "number": 1317,
+     "title": "Expose library part hotspots, parameter script runs and GDL string checks"
+    },
+    {
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
+    },
+    {
+     "number": 1314,
+     "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
+    },
+    {
+     "number": 1312,
+     "title": "Expose element info strings and library part / creator tool IDs"
     },
     {
      "number": 1164,
@@ -26624,8 +26516,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26641,15 +26533,10 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_IFC_GetIFCDifference",
@@ -26663,15 +26550,10 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_IFC_GetIFCDifferenceState",
@@ -26685,15 +26567,10 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_IFC_IFCGuidToAPIGuid",
@@ -26712,8 +26589,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -26729,15 +26606,10 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Install_AddOnCommandHandler",
@@ -27178,8 +27050,12 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
+    },
+    {
+     "number": 1316,
+     "title": "Expose library part unique IDs, lock status, pattern search and sections"
     }
    ]
   },
@@ -27234,13 +27110,18 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1335,
+     "title": "[1/3] Add GetHotspotsOfElements command"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1317,
+     "title": "Expose library part hotspots, parameter script runs and GDL string checks"
     }
    ]
   },
@@ -27312,15 +27193,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ListData_Get",
@@ -27334,15 +27210,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ListData_GetNum",
@@ -27356,15 +27227,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ListData_Search",
@@ -27378,15 +27244,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_MarkUp_Create",
@@ -27455,14 +27316,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1339,
+     "title": "[1/4] Add GetNavigatorParentItems and child counts in GetNavigatorItemTree"
+    },
+    {
      "number": 691,
      "title": "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"
     }
    ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1321,
+     "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     },
     {
      "number": 910,
@@ -27507,15 +27372,10 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_AddProperty",
@@ -27903,15 +27763,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIAny_APIGuidToIFCGuidID",
@@ -27929,8 +27784,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -27950,8 +27805,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1332,
+     "title": "Expose picking an element in the model (selection neig to element and coordinates)"
     }
    ]
   },
@@ -27966,15 +27821,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIAny_GetIFCDifferenceStateID",
@@ -27987,15 +27837,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIAny_IFCGuidToAPIGuidID",
@@ -28013,8 +27858,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1320,
+     "title": "Expose IFC attributes and classification references of elements on Archicad 25–28"
     }
    ]
   },
@@ -28029,15 +27874,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIDb_ReSetZoomID",
@@ -28055,13 +27895,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1324,
+     "title": "Add SetZoom and ResetZoom commands (zoom to a box, zoom back)"
+    }
+   ],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1313,
+     "title": "Expose SetZoom and ResetZoom (zoom to a box, zoom back)"
     }
    ]
   },
@@ -28082,8 +27927,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1315,
+     "title": "Expose GDL date, library check/reset and embedded library folders"
     }
    ]
   },
@@ -28119,15 +27964,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIEnv_GetMainWindowHWNDID",
@@ -28185,15 +28025,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIEnv_SetPreferencesID",
@@ -28232,8 +28067,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -28248,15 +28083,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIIo_Is3DCutawayEnabledID",
@@ -28279,8 +28109,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -28302,8 +28132,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -28320,15 +28150,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIIo_Set3DCutawayStatusID",
@@ -28351,8 +28176,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -28377,8 +28202,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1331,
+     "title": "Support 3D cutaway and cutting plane visibility on Archicad 25–27"
     }
    ]
   },
@@ -28395,15 +28220,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteItemChanges",
@@ -28418,15 +28238,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::API_IKeynoteFolderEventHandler::Dispatch",
@@ -28441,15 +28256,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::API_IKeynoteFolderEventHandler::GetName",
@@ -28464,15 +28274,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::API_IKeynoteItemEventHandler::Dispatch",
@@ -28487,15 +28292,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::API_IKeynoteItemEventHandler::GetName",
@@ -28510,15 +28310,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::AddonServiceInterface::GetStatus",
@@ -29056,8 +28851,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29077,8 +28872,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29098,8 +28893,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29135,8 +28930,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29465,8 +29260,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29626,8 +29421,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29699,8 +29494,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -29923,8 +29718,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -30157,8 +29952,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -30179,8 +29974,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -30201,8 +29996,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -30486,8 +30281,8 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
+     "number": 1330,
+     "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
    ]
   },
@@ -59703,15 +59498,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Object::GetToken",
@@ -64812,15 +64602,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Assignments::GetParentObjectTable",
@@ -64835,15 +64620,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Assignments::GetRootGroups",
@@ -64858,15 +64638,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Attribute::GetName",
@@ -64950,15 +64725,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetEdition",
@@ -64978,10 +64748,6 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    },
-    {
      "number": 1306,
      "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
     }
@@ -65000,15 +64766,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetLocation",
@@ -65023,15 +64784,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetName",
@@ -65137,15 +64893,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetLocation",
@@ -65228,15 +64979,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::GetHookManager",
@@ -65251,15 +64997,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::GetObjectAccessor",
@@ -65277,6 +65018,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1338,
+     "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
+    },
     {
      "number": 1309,
      "title": "[3/3] Add GetIFCClassificationReferencesOfElements command"
@@ -65301,15 +65046,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::AssignObjects",
@@ -65324,15 +65064,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::CreateIfcGroup",
@@ -65347,15 +65082,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::GetIfcRelAssignsToGroup",
@@ -65370,15 +65100,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::GetIfcRelReferencedInSpatialStructure",
@@ -65391,15 +65116,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::GetIfcRelServicesBuildings",
@@ -65414,15 +65134,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::ReferenceObjects",
@@ -65435,15 +65150,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookAssignments::ServiceBuildings",
@@ -65458,15 +65168,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterAssignmentsHook",
@@ -65481,15 +65186,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterAttributeHook",
@@ -65504,15 +65204,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterClassificationReferenceHook",
@@ -65527,15 +65222,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterPropertyHook",
@@ -65550,15 +65240,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterTypeObjectAttributeHook",
@@ -65573,15 +65258,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterTypeObjectClassificationReferenceHook",
@@ -65596,15 +65276,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::RegisterTypeObjectPropertyHook",
@@ -65619,15 +65294,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterAssignmentsHook",
@@ -65642,15 +65312,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterAttributeHook",
@@ -65665,15 +65330,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterClassificationReferenceHook",
@@ -65688,15 +65348,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterPropertyHook",
@@ -65711,15 +65366,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterTypeObjectAttributeHook",
@@ -65734,15 +65384,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterTypeObjectClassificationReferenceHook",
@@ -65757,15 +65402,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::HookManager::UnregisterTypeObjectPropertyHook",
@@ -65780,15 +65420,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateElementObjectID",
@@ -65821,15 +65456,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateIfcBuildingStoreyObjectID",
@@ -65862,15 +65492,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateIfcSiteObjectID",
@@ -65885,15 +65510,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::FindElementsByGlobalId",
@@ -65944,15 +65564,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::GetExternalGlobalId",
@@ -66021,15 +65636,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::GetTypeObjectIFCType",
@@ -66062,15 +65672,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Property::GetName",
@@ -66298,15 +65903,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateClassification",
@@ -66321,15 +65921,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateClassificationReference",
@@ -66344,15 +65939,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateDefaultValue",
@@ -66366,15 +65956,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateEmptyValue",
@@ -66389,15 +65974,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyBoundedValue",
@@ -66412,15 +65992,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyEnumeratedValue",
@@ -66435,15 +66010,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyListValue",
@@ -66458,15 +66028,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertySingleValue",
@@ -66481,15 +66046,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyTableValue",
@@ -66504,15 +66064,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateValue",
@@ -66527,15 +66082,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyEnumeratedValue::GetEnumerationReference",
@@ -66550,15 +66100,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1311,
-     "title": "Expose the last 296 open Archicad API items on the coverage checklist\n\nAll the remaining ones. Last nail."
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyEnumeratedValue::GetEnumerationValues",
