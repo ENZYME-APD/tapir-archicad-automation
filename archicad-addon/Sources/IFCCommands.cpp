@@ -627,6 +627,107 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
     return response;
 }
 
+GetIFCAttributesOfElementsCommand::GetIFCAttributesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCAttributesOfElementsCommand::GetName () const
+{
+    return "GetIFCAttributesOfElements";
+}
+
+GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCAttributes": {
+                "$ref": "#/ElementIFCAttributesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& elementIFCAttributes = response.AddList<GS::ObjectState> ("elementIFCAttributes");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            elementIFCAttributes (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            elementIFCAttributes (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
+        if (objectID.IsErr ()) {
+            elementIFCAttributes (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+            continue;
+        }
+        IFCAPI::PropertyAccessor propertyAccessor = IFCAPI::PropertyAccessor (*objectID);
+        auto attributes = propertyAccessor.GetAttributes ();
+        if (attributes.IsErr ()) {
+            elementIFCAttributes (CreateErrorResponse (attributes.UnwrapErr ().kind, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCAttributes = CreateElementIdObjectState (elemGuid);
+        const auto& ifcAttributes = elemIFCAttributes.AddList<GS::ObjectState> ("ifcAttributes");
+        for (const auto& attribute : attributes.Unwrap ()) {
+            GS::ObjectState ifcAttribute (
+                "name", attribute.GetName (),
+                "valueType", GS::UniString (attribute.GetValueType ())
+            );
+            // Optional IFC attributes can have no value, then value is left out
+            const auto value = attribute.GetValue ();
+            if (value.has_value ()) {
+                ifcAttribute.Add ("value", *value);
+            }
+            ifcAttributes (ifcAttribute);
+        }
+
+        elementIFCAttributes (elemIFCAttributes);
+#else
+        elementIFCAttributes (CreateErrorResponse (APIERR_NOTSUPPORTED, "Getting IFC attributes is available from Archicad 28."));
+#endif
+    }
+
+    return response;
+}
+
 SetIFCPropertiesOfElementsCommand::SetIFCPropertiesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
