@@ -884,28 +884,7 @@ GS::Optional<GS::UniString> GetGraphicOverrideCombinationsCommand::GetRawRespons
                 "type": "array",
                 "description": "The graphic override combinations of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "graphicOverrideCombinationId": {
-                            "$ref": "#/GraphicOverrideCombinationId"
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "graphicOverrideRuleIds": {
-                            "type": "array",
-                            "description": "The rules of the combination, in priority order.",
-                            "items": {
-                                "$ref": "#/GraphicOverrideRuleIdArrayItem"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "graphicOverrideCombinationId",
-                        "name",
-                        "graphicOverrideRuleIds"
-                    ]
+                    "$ref": "#/GraphicOverrideCombinationDetails"
                 }
             }
         },

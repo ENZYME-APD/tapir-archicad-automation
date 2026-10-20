@@ -289,16 +289,7 @@ const char* GridElementDetailsSchema = R"(
             "type": "array",
             "description": "GDL parameters, separators left out. Only when requested.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "name": { "type": "string" },
-                    "displayName": { "type": "string" },
-                    "type": { "type": "string", "description": "Integer, Length, Angle, RealNum, LightSwitch, ColorRGB, Intensity, LineType, Material, FillPattern, PenColor, String, Boolean, Title, BuildingMaterial, Profile, Dictionary or Unknown." },
-                    "value": { "description": "Number for numeric and boolean types, string for String and Title. Not given for arrays." },
-                    "dimension1": { "type": "integer", "description": "First dimension of an array parameter." },
-                    "dimension2": { "type": "integer", "description": "Second dimension of an array parameter." }
-                },
-                "required": ["name", "displayName", "type"]
+                "$ref": "#/GridParameterDetails"
             }
         })";
 
@@ -384,21 +375,20 @@ GS::Optional<GS::UniString> GetGridElementsCommand::GetInputParametersSchema () 
 
 GS::Optional<GS::UniString> GetGridElementsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "gridElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {)") + GridElementDetailsSchema + R"(
-                    },
-                    "required": ["elementId", "variation", "floorIndex", "layerIndex", "pos", "angle", "length", "xRatio", "yRatio", "useXYFixSize", "level", "libInd", "libraryPartName"]
+                    "$ref": "#/GridElementDetails"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["gridElements"]
+        "required": [
+            "gridElements"
+        ]
     })";
 }
 
@@ -469,20 +459,17 @@ GS::Optional<GS::UniString> CreateGridElementsCommand::GetInputParametersSchema 
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D", "description": "Start point of the grid line (the object's insertion point)." },
                         "endCoordinate": { "$ref": "#/Coordinate2D", "description": "End point of the grid line. Sets the direction and, unless lengthMode is 'none', the length." },
-                        "lengthMode": { "type": "string", "enum": ["length", "none"], "description": "How the line length is applied. length (default): to the GDL parameter AC_Length when the library part has it, as the Grid Tool's grid marker does; otherwise to the object's A size, converted to xRatio as CreateObjects does. none: the length is left to 'parameters'." },
+                        "lengthMode": {
+                            "$ref": "#/GridElementLengthMode",
+                            "description": "length (default): to the GDL parameter AC_Length when the library part has it, as the Grid Tool's grid marker does; otherwise to the object's A size, converted to xRatio as CreateObjects does. none: the length is left to 'parameters'."
+                        },
                         "floorIndex": { "type": "integer", "description": "Home story index. Default: the tool default." },
                         "layerIndex": { "type": "integer", "description": "Layer attribute index. Only a positive index takes effect. Default: the tool default." },
                         "parameters": {
                             "type": "array",
                             "description": "GDL parameters to set by name (read the names with GetGridElementDefaults). The value is a number, a boolean or a string. Unknown names and wrong value types are reported in warnings and skipped. The tool defaults can look different from a grid drawn with the Grid Tool (for example a short line with a leader to the bubble); to get the same look, copy the parameters of such a grid (GetGridElements with includeParameters).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": { "type": "string" },
-                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["name", "value"]
+                                "$ref": "#/GridParameter"
                             }
                         }
                     },

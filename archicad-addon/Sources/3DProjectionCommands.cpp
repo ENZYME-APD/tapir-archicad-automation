@@ -37,23 +37,8 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             "description": "The perspective parameters. Present only when isPersp is true."
         },
         "axonometric": {
-            "type": "object",
-            "description": "The parameters of an axonometric projection. Present only when isPersp is false.",
-            "properties": {
-                "transformationMatrix": {
-                    "type": "array",
-                    "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
-                    "items": {
-                        "type": "number"
-                    },
-                    "minItems": 12,
-                    "maxItems": 12
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "transformationMatrix"
-            ]
+            "$ref": "#/AxonometricProjectionParameters",
+            "description": "Present only when isPersp is false."
         }
     },
     "additionalProperties": false,
