@@ -9,6 +9,7 @@
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Library/LibraryManager.hpp"
+#include "ACAPI/Library/LibraryTreePath.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
 
 #include <functional>
@@ -946,7 +947,11 @@ GS::ObjectState FindLibraryPartsCommand::Execute (const GS::ObjectState& paramet
 
     GS::UniString nameContains;
     parameters.Get ("nameContains", nameContains);
+#ifdef ServerMainVers_3000
+    const GS::UniString nameFilter = nameContains.GetLowerCased ();
+#else
     const GS::UniString nameFilter = nameContains.ToLowerCase ();
+#endif
 
     bool firstOnly = false;
     parameters.Get ("firstOnly", firstOnly);
@@ -964,7 +969,11 @@ GS::ObjectState FindLibraryPartsCommand::Execute (const GS::ObjectState& paramet
             return true;
         }
         auto name = libPart.GetName ();
+#ifdef ServerMainVers_3000
+        return name.IsOk () && name->GetLowerCased ().Contains (nameFilter);
+#else
         return name.IsOk () && name->ToLowerCase ().Contains (nameFilter);
+#endif
     };
 
     GS::ObjectState response;
