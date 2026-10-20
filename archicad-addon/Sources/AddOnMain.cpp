@@ -787,7 +787,7 @@ GSErrCode Initialize (void)
             "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
         );
         err |= RegisterCommand<GetElementsByClassificationCommand> (
-            classificationCommands, "1.7.2",
+            classificationCommands, "1.7.3",
             "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call."
         );
         err |= RegisterCommand<SetClassificationsOfElementsCommand> (
