@@ -323,6 +323,18 @@ GSErrCode Initialize (void)
             projectCommands, "1.4.0",
             "Gets the project calculation units."
         );
+        err |= RegisterCommand<GetExportToleranceCommand> (
+            projectCommands, "1.7.3",
+            "Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export."
+        );
+        err |= RegisterCommand<GetLast3DDefaultLevelsCommand> (
+            projectCommands, "1.7.3",
+            "Gets the last 3D default levels of the given element types' defaults."
+        );
+        err |= RegisterCommand<SetLast3DDefaultLevelsCommand> (
+            projectCommands, "1.7.3",
+            "Sets the last 3D default levels of the given element types' defaults."
+        );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
             "Gets the project location details."

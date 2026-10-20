@@ -120,6 +120,7 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
+#define ACAPI_ProjectSetting_GetExportTolerance(par1) ACAPI_Environment (APIEnv_GetExportToleranceID, par1)
 #define ACAPI_View_Rebuild(par1) ACAPI_Automate (APIDo_RebuildID, (void*) par1)
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
@@ -701,4 +702,106 @@ inline void DisposeAttribute (API_Attribute& attr)
     if (attr.header.typeID == API_MaterialID) {
         delete attr.material.texture.fileLoc;
     }
+}
+
+// The last-used 3D levels of element defaults. AC25 and AC26 reach them through
+// APIDb_GetLast3DDefLevelsID / APIDb_SetLast3DDefLevelsID (par1 the element types, par2
+// the levels), AC25 with API_ElemTypeID as it has no API_ElemType. From AC27 the function
+// is ACAPI_ProjectSetting_*Last3DDefLevels in the current DevKit and was
+// ACAPI_Database_*Last3DDefLevels in an earlier one, so the overloads below pick, at
+// compile time, whichever of those names (by reference or by pointer) the DevKit has.
+#ifdef ServerMainVers_2700
+namespace Last3DDefLevelsShim {
+
+struct Rank0 {};
+struct Rank1 : Rank0 {};
+struct Rank2 : Rank1 {};
+struct Rank3 : Rank2 {};
+
+template <typename TypesT, typename LevelsT>
+auto Get (Rank3, TypesT& types, LevelsT& levels) -> decltype (ACAPI_ProjectSetting_GetLast3DDefLevels (types, levels))
+{
+    return ACAPI_ProjectSetting_GetLast3DDefLevels (types, levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Get (Rank2, TypesT& types, LevelsT& levels) -> decltype (ACAPI_ProjectSetting_GetLast3DDefLevels (&types, &levels))
+{
+    return ACAPI_ProjectSetting_GetLast3DDefLevels (&types, &levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Get (Rank1, TypesT& types, LevelsT& levels) -> decltype (ACAPI_Database_GetLast3DDefLevels (types, levels))
+{
+    return ACAPI_Database_GetLast3DDefLevels (types, levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Get (Rank0, TypesT& types, LevelsT& levels) -> decltype (ACAPI_Database_GetLast3DDefLevels (&types, &levels))
+{
+    return ACAPI_Database_GetLast3DDefLevels (&types, &levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Set (Rank3, TypesT& types, LevelsT& levels) -> decltype (ACAPI_ProjectSetting_SetLast3DDefLevels (types, levels))
+{
+    return ACAPI_ProjectSetting_SetLast3DDefLevels (types, levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Set (Rank2, TypesT& types, LevelsT& levels) -> decltype (ACAPI_ProjectSetting_SetLast3DDefLevels (&types, &levels))
+{
+    return ACAPI_ProjectSetting_SetLast3DDefLevels (&types, &levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Set (Rank1, TypesT& types, LevelsT& levels) -> decltype (ACAPI_Database_SetLast3DDefLevels (types, levels))
+{
+    return ACAPI_Database_SetLast3DDefLevels (types, levels);
+}
+
+template <typename TypesT, typename LevelsT>
+auto Set (Rank0, TypesT& types, LevelsT& levels) -> decltype (ACAPI_Database_SetLast3DDefLevels (&types, &levels))
+{
+    return ACAPI_Database_SetLast3DDefLevels (&types, &levels);
+}
+
+}
+#endif
+
+#ifdef ServerMainVers_2600
+inline GS::Array<API_ElemType> TAPIR_GetLast3DDefLevelsElemTypes (const GS::Array<API_ElemTypeID>& typeIDs)
+{
+    GS::Array<API_ElemType> elemTypes;
+    for (const API_ElemTypeID typeID : typeIDs) {
+        elemTypes.Push (API_ElemType (typeID));
+    }
+    return elemTypes;
+}
+#else
+inline GS::Array<API_ElemTypeID> TAPIR_GetLast3DDefLevelsElemTypes (const GS::Array<API_ElemTypeID>& typeIDs)
+{
+    return typeIDs;
+}
+#endif
+
+inline GSErrCode TAPIR_ProjectSetting_GetLast3DDefLevels (const GS::Array<API_ElemTypeID>& typeIDs, GS::Array<double>& levels)
+{
+    auto elemTypes = TAPIR_GetLast3DDefLevelsElemTypes (typeIDs);
+#ifdef ServerMainVers_2700
+    return Last3DDefLevelsShim::Get (Last3DDefLevelsShim::Rank3 (), elemTypes, levels);
+#else
+    return ACAPI_Database (APIDb_GetLast3DDefLevelsID, &elemTypes, &levels);
+#endif
+}
+
+inline GSErrCode TAPIR_ProjectSetting_SetLast3DDefLevels (const GS::Array<API_ElemTypeID>& typeIDs, const GS::Array<double>& levels)
+{
+    auto elemTypes = TAPIR_GetLast3DDefLevelsElemTypes (typeIDs);
+    GS::Array<double> levelsToSet = levels;
+#ifdef ServerMainVers_2700
+    return Last3DDefLevelsShim::Set (Last3DDefLevelsShim::Rank3 (), elemTypes, levelsToSet);
+#else
+    return ACAPI_Database (APIDb_SetLast3DDefLevelsID, &elemTypes, &levelsToSet);
+#endif
 }

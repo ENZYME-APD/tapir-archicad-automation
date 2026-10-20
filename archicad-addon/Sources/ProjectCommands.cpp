@@ -2170,6 +2170,211 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "accuracy", unitPrefs.angle.accuracy));
 }
 
+GetExportToleranceCommand::GetExportToleranceCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetExportToleranceCommand::GetName () const
+{
+    return "GetExportTolerance";
+}
+
+GS::Optional<GS::UniString> GetExportToleranceCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "arcTolerance": {
+                "type": "number",
+                "description": "The largest distance allowed between an arc and the straight segments that replace it when Archicad segments curves for export, in meters."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "arcTolerance"
+        ]
+    })";
+}
+
+GS::ObjectState GetExportToleranceCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    double arcDiff = 0.0;
+    const GSErrCode err = ACAPI_ProjectSetting_GetExportTolerance (&arcDiff);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the export tolerance.");
+    }
+
+    return GS::ObjectState ("arcTolerance", arcDiff);
+}
+
+static GS::Optional<GS::ObjectState> GetLast3DDefaultLevelsElemTypes (const GS::ObjectState& parameters, GS::Array<API_ElemTypeID>& typeIDs)
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+    if (elementTypes.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "elementTypes must contain at least one element type.");
+    }
+
+    for (const GS::UniString& elementTypeStr : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+        typeIDs.Push (typeID);
+    }
+    return {};
+}
+
+GetLast3DDefaultLevelsCommand::GetLast3DDefaultLevelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLast3DDefaultLevelsCommand::GetName () const
+{
+    return "GetLast3DDefaultLevels";
+}
+
+GS::Optional<GS::UniString> GetLast3DDefaultLevelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types to get the last 3D default level of.",
+                "items": {
+                    "$ref": "#/ElementType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLast3DDefaultLevelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "description": "The last 3D default level of each element type, in the order of elementTypes, in meters.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "levels"
+        ]
+    })";
+}
+
+GS::ObjectState GetLast3DDefaultLevelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_ElemTypeID> typeIDs;
+    const GS::Optional<GS::ObjectState> badInput = GetLast3DDefaultLevelsElemTypes (parameters, typeIDs);
+    if (badInput.HasValue ()) {
+        return *badInput;
+    }
+
+    GS::Array<double> levels;
+    const GSErrCode err = TAPIR_ProjectSetting_GetLast3DDefLevels (typeIDs, levels);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the last 3D default levels.");
+    }
+    if (levels.GetSize () != typeIDs.GetSize ()) {
+        return CreateErrorResponse (APIERR_GENERAL,
+            GS::UniString::Printf ("Archicad returned %u levels for %u element types.", levels.GetSize (), typeIDs.GetSize ()));
+    }
+
+    GS::ObjectState response;
+    const auto& levelsList = response.AddList<double> ("levels");
+    for (const double level : levels) {
+        levelsList (level);
+    }
+    return response;
+}
+
+SetLast3DDefaultLevelsCommand::SetLast3DDefaultLevelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLast3DDefaultLevelsCommand::GetName () const
+{
+    return "SetLast3DDefaultLevels";
+}
+
+GS::Optional<GS::UniString> SetLast3DDefaultLevelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types to set the last 3D default level of.",
+                "items": {
+                    "$ref": "#/ElementType"
+                },
+                "minItems": 1
+            },
+            "levels": {
+                "type": "array",
+                "description": "The new last 3D default level of each element type, in the order of elementTypes, in meters.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes",
+            "levels"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLast3DDefaultLevelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetLast3DDefaultLevelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_ElemTypeID> typeIDs;
+    const GS::Optional<GS::ObjectState> badInput = GetLast3DDefaultLevelsElemTypes (parameters, typeIDs);
+    if (badInput.HasValue ()) {
+        return CreateFailedExecutionResult (*badInput);
+    }
+
+    GS::Array<double> levels;
+    parameters.Get ("levels", levels);
+    if (levels.GetSize () != typeIDs.GetSize ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "levels must contain one level for each of elementTypes.");
+    }
+
+    const GSErrCode err = ACAPI_CallUndoableCommand ("Set Last 3D Default Levels", [&] () -> GSErrCode {
+        return TAPIR_ProjectSetting_SetLast3DDefLevels (typeIDs, levels);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the last 3D default levels.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
 {
     if (str == "EntireProject") {
