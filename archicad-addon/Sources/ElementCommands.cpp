@@ -4810,6 +4810,36 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     return response;
 }
 
+DeleteSelectedElementsCommand::DeleteSelectedElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteSelectedElementsCommand::GetName () const
+{
+    return "DeleteSelectedElements";
+}
+
+GS::Optional<GS::UniString> DeleteSelectedElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState DeleteSelectedElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_CallUndoableCommand ("DeleteSelectedElementsCommand", [&]() {
+        return ACAPI_Element_DeleteSelected ();
+    });
+
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to delete the selected elements.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 LockElementsCommand::LockElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
