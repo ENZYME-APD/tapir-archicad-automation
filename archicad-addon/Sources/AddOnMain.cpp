@@ -1178,6 +1178,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
         );
+        err |= RegisterCommand<SetZoomCommand> (
+            navigatorCommands, "1.7.3",
+            "Zooms the current 2D window to the given box in model coordinates."
+        );
+        err |= RegisterCommand<ResetZoomCommand> (
+            navigatorCommands, "1.7.3",
+            "Steps back in the zoom history of the current window, like Archicad's Zoom Back."
+        );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan."

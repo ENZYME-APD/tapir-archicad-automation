@@ -1096,6 +1096,123 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+SetZoomCommand::SetZoomCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetZoomCommand::GetName () const
+{
+    return "SetZoom";
+}
+
+GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zoomBox": {
+                "$ref": "#/Zoom",
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoomBox"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetZoomCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_Box zoomBox = {};
+    const GS::ObjectState* zoomBoxOS = parameters.Get ("zoomBox");
+    if (zoomBoxOS == nullptr ||
+        !zoomBoxOS->Get ("xMin", zoomBox.xMin) ||
+        !zoomBoxOS->Get ("yMin", zoomBox.yMin) ||
+        !zoomBoxOS->Get ("xMax", zoomBox.xMax) ||
+        !zoomBoxOS->Get ("yMax", zoomBox.yMax)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid zoomBox parameter.");
+    }
+    if (zoomBox.xMin >= zoomBox.xMax || zoomBox.yMin >= zoomBox.yMax) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The zoomBox must have xMin < xMax and yMin < yMax.");
+    }
+
+    API_WindowInfo currentWindow = {};
+    GSErrCode err = ACAPI_Window_GetCurrentWindow (&currentWindow);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current window.");
+    }
+    if (currentWindow.typeID == APIWind_3DModelID) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window is the 3D window; SetZoom works only in 2D windows.");
+    }
+
+    err = ACAPI_View_SetZoom (&zoomBox);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+ResetZoomCommand::ResetZoomCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ResetZoomCommand::GetName () const
+{
+    return "ResetZoom";
+}
+
+GS::Optional<GS::UniString> ResetZoomCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "numberOfStepsBack": {
+                "type": "integer",
+                "description": "The number of steps to go back in the zoom history of the current window, like Archicad's Zoom Back. The default is 1.",
+                "minimum": 1,
+                "maximum": 32767
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> ResetZoomCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ResetZoomCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 numberOfStepsBack = 1;
+    parameters.Get ("numberOfStepsBack", numberOfStepsBack);
+    if (numberOfStepsBack < 1 || numberOfStepsBack > 32767) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "numberOfStepsBack must be between 1 and 32767.");
+    }
+
+    short numOfStepsBack = static_cast<short> (numberOfStepsBack);
+    const GSErrCode err = ACAPI_View_ResetZoom (&numOfStepsBack);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to step back in the zoom history of the current window. The history might be shorter than the requested number of steps, or the current window has no zoom history.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CloneProjectMapItemToViewMapCommand::CloneProjectMapItemToViewMapCommand () :
     CommandBase (CommonSchema::NotUsed)
 {}
