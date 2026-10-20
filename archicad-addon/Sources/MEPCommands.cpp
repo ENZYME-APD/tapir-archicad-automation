@@ -1474,7 +1474,8 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
 // The preference table getters return either a plain value, a std::optional or an ACAPI::Result.
 // PreferenceTableValueToOptional turns all of them into a std::optional, so a value that cannot
 // be read is left out of the response instead of failing the whole table.
-// IsEditable returns an ACAPI::Result<void> that is Ok when the table is editable, so it is added with IsOk.
+// IsEditable returns an ACAPI::Result<void> that is Ok when the table is editable; PreferenceTableIsEditable
+// also handles a Result<bool> or a bool, so a read-only table is never reported as editable.
 template <typename T, typename = void>
 struct IsPreferenceTableResult : std::false_type {};
 
@@ -1498,6 +1499,25 @@ static auto PreferenceTableValueToOptional (T&& value)
         return ValueT (std::forward<T> (value));
     } else {
         return std::optional<ValueT> (std::forward<T> (value));
+    }
+}
+
+template <typename T, typename = void>
+struct HasPreferenceTableResultValue : std::false_type {};
+
+template <typename T>
+struct HasPreferenceTableResultValue<T, std::enable_if_t<!std::is_void_v<decltype (*std::declval<T&> ())>>> : std::true_type {};
+
+template <typename T>
+static bool PreferenceTableIsEditable (T&& isEditable)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (std::is_same_v<ValueT, bool>) {
+        return isEditable;
+    } else if constexpr (HasPreferenceTableResultValue<ValueT>::value) {
+        return isEditable.IsOk () && static_cast<bool> (*isEditable);
+    } else {
+        return isEditable.IsOk ();
     }
 }
 
@@ -1530,7 +1550,7 @@ static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid&
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     AddPreferenceTableValue (tableOS, "name", table.GetName ());
-    tableOS.Add ("isEditable", table.IsEditable ().IsOk ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     AddSegmentationLengths (tableOS, table);
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     const uint32_t size = table.GetSize ();
@@ -1560,7 +1580,7 @@ static GS::ObjectState DumpValuePreferenceTable (const TableT& table, const GS::
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     AddPreferenceTableValue (tableOS, "name", table.GetName ());
-    tableOS.Add ("isEditable", table.IsEditable ().IsOk ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     AddSegmentationLengths (tableOS, table);
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     const uint32_t size = static_cast<uint32_t> (PreferenceTableValueToOptional (table.GetSize ()).value_or (0));
@@ -1590,7 +1610,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
-    tableOS.Add ("isEditable", table.IsEditable ().IsOk ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto referenceId = table.GetReferenceId (i);
@@ -1621,7 +1641,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
-    tableOS.Add ("isEditable", table.IsEditable ().IsOk ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto mainAxisReferenceId = table.GetMainAxisReferenceId (i);
@@ -1662,7 +1682,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
-    tableOS.Add ("isEditable", table.IsEditable ().IsOk ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto beginReferenceId = table.GetBeginReferenceId (i);
@@ -1699,7 +1719,7 @@ static GS::ObjectState DumpAngleSet (const AngleSetBase& angleSet)
 {
     GS::ObjectState angleSetOS;
     angleSetOS.Add ("name", angleSet.GetName ());
-    angleSetOS.Add ("isEditable", angleSet.IsEditable ().IsOk ());
+    angleSetOS.Add ("isEditable", PreferenceTableIsEditable (angleSet.IsEditable ()));
     const auto& angles = angleSetOS.AddList<double> ("angles");
     for (uint32_t i = 0; i < angleSet.GetSize (); ++i) {
         auto angle = angleSet.GetAngle (i);
@@ -1715,7 +1735,7 @@ static GS::ObjectState DumpReferenceSet (const ReferenceSetBase& referenceSet)
 {
     GS::ObjectState referenceSetOS;
     referenceSetOS.Add ("name", referenceSet.GetName ());
-    referenceSetOS.Add ("isEditable", referenceSet.IsEditable ().IsOk ());
+    referenceSetOS.Add ("isEditable", PreferenceTableIsEditable (referenceSet.IsEditable ()));
     const auto& referenceIds = referenceSetOS.AddList<Int32> ("referenceIds");
     for (uint32_t i = 0; i < referenceSet.GetSize (); ++i) {
         auto referenceId = referenceSet.GetReferenceId (i);
