@@ -86,3 +86,31 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class GetProductVersionInfoCommand : public CommandBase
+{
+public:
+    GetProductVersionInfoCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class Get3DCutawayStatusCommand : public CommandBase
+{
+public:
+    Get3DCutawayStatusCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class Set3DCutawayStatusCommand : public CommandBase
+{
+public:
+    Set3DCutawayStatusCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};

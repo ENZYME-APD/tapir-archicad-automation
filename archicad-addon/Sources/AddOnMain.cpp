@@ -229,6 +229,18 @@ GSErrCode Initialize (void)
             applicationCommands, "1.5.6",
             "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."
         );
+        err |= RegisterCommand<GetProductVersionInfoCommand> (
+            applicationCommands, "1.7.3",
+            "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type and main/update/hotfix versions from Archicad 29. Requires Archicad 28 or later."
+        );
+        err |= RegisterCommand<Get3DCutawayStatusCommand> (
+            applicationCommands, "1.7.3",
+            "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. Requires Archicad 28 or later."
+        );
+        err |= RegisterCommand<Set3DCutawayStatusCommand> (
+            applicationCommands, "1.7.3",
+            "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. Requires Archicad 28 or later."
+        );
 
         AddCommandGroup (applicationCommands);
     }
