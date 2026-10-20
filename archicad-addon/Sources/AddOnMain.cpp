@@ -370,7 +370,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets the details of elements (geometry parameters, etc). When elements is omitted or empty, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried automatically. Use the optional fields parameter to project only the fields you need (e.g. elementId, type, id, floorIndex) and skip computing unneeded fields (such as heavy floorPlanPolygons)."
+            "Gets the details of elements (geometry parameters, etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried automatically; an empty elements list returns no details. Use the optional fields parameter to project only the fields you need (e.g. elementId, type, id, floorIndex) and skip computing unneeded fields (such as heavy floorPlanPolygons)."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",

@@ -1328,7 +1328,7 @@ var gCommands = [{
             },{
                 "name": "GetDetailsOfElements",
                 "version": "1.5.7",
-                "description": "Gets the details of elements (geometry parameters, etc). When elements is omitted or empty, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried automatically. Use the optional fields parameter to project only the fields you need (e.g. elementId, type, id, floorIndex) and skip computing unneeded fields (such as heavy floorPlanPolygons).",
+                "description": "Gets the details of elements (geometry parameters, etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried automatically; an empty elements list returns no details. Use the optional fields parameter to project only the fields you need (e.g. elementId, type, id, floorIndex) and skip computing unneeded fields (such as heavy floorPlanPolygons).",
                 "inputScheme": {
         "type": "object",
         "properties": {
