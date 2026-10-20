@@ -34,6 +34,14 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             OutGenericTree(
                 "ActiveDesignOptionGuids",
                 "Identifiers of the active design options in each combination (one branch per combination). Available from Archicad 29.");
+
+            OutBooleans(
+                "IsEditable",
+                "Whether each design option combination can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Available from Archicad 29.");
+
+            OutTexts(
+                "NotEditableReasons",
+                "The reason why each design option combination is not editable (empty when it is editable). Available from Archicad 29.");
         }
 
         protected override void Solve(
@@ -79,6 +87,14 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
             da.SetDataTree(
                 2,
                 tree);
+
+            da.SetDataList(
+                3,
+                combinations.Select(c => c.IsEditable));
+
+            da.SetDataList(
+                4,
+                combinations.Select(c => c.NotEditableError?.Message));
         }
 
         protected override System.Drawing.Bitmap Icon =>

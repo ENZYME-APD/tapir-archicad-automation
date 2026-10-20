@@ -1363,7 +1363,7 @@ GSErrCode Initialize (void)
             "Deletes the given design option combinations. Available from Archicad 29."
         );
         err |= RegisterCommand<CanMoveElementsToDesignOptionsCommand> (
-            designOptionsCommands, "1.7.2",
+            designOptionsCommands, "1.7.3",
             "Checks whether the given elements can be moved to another design option or to the main model, with the reason when they cannot. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
