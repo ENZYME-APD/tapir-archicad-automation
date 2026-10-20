@@ -66,6 +66,7 @@ private:
 
     GS::Process process;
     GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
+    GS::Array<GS::UInt64> childProcessIdsBeforeStart;   // the child processes of Archicad that ran before process was started, so are not it
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;

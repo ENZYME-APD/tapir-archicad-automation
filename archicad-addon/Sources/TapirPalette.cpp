@@ -989,8 +989,10 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
 // process(es) uv started kept running without a parent (issue #769): a script waiting for something, such as a
 // ShowScriptUI page, went on in the background, and a second run of it competed with it for the same Archicad.
 // So Stop ends the started process together with all of its descendants. GS::Process gives no process id: the
-// started process is found among the child processes of this Archicad by the file name of its executable, which
-// is unambiguous because the palette runs one script at a time and the Add-On waits for its other uv runs.
+// started process is found among the child processes of this Archicad that did not run before it was started,
+// by the file name of its executable, which is unambiguous because the palette runs one script at a time and the
+// Add-On waits for its other uv runs. A script that is not Python may run as its interpreter (a shell script as
+// bash, a .bat as cmd.exe), so when no file name matches, the first started of those child processes is taken.
 // A process id can be reused, so a process is taken as the child of another only when it started after it.
 
 #if defined (WINDOWS)
@@ -1144,42 +1146,79 @@ static void CollectDescendants (const GS::Array<ProcessInfo>& processes, const P
     }
 }
 
-// The processes started by the process this Archicad started for the command, the processes those started, and so on
-static GS::Array<ProcessId> FindDescendantsOfStartedProcess (const GS::UniString& command)
+static const ProcessInfo* FindThisProcess (const GS::Array<ProcessInfo>& processes)
 {
-    GS::Array<ProcessId> descendants;
+    for (const ProcessInfo& process : processes) {
+        if (process.id == GetThisProcessId ()) {
+            return &process;
+        }
+    }
+    return nullptr;
+}
+
+// The ids of the running processes this Archicad started
+static GS::Array<GS::UInt64> ListChildProcessIds ()
+{
+    GS::Array<GS::UInt64> childIds;
+    const GS::Array<ProcessInfo> processes = ListProcesses ();
+    const ProcessInfo* thisProcess = FindThisProcess (processes);
+    if (thisProcess == nullptr) {
+        return childIds;
+    }
+    for (const ProcessInfo& process : processes) {
+        if (IsChildOf (process, *thisProcess)) {
+            childIds.Push (static_cast<GS::UInt64> (process.id));
+        }
+    }
+    return childIds;
+}
+
+// The processes started by the process this Archicad started for the command, the processes those started, and
+// so on. Returns false when the started process is not found.
+static bool FindDescendantsOfStartedProcess (const GS::UniString& command, const GS::Array<GS::UInt64>& childIdsBeforeStart, GS::Array<ProcessId>& descendants)
+{
     const GS::Array<ProcessInfo> processes = ListProcesses ();
     const GS::UniString executableName = GetExecutableName (command);
 
-    const ProcessInfo* thisProcess = nullptr;
-    for (const ProcessInfo& process : processes) {
-        if (process.id == GetThisProcessId ()) {
-            thisProcess = &process;
-        }
-    }
+    const ProcessInfo* thisProcess = FindThisProcess (processes);
     if (thisProcess == nullptr) {
-        return descendants;
+        return false;
     }
 
     const ProcessInfo* startedProcess = nullptr;   // the most recently started one, should there be more
+    const ProcessInfo* firstNewChild = nullptr;
     for (const ProcessInfo& process : processes) {
-        if (IsChildOf (process, *thisProcess) && IsSameExecutableName (process.executableName, executableName) &&
+        if (!IsChildOf (process, *thisProcess) || childIdsBeforeStart.Contains (static_cast<GS::UInt64> (process.id))) {
+            continue;
+        }
+        if (IsSameExecutableName (process.executableName, executableName) &&
             (startedProcess == nullptr || process.startTime > startedProcess->startTime)) {
             startedProcess = &process;
         }
+        if (firstNewChild == nullptr || process.startTime < firstNewChild->startTime) {
+            firstNewChild = &process;
+        }
     }
-    if (startedProcess != nullptr) {
-        CollectDescendants (processes, *startedProcess, descendants);
+    if (startedProcess == nullptr) {
+        startedProcess = firstNewChild;
     }
-    return descendants;
+    if (startedProcess == nullptr) {
+        return false;
+    }
+    CollectDescendants (processes, *startedProcess, descendants);
+    return true;
 }
 
 void TapirPalette::KillRunningProcess ()
 {
     // Found before Kill: afterwards the descendants have no parent any more (macOS gives them to launchd), and
     // the id of the ended process may be reused
-    const GS::Array<ProcessId> descendants = FindDescendantsOfStartedProcess (runningCommand);
+    GS::Array<ProcessId> descendants;
+    const bool found = FindDescendantsOfStartedProcess (runningCommand, childProcessIdsBeforeStart, descendants);
     process.Kill ();
+    if (!found) {
+        WriteReport (DG_WARNING, "Could not find the processes the script started, they may keep running.");
+    }
     for (const ProcessId descendant : descendants) {
         KillProcess (descendant);
     }
@@ -1308,6 +1347,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         constexpr bool redirectStandardInput = false;
         constexpr bool redirectStandardError = true;
         runningCommand = command;
+        childProcessIdsBeforeStart = ListChildProcessIds ();
         {
 #if defined (WINDOWS)
             // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese
