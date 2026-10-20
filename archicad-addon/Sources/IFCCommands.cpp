@@ -744,8 +744,9 @@ GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectStat
                 "name", attribute.attributeName,
                 "valueType", attribute.attributeType
             );
-            // Optional IFC attributes can have no value, then value is left out
-            if (attribute.isValueSet) {
+            // Optional IFC attributes can have no value, then value is left out.
+            // API_IFCAttribute has no isValueSet member, so an empty attributeValue counts as no value.
+            if (!attribute.attributeValue.IsEmpty ()) {
                 ifcAttribute.Add ("value", attribute.attributeValue);
             }
             ifcAttributes (ifcAttribute);
