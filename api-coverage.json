@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 06:35 UTC",
+ "generatedAt": "2026-10-20 07:05 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 308,
+  "open": 296,
   "not applicable": 469,
-  "claimed": 1137,
+  "claimed": 1149,
   "in progress": 226,
   "done": 743
  },
@@ -63597,7 +63597,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Attribute::GetValue",
@@ -63612,10 +63617,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Attribute::GetValueType",
@@ -63630,10 +63640,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Classification::GetDescription",
@@ -63666,10 +63681,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Classification::GetEditionDate",
@@ -63723,7 +63743,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Classification::GetSource",
@@ -63738,10 +63763,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetDescription",
@@ -63755,10 +63785,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetIdentification",
@@ -63773,10 +63808,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetIfcRelAssociatesClassificationName",
@@ -63809,10 +63849,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetName",
@@ -63827,10 +63872,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetReferencedSource",
@@ -63845,10 +63895,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetSort",
@@ -64614,10 +64669,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyAccessor::GetLocalClassificationReferences",
@@ -64632,10 +64692,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyAccessor::GetLocalProperties",
@@ -64668,10 +64733,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyAccessor::GetPreviewProperties",
@@ -65084,7 +65154,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1306,
+     "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
+    }
+   ]
   }
  ]
 }
