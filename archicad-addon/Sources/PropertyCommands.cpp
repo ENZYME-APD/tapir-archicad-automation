@@ -2021,7 +2021,7 @@ GS::ObjectState CheckPropertyExpressionsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& results = response.AddList<GS::ObjectState> ("results");
 
-    for (const GS::UniString& expression : expressions) {
+    for (GS::UniString& expression : expressions) {
         const GSErrCode err = ACAPI_Property_CheckPropertyExpressionString (&expression);
         if (err != NoError) {
             GS::ObjectState result = CreateErrorResponse (err, "the expression is not valid");
