@@ -1627,14 +1627,12 @@ GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetInputParametersS
                 "description": "Absolute path of the image file to write. An existing file is overwritten."
             },
             "format": {
-                "type": "string",
-                "description": "Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).",
-                "enum": ["png", "jpg", "bmp", "tiff", "gif"]
+                "$ref": "#/ImageFormat",
+                "description": "Optional. When omitted, the format comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif)."
             },
             "colorDepth": {
-                "type": "string",
-                "description": "Optional, trueColor by default. The color depth of the image, as in the Save as picture dialog.",
-                "enum": ["blackAndWhite", "16Colors", "256Colors", "16Grays", "256Grays", "trueColor", "trueColorWithAlpha"]
+                "$ref": "#/ImageColorDepth",
+                "description": "Optional, trueColor by default."
             },
             "dithered": {
                 "type": "boolean",
@@ -3023,16 +3021,7 @@ GS::Optional<GS::UniString> UpdateHotlinksCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The hotlink nodes to update, from GetHotlinks or CreateHotlinkNodes. Each node's cached content is re-read from its source file, as the Hotlink Manager's Update button does.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId"
-                    ]
+                    "$ref": "#/HotlinkNodeReference"
                 }
             }
         },
@@ -3115,21 +3104,7 @@ GS::Optional<GS::UniString> ChangeHotlinkNodesCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The hotlink nodes to repoint at another source file, as the Hotlink Manager's Relink button does. The placed instances stay where they are. Follow it with UpdateHotlinks on the same nodes to re-read the content from the new file.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        },
-                        "sourceLocation": {
-                            "type": "string",
-                            "description": "Absolute path of the new module source file (.mod or .pln)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId",
-                        "sourceLocation"
-                    ]
+                    "$ref": "#/HotlinkNodeChange"
                 }
             }
         },

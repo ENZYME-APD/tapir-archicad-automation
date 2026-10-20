@@ -389,9 +389,7 @@ GS::Optional<GS::UniString> GetLockableObjectSetStatusCommand::GetRawResponseSch
         "type": "object",
         "properties": {
             "status": {
-                "type": "string",
-                "description": "Free: nobody has reserved it. Editable: the current user has reserved it. Locked: another user has reserved it (see conflicts). NotAvailable: the Teamwork server is offline or not available. NotExist: there is no Teamwork connection, for example the project is not a Teamwork project. An unknown object set name is reported as an error, not as a status.",
-                "enum": ["Free", "Editable", "Locked", "NotAvailable", "NotExist"]
+                "$ref": "#/LockableObjectSetStatus"
             },
             "conflicts": {
                 "type": "array",

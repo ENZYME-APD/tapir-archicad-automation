@@ -1479,90 +1479,7 @@ GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetRawResponse
                 "type": "object",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "libPart": {
-                                "$ref": "#/LibPartDetails",
-                                "description": "The library part of the marker. Absent when it could not be read."
-                            },
-                            "parameters": {
-                                "type": "array",
-                                "description": "The GDL parameters of the marker.",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the parameter."
-                                        },
-                                        "displayName": {
-                                            "type": "string",
-                                            "description": "The display name of the parameter."
-                                        },
-                                        "index": {
-                                            "type": "integer",
-                                            "description": "The index of the parameter."
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "description": "The type of the parameter."
-                                        },
-                                        "dimension1": {
-                                            "type": "integer",
-                                            "description": "The 1st dimension of array (in case of array value)."
-                                        },
-                                        "dimension2": {
-                                            "type": "integer",
-                                            "description": "The 2nd dimension of array (in case of array value)."
-                                        },
-                                        "value": {
-                                            "description": "The value of the parameter."
-                                        },
-                                        "valueDescription": {
-                                            "type": "string",
-                                            "description": "The value description for numeric parameter."
-                                        },
-                                        "itemDescriptions": {
-                                            "type": "array",
-                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "flags": {
-                                            "type": "array",
-                                            "description": "The flags of the parameter.",
-                                            "items": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "Hidden",
-                                                    "HiddenFromScript",
-                                                    "Disabled",
-                                                    "Child",
-                                                    "Unique",
-                                                    "Fixed",
-                                                    "BoldName",
-                                                    "Open"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "displayName",
-                                        "index",
-                                        "type",
-                                        "value",
-                                        "flags"
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "parameters"
-                        ]
+                        "$ref": "#/MarkerParametersOfElement"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -1658,59 +1575,7 @@ GS::Optional<GS::UniString> SetMarkerParametersOfElementsCommand::GetInputParame
             "type": "array",
             "description": "The elements with the marker parameters to change.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "elementId": {
-                        "$ref": "#/ElementId"
-                    },
-                    "markerParameters": {
-                        "type": "array",
-                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the marker parameter."
-                                        },
-                                        "value": {
-                                            "description": "The new value of the marker parameter: a number for the numeric types (Integer, Length, Angle, RealNumber, PenColor, LineType, Material, FillPattern, BuildingMaterial, Profile, RGBColor, Intensity), a string for String and Title, true/false for Boolean and 'On'/'Off' for LightSwitch. Array parameters are not supported."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "value"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "index": {
-                                            "type": "integer",
-                                            "description": "The index of the marker parameter, as GetMarkerParametersOfElements reports it."
-                                        },
-                                        "value": {
-                                            "description": "The new value of the marker parameter, see the value given with a name."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "index",
-                                        "value"
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementId",
-                    "markerParameters"
-                ]
+                "$ref": "#/ElementWithMarkerParameters"
             }
         }
     },

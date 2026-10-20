@@ -1189,24 +1189,7 @@ GS::Optional<GS::UniString> RenameDesignOptionsCommand::GetInputParametersSchema
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the design option. The name is kept when it is not given."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "The new string id of the design option. The id is kept when it is not given."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionRename"
                 },
                 "description": "The design options to rename, each with the new name and/or id. At least one of them must be given."
             }
@@ -1319,21 +1302,7 @@ GS::Optional<GS::UniString> RenameDesignOptionSetsCommand::GetInputParametersSch
             "designOptionSets": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionSetId": {
-                            "$ref": "#/DesignOptionSetId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the design option set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionSetId",
-                        "name"
-                    ]
+                    "$ref": "#/DesignOptionSetRename"
                 },
                 "description": "The design option sets to rename, each with the new name."
             }
@@ -1430,21 +1399,7 @@ GS::Optional<GS::UniString> RenameDesignOptionCombinationsCommand::GetInputParam
             "designOptionCombinations": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionCombinationId": {
-                            "$ref": "#/DesignOptionCombinationId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the design option combination."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionCombinationId",
-                        "name"
-                    ]
+                    "$ref": "#/DesignOptionCombinationRename"
                 },
                 "description": "The design option combinations to rename, each with the new name."
             }

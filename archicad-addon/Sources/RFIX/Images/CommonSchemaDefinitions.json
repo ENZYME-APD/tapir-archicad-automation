@@ -2248,8 +2248,7 @@
                 "type": "array",
                 "description": "The sizes (widths of the columns or heights of the rows) of the pattern unit in meters, in order from the start of the segment or from the bottom. The unit is repeated to fill the segment.",
                 "items": {
-                    "type": "number",
-                    "exclusiveMinimum": 0.0
+                    "$ref": "#/CurtainWallPatternSize"
                 },
                 "minItems": 1
             },
@@ -2263,8 +2262,7 @@
                 "type": "array",
                 "description": "Zero-based indices of the columns/rows of the pattern unit that 'BestDivision' may stretch. When omitted, all of them are flexible. Ignored by 'FixedSizes'.",
                 "items": {
-                    "type": "integer",
-                    "minimum": 0
+                    "$ref": "#/CurtainWallFlexibleIndex"
                 }
             }
         },
@@ -5948,45 +5946,7 @@
                 "type": "array",
                 "description": "The faces of the body.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "vertexIds": {
-                            "type": "array",
-                            "description": "The outer contour of the face: 0-based indices into vertices.",
-                            "items": {
-                                "type": "integer"
-                            },
-                            "minItems": 3
-                        },
-                        "holes": {
-                            "type": "array",
-                            "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "vertexIds": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        },
-                                        "minItems": 3
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "vertexIds"
-                                ]
-                            }
-                        },
-                        "surfaceId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "vertexIds"
-                    ]
+                    "$ref": "#/Body3DPolygon"
                 }
             }
         },
@@ -6477,44 +6437,12 @@
         ]
     },
     "Hole2D": {
-        "type": "object",
-        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
-        "properties": {
-            "polygonOutline": {
-                "type": "array",
-                "description": "The 2D coordinates of the edge of the hole.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonCoordinates": {
-                "type": "array",
-                "description": "Legacy alias of polygonOutline.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonArcs": {
-                "type": "array",
-                "description": "Polygon outline arcs of the hole.",
-                "items": {
-                    "$ref": "#/PolyArc"
-                }
-            }
-        },
-        "additionalProperties": false,
         "oneOf": [
             {
-                "required": [
-                    "polygonOutline"
-                ]
+                "$ref": "#/Hole2DWithOutline"
             },
             {
-                "required": [
-                    "polygonCoordinates"
-                ]
+                "$ref": "#/Hole2DWithLegacyCoordinates"
             }
         ]
     },
@@ -11079,7 +11007,9 @@
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
-            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameShape": {
+                "$ref": "#/TextFrameShape"
+            },
             "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
             "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." }
@@ -11115,7 +11045,9 @@
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
-            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameShape": {
+                "$ref": "#/TextFrameShape"
+            },
             "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
             "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
@@ -12415,31 +12347,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "referenceId": {
-                            "type": "integer"
-                        },
-                        "angle": {
-                            "type": "number",
-                            "description": "In degrees. Available from Archicad 29."
-                        },
-                        "diameter": {
-                            "type": "number"
-                        },
-                        "radius": {
-                            "type": "number"
-                        },
-                        "description": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "referenceId",
-                        "diameter",
-                        "radius"
-                    ]
+                    "$ref": "#/MEPElbowPreferenceTableRow"
                 }
             }
         },
@@ -12462,47 +12370,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "mainAxisReferenceId": {
-                            "type": "integer"
-                        },
-                        "branchAxisReferenceId": {
-                            "type": "integer"
-                        },
-                        "branchAxisAngle": {
-                            "type": "number",
-                            "description": "In degrees. Available from Archicad 29."
-                        },
-                        "mainAxisDiameter": {
-                            "type": "number"
-                        },
-                        "branchAxisDiameter": {
-                            "type": "number"
-                        },
-                        "length": {
-                            "type": "number"
-                        },
-                        "branchOffset": {
-                            "type": "number"
-                        },
-                        "connectionLength": {
-                            "type": "number"
-                        },
-                        "description": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "mainAxisReferenceId",
-                        "branchAxisReferenceId",
-                        "mainAxisDiameter",
-                        "branchAxisDiameter",
-                        "length",
-                        "branchOffset",
-                        "connectionLength"
-                    ]
+                    "$ref": "#/MEPBranchPreferenceTableRow"
                 }
             }
         },
@@ -12525,39 +12393,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "beginReferenceId": {
-                            "type": "integer"
-                        },
-                        "endReferenceId": {
-                            "type": "integer"
-                        },
-                        "beginDiameter": {
-                            "type": "number"
-                        },
-                        "endDiameter": {
-                            "type": "number"
-                        },
-                        "length": {
-                            "type": "number",
-                            "description": "Piping only."
-                        },
-                        "angle": {
-                            "type": "number",
-                            "description": "In degrees. Ventilation only."
-                        },
-                        "description": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "beginReferenceId",
-                        "endReferenceId",
-                        "beginDiameter",
-                        "endDiameter"
-                    ]
+                    "$ref": "#/MEPTransitionPreferenceTableRow"
                 }
             }
         },
@@ -12667,16 +12503,7 @@
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "systemGroupId": {
-                        "$ref": "#/MEPSystemGroupId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "systemGroupId"
-                ]
+                "$ref": "#/MEPSystemGroupIdArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -12687,16 +12514,7 @@
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "physicalSystemId": {
-                        "$ref": "#/MEPPhysicalSystemId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "physicalSystemId"
-                ]
+                "$ref": "#/MEPPhysicalSystemIdArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -12942,8 +12760,7 @@
                 "description": "Matches roofs whose 'connected to other roof(s)' status equals this value."
             },
             "structureType": {
-                "type": "string",
-                "enum": [ "Basic", "Composite", "ComplexProfile" ],
+                "$ref": "#/GraphicOverrideStructureType",
                 "description": "Matches elements whose structure type (Wall/Beam/Column basic vs. composite vs. complex profile) equals this value."
             },
             "seaLevelAltitude": { "type": "number", "description": "Matches elements whose sea level altitude equals this value." },
@@ -13075,8 +12892,14 @@
             "mepMaterialNameNotContains": { "type": "string" },
             "mepMaterialNameStartsWith": { "type": "string" },
             "mepMaterialNameEndsWith": { "type": "string" },
-            "wallComplexity": { "type": "string", "enum": ["Straight", "Slanted", "DoubleSlanted"], "description": "Matches walls whose complexity equals this." },
-            "wallComplexityNot": { "type": "string", "enum": ["Straight", "Slanted", "DoubleSlanted"], "description": "Matches walls whose complexity is NOT this." },
+            "wallComplexity": {
+                "$ref": "#/GraphicOverrideWallComplexity",
+                "description": "Matches walls whose complexity equals this."
+            },
+            "wallComplexityNot": {
+                "$ref": "#/GraphicOverrideWallComplexity",
+                "description": "Matches walls whose complexity is NOT this."
+            },
             "wallLevelOffset": { "type": "number", "description": "Matches walls whose home story level offset equals this value." },
             "wallLevelOffsetNot": { "type": "number" },
             "wallLevelOffsetLessThan": { "type": "number" },
@@ -13089,8 +12912,13 @@
             "wallTopOffsetGreaterThan": { "type": "number" },
             "wallTopOffsetLessOrEqual": { "type": "number" },
             "wallTopOffsetGreaterOrEqual": { "type": "number" },
-            "wallReferenceLinePosition": { "type": "string", "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"], "description": "Matches walls whose reference line position equals this." },
-            "wallReferenceLinePositionNot": { "type": "string", "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"] },
+            "wallReferenceLinePosition": {
+                "$ref": "#/WallReferenceLineLocation",
+                "description": "Matches walls whose reference line position equals this."
+            },
+            "wallReferenceLinePositionNot": {
+                "$ref": "#/WallReferenceLineLocation"
+            },
             "wallOutsideAngle": { "type": "number", "description": "Matches walls whose outside slant angle equals this value (degrees)." },
             "wallOutsideAngleNot": { "type": "number" },
             "wallOutsideAngleLessThan": { "type": "number" },
@@ -13190,8 +13018,13 @@
             "stairRiserCount": { "type": "integer", "description": "Matches stairs whose number of risers equals this value. Only equality is supported." },
             "stairStepCount": { "type": "integer", "description": "Matches stairs whose number of steps equals this value. Only equality is supported." },
             "stairStepCountPerFlight": { "type": "integer", "description": "Matches stairs whose number of steps per flight equals this value. Only equality is supported." },
-            "wallGeometryType": { "type": "string", "enum": ["Uniform", "Trapezoid", "Polygonal"], "description": "Matches walls whose geometry type equals this." },
-            "wallGeometryTypeNot": { "type": "string", "enum": ["Uniform", "Trapezoid", "Polygonal"] },
+            "wallGeometryType": {
+                "$ref": "#/GraphicOverrideWallGeometryType",
+                "description": "Matches walls whose geometry type equals this."
+            },
+            "wallGeometryTypeNot": {
+                "$ref": "#/GraphicOverrideWallGeometryType"
+            },
             "wallReferenceLineOffset": { "type": "number", "description": "Matches walls whose reference line offset equals this value. Uses a different underlying mechanism than every other numeric field in this schema, reverse-engineered separately - support all 6 comparison operators like the rest." },
             "wallReferenceLineOffsetNot": { "type": "number" },
             "wallReferenceLineOffsetLessThan": { "type": "number" },
@@ -13246,15 +13079,23 @@
             "subTypeNameNotContains": { "type": "string" },
             "subTypeNameStartsWith": { "type": "string" },
             "subTypeNameEndsWith": { "type": "string" },
-            "columnCoatingType": { "type": "string", "enum": ["Core", "Finish", "Other"], "description": "Matches columns whose coating type equals this." },
-            "columnCoatingTypeNot": { "type": "string", "enum": ["Core", "Finish", "Other"] },
+            "columnCoatingType": {
+                "$ref": "#/GraphicOverrideColumnCoatingType",
+                "description": "Matches columns whose coating type equals this."
+            },
+            "columnCoatingTypeNot": {
+                "$ref": "#/GraphicOverrideColumnCoatingType"
+            },
             "columnInclinationAngle": { "type": "number", "description": "Matches columns whose inclination angle equals this value (degrees)." },
             "columnInclinationAngleNot": { "type": "number" },
             "columnInclinationAngleLessThan": { "type": "number" },
             "columnInclinationAngleGreaterThan": { "type": "number" },
             "columnInclinationAngleLessOrEqual": { "type": "number" },
             "columnInclinationAngleGreaterOrEqual": { "type": "number" },
-            "columnCrossSectionType": { "type": "string", "enum": ["Rectangular", "Circular", "Profiled"], "description": "Matches columns whose cross section type equals this." },
+            "columnCrossSectionType": {
+                "$ref": "#/GraphicOverrideColumnCrossSectionType",
+                "description": "Matches columns whose cross section type equals this."
+            },
             "columnCoreDiameter": { "type": "number", "description": "Matches columns whose core diameter equals this value." },
             "columnCoreDiameterNot": { "type": "number" },
             "columnCoreDiameterLessThan": { "type": "number" },
@@ -13379,10 +13220,20 @@
             "beamBottomSurfaceNot": { "type": "string" },
             "beamTopSurface": { "type": "string", "description": "Matches beams whose top surface is this Surface attribute (by name)." },
             "beamTopSurfaceNot": { "type": "string" },
-            "slabReferencePlaneLocation": { "type": "string", "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"], "description": "Matches slabs whose reference plane location equals this." },
-            "slabReferencePlaneLocationNot": { "type": "string", "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"] },
-            "slabEdgeAngle": { "type": "string", "enum": ["Vertical", "Custom"], "description": "Matches slabs whose edge angle mode equals this." },
-            "slabEdgeAngleNot": { "type": "string", "enum": ["Vertical", "Custom"] },
+            "slabReferencePlaneLocation": {
+                "$ref": "#/SlabReferencePlaneLocation",
+                "description": "Matches slabs whose reference plane location equals this."
+            },
+            "slabReferencePlaneLocationNot": {
+                "$ref": "#/SlabReferencePlaneLocation"
+            },
+            "slabEdgeAngle": {
+                "$ref": "#/GraphicOverrideSlabEdgeAngle",
+                "description": "Matches slabs whose edge angle mode equals this."
+            },
+            "slabEdgeAngleNot": {
+                "$ref": "#/GraphicOverrideSlabEdgeAngle"
+            },
             "slabDefaultEdgeAngle": { "type": "number", "description": "Matches slabs whose default edge angle equals this value (degrees)." },
             "slabDefaultEdgeAngleNot": { "type": "number" },
             "slabDefaultEdgeAngleLessThan": { "type": "number" },
@@ -13393,39 +13244,63 @@
             "slabCutLinePenNot": { "type": "integer" },
             "slabConstructionMaterialFill": { "type": "string", "description": "Matches slabs whose construction material fill is this Fill attribute (by name). Despite the field's label in the criteria editor, Archicad stores a Fill here, not a Building Material (checked on rules made in the editor)." },
             "slabConstructionMaterialFillNot": { "type": "string" },
-            "roofCutBodyType": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"], "description": "Matches roofs whose cut body type equals this." },
-            "roofCutBodyTypeNot": { "type": "string", "enum": ["ContoursDown", "ReferenceLineDown"] },
+            "roofCutBodyType": {
+                "$ref": "#/GraphicOverrideRoofCutBodyType",
+                "description": "Matches roofs whose cut body type equals this."
+            },
+            "roofCutBodyTypeNot": {
+                "$ref": "#/GraphicOverrideRoofCutBodyType"
+            },
             "roofLevelNumber": { "type": "integer", "description": "Matches roofs whose level number equals this value." },
             "roofLevelNumberNot": { "type": "integer" },
             "roofLevelNumberLessThan": { "type": "integer" },
             "roofLevelNumberGreaterThan": { "type": "integer" },
             "roofLevelNumberLessOrEqual": { "type": "integer" },
             "roofLevelNumberGreaterOrEqual": { "type": "integer" },
-            "roofEaveOverhangType": { "type": "string", "enum": ["Offset", "Manual"], "description": "Matches roofs whose eave overhang type equals this." },
-            "roofEdgeAngle": { "type": "string", "enum": ["Vertical", "Perpendicular", "Custom"], "description": "Matches roofs whose edge angle mode equals this." },
-            "roofEdgeAngleNot": { "type": "string", "enum": ["Vertical", "Perpendicular", "Custom"] },
+            "roofEaveOverhangType": {
+                "$ref": "#/GraphicOverrideRoofEaveOverhangType",
+                "description": "Matches roofs whose eave overhang type equals this."
+            },
+            "roofEdgeAngle": {
+                "$ref": "#/GraphicOverrideRoofEdgeAngle",
+                "description": "Matches roofs whose edge angle mode equals this."
+            },
+            "roofEdgeAngleNot": {
+                "$ref": "#/GraphicOverrideRoofEdgeAngle"
+            },
             "roofEaveOverhang": { "type": "number", "description": "Matches roofs whose eave overhang equals this value." },
             "roofEaveOverhangNot": { "type": "number" },
             "roofEaveOverhangLessThan": { "type": "number" },
             "roofEaveOverhangGreaterThan": { "type": "number" },
             "roofEaveOverhangLessOrEqual": { "type": "number" },
             "roofEaveOverhangGreaterOrEqual": { "type": "number" },
-            "roofGeometryType": { "type": "string", "enum": ["SinglePanel", "MultiplePanels"], "description": "Matches roofs whose geometry type equals this." },
-            "roofGeometryTypeNot": { "type": "string", "enum": ["SinglePanel", "MultiplePanels"] },
+            "roofGeometryType": {
+                "$ref": "#/GraphicOverrideRoofGeometryType",
+                "description": "Matches roofs whose geometry type equals this."
+            },
+            "roofGeometryTypeNot": {
+                "$ref": "#/GraphicOverrideRoofGeometryType"
+            },
             "roofPitch": { "type": "number", "description": "Matches roofs that have a pitch equal to this value (degrees) among their panels." },
             "roofPitchNot": { "type": "number" },
             "roofPitchLessThan": { "type": "number" },
             "roofPitchGreaterThan": { "type": "number" },
             "roofPitchLessOrEqual": { "type": "number" },
             "roofPitchGreaterOrEqual": { "type": "number" },
-            "shellCutBodyType": { "type": "string", "enum": ["Editable", "ExtrudeUp", "ExtrudeDown"], "description": "Matches shells whose cut body type equals this." },
+            "shellCutBodyType": {
+                "$ref": "#/GraphicOverrideShellCutBodyType",
+                "description": "Matches shells whose cut body type equals this."
+            },
             "shellTiltAngle": { "type": "number", "description": "Matches shells whose tilt angle equals this value (degrees)." },
             "shellTiltAngleNot": { "type": "number" },
             "shellTiltAngleLessThan": { "type": "number" },
             "shellTiltAngleGreaterThan": { "type": "number" },
             "shellTiltAngleLessOrEqual": { "type": "number" },
             "shellTiltAngleGreaterOrEqual": { "type": "number" },
-            "shellGeometryType": { "type": "string", "enum": ["Extrude", "Revolved", "Ruled"], "description": "Matches shells whose geometry type equals this." },
+            "shellGeometryType": {
+                "$ref": "#/GraphicOverrideShellGeometryType",
+                "description": "Matches shells whose geometry type equals this."
+            },
             "hatchFill": { "type": "string", "description": "Matches elements whose hatch is this Fill attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
             "hatchFillNot": { "type": "string", "description": "Matches elements whose hatch is NOT this Fill attribute (by name)." },
             "lineAttribute": { "type": "string", "description": "Matches elements whose contour/line is this Line Type attribute (by name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
@@ -13433,8 +13308,14 @@
             "fontIs": { "type": "string", "description": "Matches elements whose font equals this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western') exactly. Applies to 2D annotation (Text/Label) elements - unlike every other field in this schema, this one and 'textPen*' are NOT combined with a 3D-model-element anchor when used alone or together, since they don't apply to 3D model elements." },
             "fontContains": { "type": "string", "description": "Matches elements whose font is one of a list containing this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western') (ArchiCAD's 'contains' operator for a font field)." },
             "fontNotContains": { "type": "string", "description": "Matches elements whose font is not one of a list containing this font name (as GetDetailsOfElements reports it in fontName, with its script, e.g. 'Arial Western')." },
-            "penReplacement": { "type": "string", "enum": [ "None", "ForegroundOnly", "BackgroundOnly", "Both" ], "description": "Matches elements whose pen replacement rule equals this value." },
-            "penReplacementNot": { "type": "string", "enum": [ "None", "ForegroundOnly", "BackgroundOnly", "Both" ], "description": "Matches elements whose pen replacement rule does not equal this value." },
+            "penReplacement": {
+                "$ref": "#/GraphicOverridePenReplacement",
+                "description": "Matches elements whose pen replacement rule equals this value."
+            },
+            "penReplacementNot": {
+                "$ref": "#/GraphicOverridePenReplacement",
+                "description": "Matches elements whose pen replacement rule does not equal this value."
+            },
             "linePenContains": { "type": "integer", "description": "Matches elements whose line pen number is this value (by plain pen number 1-255, not an attribute name). ArchiCAD only offers 'contains'/'does not contain' for this field, no strict equality." },
             "linePenNotContains": { "type": "integer", "description": "Matches elements whose line pen number is NOT this value (by plain pen number 1-255)." },
             "textPenIs": { "type": "integer", "description": "Matches elements whose text pen number equals this value (by plain pen number 1-255). Applies to 2D annotation elements - see 'fontIs' for the anchor-exemption note." },
@@ -13478,10 +13359,22 @@
             "surfaceNameEndsWith": { "type": "string", "description": "Matches elements whose Surface (Material) attribute name ends with this substring." },
             "renovationFilterIs": { "type": "string", "description": "Matches elements whose Renovation Filter display status equals this filter name exactly." },
             "renovationFilterIsNot": { "type": "string", "description": "Matches elements whose Renovation Filter display status does not equal this filter name." },
-            "structuralFunction": { "type": "string", "enum": [ "LoadBearing", "NonLoadBearing", "Undefined" ], "description": "Matches elements whose structural function equals this value." },
-            "structuralFunctionNot": { "type": "string", "enum": [ "LoadBearing", "NonLoadBearing", "Undefined" ], "description": "Matches elements whose structural function does not equal this value." },
-            "position": { "type": "string", "enum": [ "Exterior", "Interior", "Undefined" ], "description": "Matches elements whose position equals this value." },
-            "positionNot": { "type": "string", "enum": [ "Exterior", "Interior", "Undefined" ], "description": "Matches elements whose position does not equal this value." },
+            "structuralFunction": {
+                "$ref": "#/GraphicOverrideStructuralFunction",
+                "description": "Matches elements whose structural function equals this value."
+            },
+            "structuralFunctionNot": {
+                "$ref": "#/GraphicOverrideStructuralFunction",
+                "description": "Matches elements whose structural function does not equal this value."
+            },
+            "position": {
+                "$ref": "#/GraphicOverridePosition",
+                "description": "Matches elements whose position equals this value."
+            },
+            "positionNot": {
+                "$ref": "#/GraphicOverridePosition",
+                "description": "Matches elements whose position does not equal this value."
+            },
             "variantStateIs": { "type": "string", "description": "Matches elements whose Variant State equals this string exactly (e.g. 'Main Model'). Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
             "variantStateIsNot": { "type": "string", "description": "Matches elements whose Variant State does not equal this string. Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
             "variantSetIs": { "type": "string", "description": "Matches elements whose Variant Set equals this string exactly (e.g. 'Main Model'). Variants are an Archicad 27+ feature - this criterion is meaningless on earlier versions." },
@@ -13568,98 +13461,19 @@
             "profileNominalWidthLessOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile nominal width is less than or equal to this value." },
             "profileNominalWidthGreaterOrEqual": { "type": "number", "description": "Matches elements whose Complex Profile nominal width is greater than or equal to this value." },
             "profileParameter": {
-                "type": "object",
-                "description": "Matches elements by a custom Complex Profile modifier parameter, identified by its plain name as defined on that Complex Profile attribute (e.g. 'Debord tole') rather than a fixed field - use this for any profile modifier not covered by the profileStretchHeight/profileNominalWidth/... fields above. Provide 'name' and exactly one comparison operator.",
-                "properties": {
-                    "name": { "type": "string", "description": "The profile modifier parameter's name, exactly as defined on the Complex Profile attribute." },
-                    "equals": { "type": "number" },
-                    "notEquals": { "type": "number" },
-                    "lessThan": { "type": "number" },
-                    "greaterThan": { "type": "number" },
-                    "lessOrEqual": { "type": "number" },
-                    "greaterOrEqual": { "type": "number" }
-                },
-                "additionalProperties": false,
-                "required": [ "name" ]
+                "$ref": "#/GraphicOverrideProfileParameter"
             },
             "customPropertyBool": {
-                "type": "object",
-                "description": "Matches elements by a custom (user-defined) boolean property, identified by its plain name and the name of the property group it appears under (both exactly as shown in the Property Manager). Provide 'name', 'group', and exactly one of the operators below. The 6 'has.../is...' operators are available on every custom property type, not just boolean ones.",
-                "properties": {
-                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
-                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined (e.g. 'Generalites')." },
-                    "equals": { "type": "boolean", "description": "Matches if the property's value equals this." },
-                    "hasDefaultValue": { "type": "boolean", "description": "If true, matches elements where this property currently has its default value." },
-                    "hasCustomValue": { "type": "boolean", "description": "If true, matches elements where this property has a custom (overridden, non-default) value." },
-                    "isAvailable": { "type": "boolean", "description": "If true, matches elements where this property is available." },
-                    "isNotAvailable": { "type": "boolean", "description": "If true, matches elements where this property is not available." },
-                    "isUndefined": { "type": "boolean", "description": "If true, matches elements where this property is undefined." },
-                    "isNotUndefined": { "type": "boolean", "description": "If true, matches elements where this property is not undefined." }
-                },
-                "additionalProperties": false,
-                "required": [ "name", "group" ]
+                "$ref": "#/GraphicOverrideCustomPropertyBool"
             },
             "customPropertyString": {
-                "type": "object",
-                "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
-                "properties": {
-                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
-                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
-                    "equals": { "type": "string", "description": "Matches if the property's value equals this string exactly." },
-                    "notEquals": { "type": "string", "description": "Matches if the property's value does not equal this string." },
-                    "hasDefaultValue": { "type": "boolean" },
-                    "hasCustomValue": { "type": "boolean" },
-                    "isAvailable": { "type": "boolean" },
-                    "isNotAvailable": { "type": "boolean" },
-                    "isUndefined": { "type": "boolean" },
-                    "isNotUndefined": { "type": "boolean" }
-                },
-                "additionalProperties": false,
-                "required": [ "name", "group" ]
+                "$ref": "#/GraphicOverrideCustomPropertyString"
             },
             "customPropertyNumber": {
-                "type": "object",
-                "description": "Matches elements by a custom (user-defined) numeric property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
-                "properties": {
-                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
-                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
-                    "equals": { "type": "number" },
-                    "notEquals": { "type": "number" },
-                    "lessThan": { "type": "number" },
-                    "greaterThan": { "type": "number" },
-                    "lessOrEqual": { "type": "number" },
-                    "greaterOrEqual": { "type": "number" },
-                    "hasDefaultValue": { "type": "boolean" },
-                    "hasCustomValue": { "type": "boolean" },
-                    "isAvailable": { "type": "boolean" },
-                    "isNotAvailable": { "type": "boolean" },
-                    "isUndefined": { "type": "boolean" },
-                    "isNotUndefined": { "type": "boolean" }
-                },
-                "additionalProperties": false,
-                "required": [ "name", "group" ]
+                "$ref": "#/GraphicOverrideCustomPropertyNumber"
             },
             "customPropertyInteger": {
-                "type": "object",
-                "description": "Matches elements by a custom (user-defined) integer property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
-                "properties": {
-                    "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
-                    "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
-                    "equals": { "type": "integer" },
-                    "notEquals": { "type": "integer" },
-                    "lessThan": { "type": "integer" },
-                    "greaterThan": { "type": "integer" },
-                    "lessOrEqual": { "type": "integer" },
-                    "greaterOrEqual": { "type": "integer" },
-                    "hasDefaultValue": { "type": "boolean" },
-                    "hasCustomValue": { "type": "boolean" },
-                    "isAvailable": { "type": "boolean" },
-                    "isNotAvailable": { "type": "boolean" },
-                    "isUndefined": { "type": "boolean" },
-                    "isNotUndefined": { "type": "boolean" }
-                },
-                "additionalProperties": false,
-                "required": [ "name", "group" ]
+                "$ref": "#/GraphicOverrideCustomPropertyInteger"
             }
         },
         "additionalProperties": false
@@ -13789,5 +13603,1397 @@
             }
         },
         "additionalProperties": false
+    },
+    "Hole2DWithOutline": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "Legacy alias of polygonOutline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonOutline"
+        ]
+    },
+    "Hole2DWithLegacyCoordinates": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "Legacy alias of polygonOutline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "TextDataWithText": {
+        "type": "object",
+        "description": "The parameters of the new Text element.",
+        "properties": {
+            "favoriteName": {
+                "type": "string",
+                "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate3D",
+                "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
+            },
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+            },
+            "runs": {
+                "type": "array",
+                "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                "items": {
+                    "$ref": "#/TextRunDetails"
+                },
+                "minItems": 1
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Optional pen attribute index. Equivalent to style.penIndex."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Optional rotation angle in radians. Equivalent to style.angle."
+            },
+            "justification": {
+                "$ref": "#/Justification",
+                "description": "Optional; equivalent to style.justification."
+            },
+            "style": {
+                "$ref": "#/TextStyleSettableDetails",
+                "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinate",
+            "text"
+        ]
+    },
+    "TextDataWithRuns": {
+        "type": "object",
+        "description": "The parameters of the new Text element.",
+        "properties": {
+            "favoriteName": {
+                "type": "string",
+                "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate3D",
+                "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
+            },
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+            },
+            "runs": {
+                "type": "array",
+                "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                "items": {
+                    "$ref": "#/TextRunDetails"
+                },
+                "minItems": 1
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Optional pen attribute index. Equivalent to style.penIndex."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Optional rotation angle in radians. Equivalent to style.angle."
+            },
+            "justification": {
+                "$ref": "#/Justification",
+                "description": "Optional; equivalent to style.justification."
+            },
+            "style": {
+                "$ref": "#/TextStyleSettableDetails",
+                "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinate",
+            "runs"
+        ]
+    },
+    "HotlinkNodeChange": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "sourceLocation": {
+                "type": "string",
+                "description": "Absolute path of the new module source file (.mod or .pln)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId",
+            "sourceLocation"
+        ]
+    },
+    "HotlinkNodeReference": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId"
+        ]
+    },
+    "LockableObjectSetStatus": {
+        "type": "string",
+        "description": "Free: nobody has reserved it. Editable: the current user has reserved it. Locked: another user has reserved it (see conflicts). NotAvailable: the Teamwork server is offline or not available. NotExist: there is no Teamwork connection, for example the project is not a Teamwork project. An unknown object set name is reported as an error, not as a status.",
+        "enum": [
+            "Free",
+            "Editable",
+            "Locked",
+            "NotAvailable",
+            "NotExist"
+        ]
+    },
+    "MarkerParametersOfElement": {
+        "type": "object",
+        "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails",
+                "description": "The library part of the marker. Absent when it could not be read."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "The GDL parameters of the marker.",
+                "items": {
+                    "$ref": "#/MarkerGDLParameterDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "parameters"
+        ]
+    },
+    "ElementWithMarkerParameters": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "markerParameters": {
+                "type": "array",
+                "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
+                "items": {
+                    "$ref": "#/MarkerParameterUpdate"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "markerParameters"
+        ]
+    },
+    "MarkerGDLParameterDetails": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "displayName": {
+                "type": "string",
+                "description": "The display name of the parameter."
+            },
+            "index": {
+                "type": "integer",
+                "description": "The index of the parameter."
+            },
+            "type": {
+                "type": "string",
+                "description": "The type of the parameter."
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "The 1st dimension of array (in case of array value)."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "The 2nd dimension of array (in case of array value)."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            },
+            "valueDescription": {
+                "type": "string",
+                "description": "The value description for numeric parameter."
+            },
+            "itemDescriptions": {
+                "type": "array",
+                "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "flags": {
+                "type": "array",
+                "description": "The flags of the parameter.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child",
+                        "Unique",
+                        "Fixed",
+                        "BoldName",
+                        "Open"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "displayName",
+            "index",
+            "type",
+            "value",
+            "flags"
+        ]
+    },
+    "MarkerParameterUpdate": {
+        "oneOf": [
+            {
+                "$ref": "#/MarkerParameterUpdateByName"
+            },
+            {
+                "$ref": "#/MarkerParameterUpdateByIndex"
+            }
+        ]
+    },
+    "MarkerParameterUpdateByName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the marker parameter."
+            },
+            "value": {
+                "description": "The new value of the marker parameter: a number for the numeric types (Integer, Length, Angle, RealNumber, PenColor, LineType, Material, FillPattern, BuildingMaterial, Profile, RGBColor, Intensity), a string for String and Title, true/false for Boolean and 'On'/'Off' for LightSwitch. Array parameters are not supported."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ]
+    },
+    "MarkerParameterUpdateByIndex": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the marker parameter, as GetMarkerParametersOfElements reports it."
+            },
+            "value": {
+                "description": "The new value of the marker parameter, see the value given with a name."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "value"
+        ]
+    },
+    "GraphicOverrideCombinationDetails": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideCombinationId": {
+                "$ref": "#/GraphicOverrideCombinationId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "graphicOverrideRuleIds": {
+                "type": "array",
+                "description": "The rules of the combination, in priority order.",
+                "items": {
+                    "$ref": "#/GraphicOverrideRuleIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideCombinationId",
+            "name",
+            "graphicOverrideRuleIds"
+        ]
+    },
+    "GraphicOverrideRuleDetails": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideRuleId": {
+                "$ref": "#/GraphicOverrideRuleId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "ruleGroupName": {
+                "type": "string",
+                "description": "The name of the rule group the rule belongs to."
+            },
+            "criterionXML": {
+                "type": "string",
+                "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
+            },
+            "style": {
+                "$ref": "#/GraphicOverrideStyle"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideRuleId",
+            "name",
+            "criterionXML",
+            "style"
+        ]
+    },
+    "GridElementDetails": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The grid element. The zero GUID for the tool defaults."
+            },
+            "variation": {
+                "type": "string",
+                "description": "Four-character variation of the object: 'GREL' for a grid element."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Home story index."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Layer attribute index."
+            },
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Insertion point: the start of the grid line."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Direction of the grid line in radians."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the grid line: the GDL parameter AC_Length of the Grid Tool's grid marker, or the object's A size for a library part without it."
+            },
+            "xRatio": {
+                "type": "number",
+                "description": "The object's xRatio as stored: its A size with useXYFixSize on, otherwise the A size divided by the library part's own A."
+            },
+            "yRatio": {
+                "type": "number",
+                "description": "The object's yRatio as stored, like xRatio for the B size."
+            },
+            "useXYFixSize": {
+                "type": "boolean",
+                "description": "Whether xRatio and yRatio hold the sizes themselves."
+            },
+            "level": {
+                "type": "number",
+                "description": "Elevation of the object from its home story."
+            },
+            "libInd": {
+                "type": "integer",
+                "description": "Library part index."
+            },
+            "libraryPartName": {
+                "type": "string",
+                "description": "Localized name of the library part."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "GDL parameters, separators left out. Only when requested.",
+                "items": {
+                    "$ref": "#/GridParameterDetails"
+                }
+            }
+        },
+        "required": [
+            "elementId",
+            "variation",
+            "floorIndex",
+            "layerIndex",
+            "pos",
+            "angle",
+            "length",
+            "xRatio",
+            "yRatio",
+            "useXYFixSize",
+            "level",
+            "libInd",
+            "libraryPartName"
+        ]
+    },
+    "DesignOptionCombinationRename": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/DesignOptionCombinationId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the design option combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId",
+            "name"
+        ]
+    },
+    "DesignOptionSetRename": {
+        "type": "object",
+        "properties": {
+            "designOptionSetId": {
+                "$ref": "#/DesignOptionSetId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the design option set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSetId",
+            "name"
+        ]
+    },
+    "DesignOptionRename": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the design option. The name is kept when it is not given."
+            },
+            "id": {
+                "type": "string",
+                "description": "The new string id of the design option. The id is kept when it is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId"
+        ]
+    },
+    "GraphicalOverrideRuleDetails": {
+        "type": "object",
+        "properties": {
+            "ruleId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "ruleGroupName": {
+                "type": "string",
+                "description": "Name of the rule group the rule belongs to."
+            },
+            "criterionXML": {
+                "type": "string",
+                "description": "The criterion in Archicad's own XML format. Change its values and pass it to CreateGraphicalOverrideRule to make similar rules."
+            }
+        },
+        "required": [
+            "ruleId",
+            "name",
+            "ruleGroupName",
+            "criterionXML"
+        ],
+        "additionalProperties": false
+    },
+    "Body3DPolygon": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "description": "The outer contour of the face: 0-based indices into vertices.",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            },
+            "holes": {
+                "type": "array",
+                "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
+                "items": {
+                    "$ref": "#/Body3DPolygonHole"
+                }
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ]
+    },
+    "Body3DPolygonHole": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ]
+    },
+    "ElementGeometry3D": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
+                "items": {
+                    "$ref": "#/Body3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ]
+    },
+    "ElementQuantityDetails": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/ElementType"
+            },
+            "quantities": {
+                "$ref": "#/ElementQuantities"
+            },
+            "composites": {
+                "type": "array",
+                "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
+                "items": {
+                    "$ref": "#/ElementComponentQuantities"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "quantities",
+            "composites"
+        ]
+    },
+    "ElementComponentQuantities": {
+        "type": "object",
+        "properties": {
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the skin."
+            },
+            "projectedArea": {
+                "type": "number",
+                "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
+            },
+            "isCore": {
+                "type": "boolean",
+                "description": "The skin is marked as core."
+            },
+            "isFinish": {
+                "type": "boolean",
+                "description": "The skin is marked as finish."
+            },
+            "subElementId": {
+                "$ref": "#/ElementId",
+                "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "buildingMaterialId",
+            "volume",
+            "projectedArea",
+            "isCore",
+            "isFinish"
+        ]
+    },
+    "AxonometricProjectionParameters": {
+        "type": "object",
+        "description": "The parameters of an axonometric projection.",
+        "properties": {
+            "transformationMatrix": {
+                "type": "array",
+                "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "transformationMatrix"
+        ]
+    },
+    "MEPBranchPreferenceTableRow": {
+        "type": "object",
+        "properties": {
+            "mainAxisReferenceId": {
+                "type": "integer"
+            },
+            "branchAxisReferenceId": {
+                "type": "integer"
+            },
+            "branchAxisAngle": {
+                "type": "number",
+                "description": "In degrees. Available from Archicad 29."
+            },
+            "mainAxisDiameter": {
+                "type": "number"
+            },
+            "branchAxisDiameter": {
+                "type": "number"
+            },
+            "length": {
+                "type": "number"
+            },
+            "branchOffset": {
+                "type": "number"
+            },
+            "connectionLength": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "mainAxisReferenceId",
+            "branchAxisReferenceId",
+            "mainAxisDiameter",
+            "branchAxisDiameter",
+            "length",
+            "branchOffset",
+            "connectionLength"
+        ]
+    },
+    "MEPElbowPreferenceTableRow": {
+        "type": "object",
+        "properties": {
+            "referenceId": {
+                "type": "integer"
+            },
+            "angle": {
+                "type": "number",
+                "description": "In degrees. Available from Archicad 29."
+            },
+            "diameter": {
+                "type": "number"
+            },
+            "radius": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referenceId",
+            "diameter",
+            "radius"
+        ]
+    },
+    "MEPTransitionPreferenceTableRow": {
+        "type": "object",
+        "properties": {
+            "beginReferenceId": {
+                "type": "integer"
+            },
+            "endReferenceId": {
+                "type": "integer"
+            },
+            "beginDiameter": {
+                "type": "number"
+            },
+            "endDiameter": {
+                "type": "number"
+            },
+            "length": {
+                "type": "number",
+                "description": "Piping only."
+            },
+            "angle": {
+                "type": "number",
+                "description": "In degrees. Ventilation only."
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "beginReferenceId",
+            "endReferenceId",
+            "beginDiameter",
+            "endDiameter"
+        ]
+    },
+    "MEPPhysicalSystemIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "physicalSystemId": {
+                "$ref": "#/MEPPhysicalSystemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemId"
+        ]
+    },
+    "MEPSystemGroupIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "systemGroupId": {
+                "$ref": "#/MEPSystemGroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupId"
+        ]
+    },
+    "GridParameter": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "value": {
+                "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ]
+    },
+    "GridParameterDetails": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "displayName": {
+                "type": "string"
+            },
+            "type": {
+                "type": "string",
+                "description": "Integer, Length, Angle, RealNum, LightSwitch, ColorRGB, Intensity, LineType, Material, FillPattern, PenColor, String, Boolean, Title, BuildingMaterial, Profile, Dictionary or Unknown."
+            },
+            "value": {
+                "description": "Number for numeric and boolean types, string for String and Title. Not given for arrays."
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "First dimension of an array parameter."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "Second dimension of an array parameter."
+            }
+        },
+        "required": [
+            "name",
+            "displayName",
+            "type"
+        ]
+    },
+    "GridElementLengthMode": {
+        "type": "string",
+        "enum": [
+            "length",
+            "none"
+        ],
+        "description": "How a grid element's line length is applied."
+    },
+    "ImageFormat": {
+        "type": "string",
+        "description": "Image file format.",
+        "enum": [
+            "png",
+            "jpg",
+            "bmp",
+            "tiff",
+            "gif"
+        ]
+    },
+    "ImageColorDepth": {
+        "type": "string",
+        "description": "Image color depth, as in the Save as picture dialog.",
+        "enum": [
+            "blackAndWhite",
+            "16Colors",
+            "256Colors",
+            "16Grays",
+            "256Grays",
+            "trueColor",
+            "trueColorWithAlpha"
+        ]
+    },
+    "CurtainWallPatternSize": {
+        "type": "number",
+        "exclusiveMinimum": 0.0,
+        "description": "Width of a pattern column or height of a pattern row, in meters."
+    },
+    "CurtainWallFlexibleIndex": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Zero-based index of a flexible column or row in a curtain-wall pattern unit."
+    },
+    "ActiveGraphicalOverrideCombinationById": {
+        "type": "object",
+        "description": "Selects the graphic override combination by identifier.",
+        "properties": {
+            "combinationId": {
+                "$ref": "#/GraphicOverrideCombinationId",
+                "description": "As returned by GetActiveGraphicalOverrideCombination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "combinationId"
+        ]
+    },
+    "ActiveGraphicalOverrideCombinationByName": {
+        "type": "object",
+        "description": "Selects the graphic override combination by name.",
+        "properties": {
+            "combinationId": {
+                "$ref": "#/GraphicOverrideCombinationId",
+                "description": "As returned by GetActiveGraphicalOverrideCombination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "GraphicOverrideStructureType": {
+        "type": "string",
+        "enum": [
+            "Basic",
+            "Composite",
+            "ComplexProfile"
+        ],
+        "description": "Structure type used in graphic override criteria for walls, beams and columns."
+    },
+    "GraphicOverrideWallComplexity": {
+        "type": "string",
+        "enum": [
+            "Straight",
+            "Slanted",
+            "DoubleSlanted"
+        ],
+        "description": "Wall complexity used in graphic override criteria."
+    },
+    "GraphicOverrideWallGeometryType": {
+        "type": "string",
+        "enum": [
+            "Uniform",
+            "Trapezoid",
+            "Polygonal"
+        ],
+        "description": "Wall geometry type used in graphic override criteria."
+    },
+    "GraphicOverrideColumnCoatingType": {
+        "type": "string",
+        "enum": [
+            "Core",
+            "Finish",
+            "Other"
+        ],
+        "description": "Column coating type used in graphic override criteria."
+    },
+    "GraphicOverrideColumnCrossSectionType": {
+        "type": "string",
+        "enum": [
+            "Rectangular",
+            "Circular",
+            "Profiled"
+        ],
+        "description": "Column cross-section type used in graphic override criteria."
+    },
+    "GraphicOverrideSlabEdgeAngle": {
+        "type": "string",
+        "enum": [
+            "Vertical",
+            "Custom"
+        ],
+        "description": "Slab edge angle mode used in graphic override criteria."
+    },
+    "GraphicOverrideRoofCutBodyType": {
+        "type": "string",
+        "enum": [
+            "ContoursDown",
+            "ReferenceLineDown"
+        ],
+        "description": "Roof cut body type used in graphic override criteria."
+    },
+    "GraphicOverrideRoofEaveOverhangType": {
+        "type": "string",
+        "enum": [
+            "Offset",
+            "Manual"
+        ],
+        "description": "Roof eave overhang type used in graphic override criteria."
+    },
+    "GraphicOverrideRoofEdgeAngle": {
+        "type": "string",
+        "enum": [
+            "Vertical",
+            "Perpendicular",
+            "Custom"
+        ],
+        "description": "Roof edge angle mode used in graphic override criteria."
+    },
+    "GraphicOverrideRoofGeometryType": {
+        "type": "string",
+        "enum": [
+            "SinglePanel",
+            "MultiplePanels"
+        ],
+        "description": "Roof geometry type used in graphic override criteria."
+    },
+    "GraphicOverrideShellCutBodyType": {
+        "type": "string",
+        "enum": [
+            "Editable",
+            "ExtrudeUp",
+            "ExtrudeDown"
+        ],
+        "description": "Shell cut body type used in graphic override criteria."
+    },
+    "GraphicOverrideShellGeometryType": {
+        "type": "string",
+        "enum": [
+            "Extrude",
+            "Revolved",
+            "Ruled"
+        ],
+        "description": "Shell geometry type used in graphic override criteria."
+    },
+    "GraphicOverridePenReplacement": {
+        "type": "string",
+        "enum": [
+            "None",
+            "ForegroundOnly",
+            "BackgroundOnly",
+            "Both"
+        ],
+        "description": "Pen replacement rule used in graphic override criteria."
+    },
+    "GraphicOverrideStructuralFunction": {
+        "type": "string",
+        "enum": [
+            "LoadBearing",
+            "NonLoadBearing",
+            "Undefined"
+        ],
+        "description": "Structural function used in graphic override criteria."
+    },
+    "GraphicOverridePosition": {
+        "type": "string",
+        "enum": [
+            "Exterior",
+            "Interior",
+            "Undefined"
+        ],
+        "description": "Element position used in graphic override criteria."
+    },
+    "GraphicOverrideProfileParameter": {
+        "type": "object",
+        "description": "Matches elements by a custom Complex Profile modifier parameter, identified by its plain name as defined on that Complex Profile attribute (e.g. 'Debord tole') rather than a fixed field - use this for any profile modifier not covered by the profileStretchHeight/profileNominalWidth/... fields above. Provide 'name' and exactly one comparison operator.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The profile modifier parameter's name, exactly as defined on the Complex Profile attribute."
+            },
+            "equals": {
+                "type": "number"
+            },
+            "notEquals": {
+                "type": "number"
+            },
+            "lessThan": {
+                "type": "number"
+            },
+            "greaterThan": {
+                "type": "number"
+            },
+            "lessOrEqual": {
+                "type": "number"
+            },
+            "greaterOrEqual": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "GraphicOverrideCustomPropertyBool": {
+        "type": "object",
+        "description": "Matches elements by a custom (user-defined) boolean property, identified by its plain name and the name of the property group it appears under (both exactly as shown in the Property Manager). Provide 'name', 'group', and exactly one of the operators below. The 6 'has.../is...' operators are available on every custom property type, not just boolean ones.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The custom property's name, exactly as defined."
+            },
+            "group": {
+                "type": "string",
+                "description": "The custom property group's name, exactly as defined (e.g. 'Generalites')."
+            },
+            "equals": {
+                "type": "boolean",
+                "description": "Matches if the property's value equals this."
+            },
+            "hasDefaultValue": {
+                "type": "boolean",
+                "description": "If true, matches elements where this property currently has its default value."
+            },
+            "hasCustomValue": {
+                "type": "boolean",
+                "description": "If true, matches elements where this property has a custom (overridden, non-default) value."
+            },
+            "isAvailable": {
+                "type": "boolean",
+                "description": "If true, matches elements where this property is available."
+            },
+            "isNotAvailable": {
+                "type": "boolean",
+                "description": "If true, matches elements where this property is not available."
+            },
+            "isUndefined": {
+                "type": "boolean",
+                "description": "If true, matches elements where this property is undefined."
+            },
+            "isNotUndefined": {
+                "type": "boolean",
+                "description": "If true, matches elements where this property is not undefined."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "group"
+        ]
+    },
+    "GraphicOverrideCustomPropertyString": {
+        "type": "object",
+        "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The custom property's name, exactly as defined."
+            },
+            "group": {
+                "type": "string",
+                "description": "The custom property group's name, exactly as defined."
+            },
+            "equals": {
+                "type": "string",
+                "description": "Matches if the property's value equals this string exactly."
+            },
+            "notEquals": {
+                "type": "string",
+                "description": "Matches if the property's value does not equal this string."
+            },
+            "hasDefaultValue": {
+                "type": "boolean"
+            },
+            "hasCustomValue": {
+                "type": "boolean"
+            },
+            "isAvailable": {
+                "type": "boolean"
+            },
+            "isNotAvailable": {
+                "type": "boolean"
+            },
+            "isUndefined": {
+                "type": "boolean"
+            },
+            "isNotUndefined": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "group"
+        ]
+    },
+    "GraphicOverrideCustomPropertyNumber": {
+        "type": "object",
+        "description": "Matches elements by a custom (user-defined) numeric property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The custom property's name, exactly as defined."
+            },
+            "group": {
+                "type": "string",
+                "description": "The custom property group's name, exactly as defined."
+            },
+            "equals": {
+                "type": "number"
+            },
+            "notEquals": {
+                "type": "number"
+            },
+            "lessThan": {
+                "type": "number"
+            },
+            "greaterThan": {
+                "type": "number"
+            },
+            "lessOrEqual": {
+                "type": "number"
+            },
+            "greaterOrEqual": {
+                "type": "number"
+            },
+            "hasDefaultValue": {
+                "type": "boolean"
+            },
+            "hasCustomValue": {
+                "type": "boolean"
+            },
+            "isAvailable": {
+                "type": "boolean"
+            },
+            "isNotAvailable": {
+                "type": "boolean"
+            },
+            "isUndefined": {
+                "type": "boolean"
+            },
+            "isNotUndefined": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "group"
+        ]
+    },
+    "GraphicOverrideCustomPropertyInteger": {
+        "type": "object",
+        "description": "Matches elements by a custom (user-defined) integer property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The custom property's name, exactly as defined."
+            },
+            "group": {
+                "type": "string",
+                "description": "The custom property group's name, exactly as defined."
+            },
+            "equals": {
+                "type": "integer"
+            },
+            "notEquals": {
+                "type": "integer"
+            },
+            "lessThan": {
+                "type": "integer"
+            },
+            "greaterThan": {
+                "type": "integer"
+            },
+            "lessOrEqual": {
+                "type": "integer"
+            },
+            "greaterOrEqual": {
+                "type": "integer"
+            },
+            "hasDefaultValue": {
+                "type": "boolean"
+            },
+            "hasCustomValue": {
+                "type": "boolean"
+            },
+            "isAvailable": {
+                "type": "boolean"
+            },
+            "isNotAvailable": {
+                "type": "boolean"
+            },
+            "isUndefined": {
+                "type": "boolean"
+            },
+            "isNotUndefined": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "group"
+        ]
+    },
+    "ElectricalWiringType": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "crossSectionalArea": {
+                "type": "number",
+                "description": "The cross-sectional area of the wire in square millimeters."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "crossSectionalArea"
+        ]
+    },
+    "ElectricalLoadClassification": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "demandFactor": {
+                "type": "number",
+                "description": "The demand factor, between 0 and 1."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "demandFactor"
+        ]
+    },
+    "TextFrameShape": {
+        "type": "string",
+        "enum": [
+            "Rectangle",
+            "Circle",
+            "RoundedRectangle",
+            "Pill"
+        ],
+        "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle."
     }
 }

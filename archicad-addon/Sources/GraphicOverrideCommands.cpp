@@ -279,33 +279,7 @@ GS::Optional<GS::UniString> GetGraphicOverrideRulesCommand::GetRawResponseSchema
                 "type": "array",
                 "description": "The graphic override rules of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "graphicOverrideRuleId": {
-                            "$ref": "#/GraphicOverrideRuleId"
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "ruleGroupName": {
-                            "type": "string",
-                            "description": "The name of the rule group the rule belongs to."
-                        },
-                        "criterionXML": {
-                            "type": "string",
-                            "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
-                        },
-                        "style": {
-                            "$ref": "#/GraphicOverrideStyle"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "graphicOverrideRuleId",
-                        "name",
-                        "criterionXML",
-                        "style"
-                    ]
+                    "$ref": "#/GraphicOverrideRuleDetails"
                 }
             }
         },
@@ -721,28 +695,7 @@ GS::Optional<GS::UniString> GetGraphicOverrideCombinationsCommand::GetRawRespons
                 "type": "array",
                 "description": "The graphic override combinations of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "graphicOverrideCombinationId": {
-                            "$ref": "#/GraphicOverrideCombinationId"
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "graphicOverrideRuleIds": {
-                            "type": "array",
-                            "description": "The rules of the combination, in priority order.",
-                            "items": {
-                                "$ref": "#/GraphicOverrideRuleIdArrayItem"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "graphicOverrideCombinationId",
-                        "name",
-                        "graphicOverrideRuleIds"
-                    ]
+                    "$ref": "#/GraphicOverrideCombinationDetails"
                 }
             }
         },
