@@ -661,7 +661,7 @@ GS::Optional<GS::UniString> SetIFCPropertiesOfElementsCommand::GetInputParameter
                         },
                         "type": {
                             "type": "string",
-                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure."
+                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure. A type Archicad does not know is rejected."
                         },
                         "value": {
                             "description": "The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type."
@@ -703,22 +703,19 @@ GS::Optional<GS::UniString> SetIFCPropertiesOfElementsCommand::GetRawResponseSch
 
 #ifndef ServerMainVers_2800
 
-static bool IsIntegerIFCValueType (const GS::UniString& valueType)
-{
-    return valueType == "IfcInteger" || valueType == "IfcCountMeasure" || valueType == "IfcTimeStamp";
-}
-
-static bool IsRealIFCValueType (const GS::UniString& valueType)
-{
-    return valueType == "IfcReal" || (valueType.EndsWith ("Measure") && valueType != "IfcDescriptiveMeasure");
-}
-
 static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValue, const GS::UniString& valueType, API_IFCPropertyAnyValue& anyValue, GS::UniString& errorMessage)
 {
-    if (valueType == "IfcBoolean" || valueType == "IfcLogical") {
+    // Archicad tells which primitive type an IFC value type is stored as, and fails for an unknown value type
+    API_IFCPropertyValuePrimitiveType primitiveType;
+    if (ACAPI_Element_GetIFCPropertyValuePrimitiveType (valueType, &primitiveType) != NoError) {
+        errorMessage = GS::UniString::Printf ("%T is not a known IFC value type", valueType.ToPrintf ());
+        return false;
+    }
+
+    if (primitiveType == API_IFCPropertyAnyValueBooleanType || primitiveType == API_IFCPropertyAnyValueLogicalType) {
         bool boolValue = false;
         if (elementIFCPropertyValue.Get ("value", boolValue)) {
-            if (valueType == "IfcLogical") {
+            if (primitiveType == API_IFCPropertyAnyValueLogicalType) {
                 // Logicals are stored in intValue as 0 = Unknown, 1 = False, 2 = True (see PropertyValueToString above)
                 anyValue.primitiveType = API_IFCPropertyAnyValueLogicalType;
                 anyValue.intValue = boolValue ? 2 : 1;
@@ -729,7 +726,7 @@ static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValu
             return true;
         }
         GS::UniString stringValue;
-        if (valueType == "IfcLogical" && elementIFCPropertyValue.Get ("value", stringValue) && stringValue == UnknownString) {
+        if (primitiveType == API_IFCPropertyAnyValueLogicalType && elementIFCPropertyValue.Get ("value", stringValue) && stringValue == UnknownString) {
             anyValue.primitiveType = API_IFCPropertyAnyValueLogicalType;
             anyValue.intValue = 0;
             return true;
@@ -738,7 +735,7 @@ static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValu
         return false;
     }
 
-    if (IsIntegerIFCValueType (valueType)) {
+    if (primitiveType == API_IFCPropertyAnyValueIntegerType) {
         Int64 intValue = 0;
         if (!elementIFCPropertyValue.Get ("value", intValue)) {
             errorMessage = GS::UniString::Printf ("value must be an integer for %T", valueType.ToPrintf ());
@@ -749,7 +746,7 @@ static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValu
         return true;
     }
 
-    if (IsRealIFCValueType (valueType)) {
+    if (primitiveType == API_IFCPropertyAnyValueRealType) {
         double doubleValue = 0.0;
         if (!elementIFCPropertyValue.Get ("value", doubleValue)) {
             errorMessage = GS::UniString::Printf ("value must be a number for %T", valueType.ToPrintf ());
@@ -848,6 +845,161 @@ GS::ObjectState SetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
             results[propertyToSet.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (err, "Failed to set the IFC property for the element");
+        }
+        return NoError;
+    });
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
+}
+
+RemoveIFCPropertiesOfElementsCommand::RemoveIFCPropertiesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveIFCPropertiesOfElementsCommand::GetName () const
+{
+    return "RemoveIFCPropertiesOfElements";
+}
+
+GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCProperties": {
+                "type": "array",
+                "description": "The local IFC properties to remove.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "propertySetName": {
+                            "type": "string",
+                            "description": "The name of the property set, for example Pset_DoorCommon."
+                        },
+                        "propertyName": {
+                            "type": "string",
+                            "description": "The name of the property, for example FireRating."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "propertySetName",
+                        "propertyName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCProperties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RemoveIFCPropertiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_RemoveIFCProperty without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Removing IFC properties is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCProperties;
+    parameters.Get ("elementIFCProperties", elementIFCProperties);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct RemovableIFCProperty {
+        API_Guid        elemGuid;
+        API_IFCProperty property;
+        UIndex          resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCProperties.GetSize ());
+    GS::Array<RemovableIFCProperty> propertiesToRemove;
+
+    for (const GS::ObjectState& elementIFCProperty : elementIFCProperties) {
+        const GS::ObjectState* elementId = elementIFCProperty.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        GS::UniString propertySetName;
+        if (!elementIFCProperty.Get ("propertySetName", propertySetName) || propertySetName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertySetName is missing"));
+            continue;
+        }
+
+        GS::UniString propertyName;
+        if (!elementIFCProperty.Get ("propertyName", propertyName) || propertyName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyName is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Only the properties stored on the element can be removed, the ones the translator generates cannot
+        GS::Array<API_IFCProperty> storedProperties;
+        const GSErrCode err = ACAPI_Element_GetIFCProperties (elemGuid, true, &storedProperties);
+        if (err != NoError) {
+            results.Push (CreateFailedExecutionResult (err, "Failed to get IFC properties for the element"));
+            continue;
+        }
+
+        const API_IFCProperty* propertyToRemove = nullptr;
+        for (const API_IFCProperty& storedProperty : storedProperties) {
+            if (storedProperty.head.propertySetName == propertySetName && storedProperty.head.propertyName == propertyName) {
+                propertyToRemove = &storedProperty;
+                break;
+            }
+        }
+        if (propertyToRemove == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element has no local IFC property with the given name in the given property set"));
+            continue;
+        }
+
+        propertiesToRemove.Push ({ elemGuid, *propertyToRemove, results.GetSize () });
+        results.PushNew ();
+    }
+
+    ACAPI_CallUndoableCommand ("RemoveIFCPropertiesOfElementsCommand", [&]() -> GSErrCode {
+        for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
+            const GSErrCode err = ACAPI_Element_RemoveIFCProperty (propertyToRemove.elemGuid, propertyToRemove.property);
+            results[propertyToRemove.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to remove the IFC property from the element");
         }
         return NoError;
     });
