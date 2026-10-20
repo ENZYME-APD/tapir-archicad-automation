@@ -642,6 +642,16 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
 #endif
 }
 
+// The tool default of the generic variation of the element type.
+inline GSErrCode TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemTypeID typeID, const GS::Array<API_Guid>& propertyGuids, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (API_ElemType (typeID), propertyGuids, properties);
+#else
+    return ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid (typeID, APIVarId_Generic, propertyGuids, properties);
+#endif
+}
+
 // API_OverriddenAttribute accepts an API_AttributeIndex directly since AC27;
 // before that it is a plain struct { attributeIndex, overridden }.
 inline void SetOverriddenAttribute (API_OverriddenAttribute& target, const API_AttributeIndex& index)
