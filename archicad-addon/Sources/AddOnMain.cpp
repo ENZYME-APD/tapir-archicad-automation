@@ -1033,6 +1033,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same."
         );
+        err |= RegisterCommand<GetLibraryPartSectionsCommand> (
+            libraryCommands, "1.7.3",
+            "Lists the sections of library parts given by index: their four-character type code, sub-identifier, size and whether they are text (scripts, comments) or binary (previews)."
+        );
+        err |= RegisterCommand<GetLibraryPartSectionCommand> (
+            libraryCommands, "1.7.3",
+            "Reads the text of a text section (a script or the comment) of a library part given by index, without opening it in the GDL editor. Takes the password of a protected library part."
+        );
         AddCommandGroup (libraryCommands);
     }
 

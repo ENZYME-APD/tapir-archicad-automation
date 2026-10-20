@@ -16,3 +16,20 @@ if len (unIds) >= 2:
             'unId2': unId2
         }, debug = False)
         print (response)
+
+# The sections of the first library part, and the text of its first text section.
+if libraryParts:
+    response = aclib.RunTapirCommand ('GetLibraryPartSections', {
+        'libraryParts': [{'index': libraryParts[0]['index']}]
+    }, debug = False)
+    print (response)
+
+    sections = response['libraryParts'][0].get ('sections', [])
+    textSections = [section for section in sections if section.get ('isText') and section.get ('size', 0) > 0]
+    if textSections:
+        response = aclib.RunTapirCommand ('GetLibraryPartSection', {
+            'index': libraryParts[0]['index'],
+            'sectionType': textSections[0]['sectionType'],
+            'subIdent': textSections[0]['subIdent']
+        }, debug = False)
+        print (response)

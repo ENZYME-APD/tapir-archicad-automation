@@ -446,6 +446,16 @@ inline bool ACAPI_Teamwork_IsServerLibPart (const IO::Location& location)
     return ACAPI_TeamworkControl_IsServerLibPart (location);
 }
 
+inline GSErrCode ACAPI_LibraryPart_GetSectionList (Int32 libInd, Int32* nSection, API_LibPartSection*** sections)
+{
+    return ACAPI_LibPart_GetSectionList (libInd, nSection, sections);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetSection (Int32 libInd, API_LibPartSection* section, GSHandle* sectionHdl, GS::UniString* sectionStr, GS::UniString* password = nullptr)
+{
+    return ACAPI_LibPart_GetSection (libInd, section, sectionHdl, sectionStr, password);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);

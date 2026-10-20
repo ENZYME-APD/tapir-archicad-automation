@@ -979,3 +979,314 @@ GS::ObjectState CompareLibraryPartUnIdsCommand::Execute (const GS::ObjectState& 
     response.Add ("sameRevisionGuid", APIGuidFromString (revisionGuid1.c_str ()) == APIGuidFromString (revisionGuid2.c_str ()));
     return response;
 }
+
+// A section type is a four-character code such as 'TEXT'; it is given and returned as that string.
+static GS::UniString SectionTypeToString (GSType sectType)
+{
+    char code[5] = {};
+    for (int i = 0; i < 4; ++i) {
+        code[i] = static_cast<char> ((sectType >> (8 * (3 - i))) & 0xFF);
+    }
+    return GS::UniString (code);
+}
+
+// A code shorter than four characters is padded with spaces, as the API's own codes are.
+static bool SectionTypeFromString (const GS::UniString& str, GSType& sectType)
+{
+    const std::string code (str.ToCStr ().Get ());
+    if (code.empty () || code.size () > 4) {
+        return false;
+    }
+    const std::string padded = code + std::string (4 - code.size (), ' ');
+    sectType = 0;
+    for (const char c : padded) {
+        sectType = (sectType << 8) | static_cast<unsigned char> (c);
+    }
+    return true;
+}
+
+static GSErrCode CheckLibraryPartIndex (Int32 index, GS::UniString& errorMessage)
+{
+    Int32 partCount = 0;
+    const GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        errorMessage = "Failed to enumerate library parts.";
+        return err;
+    }
+    if (index < 1 || index > partCount) {
+        errorMessage = GS::UniString::Printf ("No library part with index %d.", static_cast<int> (index));
+        return APIERR_BADINDEX;
+    }
+    return NoError;
+}
+
+GetLibraryPartSectionsCommand::GetLibraryPartSectionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartSectionsCommand::GetName () const
+{
+    return "GetLibraryPartSections";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartSectionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to list the sections of.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
+                        },
+                        "password": {
+                            "type": "string",
+                            "description": "The password of a protected library part. Needed to read the size of its protected sections."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartSectionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "One item for each given library part, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "index": {
+                                    "type": "integer",
+                                    "description": "The index of the library part."
+                                },
+                                "sections": {
+                                    "type": "array",
+                                    "description": "The sections of the library part, in the order Archicad lists them.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "sectionType": {
+                                                "type": "string",
+                                                "description": "The four-character code of the section type, as GetLibraryPartSection takes it."
+                                            },
+                                            "subIdent": {
+                                                "type": "integer",
+                                                "description": "The sub-identifier that tells apart sections of the same type."
+                                            },
+                                            "size": {
+                                                "type": "integer",
+                                                "description": "The size of the section content in bytes. Missing when Archicad could not read the section, for example a protected one without its password."
+                                            },
+                                            "isText": {
+                                                "type": "boolean",
+                                                "description": "True when Archicad returns the section as text (scripts, comments), which GetLibraryPartSection reads. Binary sections, such as previews, are only listed. Missing when Archicad could not read the section."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "sectionType",
+                                            "subIdent"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "index",
+                                "sections"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartSectionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> libraryParts;
+    parameters.Get ("libraryParts", libraryParts);
+
+    GS::ObjectState response;
+    const auto& libraryPartsAdder = response.AddList<GS::ObjectState> ("libraryParts");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        Int32 index = 0;
+        libraryPart.Get ("index", index);
+        GS::UniString password;
+        const bool hasPassword = libraryPart.Get ("password", password);
+
+        GS::UniString errorMessage;
+        GSErrCode err = CheckLibraryPartIndex (index, errorMessage);
+        if (err != NoError) {
+            libraryPartsAdder (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        Int32 sectionCount = 0;
+        API_LibPartSection** sectionList = nullptr;
+        err = ACAPI_LibraryPart_GetSectionList (index, &sectionCount, &sectionList);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&sectionList));
+            libraryPartsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to list the sections of the library part with index %d.", static_cast<int> (index))));
+            continue;
+        }
+
+        GS::ObjectState entry;
+        entry.Add ("index", index);
+        const auto& sectionsAdder = entry.AddList<GS::ObjectState> ("sections");
+        for (Int32 i = 0; i < sectionCount && sectionList != nullptr; ++i) {
+            API_LibPartSection section = (*sectionList)[i];
+
+            GS::ObjectState sectionEntry;
+            sectionEntry.Add ("sectionType", SectionTypeToString (section.sectType));
+            sectionEntry.Add ("subIdent", static_cast<Int32> (section.subIdent));
+
+            // Archicad fills sectionStr only for text sections; the handle holds the raw content of every section.
+            GSHandle sectionHdl = nullptr;
+            GS::UniString sectionStr;
+            if (ACAPI_LibraryPart_GetSection (index, &section, &sectionHdl, &sectionStr, hasPassword ? &password : nullptr) == NoError) {
+                const Int32 size = sectionHdl != nullptr ? static_cast<Int32> (BMGetHandleSize (sectionHdl)) : 0;
+                sectionEntry.Add ("size", size);
+                sectionEntry.Add ("isText", !sectionStr.IsEmpty () || size == 0);
+            }
+            BMKillHandle (&sectionHdl);
+
+            sectionsAdder (sectionEntry);
+        }
+        BMKillHandle (reinterpret_cast<GSHandle*> (&sectionList));
+
+        libraryPartsAdder (entry);
+    }
+
+    return response;
+}
+
+GetLibraryPartSectionCommand::GetLibraryPartSectionCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartSectionCommand::GetName () const
+{
+    return "GetLibraryPartSection";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartSectionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
+            },
+            "sectionType": {
+                "type": "string",
+                "description": "The four-character code of the section type, as GetLibraryPartSections returns it. A shorter code is padded with spaces.",
+                "minLength": 1,
+                "maxLength": 4
+            },
+            "subIdent": {
+                "type": "integer",
+                "description": "The sub-identifier of the section, as GetLibraryPartSections returns it. 0 when not given."
+            },
+            "password": {
+                "type": "string",
+                "description": "The password of a protected library part."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "sectionType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartSectionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "content": {
+                "type": "string",
+                "description": "The text of the section."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "content"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartSectionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 index = 0;
+    parameters.Get ("index", index);
+    GS::UniString sectionTypeStr;
+    parameters.Get ("sectionType", sectionTypeStr);
+    Int32 subIdent = 0;
+    parameters.Get ("subIdent", subIdent);
+    GS::UniString password;
+    const bool hasPassword = parameters.Get ("password", password);
+
+    API_LibPartSection section = {};
+    if (!SectionTypeFromString (sectionTypeStr, section.sectType)) {
+        return CreateErrorResponse (APIERR_BADPARS, "The section type is a code of one to four characters, as GetLibraryPartSections returns it.");
+    }
+    section.subIdent = static_cast<short> (subIdent);
+
+    GS::UniString errorMessage;
+    GSErrCode err = CheckLibraryPartIndex (index, errorMessage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+
+    GSHandle sectionHdl = nullptr;
+    GS::UniString sectionStr;
+    err = ACAPI_LibraryPart_GetSection (index, &section, &sectionHdl, &sectionStr, hasPassword ? &password : nullptr);
+    const Int32 size = (err == NoError && sectionHdl != nullptr) ? static_cast<Int32> (BMGetHandleSize (sectionHdl)) : 0;
+    BMKillHandle (&sectionHdl);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the section '" + sectionTypeStr + "' of the library part. Check the section type, the sub-identifier and, for a protected library part, the password.");
+    }
+    if (sectionStr.IsEmpty () && size > 0) {
+        return CreateErrorResponse (APIERR_BADPARS, "The section '" + sectionTypeStr + "' is binary, not text. GetLibraryPartSections lists its size.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("content", sectionStr);
+    return response;
+}
