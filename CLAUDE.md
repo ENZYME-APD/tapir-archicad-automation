@@ -174,6 +174,11 @@ python test_examples.py
   [Examples/](archicad-addon/Examples/), and diffs against `ExpectedOutputs/`.
 - Example scripts talk to the Add-On via `ExecuteAddOnCommand(AddOnCommandId('TapirCommand', <CommandName>), params)`.
 - `aclib/` under `Examples/` is a small shared helper used by the example scripts.
+- Pull requests and local builds are tested on real Archicad with
+  [tools/community-test-runner/](tools/community-test-runner/) (JSON checks in
+  `archicad-addon/Test/checks/`). Use its `--brief` output (`prs`, `test … --brief --no-post`,
+  `trial … --brief`, `check --brief`) rather than reading reports or its source; its skill is
+  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`.
 
 ## Grasshopper plugin
 
@@ -262,7 +267,7 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   issue's author to test it in Archicad, and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main` (which it merges in), at most
   `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
-  (default 5) PRs per sweep. Then
+  (default 15) PRs per sweep. Then
   it labels the PR `needs-maintainer` and stops; removing the label hands the PR
   back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
@@ -272,14 +277,15 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   for issue fixes, first reviews and steward fix rounds, and
   `CLAUDE_ESCALATION_MODEL` (default `best`) only for the last steward fix round
   and one retry of an issue fix that did work but left no comment or PR.
-- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 4)
+- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 8)
   Claude runs of these workflows call the model at a time, oldest first; a run
   the API refuses on its first turn fails in its "Stop on a refused run" step
   with the error in its job summary; the hourly `retry` job of
   `claude_issue_triage.yml` starts refused issue fixes again (`CLAUDE_RETRY_BATCH`
   per hour, `CLAUDE_RETRY=false` turns it off), and the steward neither counts
   failed review or fix runs as rounds nor starts one within 50 minutes of a
-  failure.
+  failure, nor a review within 50 minutes of one that recorded no verdict on
+  the same head (three such reviews hand the PR over).
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
