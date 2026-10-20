@@ -813,14 +813,19 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
         const API_Guid attGuid = GetGuidFromObjectState (*attributeId);
         const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
+        const auto guidPair = GS::NewPair (attGuid, propertyGuid);
+        if (resultIndices.ContainsKey (guidPair)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The same property of the same attribute is given more than once"));
+            continue;
+        }
+
         GS::Array<API_Guid>* properties;
         propertiesForAttributes.Add (attGuid, {}, &properties);
         properties->Push (propertyGuid);
 
-        const auto guidPair = GS::NewPair (attGuid, propertyGuid);
         propertyValuesForAttributes.Add (guidPair, propertyValueDisplayString);
         resultIndices.Add (guidPair, results.GetSize ());
-        results.PushNew ();
+        results.Push (CreateFailedExecutionResult (APIERR_BADPROPERTY, "The property is not available for the attribute"));
     }
 
     ACAPI_CallUndoableCommand ("SetPropertyValuesOfAttributesCommand", [&]() -> GSErrCode {
@@ -833,35 +838,53 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
             const GS::Array<API_Guid>& properties = *kv.value;
 #endif
 
+            const API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
+            if (attrHead.typeID == API_ZombieAttrID) {
+                for (const API_Guid& propertyGuid : properties) {
+                    results[resultIndices[GS::NewPair (attGuid, propertyGuid)]] = CreateFailedExecutionResult (APIERR_BADID, "Attribute not found");
+                }
+                continue;
+            }
+
             GS::Array<API_Property> propertyValues;
-
-            API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
             const GSErrCode getErr = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, properties, propertyValues);
+            if (getErr != NoError) {
+                for (const API_Guid& propertyGuid : properties) {
+                    results[resultIndices[GS::NewPair (attGuid, propertyGuid)]] = CreateFailedExecutionResult (getErr, "Failed to get property values for attribute");
+                }
+                continue;
+            }
 
+            // The values are set with one ACAPI_Attribute_SetProperties call per attribute,
+            // so a property that cannot be set must be left out of that call.
+            GS::Array<API_Property> propertiesToSet;
+            GS::Array<GSIndex> resultIndicesToSet;
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (attGuid, propertyValue.definition.guid);
-                auto& result = results[resultIndices[guidPair]];
-
-                if (getErr != NoError) {
-                    result = CreateFailedExecutionResult (getErr, "Failed to get property values for attribute");
+                if (!resultIndices.ContainsKey (guidPair) || propertyValue.status == API_Property_NotAvailable) {
                     continue;
                 }
 
-                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
-
+                const GSIndex resultIndex = resultIndices[guidPair];
+                const GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
                 if (err != NoError) {
-                    result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
+                    results[resultIndex] = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
                     continue;
                 }
 
-                err = ACAPI_Attribute_SetProperty (attrHead, propertyValue);
+                propertiesToSet.Push (propertyValue);
+                resultIndicesToSet.Push (resultIndex);
+            }
 
-                if (err != NoError) {
-                    result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
-                    continue;
-                }
+            if (propertiesToSet.IsEmpty ()) {
+                continue;
+            }
 
-                result = CreateSuccessfulExecutionResult ();
+            const GSErrCode err = ACAPI_Attribute_SetProperties (attrHead, propertiesToSet);
+            for (const GSIndex resultIndex : resultIndicesToSet) {
+                results[resultIndex] = (err == NoError)
+                    ? CreateSuccessfulExecutionResult ()
+                    : CreateFailedExecutionResult (err, "Failed to set property values for attribute");
             }
         }
 
@@ -873,6 +896,113 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
     }
 
     return response;
+}
+
+SetPropertyValueOfAttributesCommand::SetPropertyValueOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPropertyValueOfAttributesCommand::GetName () const
+{
+    return "SetPropertyValueOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetPropertyValueOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            },
+            "attributeIds": {
+                "$ref": "#/AttributeIds",
+                "description": "The attributes to set the value on. The property must be available for every one of them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId",
+            "propertyValue",
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPropertyValueOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetPropertyValueOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::Array<API_Attr_Head> attrHeads;
+    for (const GS::ObjectState& attribute : attributeIds) {
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "attributeId is missing");
+        }
+
+        const API_Attr_Head attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+        if (attrHead.typeID == API_ZombieAttrID) {
+            return CreateFailedExecutionResult (APIERR_BADID, "Attribute not found");
+        }
+        attrHeads.Push (attrHead);
+    }
+    if (attrHeads.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "attributeIds is empty");
+    }
+
+    const GS::ObjectState* propertyId = parameters.Get ("propertyId");
+    if (propertyId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing");
+    }
+
+    const GS::ObjectState* propertyValue = parameters.Get ("propertyValue");
+    GS::UniString propertyValueDisplayString;
+    if (propertyValue == nullptr || !propertyValue->Get ("value", propertyValueDisplayString)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue");
+    }
+
+    API_PropertyDefinition definition;
+    definition.guid = GetGuidFromObjectState (*propertyId);
+    GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "property not found");
+    }
+
+    API_Property property;
+    property.definition = definition;
+    property.isDefault = false;
+    property.status = API_Property_HasValue;
+    property.value.variantStatus = API_VariantStatusNormal;
+
+    PropertyConversionUtils conversionUtils;
+    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetPropertyValueOfAttributesCommand", [&]() -> GSErrCode {
+#ifdef ServerMainVers_2700
+        return ACAPI_Attribute_ModifyPropertyValue (property, attrHeads);
+#else
+        return ACAPI_AttributeList_ModifyPropertyValue (property, attrHeads);
+#endif
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the property value, no attribute was changed. The property may not be available for every given attribute.");
 }
 
 GetPropertyDefinitionsOfAttributesCommand::GetPropertyDefinitionsOfAttributesCommand () :
