@@ -203,7 +203,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetArchicadReleaseInfoCommand> (
             applicationCommands, "1.7.3",
-            "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window and the title it gives untitled projects."
+            "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window."
         );
         err |= RegisterCommand<GetPrinterInfoCommand> (
             applicationCommands, "1.7.3",

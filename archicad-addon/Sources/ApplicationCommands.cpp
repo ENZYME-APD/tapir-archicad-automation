@@ -154,10 +154,6 @@ GS::Optional<GS::UniString> GetArchicadReleaseInfoCommand::GetRawResponseSchema 
             "caption": {
                 "type": "string",
                 "description": "The caption of the Archicad application window. Missing when Archicad does not report it."
-            },
-            "defaultTitle": {
-                "type": "string",
-                "description": "The title Archicad gives an untitled project. Missing when Archicad does not report it."
             }
         },
         "additionalProperties": false,
@@ -179,12 +175,11 @@ GS::ObjectState GetArchicadReleaseInfoCommand::Execute (const GS::ObjectState& /
     response.Add ("releaseVersion", static_cast<Int32> (serverApplicationInfo.releaseVersion));
     response.Add ("buildNumber", static_cast<Int32> (serverApplicationInfo.buildNum));
 
-    // The window caption and the untitled project's title are extras: the version
-    // numbers above are still worth returning when they cannot be read.
+    // The window caption is an extra: the version numbers above are still worth
+    // returning when it cannot be read.
     API_MiscAppInfo miscAppInfo = {};
     if (ACAPI_ProjectOperation_GetMiscAppInfo (&miscAppInfo) == NoError) {
         response.Add ("caption", GS::UniString (miscAppInfo.caption));
-        response.Add ("defaultTitle", GS::UniString (miscAppInfo.defaultTitle));
     }
 
     return response;
