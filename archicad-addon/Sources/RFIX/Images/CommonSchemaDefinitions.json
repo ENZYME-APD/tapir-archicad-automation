@@ -3926,6 +3926,10 @@
                         },
                         "linkFlags": {
                             "$ref": "#/SolidLinkFlags"
+                        },
+                        "linkTime": {
+                            "type": "string",
+                            "description": "When the solid link was made, as a date and time string formatted like the times of revision issues. Omitted when Archicad does not report it."
                         }
                     },
                     "additionalProperties": false,
@@ -3950,6 +3954,10 @@
                         },
                         "linkFlags": {
                             "$ref": "#/SolidLinkFlags"
+                        },
+                        "linkTime": {
+                            "type": "string",
+                            "description": "When the solid link was made, as a date and time string formatted like the times of revision issues. Omitted when Archicad does not report it."
                         }
                     },
                     "additionalProperties": false,
