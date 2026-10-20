@@ -421,7 +421,7 @@ GSErrCode Initialize (void)
             "Moves elements with a given vector. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
         err |= RegisterCommand<ElevateElementsCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Moves elements vertically by a given offset in meters, like Edit > Move > Elevate. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
         err |= RegisterCommand<RotateElementsCommand> (
