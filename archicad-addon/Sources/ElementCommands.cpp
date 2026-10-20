@@ -2494,6 +2494,21 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
             }
 
+            // The Element ID is a memo part of its own (elemInfoString), written separately
+            // from the element change below so it never depends on the type specific mask.
+            // It is written first, before anything else of the element is changed, so a
+            // failed id write leaves the element untouched.
+            GS::UniString id;
+            const bool hasId = details->Get ("id", id);
+            if (hasId) {
+                err = ChangeElementId (elem.header.guid, id);
+                if (err != NoError) {
+                    ACAPI_DisposeElemMemoHdls (&clipMemo);
+                    executionResults (CreateFailedExecutionResult (err, "Failed to set the id of the element, no other details were changed"));
+                    continue;
+                }
+            }
+
             constexpr bool withDel = true;
             if (hasElementChanges || hasMemoChanges) {
                 err = ACAPI_Element_Change (&elem, &mask,
@@ -2501,18 +2516,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                                             memoMask, withDel);
                 ACAPI_DisposeElemMemoHdls (&clipMemo);
                 if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
-                    continue;
-                }
-            }
-
-            // The Element ID is a memo part of its own (elemInfoString), written separately
-            // from the element change above so it never depends on the type specific mask.
-            GS::UniString id;
-            if (details->Get ("id", id)) {
-                err = ChangeElementId (elem.header.guid, id);
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to set the id of the element"));
+                    executionResults (CreateFailedExecutionResult (err, hasId ? "Failed to change element, only its id was set" : "Failed to change element"));
                     continue;
                 }
             }
