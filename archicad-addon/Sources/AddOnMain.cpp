@@ -484,6 +484,18 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates Opening elements in the given host elements."
         );
+        err |= RegisterCommand<GetOpeningDefaultCommand> (
+            elementCommands, "1.7.3",
+            "Returns the settings of the Opening tool defaults: the extrusion parameters (as GetOpeningDetails returns them) and the floor plan parameters (as GetOpeningFloorPlanParameters returns them). Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetOpeningFloorPlanParametersCommand> (
+            elementCommands, "1.7.3",
+            "Returns the floor plan parameters of Opening elements: the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetOpeningFloorPlanParametersCommand> (
+            elementCommands, "1.7.3",
+            "Changes the floor plan parameters of Opening elements returned by GetOpeningFloorPlanParameters, and sets or removes their cut and uncut symbols. Available from Archicad 29."
+        );
         err |= RegisterCommand<GetOpeningDetailsCommand> (
             elementCommands, "1.7.3",
             "Returns the details of Opening elements: the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (size, anchor, offsets, surface overrides). Available from Archicad 29."
