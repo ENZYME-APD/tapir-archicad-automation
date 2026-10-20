@@ -340,11 +340,11 @@ GSErrCode Initialize (void)
             "Rebuilds the current view."
         );
         err |= RegisterCommand<GetAutoIntersectCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Gets whether Auto-Intersection (Options > Auto-Intersection) is on. It changes what the wall and beam creation commands produce: with it on, the new elements are joined at their intersections."
         );
         err |= RegisterCommand<SetAutoIntersectCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards."
         );
         AddCommandGroup (projectCommands);
