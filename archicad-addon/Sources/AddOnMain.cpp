@@ -452,6 +452,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.1",
             "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are."
         );
+        err |= RegisterCommand<SetMarkerLibraryPartOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Changes which library part the marker of the given Window and Door elements uses, given by its name (find the available ones with GetAvailableLibraryParts). The marker gets the new library part's default parameters, which SetMarkerParametersOfElements can change afterwards; the opening's own settings are left as they are."
+        );
         err |= RegisterCommand<CreateColumnsCommand> (
             elementCommands, "1.0.3",
             "Creates Column elements based on the given parameters."
