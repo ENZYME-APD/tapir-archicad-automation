@@ -119,8 +119,9 @@ jobs:
           # candidates off the event. The event payloads carry no pull requests
           # for forks, and a sweep costs a handful of API calls - so this is
           # both simpler and the only version that works for outside
-          # contributions.
-          candidates=$(gh pr list --repo "$REPO" --state open --base main \
+          # contributions. `gh pr list` returns only the newest 30 without
+          # --limit, which left every older pull request unevaluated.
+          candidates=$(gh pr list --repo "$REPO" --state open --base main --limit 1000 \
             --json number --jq '.[].number')
 
           if [ -z "${candidates:-}" ]; then
