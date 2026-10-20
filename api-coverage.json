@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 01:39 UTC",
+ "generatedAt": "2026-10-20 01:50 UTC",
  "versions": [
   25,
   26,
@@ -12048,6 +12048,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1299,
+     "title": "[1/6] Add GetOpeningDetails: Opening geometry, extrusion parameters and connections (AC29-30)"
+    },
     {
      "number": 1204,
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"

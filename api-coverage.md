@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 21 % | 90 | 19 |  | 7 | 8 | 56 |  | 49 |
 | C++ API (ACAPI::, IFCAPI::) | 29 % | 1576 | 465 |  | 4 | 1027 | 80 |  | 255 |
 
-Archicad 25–30 DevKits; updated 2026-10-20 01:39 UTC.
+Archicad 25–30 DevKits; updated 2026-10-20 01:50 UTC.
 
 | | Status |
 |---|---|
@@ -525,7 +525,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. *(add-on infrastructure)*
 - ➖ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on. *(add-on preferences)*
 - ⬜ `ACAPI_GetReleaseNumber`
-- ➖ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. — [#1204](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1204 "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"), [#1011](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1011 "Support Archicad 29 and 30 in ModifyOpenings") *(add-on infrastructure)*
+- ➖ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. — [#1299](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1299 "[1/6] Add GetOpeningDetails: Opening geometry, extrusion parameters and connections (AC29-30)"), [#1204](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1204 "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"), [#1011](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1011 "Support Archicad 29 and 30 in ModifyOpenings") *(add-on infrastructure)*
 - ➖ `ACAPI_KeepInMemory` *(add-on infrastructure)*
 - ➖ `ACAPI_RefreshTeamworkReserveInterface` – Refreshes the registered teamwork interface. *(event handlers, not commands)*
 - ➖ `ACAPI_RegisterModelessWindow` – Registers a modeless palette in the API. *(user interface)*
