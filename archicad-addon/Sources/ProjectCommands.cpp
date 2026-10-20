@@ -1963,6 +1963,187 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     return CreateSuccessfulExecutionResult ();
 }
 
+// The fields of File > Info > Project Notes, in the order of API_ProjectNoteInfo.
+static const char* ProjectNotesPropertiesSchema = R"(
+            "client": {
+                "type": "string",
+                "description": "Client."
+            },
+            "projectName": {
+                "type": "string",
+                "description": "Project name."
+            },
+            "company": {
+                "type": "string",
+                "description": "Company."
+            },
+            "street": {
+                "type": "string",
+                "description": "Street."
+            },
+            "city": {
+                "type": "string",
+                "description": "City."
+            },
+            "country": {
+                "type": "string",
+                "description": "Country."
+            },
+            "postalCode": {
+                "type": "string",
+                "description": "Postal code."
+            },
+            "architect": {
+                "type": "string",
+                "description": "Architect."
+            },
+            "draftsmen": {
+                "type": "string",
+                "description": "Draftsmen."
+            },
+            "projectStatus": {
+                "type": "string",
+                "description": "Project status."
+            },
+            "dateOfIssue": {
+                "type": "string",
+                "description": "Date of issue (free text, as typed in Project Notes)."
+            },
+            "keywords": {
+                "type": "string",
+                "description": "Keywords."
+            },
+            "notes": {
+                "type": "string",
+                "description": "Notes."
+            })";
+
+GetProjectNotesCommand::GetProjectNotesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetProjectNotesCommand::GetName () const
+{
+    return "GetProjectNotes";
+}
+
+GS::Optional<GS::UniString> GetProjectNotesCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + ProjectNotesPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+            "client",
+            "projectName",
+            "company",
+            "street",
+            "city",
+            "country",
+            "postalCode",
+            "architect",
+            "draftsmen",
+            "projectStatus",
+            "dateOfIssue",
+            "keywords",
+            "notes"
+        ]
+    })";
+}
+
+GS::ObjectState GetProjectNotesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectNoteInfo projectNotes = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetProjectNotes (&projectNotes);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project notes.");
+    }
+
+    return GS::ObjectState (
+        "client", GS::UniString (projectNotes.client),
+        "projectName", GS::UniString (projectNotes.projectName),
+        "company", GS::UniString (projectNotes.company),
+        "street", GS::UniString (projectNotes.street),
+        "city", GS::UniString (projectNotes.city),
+        "country", GS::UniString (projectNotes.country),
+        "postalCode", GS::UniString (projectNotes.code),
+        "architect", GS::UniString (projectNotes.architect),
+        "draftsmen", GS::UniString (projectNotes.draftsmen),
+        "projectStatus", GS::UniString (projectNotes.projectStatus),
+        "dateOfIssue", GS::UniString (projectNotes.dateOfIssue),
+        "keywords", GS::UniString (projectNotes.keywords),
+        "notes", GS::UniString (projectNotes.notes));
+}
+
+SetProjectNotesCommand::SetProjectNotesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetProjectNotesCommand::GetName () const
+{
+    return "SetProjectNotes";
+}
+
+GS::Optional<GS::UniString> SetProjectNotesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + ProjectNotesPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetProjectNotesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectNoteInfo projectNotes = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetProjectNotes (&projectNotes);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the project notes.");
+    }
+
+    // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
+    bool hasAnyInput = false;
+    hasAnyInput |= SetUCharProperty (&parameters, "client", projectNotes.client);
+    hasAnyInput |= SetUCharProperty (&parameters, "projectName", projectNotes.projectName);
+    hasAnyInput |= SetUCharProperty (&parameters, "company", projectNotes.company);
+    hasAnyInput |= SetUCharProperty (&parameters, "street", projectNotes.street);
+    hasAnyInput |= SetUCharProperty (&parameters, "city", projectNotes.city);
+    hasAnyInput |= SetUCharProperty (&parameters, "country", projectNotes.country);
+    hasAnyInput |= SetUCharProperty (&parameters, "postalCode", projectNotes.code);
+    hasAnyInput |= SetUCharProperty (&parameters, "architect", projectNotes.architect);
+    hasAnyInput |= SetUCharProperty (&parameters, "draftsmen", projectNotes.draftsmen);
+    hasAnyInput |= SetUCharProperty (&parameters, "projectStatus", projectNotes.projectStatus);
+    hasAnyInput |= SetUCharProperty (&parameters, "dateOfIssue", projectNotes.dateOfIssue);
+    hasAnyInput |= SetUCharProperty (&parameters, "keywords", projectNotes.keywords);
+    hasAnyInput |= SetUCharProperty (&parameters, "notes", projectNotes.notes);
+
+    if (!hasAnyInput) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetCalculationUnitsCommand::GetCalculationUnitsCommand () :
     CommandBase (CommonSchema::Used)
 {

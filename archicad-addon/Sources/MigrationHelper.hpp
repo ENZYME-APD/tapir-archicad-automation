@@ -54,6 +54,7 @@
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
+#define ACAPI_ProjectSetting_ChangeProjectNotes(par1) ACAPI_Environment (APIEnv_ChangeProjectNotesID, par1)
 #define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
 
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
