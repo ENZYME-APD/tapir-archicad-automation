@@ -1086,7 +1086,11 @@ GS::ObjectState GetPropertyDefinitionsOfAttributesCommand::Execute (const GS::Ob
 
     API_PropertyDefinitionFilter filter = API_PropertyDefinitionFilter_UserDefined;
     if (filterStr == "FundamentalBuiltIn") {
+#ifdef ServerMainVers_2800
+        filter = API_PropertyDefinitionFilter_BuiltIn;
+#else
         filter = API_PropertyDefinitionFilter_FundamentalBuiltIn;
+#endif
     } else if (filterStr == "All") {
         filter = API_PropertyDefinitionFilter_All;
     }
