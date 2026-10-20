@@ -697,7 +697,8 @@ static bool SplitLibPartUnId (const char* unId, std::string& mainGuid, std::stri
     }
     mainGuid = str.substr (1, separator - 1);
     revisionGuid = str.substr (separator + 3, str.size () - separator - 4);
-    return !mainGuid.empty () && !revisionGuid.empty ();
+    // APIGuidFromString returns APINULLGuid for a string that is not a GUID.
+    return APIGuidFromString (mainGuid.c_str ()) != APINULLGuid && APIGuidFromString (revisionGuid.c_str ()) != APINULLGuid;
 }
 
 // The file of a library part given by its index (as GetAvailableLibraryParts returns it) or by its path.
