@@ -2635,46 +2635,96 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetRawResponseSchema () con
     })";
 }
 
+static GSErrCode DeleteAttribute (API_AttrTypeID typeID, const API_AttributeIndex& index)
+{
+    API_Attr_Head attrHead = {};
+    attrHead.typeID = typeID;
+    attrHead.index = index;
+#ifdef ServerMainVers_2600
+    return ACAPI_Attribute_Delete (attrHead);
+#else
+    return ACAPI_Attribute_Delete (&attrHead);
+#endif
+}
+
 GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> attributesToDelete;
     parameters.Get ("attributesToDelete", attributesToDelete);
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    struct AttributeToDelete {
+        API_AttrTypeID typeID = API_ZombieAttrID;
+        API_AttributeIndex index;
+        GS::ObjectState attributeId;
+    };
 
+    // Resolve every item first, so the results keep the input order while the deletion is grouped by type.
+    GS::Array<GS::ObjectState> results;
+    GS::Array<AttributeToDelete> resolved;
+    GS::Array<API_AttrTypeID> typeIDs;
     for (const GS::ObjectState& item : attributesToDelete) {
+        AttributeToDelete attribute;
         GS::UniString typeStr;
         item.Get ("attributeType", typeStr);
-        API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
         if (typeID == API_ZombieAttrID) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS,
                 GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+        } else {
+            item.Get ("attributeId", attribute.attributeId);
+            if (!GetAttributeIndexFromAttributeId (attribute.attributeId, typeID, attribute.index)) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            } else {
+                attribute.typeID = typeID;
+                results.Push (CreateSuccessfulExecutionResult ());
+                if (!typeIDs.Contains (typeID)) {
+                    typeIDs.Push (typeID);
+                }
+            }
+        }
+        resolved.Push (attribute);
+    }
+
+    // One ACAPI_Attribute_DeleteMore call per attribute type instead of one ACAPI_Attribute_Delete call per attribute.
+    for (API_AttrTypeID typeID : typeIDs) {
+        GS::Array<API_AttributeIndex> indexList;
+        GS::Array<Int32> addedIndices;
+        for (const AttributeToDelete& attribute : resolved) {
+            if (attribute.typeID != typeID) {
+                continue;
+            }
+            const Int32 index = GetAttributeIndex (attribute.index);
+            if (!addedIndices.Contains (index)) {
+                indexList.Push (attribute.index);
+                addedIndices.Push (index);
+            }
+        }
+        ACAPI_Attribute_DeleteMore (typeID, indexList);
+    }
+
+    // ACAPI_Attribute_DeleteMore returns one error code for the whole list, so look up each attribute by its guid
+    // again: one that still exists (the call failed or skipped it) is deleted on its own to get its own result.
+    for (UIndex i = 0; i < resolved.GetSize (); ++i) {
+        const AttributeToDelete& attribute = resolved[i];
+        if (attribute.typeID == API_ZombieAttrID) {
             continue;
         }
 
-        GS::ObjectState attributeId;
-        item.Get ("attributeId", attributeId);
         API_AttributeIndex index;
-        if (!GetAttributeIndexFromAttributeId (attributeId, typeID, index)) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+        if (!GetAttributeIndexFromAttributeId (attribute.attributeId, attribute.typeID, index)) {
             continue;
         }
 
-        API_Attr_Head attrHead = {};
-        attrHead.typeID = typeID;
-        attrHead.index = index;
-#ifdef ServerMainVers_2600
-        GSErrCode err = ACAPI_Attribute_Delete (attrHead);
-#else
-        GSErrCode err = ACAPI_Attribute_Delete (&attrHead);
-#endif
+        GSErrCode err = DeleteAttribute (attribute.typeID, index);
         if (err != NoError) {
-            executionResults (CreateFailedExecutionResult (err, "Failed to delete."));
-            continue;
+            results[i] = CreateFailedExecutionResult (err, "Failed to delete.");
         }
+    }
 
-        executionResults (CreateSuccessfulExecutionResult ());
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
     }
 
     return response;
