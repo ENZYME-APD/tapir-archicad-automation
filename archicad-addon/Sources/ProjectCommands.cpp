@@ -2116,19 +2116,19 @@ GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& paramete
 
     // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
     bool hasAnyInput = false;
-    hasAnyInput |= SetUCharProperty (&parameters, "client", projectNotes.client);
-    hasAnyInput |= SetUCharProperty (&parameters, "projectName", projectNotes.projectName);
-    hasAnyInput |= SetUCharProperty (&parameters, "company", projectNotes.company);
-    hasAnyInput |= SetUCharProperty (&parameters, "street", projectNotes.street);
-    hasAnyInput |= SetUCharProperty (&parameters, "city", projectNotes.city);
-    hasAnyInput |= SetUCharProperty (&parameters, "country", projectNotes.country);
-    hasAnyInput |= SetUCharProperty (&parameters, "postalCode", projectNotes.code);
-    hasAnyInput |= SetUCharProperty (&parameters, "architect", projectNotes.architect);
-    hasAnyInput |= SetUCharProperty (&parameters, "draftsmen", projectNotes.draftsmen);
-    hasAnyInput |= SetUCharProperty (&parameters, "projectStatus", projectNotes.projectStatus);
-    hasAnyInput |= SetUCharProperty (&parameters, "dateOfIssue", projectNotes.dateOfIssue);
-    hasAnyInput |= SetUCharProperty (&parameters, "keywords", projectNotes.keywords);
-    hasAnyInput |= SetUCharProperty (&parameters, "notes", projectNotes.notes);
+    hasAnyInput |= SetCharProperty (&parameters, "client", projectNotes.client);
+    hasAnyInput |= SetCharProperty (&parameters, "projectName", projectNotes.projectName);
+    hasAnyInput |= SetCharProperty (&parameters, "company", projectNotes.company);
+    hasAnyInput |= SetCharProperty (&parameters, "street", projectNotes.street);
+    hasAnyInput |= SetCharProperty (&parameters, "city", projectNotes.city);
+    hasAnyInput |= SetCharProperty (&parameters, "country", projectNotes.country);
+    hasAnyInput |= SetCharProperty (&parameters, "postalCode", projectNotes.code);
+    hasAnyInput |= SetCharProperty (&parameters, "architect", projectNotes.architect);
+    hasAnyInput |= SetCharProperty (&parameters, "draftsmen", projectNotes.draftsmen);
+    hasAnyInput |= SetCharProperty (&parameters, "projectStatus", projectNotes.projectStatus);
+    hasAnyInput |= SetCharProperty (&parameters, "dateOfIssue", projectNotes.dateOfIssue);
+    hasAnyInput |= SetCharProperty (&parameters, "keywords", projectNotes.keywords);
+    hasAnyInput |= SetCharProperty (&parameters, "notes", projectNotes.notes);
 
     if (!hasAnyInput) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
