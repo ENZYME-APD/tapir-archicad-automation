@@ -30,6 +30,7 @@
             "ACAPI_SetPreferences": "add-on preferences",
             "ACAPI_RegisterModelessWindow": "user interface",
             "ACAPI_UnregisterModelessWindow": "user interface",
+            "ACAPI_Markup_PDFImportOptions": "user interface",
             "ACAPI_WriteReport": "report window of the add-on"
         },
         "patterns": {
