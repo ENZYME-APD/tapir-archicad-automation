@@ -644,6 +644,10 @@ GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetInputParameter
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "storedOnly": {
+                "type": "boolean",
+                "description": "Return only the attributes stored on the elements, not the ones Archicad would generate on IFC export. Used only in Archicad 25, 26 and 27. Default: false."
             }
         },
         "additionalProperties": false,
@@ -673,6 +677,11 @@ GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectStat
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+
+#ifndef ServerMainVers_2800
+    bool storedOnly = false;
+    parameters.Get ("storedOnly", storedOnly);
+#endif
 
     GS::ObjectState response;
     const auto& elementIFCAttributes = response.AddList<GS::ObjectState> ("elementIFCAttributes");
@@ -721,7 +730,28 @@ GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectStat
 
         elementIFCAttributes (elemIFCAttributes);
 #else
-        elementIFCAttributes (CreateErrorResponse (APIERR_NOTSUPPORTED, "Getting IFC attributes is available from Archicad 28."));
+        GS::Array<API_IFCAttribute> attributes;
+        const GSErrCode err = ACAPI_Element_GetIFCAttributes (elemGuid, storedOnly, &attributes);
+        if (err != NoError) {
+            elementIFCAttributes (CreateErrorResponse (err, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCAttributes = CreateElementIdObjectState (elemGuid);
+        const auto& ifcAttributes = elemIFCAttributes.AddList<GS::ObjectState> ("ifcAttributes");
+        for (const API_IFCAttribute& attribute : attributes) {
+            GS::ObjectState ifcAttribute (
+                "name", attribute.attributeName,
+                "valueType", attribute.attributeType
+            );
+            // Optional IFC attributes can have no value, then value is left out
+            if (attribute.isValueSet) {
+                ifcAttribute.Add ("value", attribute.attributeValue);
+            }
+            ifcAttributes (ifcAttribute);
+        }
+
+        elementIFCAttributes (elemIFCAttributes);
 #endif
     }
 

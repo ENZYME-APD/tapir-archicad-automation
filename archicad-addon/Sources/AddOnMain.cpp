@@ -990,7 +990,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetIFCAttributesOfElementsCommand> (
             ifcCommands, "1.7.3",
-            "Retrieves the IFC attributes (Name, Description, ObjectType, Tag, PredefinedType, LongName, ...) of the given elements, subelements included: the name, the IFC value type and the value of each attribute. Available from Archicad 28."
+            "Retrieves the IFC attributes (Name, Description, ObjectType, Tag, PredefinedType, LongName, ...) of the given elements, subelements included: the name, the IFC value type and the value of each attribute. On Archicad 25, 26 and 27 storedOnly returns only the attributes stored on the elements."
         );
         err |= RegisterCommand<SetIFCPropertiesOfElementsCommand> (
             ifcCommands, "1.7.0",
