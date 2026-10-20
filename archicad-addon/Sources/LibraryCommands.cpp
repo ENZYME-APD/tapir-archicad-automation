@@ -684,3 +684,126 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
 
     return response;
 }
+
+GetLibraryPartOriginalLocationsCommand::GetLibraryPartOriginalLocationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartOriginalLocationsCommand::GetName () const
+{
+    return "GetLibraryPartOriginalLocations";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to look up.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the library part, as returned by GetAvailableLibraryParts."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "locations": {
+                "type": "array",
+                "description": "The original location of each given library part, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "The path of the file the library part originally came from, e.g. before it was embedded into the project."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "locations"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartOriginalLocationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    GS::Array<GS::ObjectState> libraryParts;
+    parameters.Get ("libraryParts", libraryParts);
+
+    GS::ObjectState response;
+    const auto& locationAdder = response.AddList<GS::ObjectState> ("locations");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        Int32 index = 0;
+        if (!libraryPart.Get ("index", index)) {
+            locationAdder (CreateErrorResponse (APIERR_BADPARS, "index is missing."));
+            continue;
+        }
+        if (index < 1 || index > partCount) {
+            locationAdder (CreateErrorResponse (APIERR_BADINDEX, "There is no library part with the given index."));
+            continue;
+        }
+
+        IO::Location origLocation;
+        err = ACAPI_LibraryManagement_GetLibPartOrigLocation (&index, &origLocation);
+        if (err != NoError) {
+            locationAdder (CreateErrorResponse (err, "Failed to get the original location of the library part."));
+            continue;
+        }
+
+        GS::ObjectState location;
+        location.Add ("path", origLocation.ToDisplayText ());
+        locationAdder (location);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
