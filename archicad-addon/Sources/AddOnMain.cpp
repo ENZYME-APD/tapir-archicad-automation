@@ -1025,6 +1025,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
+        err |= RegisterCommand<GetGDLDateCommand> (
+            libraryCommands, "1.7.3",
+            "Gets the date GDL scripts see, as the integer value the Archicad API returns."
+        );
+        err |= RegisterCommand<SetGDLDateCommand> (
+            libraryCommands, "1.7.3",
+            "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
+        );
         AddCommandGroup (libraryCommands);
     }
 
