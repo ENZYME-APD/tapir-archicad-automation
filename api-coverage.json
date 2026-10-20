@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 08:25 UTC",
+ "generatedAt": "2026-10-20 08:44 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 291,
-  "claimed": 1233,
+  "in progress": 307,
+  "claimed": 1217,
   "done": 743
  },
  "items": [
@@ -929,6 +929,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     }
@@ -959,6 +963,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
     {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
@@ -1017,6 +1025,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     }
@@ -1047,6 +1059,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
     {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
@@ -1105,6 +1121,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     }
@@ -1135,6 +1155,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
     {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
@@ -1167,6 +1191,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     }
@@ -1198,6 +1226,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     }
@@ -1225,9 +1257,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1254,6 +1291,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
     {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
@@ -1282,9 +1323,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1369,6 +1415,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     }
@@ -1415,9 +1465,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1441,9 +1496,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1467,9 +1527,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -1493,9 +1558,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    }
+   ],
    "issues": [
     {
      "number": 1323,
@@ -3897,6 +3967,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    },
+    {
      "number": 1354,
      "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
     },
@@ -4199,9 +4273,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -4332,9 +4411,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -4911,6 +4995,18 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    },
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    },
+    {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
     {
      "number": 1359,
      "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
@@ -10345,6 +10441,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    },
+    {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -14879,9 +14979,14 @@
    "olderNames": [
     "APIAny_UsableGDLStringID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1361,
+     "title": "[3/3] Add IsUsableGDLString command"
+    }
+   ],
    "issues": [
     {
      "number": 1317,
@@ -15061,6 +15166,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
@@ -15140,6 +15249,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
@@ -15364,6 +15477,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
@@ -15400,6 +15517,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
@@ -15471,6 +15592,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
     },
@@ -15527,6 +15652,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
@@ -15671,9 +15800,14 @@
    "olderNames": [
     "ACAPI_LibPart_GetSection"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    }
+   ],
    "issues": [
     {
      "number": 1316,
@@ -15699,9 +15833,14 @@
    "olderNames": [
     "ACAPI_LibPart_GetSectionList"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    }
+   ],
    "issues": [
     {
      "number": 1316,
@@ -20642,6 +20781,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    },
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    },
+    {
      "number": 1354,
      "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
     },
@@ -20988,6 +21135,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    },
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    },
     {
      "number": 1148,
      "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
@@ -22487,6 +22642,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1360,
+     "title": "[2/2] Teamwork commands for project data (reserve, release, request, grant)"
+    },
+    {
      "number": 1021,
      "title": "[2/3] Add GetReservationStatusOfElements and GrantElements Teamwork commands"
     },
@@ -22668,6 +22827,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
@@ -25462,9 +25625,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1365,
+     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -26064,9 +26232,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    }
+   ],
    "issues": [
     {
      "number": 1319,
@@ -26086,9 +26259,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    }
+   ],
    "issues": [
     {
      "number": 1319,
@@ -26108,9 +26286,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
+    }
+   ],
    "issues": [
     {
      "number": 1319,
@@ -26201,9 +26384,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1363,
+     "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -26477,6 +26665,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
      "number": 1359,
      "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
     },
@@ -26623,6 +26815,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
+     "number": 1361,
+     "title": "[3/3] Add IsUsableGDLString command"
+    },
     {
      "number": 1353,
      "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
@@ -65331,6 +65531,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1363,
+     "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
+    },
     {
      "number": 1355,
      "title": "[2/6] Add SetIFCAttributesOfElements command (Archicad 25-27)"
