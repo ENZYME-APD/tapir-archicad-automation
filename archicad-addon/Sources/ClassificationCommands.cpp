@@ -299,9 +299,11 @@ GS::ObjectState GetClassificationsOfElementDefaultsCommand::Execute (const GS::O
                 continue;
             }
 
-            classificationIds (GS::ObjectState (
-                "classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)),
-                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid))));
+            GS::ObjectState classificationId ("classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)));
+            if (item.guid != APINULLGuid) {
+                classificationId.Add ("classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid)));
+            }
+            classificationIds (classificationId);
         }
 
         elementDefaultClassifications (elementClassification);
