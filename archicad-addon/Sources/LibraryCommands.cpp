@@ -262,6 +262,213 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
 #endif
 }
 
+static GSErrCode GetEmbeddedLibraryFolder (IO::Location& embeddedLibraryFolder)
+{
+    auto folderId = API_SpecFolderID::API_EmbeddedProjectLibraryFolderID;
+    if (ACAPI_ProjectSettings_GetSpecFolder (&folderId, &embeddedLibraryFolder) != NoError || IO::Folder (embeddedLibraryFolder).GetStatus () != NoError) {
+        return APIERR_GENERAL;
+    }
+    return NoError;
+}
+
+// Splits a folder path relative to the embedded library into its folder names.
+// Absolute paths and '.'/'..' parts are refused, so the result stays inside the
+// embedded library. An empty path means the embedded library itself.
+static bool SplitEmbeddedLibraryFolderPath (const GS::UniString& folderPath, GS::Array<GS::UniString>& folderNames)
+{
+    GS::UniString normalized = folderPath;
+    normalized.ReplaceAll ("\\", "/");
+    if (normalized.Contains (":")) {
+        return false;
+    }
+
+    folderNames.Clear ();
+    normalized.Split ("/", GS::UniString::SkipEmptyParts, &folderNames);
+    for (const GS::UniString& folderName : folderNames) {
+        if (folderName == "." || folderName == "..") {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Creates the missing folders of the given path one level at a time with
+// ACAPI_LibraryManagement_CreateFolderInLibrary, so Archicad knows about each.
+// Returns the failed execution result, or no value when the folder is ready.
+static GS::Optional<GS::ObjectState> CreateEmbeddedLibraryFolderTree (const GS::UniString& folderPath, IO::Location& folderLocation)
+{
+    GS::Array<GS::UniString> folderNames;
+    if (!SplitEmbeddedLibraryFolderPath (folderPath, folderNames)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The folder path must be relative to the embedded library and must not contain '.' or '..' parts.");
+    }
+
+    if (GetEmbeddedLibraryFolder (folderLocation) != NoError) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to get embedded library folder.");
+    }
+
+    for (const GS::UniString& folderName : folderNames) {
+        folderLocation.AppendToLocal (IO::Name (folderName));
+        if (IO::Folder (folderLocation).GetStatus () == NoError) {
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_LibraryManagement_CreateFolderInLibrary (&folderLocation);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to create the folder '" + folderName + "' in the embedded library.");
+        }
+    }
+
+    return GS::NoValue;
+}
+
+CreateFolderInEmbeddedLibraryCommand::CreateFolderInEmbeddedLibraryCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateFolderInEmbeddedLibraryCommand::GetName () const
+{
+    return "CreateFolderInEmbeddedLibrary";
+}
+
+GS::Optional<GS::UniString> CreateFolderInEmbeddedLibraryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderPath": {
+                "type": "string",
+                "description": "The path of the folder relative to the embedded library, for example 'Office/Doors'. Missing parent folders are created too; folders that already exist are kept.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folderPath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateFolderInEmbeddedLibraryCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState CreateFolderInEmbeddedLibraryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString folderPath;
+    if (!parameters.Get ("folderPath", folderPath) || folderPath.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing folderPath parameter.");
+    }
+
+    IO::Location folderLocation;
+    const GS::Optional<GS::ObjectState> folderError = CreateEmbeddedLibraryFolderTree (folderPath, folderLocation);
+    if (folderError.HasValue ()) {
+        return *folderError;
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+CopyFilesIntoEmbeddedLibraryCommand::CopyFilesIntoEmbeddedLibraryCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CopyFilesIntoEmbeddedLibraryCommand::GetName () const
+{
+    return "CopyFilesIntoEmbeddedLibrary";
+}
+
+GS::Optional<GS::UniString> CopyFilesIntoEmbeddedLibraryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "files": {
+                "type": "array",
+                "description": "The files to copy. Each keeps its file name inside the target folder.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The absolute path of the file to copy."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "minItems": 1
+            },
+            "targetFolder": {
+                "type": "string",
+                "description": "Optional. The folder relative to the embedded library to copy the files into, for example 'Office/Doors'. Missing folders are created. By default the root of the embedded library."
+            },
+            "overwriteIfExists": {
+                "type": "boolean",
+                "description": "Optional. When true, an item with the same name in the target folder is replaced. By default false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "files"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CopyFilesIntoEmbeddedLibraryCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState CopyFilesIntoEmbeddedLibraryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> files;
+    parameters.Get ("files", files);
+
+    GS::Array<IO::Location> filesToCopy;
+    for (const GS::ObjectState& file : files) {
+        GS::UniString path;
+        if (!file.Get ("path", path) || path.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Missing path parameter.");
+        }
+
+        IO::File inputFile (IO::Location (path), IO::File::OnNotFound::Fail);
+        if (inputFile.GetStatus () != NoError) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Failed to read the file on the path '" + path + "'.");
+        }
+        filesToCopy.Push (inputFile.GetLocation ());
+    }
+
+    if (filesToCopy.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No files given.");
+    }
+
+    GS::UniString targetFolder;
+    parameters.Get ("targetFolder", targetFolder);
+
+    bool overwriteIfExists = false;
+    parameters.Get ("overwriteIfExists", overwriteIfExists);
+
+    IO::Location targetFolderLocation;
+    const GS::Optional<GS::ObjectState> folderError = CreateEmbeddedLibraryFolderTree (targetFolder, targetFolderLocation);
+    if (folderError.HasValue ()) {
+        return *folderError;
+    }
+
+    const GSErrCode err = ACAPI_LibraryManagement_CopyFilesIntoLibrary (&targetFolderLocation, &filesToCopy, &overwriteIfExists);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to copy the files into the embedded library.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GS::Optional<GS::UniString> GetLibrariesCommand::GetRawResponseSchema () const
 {
     return R"({
