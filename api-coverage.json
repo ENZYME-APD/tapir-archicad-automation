@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 09:25 UTC",
+ "generatedAt": "2026-10-20 11:42 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 323,
-  "claimed": 1201,
+  "in progress": 327,
+  "claimed": 1197,
   "done": 743
  },
  "items": [
@@ -4977,7 +4977,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1257,
+     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5078,10 +5083,6 @@
     {
      "number": 1269,
      "title": "Add EditHierarchicalElement and FinishHierarchicalEditing commands"
-    },
-    {
-     "number": 1257,
-     "title": "[2/4] Add CreateFavoriteFolder and RenameFavoriteFolder commands"
     },
     {
      "number": 1235,
@@ -26470,7 +26471,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1378,
+     "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
+    }
+   ],
    "issues": []
   },
   {
@@ -26989,6 +26995,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1378,
+     "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
+    },
+    {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
@@ -27168,9 +27178,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1378,
+     "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -27241,9 +27256,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1378,
+     "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -28445,9 +28465,14 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1378,
+     "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -28519,9 +28544,14 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1378,
+     "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
