@@ -704,9 +704,10 @@ inline void DisposeAttribute (API_Attribute& attr)
     }
 }
 
-// The last-used 3D levels of element defaults. AC25 and AC26 reach them through
+// The last-used 3D levels of element defaults. AC25 reaches them through
 // APIDb_GetLast3DDefLevelsID / APIDb_SetLast3DDefLevelsID (par1 the element types, par2
-// the levels), AC25 with API_ElemTypeID as it has no API_ElemType. From AC27 the function
+// the levels). The AC26 DevKit has no such command id, so they are not supported there.
+// From AC27 the function
 // is ACAPI_ProjectSetting_*Last3DDefLevels in the current DevKit and was
 // ACAPI_Database_*Last3DDefLevels in an earlier one, so the overloads below pick, at
 // compile time, whichever of those names (by reference or by pointer) the DevKit has.
@@ -790,6 +791,10 @@ inline GSErrCode TAPIR_ProjectSetting_GetLast3DDefLevels (const GS::Array<API_El
     auto elemTypes = TAPIR_GetLast3DDefLevelsElemTypes (typeIDs);
 #ifdef ServerMainVers_2700
     return Last3DDefLevelsShim::Get (Last3DDefLevelsShim::Rank3 (), elemTypes, levels);
+#elif defined (ServerMainVers_2600)
+    (void) elemTypes;
+    (void) levels;
+    return APIERR_NOTSUPPORTED;
 #else
     return ACAPI_Database (APIDb_GetLast3DDefLevelsID, &elemTypes, &levels);
 #endif
@@ -801,6 +806,10 @@ inline GSErrCode TAPIR_ProjectSetting_SetLast3DDefLevels (const GS::Array<API_El
     GS::Array<double> levelsToSet = levels;
 #ifdef ServerMainVers_2700
     return Last3DDefLevelsShim::Set (Last3DDefLevelsShim::Rank3 (), elemTypes, levelsToSet);
+#elif defined (ServerMainVers_2600)
+    (void) elemTypes;
+    (void) levelsToSet;
+    return APIERR_NOTSUPPORTED;
 #else
     return ACAPI_Database (APIDb_SetLast3DDefLevelsID, &elemTypes, &levelsToSet);
 #endif
