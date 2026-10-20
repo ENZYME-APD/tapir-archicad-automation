@@ -994,7 +994,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.7.3",
-            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description, the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements."
+            "Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements."
         );
         err |= RegisterCommand<SetIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.7.3",
