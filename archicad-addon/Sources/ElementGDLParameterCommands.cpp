@@ -999,7 +999,7 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     }
 
     if (elemTypeId == API_CurtainWallFrameID && IsMirroredCurtainWallFrameSizeParameter (changeParam.name)) {
-        errMessage = GS::UniString::Printf ("Invalid input: %s of curtain wall frame %T mirrors the frame's contour (frameContour in GetDetailsOfElements), which Archicad derives from the frame's settings, so it cannot be set through the GDL parameters; change the frame's contour instead", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        errMessage = GS::UniString::Printf ("Invalid input: %s of curtain wall frame %T mirrors the frame's contour (frameContour in GetDetailsOfElements), which Archicad derives from the frame's settings, so it cannot be set through the GDL parameters; change it in the frame's settings in Archicad instead",changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
 
