@@ -6303,6 +6303,10 @@
                 "$ref": "#/NavigatorItemId",
                 "description": "The identifier of the navigator item this one was created from: the Project Map item behind a view, or the source view behind a placed Drawing's Layout Book entry. Missing when the item has no such source; Project Map items never do."
             },
+            "childCount": {
+                "type": "integer",
+                "description": "The number of direct children Archicad reports for the item. Only present when GetNavigatorItemTree is called with includeChildCount true."
+            },
             "children": {
                 "type": "array",
                 "description": "The children of the navigator item. Missing when the item has no children.",

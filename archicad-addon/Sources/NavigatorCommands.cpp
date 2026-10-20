@@ -1700,7 +1700,7 @@ static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t)
     }
 }
 
-static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_NavigatorMapID mapId)
+static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_NavigatorMapID mapId, bool includeChildCount)
 {
     GS::ObjectState itemOS;
     itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
@@ -1732,12 +1732,22 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     }
 
     item.mapId = mapId;
+
+    // The number of direct children as Archicad counts them, without fetching
+    // the children themselves. Missing when Archicad cannot count them.
+    if (includeChildCount) {
+        Int32 childCount = 0;
+        if (ACAPI_Navigator_GetNavigatorChildNum (&item, &childCount) == NoError) {
+            itemOS.Add ("childCount", childCount);
+        }
+    }
+
     GS::Array<API_NavigatorItem> children;
     if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {
         const auto& childList = itemOS.AddList<GS::ObjectState> ("children");
         for (const API_NavigatorItem& child : children) {
             GS::ObjectState wrapper;
-            wrapper.Add ("navigatorItem", NavigatorItemToObjectState (child, mapId));
+            wrapper.Add ("navigatorItem", NavigatorItemToObjectState (child, mapId, includeChildCount));
             childList (wrapper);
         }
     }
@@ -1768,6 +1778,10 @@ GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchem
                 "type": "string",
                 "minLength": 1,
                 "description": "The name of the publisher set to retrieve. Used only when navigatorMapId is PublisherSets. Without it the first publisher set is returned."
+            },
+            "includeChildCount": {
+                "type": "boolean",
+                "description": "Set to true to add childCount, the number of direct children Archicad reports, to every item. Defaults to false."
             }
         },
         "additionalProperties": false,
@@ -1833,7 +1847,105 @@ GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& par
         return CreateErrorResponse (err, "Failed to get root navigator item.");
     }
 
+    bool includeChildCount = false;
+    parameters.Get ("includeChildCount", includeChildCount);
+
     GS::ObjectState response;
-    response.Add ("navigatorItemTree", NavigatorItemToObjectState (rootItem, mapId));
+    response.Add ("navigatorItemTree", NavigatorItemToObjectState (rootItem, mapId, includeChildCount));
+    return response;
+}
+
+// ─── GetNavigatorParentItems ──────────────────────────────────────────────────
+
+GetNavigatorParentItemsCommand::GetNavigatorParentItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetNavigatorParentItemsCommand::GetName () const
+{
+    return "GetNavigatorParentItems";
+}
+
+GS::Optional<GS::UniString> GetNavigatorParentItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNavigatorParentItemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "parentItems": {
+                "type": "array",
+                "description": "The parent of each requested navigator item, in the order of the input, or an error for an item whose parent cannot be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "navigatorItemId": { "$ref": "#/NavigatorItemId" },
+                                "type":            { "$ref": "#/NavigatorItemType" },
+                                "name":            { "type": "string", "description": "The name of the parent navigator item." }
+                            },
+                            "additionalProperties": false,
+                            "required": ["navigatorItemId", "type", "name"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["parentItems"]
+    })";
+}
+
+GS::ObjectState GetNavigatorParentItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    parameters.Get ("navigatorItemIds", navigatorItemIds);
+
+    GS::ObjectState response;
+    const auto& parentItems = response.AddList<GS::ObjectState> ("parentItems");
+
+    for (const GS::ObjectState& navItemIdOS : navigatorItemIds) {
+        const API_Guid guid = GetGuidFromNavigatorItemIdArrayItem (navItemIdOS);
+        if (guid == APINULLGuid) {
+            parentItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        API_NavigatorItem parent = {};
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorParentItem (&guid, &parent);
+        if (err != NoError) {
+            parentItems (CreateErrorResponse (err, "Failed to get the parent of the navigator item."));
+            continue;
+        }
+
+        // The root of a map has no parent. Report it as an error rather than
+        // an item with a null id, whichever way Archicad signals it.
+        if (parent.guid == APINULLGuid) {
+            parentItems (CreateErrorResponse (APIERR_BADPARS, "The navigator item has no parent."));
+            continue;
+        }
+
+        GS::ObjectState parentOS;
+        parentOS.Add ("navigatorItemId", CreateGuidObjectState (parent.guid));
+        parentOS.Add ("type",            NavigatorItemTypeToString (parent.itemType));
+        parentOS.Add ("name",            GS::UniString (parent.uName));
+        parentItems (parentOS);
+    }
+
     return response;
 }
