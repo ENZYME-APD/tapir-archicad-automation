@@ -4643,10 +4643,29 @@
         "properties": {
             "propertyValue": {
                 "$ref": "#/PropertyValue"
+            },
+            "isAvailable": {
+                "type": "boolean",
+                "description": "Whether the property is available for the element. Only returned when includeAvailability is true."
             }
         },
         "additionalProperties": false,
         "required": [ "propertyValue" ]
+    },
+    "PropertyValueErrorItem": {
+        "type": "object",
+        "description": "An error in place of a property value.",
+        "properties": {
+            "error": {
+                "$ref": "#/Error"
+            },
+            "isAvailable": {
+                "type": "boolean",
+                "description": "Whether the property is available for the element. Only returned when includeAvailability is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "error" ]
     },
     "PropertyValueOrErrorItem": {
         "type": "object",
@@ -4656,7 +4675,7 @@
                 "$ref": "#/PropertyValueArrayItem"
             },
             {
-                "$ref": "#/ErrorItem"
+                "$ref": "#/PropertyValueErrorItem"
             }
         ]
     },
