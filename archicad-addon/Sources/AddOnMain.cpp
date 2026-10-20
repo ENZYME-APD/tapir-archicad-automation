@@ -43,6 +43,7 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "ProjectDataCommands.hpp"
 #include "GraphicOverrideCommands.hpp"
 #include "GridElementCommands.hpp"
 #include "GraphicalOverrideCommands.hpp"
@@ -1404,6 +1405,27 @@ GSErrCode Initialize (void)
             "Creates Label elements that reference the given keynote items via autotext. Available from Archicad 28."
         );
         AddCommandGroup (keynoteCommands);
+    }
+
+    { // Project Data Commands
+        CommandGroup projectDataCommands ("Project Data Commands");
+        err |= RegisterCommand<GetProjectDataKeysCommand> (
+            projectDataCommands, "1.7.3",
+            "Lists the project data stored by Tapir in the project: the names, the identifiers of the add-on objects that store them and whether they are kept on this client only. Project data is text (for example JSON) saved in the project file by scripts and Grasshopper definitions, such as their settings or the mapping of elements to an external system."
+        );
+        err |= RegisterCommand<GetProjectDataCommand> (
+            projectDataCommands, "1.7.3",
+            "Gets the content of the project data with the given names."
+        );
+        err |= RegisterCommand<SetProjectDataCommand> (
+            projectDataCommands, "1.7.3",
+            "Creates or overwrites project data: text (for example JSON) saved in the project under a name. New project data can be kept on this client only, or created as unique so that in Teamwork only one can exist with its name. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data."
+        );
+        err |= RegisterCommand<DeleteProjectDataCommand> (
+            projectDataCommands, "1.7.3",
+            "Deletes the project data with the given names."
+        );
+        AddCommandGroup (projectDataCommands);
     }
 
     { // MEP Commands
