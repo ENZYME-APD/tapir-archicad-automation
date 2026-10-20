@@ -425,10 +425,12 @@ GS::ObjectState SetClassificationsOfElementDefaultsCommand::Execute (const GS::O
                     continue;
                 }
 
-                err = TAPIR_Element_RemoveClassificationItemDefault (typeID, item.guid);
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for the element defaults"));
-                    continue;
+                if (item.guid != APINULLGuid) {
+                    err = TAPIR_Element_RemoveClassificationItemDefault (typeID, item.guid);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for the element defaults"));
+                        continue;
+                    }
                 }
             }
 
