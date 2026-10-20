@@ -968,7 +968,9 @@ static GS::ObjectState ClassificationReferenceToObjectState (const IFCAPI::Class
     AddOptionalString (ifcClassificationReference, "identification", classificationReference.GetIdentification ());
     AddOptionalString (ifcClassificationReference, "name", classificationReference.GetName ());
     AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
+#ifdef ServerMainVers_2900
     AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
+#endif
 
     const IFCAPI::Classification referencedSource = classificationReference.GetReferencedSource ();
     GS::ObjectState referencedSourceObject ("name", referencedSource.GetName ());

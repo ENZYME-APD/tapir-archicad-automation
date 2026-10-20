@@ -5832,7 +5832,7 @@
             },
             "description": {
                 "type": "string",
-                "description": "The description of the classification reference."
+                "description": "The description of the classification reference. Available from Archicad 29."
             },
             "referencedSource": {
                 "type": "object",
