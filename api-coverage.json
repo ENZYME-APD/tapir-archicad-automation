@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 01:52 UTC",
+ "generatedAt": "2026-10-20 02:20 UTC",
  "versions": [
   25,
   26,
@@ -12048,6 +12048,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1301,
+     "title": "[3/6] Add GetOpeningFloorPlanParameters, SetOpeningFloorPlanParameters and GetOpeningDefault"
+    },
     {
      "number": 1300,
      "title": "[2/6] Add the SetOpeningDetails command"
@@ -29246,7 +29250,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1301,
+     "title": "[3/6] Add GetOpeningFloorPlanParameters, SetOpeningFloorPlanParameters and GetOpeningDefault"
+    }
+   ],
    "issues": []
   },
   {
@@ -30407,7 +30416,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1301,
+     "title": "[3/6] Add GetOpeningFloorPlanParameters, SetOpeningFloorPlanParameters and GetOpeningDefault"
+    }
+   ],
    "issues": [
     {
      "number": 1298,
