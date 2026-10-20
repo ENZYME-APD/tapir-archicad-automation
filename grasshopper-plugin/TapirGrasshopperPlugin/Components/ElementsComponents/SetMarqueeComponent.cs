@@ -35,9 +35,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InBoolean(
                 "MultiStory",
-                "True for a multi-story (thick) marquee, false for a single-story (thin) one.");
+                "True for a multi-story (thick) marquee, false (default) for a single-story (thin) one.");
 
-            SetOptionality(0);
+            SetOptionality(new[] { 0, 1 });
         }
 
         protected override void AddOutputs()
@@ -54,12 +54,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 0,
                 null);
 
-            if (!da.TryGet(
-                    1,
-                    out bool multiStory))
-            {
-                return;
-            }
+            var multiStory = da.GetOptional(
+                1,
+                false);
 
             var parameters = new SetMarqueeParameters();
 
