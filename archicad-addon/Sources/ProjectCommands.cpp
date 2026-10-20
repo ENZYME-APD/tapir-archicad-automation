@@ -2207,8 +2207,9 @@ GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema (
                 "type": "integer",
                 "description": "Number of decimals displayed."
             },
-            "accuracy": {
-                "$ref": "#/AccuracyType"
+            "showSmall5": {
+                "type": "integer",
+                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
             },
             "roundInch": {
                 "type": "integer",
@@ -2231,7 +2232,7 @@ GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema (
         "required": [
             "unit",
             "decimals",
-            "accuracy",
+            "showSmall5",
             "roundInch",
             "showZeroWhole",
             "showZeroInch",
@@ -2350,7 +2351,7 @@ static GS::ObjectState ConvertAPILengthDimFormat (const API_LengthDimFormat& for
     return GS::ObjectState (
         "unit", ConvertAPILengthType (format.unit),
         "decimals", format.lenDecimals,
-        "accuracy", ConvertAPIExtraAccuracyType (static_cast<API_ExtraAccuracyID> (format.showSmall5)),
+        "showSmall5", static_cast<Int32> (format.showSmall5),
         "roundInch", format.roundInch,
         "showZeroWhole", static_cast<bool> (format.show0Whole),
         "showZeroInch", static_cast<Int32> (format.show0Inch),
