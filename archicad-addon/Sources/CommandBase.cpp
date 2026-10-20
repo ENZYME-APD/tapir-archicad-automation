@@ -973,6 +973,18 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     return API_ZombieElemID;
 }
 
+API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&element.header) != NoError ||
+        GetElemTypeId (element.header) != API_SectElemID ||
+        ACAPI_Element_Get (&element) != NoError) {
+        return elemGuid;
+    }
+    return element.sectElem.parentGuid;
+}
+
 short ParseAnchorPointString (const GS::UniString& anchorPoint)
 {
     return static_cast<short> (AnchorIdFromString (anchorPoint));

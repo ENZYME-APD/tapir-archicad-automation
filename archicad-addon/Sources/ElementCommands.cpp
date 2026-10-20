@@ -141,18 +141,6 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     return APINumbering_ByLayout;
 }
 
-static API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
-{
-    API_Element element = {};
-    element.header.guid = elemGuid;
-    if (ACAPI_Element_GetHeader (&element.header) != NoError ||
-        GetElemTypeId (element.header) != API_SectElemID ||
-        ACAPI_Element_Get (&element) != NoError) {
-        return elemGuid;
-    }
-    return element.sectElem.parentGuid;
-}
-
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
 {
     switch (structureType) {

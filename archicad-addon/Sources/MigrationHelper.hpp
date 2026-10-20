@@ -349,6 +349,16 @@ inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLi
     return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
 }
 
+inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)
+{
+    return ACAPI_Goodies (APIAny_GetSelectedElementID, (void*) apiNeig, apiGuid);
+}
+
+inline GSErrCode ACAPI_Element_NeigToCoord (API_Neig* neig, API_Coord3D* coord3D, API_Coord3D* coord3DDocument = nullptr)
+{
+    return ACAPI_Goodies (APIAny_NeigToCoordID, neig, coord3D, coord3DDocument);
+}
+
 // APIIo_InitProcessWindowID takes the phase count as short*, AC27+ take an Int32*.
 inline GSErrCode ACAPI_ProcessWindow_InitProcessWindow (const GS::UniString* title = nullptr, Int32* nPhase = nullptr, API_ProcessControlTypeID* processControlType = nullptr)
 {
