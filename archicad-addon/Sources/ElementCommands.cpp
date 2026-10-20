@@ -1115,6 +1115,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("width", segment.nominalWidth);
                 typeSpecificDetails.Add ("height", segment.nominalHeight);
                 typeSpecificDetails.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+                typeSpecificDetails.Add ("circleBased", segment.circleBased);
                 if (segment.modelElemStructureType == API_BasicStructure) {
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
                 } else if (segment.modelElemStructureType == API_ProfileStructure) {

@@ -7182,6 +7182,10 @@
             "isWidthAndHeightLinked": {
                 "type": "boolean"
             },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a building material rather than a custom profile."
@@ -7196,7 +7200,8 @@
             "structureType",
             "width",
             "height",
-            "isWidthAndHeightLinked"
+            "isWidthAndHeightLinked",
+            "circleBased"
         ]
     },
     "DetailWorksheetDetails": {
