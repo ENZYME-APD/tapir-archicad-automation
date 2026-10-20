@@ -94,6 +94,10 @@ is happening.
 - **Test everything due:** tests what is marked for testing, now.
 - **Stop after this test:** finishes the current test, then stops.
 - **Put my add-on back:** use this if a test was interrupted (see *If something goes wrong*).
+- **Benchmark open Archicad:** measures how fast your Tapir answers and how big its answers are.
+  Open Archicad with a new, empty project (don't save it) first. It takes a few minutes, adds
+  up to 5000 elements and deletes them again, then opens a report and says what changed since
+  your last benchmark. Nothing is posted.
 - **Post results on GitHub:** untick it to try the runner without posting anything.
 - **Run every check:** also runs the general checks, not only the change's own.
 - **Settings:** asks the setup questions again.

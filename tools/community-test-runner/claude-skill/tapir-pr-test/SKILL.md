@@ -1,6 +1,6 @@
 ---
 name: tapir-pr-test
-description: Use when asked to test Tapir pull requests (or a local Tapir build) in a real Archicad, check what is waiting for a test, or write a check for a Tapir command. Drives tools/community-test-runner with its one-line output, so testing many pull requests costs few tokens.
+description: Use when asked to test Tapir pull requests (or a local Tapir build) in a real Archicad, check what is waiting for a test, write a check for a Tapir command, or benchmark Tapir's speed and token use. Drives tools/community-test-runner with its one-line output, so testing many pull requests costs few tokens.
 ---
 
 # Testing Tapir pull requests with the community test runner
@@ -31,6 +31,7 @@ yourself for this, never read the runner's source to use it, and never print ful
 | Test again on the same commit | add `--retest` |
 | Test a local build | `trial --ac 30 --build archicad-addon/Build/AC30/RelWithDebInfo/TapirAddOn_AC30_Win.apx --brief` |
 | Archicad is already open with an empty untitled project | `check --brief` (this checkout's checks) or `check path/to/check.json --brief` |
+| Benchmark speed and tokens (Archicad open, empty untitled project) | `bench --brief` (`--quick` for a minute-long first look; `--read-only` on a real project); compare runs with `bench-compare old.json new.json`. Read the `.md` report's tables only if the user asks for detail |
 | A test was interrupted | `restore` |
 
 Archicad must be **closed** for `test` and `trial` (the line says "AC30 is open - skipped").
