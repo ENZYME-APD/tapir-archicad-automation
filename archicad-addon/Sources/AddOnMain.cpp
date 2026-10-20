@@ -484,6 +484,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates Opening elements in the given host elements."
         );
+        err |= RegisterCommand<GetOpeningDetailsCommand> (
+            elementCommands, "1.7.3",
+            "Returns the details of Opening elements: the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (size, anchor, offsets, surface overrides). Available from Archicad 29."
+        );
         err |= RegisterCommand<CreateMorphsCommand> (
             elementCommands, "1.4.0",
             "Creates Morph elements from simple box definitions."

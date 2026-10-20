@@ -13,6 +13,8 @@
 #ifdef ServerMainVers_2900
 #include	"ACAPI/Element/Opening/OpeningDefault.hpp"
 #include	"ACAPI/Element/Opening/Opening.hpp"
+#include	"ACAPI/Element/Opening/OpeningGeometry.hpp"
+#include	"ACAPI/Element/Opening/OpeningExtrusionParameters.hpp"
 #include "Polygon2D.hpp"
 #endif
 
@@ -20,6 +22,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <optional>
 #include <utility>
 
 namespace {
@@ -4720,6 +4723,229 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
 #endif
         }
     });
+}
+
+GetOpeningDetailsCommand::GetOpeningDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningDetailsCommand::GetName () const
+{
+    return "GetOpeningDetails";
+}
+
+GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The Opening elements (made with the Opening tool) to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openings": {
+                "type": "array",
+                "description": "The details of the openings, in the order of the given elements.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": { "$ref": "#/ElementId" },
+                                "parentElementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The element the opening was placed in. Left out when the opening has none."
+                                },
+                                "cutElements": {
+                                    "type": "array",
+                                    "description": "The elements the opening cuts.",
+                                    "items": { "$ref": "#/ElementIdArrayItem" }
+                                },
+                                "connectedOpenings": {
+                                    "type": "array",
+                                    "description": "The openings Archicad reports as connected to this one. Left out when they cannot be read.",
+                                    "items": { "$ref": "#/ElementIdArrayItem" }
+                                },
+                                "geometry": {
+                                    "type": "object",
+                                    "properties": {
+                                        "anchorPoint": { "$ref": "#/Coordinate3D", "description": "The anchor point of the opening in world coordinates." },
+                                        "extrusionDirection": { "$ref": "#/Coordinate3D", "description": "The direction the opening is extruded in." },
+                                        "xAxis": { "$ref": "#/Coordinate3D", "description": "The X axis of the plane of the opening's polygon." },
+                                        "yAxis": { "$ref": "#/Coordinate3D", "description": "The Y axis of the plane of the opening's polygon." },
+                                        "polygon": {
+                                            "type": "array",
+                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis. Left out when the opening has no polygon.",
+                                            "items": { "$ref": "#/Coordinate2D" }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["anchorPoint", "extrusionDirection", "xAxis", "yAxis"]
+                                },
+                                "extrusionParameters": {
+                                    "type": "object",
+                                    "description": "The size and extrusion settings. A size Archicad does not give for the opening's shape is left out.",
+                                    "properties": {
+                                        "width": { "type": "number" },
+                                        "height": { "type": "number" },
+                                        "anchor": {
+                                            "type": "string",
+                                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
+                                            "description": "The anchor point of the opening's polygon."
+                                        },
+                                        "anchorAltitude": { "type": "number" },
+                                        "extrusionStartOffset": { "type": "number" },
+                                        "finiteBodyLength": { "type": "number" },
+                                        "isExtrusionSurfaceOverridden": { "type": "boolean" },
+                                        "extrusionSurfaceId": {
+                                            "$ref": "#/AttributeId",
+                                            "description": "The surface of the extrusion faces. Only given when it is overridden."
+                                        },
+                                        "isEndSurfaceOverridden": { "type": "boolean" },
+                                        "endSurfaceId": {
+                                            "$ref": "#/AttributeId",
+                                            "description": "The surface of the end faces. Only given when it is overridden."
+                                        },
+                                        "areOverriddenSurfacesLinked": { "type": "boolean" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["anchor", "isExtrusionSurfaceOverridden", "isEndSurfaceOverridden", "areOverriddenSurfacesLinked"]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["elementId", "cutElements", "geometry", "extrusionParameters"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openings"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+static GS::ObjectState CreateVector3DObjectState (const API_Vector3D& v)
+{
+    return Create3DCoordinateObjectState (API_Coord3D { v.x, v.y, v.z });
+}
+
+static GS::ObjectState CreateUniqueIDArrayItem (const ACAPI::UniqueID& id)
+{
+    return CreateElementIdObjectState (GSGuid2APIGuid (id.GetGuid ()));
+}
+
+static void AddOptionalNumber (GS::ObjectState& os, const char* name, const std::optional<double>& value)
+{
+    if (value.has_value ()) {
+        os.Add (name, *value);
+    }
+}
+
+static GS::ObjectState GetOpeningDetails (const API_Guid& openingGuid)
+{
+    using ACAPI::Element::Opening;
+
+    const ACAPI::UniqueID openingId (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ());
+    ACAPI::Result<Opening> opening = Opening::Get (openingId);
+    if (opening.IsErr ()) {
+        return CreateErrorResponse (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    GS::ObjectState details;
+    details.Add ("elementId", CreateGuidObjectState (openingGuid));
+
+    ACAPI::Result<ACAPI::UniqueID> parent = opening->GetParentElement ();
+    if (parent.IsOk ()) {
+        details.Add ("parentElementId", CreateGuidObjectState (GSGuid2APIGuid (parent->GetGuid ())));
+    }
+
+    const auto& cutElements = details.AddList<GS::ObjectState> ("cutElements");
+    for (const ACAPI::UniqueID& cutElementId : opening->GetCutElements ()) {
+        cutElements (CreateUniqueIDArrayItem (cutElementId));
+    }
+
+    ACAPI::Result<std::vector<ACAPI::UniqueID>> connectedOpenings = Opening::GetConnectedOpenings (openingId, ACAPI_GetToken ());
+    if (connectedOpenings.IsOk ()) {
+        const auto& connectedList = details.AddList<GS::ObjectState> ("connectedOpenings");
+        for (const ACAPI::UniqueID& connectedId : connectedOpenings.Unwrap ()) {
+            connectedList (CreateUniqueIDArrayItem (connectedId));
+        }
+    }
+
+    const auto geometry = opening->GetOpeningGeometry ();
+    GS::ObjectState geometryOs;
+    geometryOs.Add ("anchorPoint", Create3DCoordinateObjectState (geometry.GetAnchorPoint ()));
+    geometryOs.Add ("extrusionDirection", CreateVector3DObjectState (geometry.GetExtrusionDirection ()));
+    geometryOs.Add ("xAxis", CreateVector3DObjectState (geometry.GetVectorX ()));
+    geometryOs.Add ("yAxis", CreateVector3DObjectState (geometry.GetVectorY ()));
+    const std::optional<Geometry::Polygon2D> polygon = geometry.GetPolygon ();
+    if (polygon.has_value ()) {
+        const auto& vertices = geometryOs.AddList<GS::ObjectState> ("polygon");
+        for (auto it = polygon->BeginVertex (); it != polygon->EndVertex (); ++it) {
+            const Point2D& coord = it->GetCoord ();
+            vertices (Create2DCoordinateObjectState (API_Coord { coord.x, coord.y }));
+        }
+    }
+    details.Add ("geometry", geometryOs);
+
+    const auto extrusionParameters = opening->GetExtrusionParameters ();
+    GS::ObjectState extrusionOs;
+    AddOptionalNumber (extrusionOs, "width", extrusionParameters.GetWidth ());
+    AddOptionalNumber (extrusionOs, "height", extrusionParameters.GetHeight ());
+    extrusionOs.Add ("anchor", AnchorIdToString (extrusionParameters.GetAnchor ()));
+    AddOptionalNumber (extrusionOs, "anchorAltitude", extrusionParameters.GetAnchorAltitude ());
+    AddOptionalNumber (extrusionOs, "extrusionStartOffset", extrusionParameters.GetExtrusionStartOffset ());
+    AddOptionalNumber (extrusionOs, "finiteBodyLength", extrusionParameters.GetFiniteBodyLength ());
+    const bool isExtrusionSurfaceOverridden = extrusionParameters.IsExtrusionSurfaceAttributeOverridden ();
+    extrusionOs.Add ("isExtrusionSurfaceOverridden", isExtrusionSurfaceOverridden);
+    if (isExtrusionSurfaceOverridden) {
+        extrusionOs.Add ("extrusionSurfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, extrusionParameters.GetOverriddenExtrusionSurfaceAttributeIndex ())));
+    }
+    const bool isEndSurfaceOverridden = extrusionParameters.IsEndSurfaceAttributeOverridden ();
+    extrusionOs.Add ("isEndSurfaceOverridden", isEndSurfaceOverridden);
+    if (isEndSurfaceOverridden) {
+        extrusionOs.Add ("endSurfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, extrusionParameters.GetOverriddenEndSurfaceAttributeIndex ())));
+    }
+    extrusionOs.Add ("areOverriddenSurfacesLinked", extrusionParameters.AreOverriddenSurfaceAttributesLinked ());
+    details.Add ("extrusionParameters", extrusionOs);
+
+    return details;
+}
+#endif
+
+GS::ObjectState GetOpeningDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& openings = response.AddList<GS::ObjectState> ("openings");
+    for (const GS::ObjectState& element : elements) {
+        openings (GetOpeningDetails (GetGuidFromElementsArrayItem (element)));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
 }
 
 CreateMorphsCommand::CreateMorphsCommand () :
