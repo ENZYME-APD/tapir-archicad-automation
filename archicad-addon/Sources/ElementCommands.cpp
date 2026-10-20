@@ -465,17 +465,13 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-// The creation order table must be initialized before ACAPI_DrawOrder_CreationOrderGetNext and
-// disposed after it. GetNext signals the end of the table with an error code, so an error there
-// ends the list instead of failing it. The seen set guards against a table that would not end.
+// ACAPI_DrawOrder_CreationOrderGetNext replaces the given guid with the next one in creation
+// order, starting from the first for APINULLGuid. It signals the end with an error code or
+// APINULLGuid, so that ends the list instead of failing it. The seen set guards against a
+// sequence that would not end.
 template <typename ListProxyType>
 static GSErrCode GetElementsInCreationOrderFromCurrentDatabase (ListProxyType& elementsListProxy)
 {
-    GSErrCode err = ACAPI_DrawOrder_CreationOrderTableInit ();
-    if (err != NoError) {
-        return err;
-    }
-
     GS::HashSet<API_Guid> seenGuids;
     API_Guid guid = APINULLGuid;
     while (ACAPI_DrawOrder_CreationOrderGetNext (&guid) == NoError && guid != APINULLGuid) {
@@ -484,10 +480,9 @@ static GSErrCode GetElementsInCreationOrderFromCurrentDatabase (ListProxyType& e
         }
         seenGuids.Add (guid);
         elementsListProxy (CreateElementIdObjectState (guid));
-        guid = APINULLGuid;
     }
 
-    return ACAPI_DrawOrder_CreationOrderTableDispose ();
+    return NoError;
 }
 
 GetElementsInCreationOrderCommand::GetElementsInCreationOrderCommand () :
