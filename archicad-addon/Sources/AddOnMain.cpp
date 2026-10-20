@@ -235,11 +235,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<Get3DCutawayStatusCommand> (
             applicationCommands, "1.7.3",
-            "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. Requires Archicad 28 or later."
+            "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. In Archicad 25-27 the 3D window may need to be open."
         );
         err |= RegisterCommand<Set3DCutawayStatusCommand> (
             applicationCommands, "1.7.3",
-            "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. Requires Archicad 28 or later."
+            "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. In Archicad 25-27 the 3D window may need to be open."
         );
 
         AddCommandGroup (applicationCommands);

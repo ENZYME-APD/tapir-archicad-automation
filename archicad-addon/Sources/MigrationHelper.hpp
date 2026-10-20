@@ -376,6 +376,27 @@ inline GSErrCode ACAPI_ProcessWindow_IsProcessCanceled ()
     return ACAPI_Interface (APIIo_IsProcessCanceledID);
 }
 
+// The AC25/26 forms of the AC27 ACAPI_CuttingPlane_* functions: par1 is the bool* (APIdefs_Interface.h).
+inline GSErrCode ACAPI_CuttingPlane_Is3DCutawayEnabled (bool* param)
+{
+    return ACAPI_Interface (APIIo_Is3DCutawayEnabledID, param);
+}
+
+inline GSErrCode ACAPI_CuttingPlane_Set3DCutawayStatus (bool* param)
+{
+    return ACAPI_Interface (APIIo_Set3DCutawayStatusID, param);
+}
+
+inline GSErrCode ACAPI_CuttingPlane_IsCuttingPlanesVisible (bool* param)
+{
+    return ACAPI_Interface (APIIo_IsCuttingPlanesVisibleID, param);
+}
+
+inline GSErrCode ACAPI_CuttingPlane_SetCuttingPlanesVisibility (bool* param)
+{
+    return ACAPI_Interface (APIIo_SetCuttingPlanesVisibilityID, param);
+}
+
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
 {
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);

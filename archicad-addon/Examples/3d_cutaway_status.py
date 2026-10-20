@@ -1,6 +1,7 @@
 import aclib
 
-# Reads, changes and restores the 3D Cutaway status (Archicad 28 or later).
+# Reads, changes and restores the 3D Cutaway status.
+# In Archicad 25-27 open the 3D window first.
 original = aclib.RunTapirCommand('Get3DCutawayStatus', {})
 print('Original status:', original)
 

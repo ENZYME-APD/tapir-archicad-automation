@@ -895,8 +895,23 @@ GS::ObjectState Get3DCutawayStatusCommand::Execute (const GS::ObjectState& /*par
     }
 
     return GS::ObjectState ("cutawayEnabled", *cutawayEnabled, "cuttingPlanesVisible", *cuttingPlanesVisible);
+#elif !defined (ServerMainVers_2800)
+    // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
+    bool cutawayEnabled = false;
+    GSErrCode err = ACAPI_CuttingPlane_Is3DCutawayEnabled (&cutawayEnabled);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get whether 3D Cutaway is on. Is the 3D window open?");
+    }
+
+    bool cuttingPlanesVisible = false;
+    err = ACAPI_CuttingPlane_IsCuttingPlanesVisible (&cuttingPlanesVisible);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get whether the cutting planes are shown. Is the 3D window open?");
+    }
+
+    return GS::ObjectState ("cutawayEnabled", cutawayEnabled, "cuttingPlanesVisible", cuttingPlanesVisible);
 #else
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Get3DCutawayStatus requires Archicad 28 or later.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Get3DCutawayStatus is not available in this build.");
 #endif
 }
 
@@ -965,9 +980,28 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
     }
 
     return CreateSuccessfulExecutionResult ();
+#elif !defined (ServerMainVers_2800)
+    // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
+    bool cutawayEnabled = false;
+    if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
+        GSErrCode err = ACAPI_CuttingPlane_Set3DCutawayStatus (&cutawayEnabled);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off. Is the 3D window open?");
+        }
+    }
+
+    bool cuttingPlanesVisible = false;
+    if (parameters.Get ("cuttingPlanesVisible", cuttingPlanesVisible)) {
+        GSErrCode err = ACAPI_CuttingPlane_SetCuttingPlanesVisibility (&cuttingPlanesVisible);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to show or hide the cutting planes. Is the 3D window open?");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Set3DCutawayStatus requires Archicad 28 or later.");
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Set3DCutawayStatus is not available in this build.");
 #endif
 }
 
