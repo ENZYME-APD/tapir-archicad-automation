@@ -7991,7 +7991,8 @@ static GS::ObjectState CreateOpeningFloorPlanParametersObjectState (const ACAPI:
 }
 
 // The floor plan parameters to change. They are read and checked before the opening is
-// touched, so a bad input changes nothing.
+// touched, so an input checked here changes nothing. A value only Archicad can refuse (such as
+// a library part that is not a symbol) is found while applying, after the earlier changes.
 struct OpeningFloorPlanParametersChange {
     std::optional<bool>                         showReferenceAxis;
     std::optional<short>                        referenceAxisPen;
@@ -8100,10 +8101,16 @@ static GS::Optional<GS::UniString> GetOpeningFloorPlanParametersChange (const GS
     GS::UniString libPartId;
     if (os.Get ("cutSymbolLibPartId", libPartId)) {
         change.cutSymbolLibPartId = APIGuidFromString (libPartId.ToCStr ());
+        if (*change.cutSymbolLibPartId == APINULLGuid) {
+            return GS::UniString ("The 'cutSymbolLibPartId' is not a valid guid.");
+        }
     }
     os.Get ("clearCutSymbol", change.clearCutSymbol);
     if (os.Get ("unCutSymbolLibPartId", libPartId)) {
         change.unCutSymbolLibPartId = APIGuidFromString (libPartId.ToCStr ());
+        if (*change.unCutSymbolLibPartId == APINULLGuid) {
+            return GS::UniString ("The 'unCutSymbolLibPartId' is not a valid guid.");
+        }
     }
     os.Get ("clearUnCutSymbol", change.clearUnCutSymbol);
     if ((change.cutSymbolLibPartId.has_value () && change.clearCutSymbol) || (change.unCutSymbolLibPartId.has_value () && change.clearUnCutSymbol)) {
@@ -8113,13 +8120,13 @@ static GS::Optional<GS::UniString> GetOpeningFloorPlanParametersChange (const GS
 }
 
 // Applies the switches before the values they enable. Returns the first error Archicad gives;
-// the changes made before it stay.
+// the changes made before it stay, and the error text says so.
 static GS::Optional<GS::UniString> ApplyOpeningFloorPlanParametersChange (ACAPI::Element::ModifiableOpeningFloorPlanParameters& floorPlanParameters, const OpeningFloorPlanParametersChange& change, GSErrCode& error)
 {
     const auto check = [&] (ACAPI::Result<void> result, const char* what) -> GS::Optional<GS::UniString> {
         if (result.IsErr ()) {
             error = result.UnwrapErr ().kind;
-            return GS::UniString::Printf ("Failed to set %s of the opening: ", what) + GS::UniString (result.UnwrapErr ().text.c_str ());
+            return GS::UniString::Printf ("Failed to set %s of the opening (the changes before it were applied): ", what) + GS::UniString (result.UnwrapErr ().text.c_str ());
         }
         return GS::NoValue;
     };
