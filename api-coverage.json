@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 01:36 UTC",
+ "generatedAt": "2026-10-20 01:39 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,9 @@
   30
  ],
  "counts": {
-  "open": 592,
+  "open": 308,
   "not applicable": 469,
-  "claimed": 855,
+  "claimed": 1139,
   "in progress": 224,
   "done": 743
  },
@@ -27313,10 +27313,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::AddonServiceInterface::Initialize",
@@ -27330,10 +27335,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::AddonServiceInterface::RegisterInterface",
@@ -27347,10 +27357,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::AttributeManagerImportCallback::GetFileTypeFormat",
@@ -27364,10 +27379,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::AttributeManagerImportCallback::ImportAttributeProcess",
@@ -27381,10 +27401,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::CallDefaultModifier",
@@ -27400,10 +27425,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::CallNotUndoableModifier",
@@ -27419,10 +27449,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::CallUndoableCommand",
@@ -27438,10 +27473,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::CallUndoableModifier",
@@ -27457,10 +27497,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::CreateDesignOptionManager",
@@ -27509,10 +27554,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::CreatePropertyOperationManager",
@@ -27590,10 +27640,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Cutaway::CuttingPlane::Is3DCutawayEnabled",
@@ -27608,10 +27663,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Cutaway::CuttingPlane::Set3DCutawayStatus",
@@ -27626,10 +27686,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Cutaway::CuttingPlane::SetCuttingPlanesVisibility",
@@ -27644,10 +27709,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Cutaway::GetCuttingPlane",
@@ -27662,10 +27732,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptionCombination::GetGuid",
@@ -29178,10 +29253,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetAnchorAltitude",
@@ -29195,10 +29275,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetConstraint",
@@ -29212,10 +29297,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetEndSurfaceAttributeOverridden",
@@ -29229,10 +29319,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetExtrusionStartOffset",
@@ -29246,10 +29341,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetExtrusionSurfaceAttributeOverridden",
@@ -29263,10 +29363,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetFiniteBodyLength",
@@ -29280,10 +29385,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetHeight",
@@ -29297,10 +29407,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetLimitType",
@@ -29314,10 +29429,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetLinkedStatus",
@@ -29331,10 +29451,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetOverriddenEndSurfaceAttributeIndex",
@@ -29348,10 +29473,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetOverriddenExtrusionSurfaceAttributeIndex",
@@ -29365,10 +29495,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetOverriddenSurfaceAttributesLinked",
@@ -29382,10 +29517,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetShapeType",
@@ -29399,10 +29539,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningExtrusionParameters::SetWidth",
@@ -29416,10 +29561,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::ClearCutSymbol",
@@ -29433,10 +29583,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::ClearUnCutSymbol",
@@ -29450,10 +29605,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCoverFillOrientation",
@@ -29467,10 +29627,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCoverFillTransformation",
@@ -29484,10 +29649,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCoverFillsBackgroundPenIndex",
@@ -29501,10 +29671,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCoverFillsIndex",
@@ -29518,10 +29693,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCoverFillsPenIndex",
@@ -29535,10 +29715,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCutSurfacesLineIndex",
@@ -29552,10 +29737,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCutSurfacesLinePenIndex",
@@ -29569,10 +29759,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCutSymbol",
@@ -29586,10 +29781,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetCutSymbolParameters",
@@ -29603,10 +29803,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetDividedOpeningMode",
@@ -29620,10 +29825,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetFloorPlanDisplayMode",
@@ -29637,10 +29847,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetOpenEdgeStyle",
@@ -29654,10 +29869,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetOutlinesOverheadLineIndex",
@@ -29671,10 +29891,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetOutlinesOverheadLinePenIndex",
@@ -29688,10 +29913,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetOutlinesUncutLineIndex",
@@ -29705,10 +29935,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetOutlinesUncutLinePenIndex",
@@ -29722,10 +29957,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetReferenceAxisLineTypeIndex",
@@ -29739,10 +29979,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetReferenceAxisOverhang",
@@ -29756,10 +30001,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetReferenceAxisPenIndex",
@@ -29773,10 +30023,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetUnCutSymbol",
@@ -29790,10 +30045,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::SetUnCutSymbolParameters",
@@ -29807,10 +30067,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::ShowReferenceAxisOff",
@@ -29824,10 +30089,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::ShowReferenceAxisOn",
@@ -29841,10 +30111,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseCoverFillsOfCutElementsOff",
@@ -29858,10 +30133,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseCoverFillsOfCutElementsOn",
@@ -29875,10 +30155,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseCoverFillsOff",
@@ -29892,10 +30177,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseCoverFillsOn",
@@ -29909,10 +30199,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseCutSurfacesLineOfCutElementsOff",
@@ -29926,10 +30221,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseCutSurfacesLineOfCutElementsOn",
@@ -29943,10 +30243,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseOutlinesLineOfCutElementsOff",
@@ -29960,10 +30265,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningFloorPlanParameters::UseOutlinesLineOfCutElementsOn",
@@ -29977,10 +30287,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningGeometry::SetPolygon",
@@ -29994,10 +30309,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::ModifiableOpeningGeometry::Transform",
@@ -30011,10 +30331,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Modify",
@@ -30028,10 +30353,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Exists",
@@ -30045,10 +30375,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Get",
@@ -30067,6 +30402,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    },
+    {
      "number": 959,
      "title": "ModifyOpenings: support Archicad 29 and 30 through ACAPI::Element::Opening::Modify"
     }
@@ -30084,10 +30423,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::GetCutElements",
@@ -30101,10 +30445,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::GetExtrusionParameters",
@@ -30118,10 +30467,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::GetFloorPlanParameters",
@@ -30135,10 +30489,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::GetOpeningGeometry",
@@ -30152,10 +30511,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::GetParentElement",
@@ -30169,10 +30533,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modifier::AddCutElement",
@@ -30186,10 +30555,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modifier::ChangeParentElement",
@@ -30203,10 +30577,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modifier::GetExtrusionParameters",
@@ -30220,10 +30599,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modifier::GetFloorPlanParameters",
@@ -30237,10 +30621,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modifier::GetOpeningGeometry",
@@ -30254,10 +30643,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modifier::RemoveCutElement",
@@ -30271,10 +30665,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::Opening::Modify",
@@ -30310,10 +30709,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningDefault::GetFloorPlanParameters",
@@ -30327,10 +30731,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningDefault::Modifier::GetExtrusionParameters",
@@ -30344,10 +30753,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningDefault::Modifier::GetFloorPlanParameters",
@@ -30361,10 +30775,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningDefault::Modify",
@@ -30378,10 +30797,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningDefault::Place",
@@ -30395,10 +30819,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningDefault::PlacePolygonal",
@@ -30429,10 +30858,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetAnchor",
@@ -30446,10 +30880,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetAnchorAltitude",
@@ -30463,10 +30902,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetConstraint",
@@ -30480,10 +30924,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetExtrusionStartOffset",
@@ -30497,10 +30946,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetFiniteBodyLength",
@@ -30514,10 +30968,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetHeight",
@@ -30531,10 +30990,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetLimitType",
@@ -30548,10 +31012,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetLinkedStatus",
@@ -30565,10 +31034,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetOverriddenEndSurfaceAttributeIndex",
@@ -30582,10 +31056,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetOverriddenExtrusionSurfaceAttributeIndex",
@@ -30599,10 +31078,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetShapeType",
@@ -30616,10 +31100,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::GetWidth",
@@ -30633,10 +31122,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::IsEndSurfaceAttributeOverridden",
@@ -30650,10 +31144,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningExtrusionParameters::IsExtrusionSurfaceAttributeOverridden",
@@ -30667,10 +31166,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCoverFillOrientation",
@@ -30684,10 +31188,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCoverFillTransformation",
@@ -30701,10 +31210,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCoverFillsBackgroundPenIndex",
@@ -30718,10 +31232,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCoverFillsIndex",
@@ -30735,10 +31254,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCoverFillsPenIndex",
@@ -30752,10 +31276,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCutSurfacesLineIndex",
@@ -30769,10 +31298,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCutSurfacesLinePenIndex",
@@ -30786,10 +31320,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCutSymbolLibpartId",
@@ -30803,10 +31342,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetCutSymbolParameters",
@@ -30820,10 +31364,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetDividedOpeningMode",
@@ -30837,10 +31386,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetFloorPlanDisplayMode",
@@ -30854,10 +31408,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetOpenEdgeStyle",
@@ -30871,10 +31430,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetOutlinesOverheadLineIndex",
@@ -30888,10 +31452,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetOutlinesOverheadLinePenIndex",
@@ -30905,10 +31474,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetOutlinesUncutLineIndex",
@@ -30922,10 +31496,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetOutlinesUncutLinePenIndex",
@@ -30939,10 +31518,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetReferenceAxisLineTypeIndex",
@@ -30956,10 +31540,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetReferenceAxisOverhang",
@@ -30973,10 +31562,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetReferenceAxisPenIndex",
@@ -30990,10 +31584,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetUnCutSymbolLibpartId",
@@ -31007,10 +31606,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetUnCutSymbolParameters",
@@ -31024,10 +31628,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::GetUseCoverFills",
@@ -31041,10 +31650,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::HasCutSymbol",
@@ -31058,10 +31672,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::HasUnCutSymbol",
@@ -31075,10 +31694,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::IsCoverFillsUseFillsOfCutElements",
@@ -31092,10 +31716,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::IsCutSurfacesUseLineOfCutElements",
@@ -31109,10 +31738,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::IsOutlinesUseLineOfCutElements",
@@ -31126,10 +31760,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningFloorPlanParameters::IsShowReferenceAxis",
@@ -31143,10 +31782,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningGeometry::GetAnchorPoint",
@@ -31160,10 +31804,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningGeometry::GetExtrusionDirection",
@@ -31177,10 +31826,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningGeometry::GetPolygon",
@@ -31194,10 +31848,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningGeometry::GetVectorX",
@@ -31211,10 +31870,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Element::OpeningGeometry::GetVectorY",
@@ -31228,10 +31892,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ElementBase::GetElemId",
@@ -31247,10 +31916,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ElementBase::IsEditable",
@@ -31265,10 +31939,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ElementDefault::GetElemType",
@@ -31282,10 +31961,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ElementDefault::SetAsArchicadDefault",
@@ -31301,10 +31985,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Err",
@@ -31320,10 +32009,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ExecuteNotUndoableScope",
@@ -31339,10 +32033,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ExecuteUndoableScope",
@@ -31358,10 +32057,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetClassifications",
@@ -31546,10 +32250,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetParentFolder",
@@ -31585,10 +32294,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetProperties",
@@ -31646,10 +32360,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetFavorites",
@@ -31707,10 +32426,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::GetPath",
@@ -31768,10 +32492,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteFolder::IsValid",
@@ -31785,10 +32514,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ChangeFavorite",
@@ -31802,10 +32536,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::CreateFavorite",
@@ -31819,10 +32558,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::CreateFolder",
@@ -31902,10 +32646,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ExportFavoritesToLegacyPRF",
@@ -31919,10 +32668,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::GetAllFavorites",
@@ -31936,10 +32690,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::GetFavoriteByName",
@@ -31975,10 +32734,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::GetRootFolder",
@@ -32014,10 +32778,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ImportFavorites",
@@ -32031,10 +32800,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::ImportFavoritesFromLegacyPRF",
@@ -32048,10 +32822,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::MoveFavorite",
@@ -32087,10 +32866,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::RenameFavorite",
@@ -32104,10 +32888,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::RenameFolder",
@@ -32181,10 +32970,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::GetCEIPProjectID",
@@ -32198,10 +32992,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::GetModelCheckManager",
@@ -32215,10 +33014,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::InputHandler::ApplyInputPosition",
@@ -32286,10 +33090,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Keynote::CreateKeynoteManager",
@@ -32831,10 +33640,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Get2DScript",
@@ -32872,10 +33686,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Get3DScript",
@@ -32936,10 +33755,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetCustomSection",
@@ -32954,10 +33778,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetDarkGDLPictures",
@@ -32971,10 +33800,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetDarkPreviewPicture",
@@ -32988,10 +33822,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetDescription",
@@ -33029,10 +33868,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetGDLPictures",
@@ -33047,10 +33891,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetInterfaceScript",
@@ -33065,10 +33914,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetKeywords",
@@ -33106,10 +33960,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetLicenseVersion",
@@ -33124,10 +33983,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetMasterScript",
@@ -33234,10 +34098,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetPropertiesScript",
@@ -33275,10 +34144,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::GetUnID",
@@ -33293,10 +34167,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Has2DScript",
@@ -33334,10 +34213,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Has3DScript",
@@ -33375,10 +34259,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasCustomSection",
@@ -33393,10 +34282,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasDarkGDLPictures",
@@ -33410,10 +34304,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasDarkPreviewPicture",
@@ -33427,10 +34326,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasForwardMigrationScript",
@@ -33445,10 +34349,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasGDLPictures",
@@ -33463,10 +34372,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasInterfaceScript",
@@ -33481,10 +34395,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasMasterScript",
@@ -33545,10 +34464,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::HasPropertiesScript",
@@ -33632,10 +34556,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsPasswordProtected",
@@ -33696,10 +34625,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::IsUIDefault",
@@ -33714,10 +34648,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Delete2DScript",
@@ -33732,10 +34671,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Delete2DVectorImage",
@@ -33750,10 +34694,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Delete3DScript",
@@ -33768,10 +34717,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteBackwardMigrationScript",
@@ -33786,10 +34740,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteCustomSection",
@@ -33804,10 +34763,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteDarkGDLPictures",
@@ -33821,10 +34785,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteDarkPreviewPicture",
@@ -33838,10 +34807,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteForwardMigrationScript",
@@ -33856,10 +34830,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteGDLPictures",
@@ -33874,10 +34853,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteInterfaceScript",
@@ -33892,10 +34876,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteMasterScript",
@@ -33910,10 +34899,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeleteParameterScript",
@@ -33928,10 +34922,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeletePreviewPicture",
@@ -33946,10 +34945,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::DeletePropertiesScript",
@@ -33964,10 +34968,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::MergeParameters",
@@ -33982,10 +34991,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Set2DScript",
@@ -34023,10 +35037,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Set3DScript",
@@ -34064,10 +35083,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetBackwardMigrationScript",
@@ -34082,10 +35106,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetCustomSection",
@@ -34100,10 +35129,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetDarkGDLPictures",
@@ -34117,10 +35151,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetDarkPreviewPicture",
@@ -34134,10 +35173,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetDescription",
@@ -34152,10 +35196,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetForwardMigrationScript",
@@ -34170,10 +35219,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetGDLPictures",
@@ -34188,10 +35242,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetHierarchicalPagesUsed",
@@ -34206,10 +35265,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetInterfaceScript",
@@ -34224,10 +35288,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetIsSubtype",
@@ -34242,10 +35311,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetKeywords",
@@ -34260,10 +35334,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetLicense",
@@ -34278,10 +35357,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetLicenseVersion",
@@ -34296,10 +35380,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetMasterScript",
@@ -34360,10 +35449,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetPassword",
@@ -34378,10 +35472,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetPlaceable",
@@ -34396,10 +35495,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetPreviewPicture",
@@ -34414,10 +35518,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetPropertiesScript",
@@ -34455,10 +35564,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::GSMObject::Modify",
@@ -34527,10 +35641,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibPart::GetName",
@@ -34545,10 +35664,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibPart::GetType",
@@ -34563,10 +35687,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetDisplayName",
@@ -34602,10 +35731,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetLocation",
@@ -34794,10 +35928,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::GetTWServerUrl",
@@ -34812,10 +35951,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::Library::IsBuiltIn",
@@ -34944,10 +36088,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::FindLibPart",
@@ -34962,10 +36111,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::FindLibParts",
@@ -34980,10 +36134,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::FindLibraries",
@@ -35021,10 +36180,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetEmbeddedLibrary",
@@ -35085,10 +36249,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibPartByGSMObject",
@@ -35103,10 +36272,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibPartByLibInd",
@@ -35121,10 +36295,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibPartByName",
@@ -35162,10 +36341,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::GetLibraryOfLibPart",
@@ -35226,10 +36410,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::LoadGSMObjectFromFile",
@@ -35267,10 +36456,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::Modifier::RemoveLibrary",
@@ -35285,10 +36479,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryManager::ModifyLibraryList",
@@ -35303,10 +36502,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryTreePath::GetLastPart",
@@ -35321,10 +36525,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryTreePath::GetParent",
@@ -35339,10 +36548,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryTreePath::GetParts",
@@ -35357,10 +36571,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibraryTreePath::IsRoot",
@@ -35375,10 +36594,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::SelectAllLibParts",
@@ -35393,10 +36617,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::SelectAllLibraries",
@@ -35411,10 +36640,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::SelectImageLibParts",
@@ -35429,10 +36663,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::SelectLoadedLibraries",
@@ -35447,10 +36686,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::SelectObjectLibParts",
@@ -35465,10 +36709,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::SelectTextLibParts",
@@ -35483,10 +36732,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::GetLicenseInfoManager",
@@ -35501,10 +36755,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::LicenseInfoManager::GetProductVersionInfo",
@@ -35519,10 +36778,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetAppVersionString",
@@ -35536,10 +36800,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetBuildNum",
@@ -35554,10 +36823,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetGSLanguageCode",
@@ -35572,10 +36846,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetGSProductType",
@@ -35589,10 +36868,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetHotfixVersionString",
@@ -35606,10 +36890,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetMainVersionString",
@@ -35623,10 +36912,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetProductFamilyId",
@@ -35641,10 +36935,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetProductName",
@@ -35658,10 +36957,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetUpdateVersionString",
@@ -35675,10 +36979,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetVersionNum1",
@@ -35691,10 +37000,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetVersionNum2",
@@ -35707,10 +37021,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetVersionNum3",
@@ -35723,10 +37042,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::LicenseInfo::ProductVersionInfo::GetVersionString",
@@ -35739,10 +37063,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::MEP::Accessory::Get",
@@ -56759,10 +58088,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::CheckProcess",
@@ -56776,10 +58110,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetCheckSettingType",
@@ -56793,10 +58132,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetDefaultSelectionStatus",
@@ -56810,10 +58154,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetDefaultValues",
@@ -56827,10 +58176,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetGroupId",
@@ -56844,10 +58198,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetIcon",
@@ -56861,10 +58220,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetLocalizedCheckMethodInfoText",
@@ -56878,10 +58242,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetLocalizedCheckMethodName",
@@ -56895,10 +58264,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckMethodCallback::GetLocalizedCheckMethodResultName",
@@ -56912,10 +58286,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckResult::GetFirstElement",
@@ -56929,10 +58308,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelCheckResult::GetSecondElement",
@@ -56946,10 +58330,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ModelViews::FindViewByGuid",
@@ -57067,10 +58456,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::Tracking::TrackerManager::GetMainTracker",
@@ -57085,10 +58479,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::AttributeList::AddListItem",
@@ -61753,10 +63152,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::View::GetGuid",
@@ -61949,10 +63353,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ZoneLabelingSettings::IsAutomaticLabelingOn",
@@ -61967,10 +63376,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ZoneLabelingSettings::Modifier::SetAutomaticLabeling",
@@ -62008,10 +63422,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::ZoneLabelingSettings::Modify",
@@ -62026,10 +63445,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1298,
+     "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
+    }
+   ]
   },
   {
    "id": "ACAPI::final::GetOrganizationIds",
