@@ -382,7 +382,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
-            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values."
+            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate all the elements in one Archicad call."
         );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",

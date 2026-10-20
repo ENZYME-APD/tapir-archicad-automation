@@ -5165,6 +5165,10 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetInputParametersSc
                 "type": "number",
                 "minimum": 0,
                 "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted when the conditional values (for example volumeConditional of a Wall) are calculated. Archicad only uses it for walls. Default value is 0, so every opening is subtracted."
+            },
+            "calculateInOneCall": {
+                "type": "boolean",
+                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements in one call instead of one call per element, which can be faster for many elements. The output has the same format. If that one call fails, every supported element gets the same error. Default value is false."
             }
         },
         "additionalProperties": false,
@@ -5467,6 +5471,32 @@ static void AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
     }
 }
 
+static GS::ObjectState CreateQuantitiesOfElement (API_ElemTypeID typeID, const API_ElementQuantity& elementQuantity, const GS::Array<API_CompositeQuantity>& composites)
+{
+    GS::ObjectState typeSpecificQuantities;
+    AddTypeSpecificQuantities (typeID, elementQuantity, typeSpecificQuantities);
+
+    GS::ObjectState quantitiesOfElement;
+    quantitiesOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
+    quantitiesOfElement.Add ("quantities", typeSpecificQuantities);
+
+    const auto& compositesList = quantitiesOfElement.AddList<GS::ObjectState> ("composites");
+    for (const API_CompositeQuantity& composite : composites) {
+        GS::ObjectState compositeOs;
+        compositeOs.Add ("buildingMaterialId", CreateAttributeIdObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, composite.buildMatIndices)));
+        compositeOs.Add ("volume", composite.volumes);
+        compositeOs.Add ("projectedArea", composite.projectedArea);
+        compositeOs.Add ("isCore", (composite.flags & APICWallComp_Core) != 0);
+        compositeOs.Add ("isFinish", (composite.flags & APICWallComp_Finish) != 0);
+        if (composite.compositeId.subElementGuid != APINULLGuid) {
+            compositeOs.Add ("subElementId", CreateGuidObjectState (composite.compositeId.subElementGuid));
+        }
+        compositesList (compositeOs);
+    }
+
+    return quantitiesOfElement;
+}
+
 GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -5476,13 +5506,24 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
     quantityParams.minOpeningSize = 0.0;
     parameters.Get ("minOpeningSize", quantityParams.minOpeningSize);
 
-    GS::ObjectState response;
-    const auto& quantitiesOfElements = response.AddList<GS::ObjectState> ("quantitiesOfElements");
+    bool calculateInOneCall = false;
+    parameters.Get ("calculateInOneCall", calculateInOneCall);
+
+    // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
+    API_QuantitiesMask mask;
+    ACAPI_ELEMENT_QUANTITIES_MASK_SETFULL (mask);
+
+    // One item per input element, in the input order. With calculateInOneCall the supported elements
+    // get a placeholder here, filled in after the loop from the result of the one call.
+    GS::Array<GS::ObjectState> results;
+    GS::Array<UIndex> resultIndicesInOneCall;
+    GS::Array<API_Guid> guidsInOneCall;
+    GS::Array<API_ElemTypeID> typeIDsInOneCall;
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
-            quantitiesOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            results.Push (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
             continue;
         }
 
@@ -5490,56 +5531,90 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
         elemHead.guid = GetGuidFromObjectState (*elementId);
         GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
         if (err != NoError) {
-            quantitiesOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            results.Push (CreateErrorResponse (err, "Failed to find element in Archicad"));
             continue;
         }
 
         // Reject unsupported types before Archicad calculates their quantities.
         const API_ElemTypeID typeID = GetElemTypeId (elemHead);
         if (!AreQuantitiesSupported (typeID)) {
-            quantitiesOfElements (CreateErrorResponse (APIERR_BADELEMENTTYPE,
+            results.Push (CreateErrorResponse (APIERR_BADELEMENTTYPE,
                 GS::UniString ("Quantities are not supported for this element type: ") + GetElementTypeNonLocalizedName (typeID)));
             continue;
         }
 
-        // Pass a full mask: Archicad crashes when the mask is nullptr, although the API documentation allows it.
+        if (calculateInOneCall) {
+            resultIndicesInOneCall.Push (results.GetSize ());
+            guidsInOneCall.Push (elemHead.guid);
+            typeIDsInOneCall.Push (typeID);
+            results.Push (GS::ObjectState ());
+            continue;
+        }
+
         API_ElementQuantity elementQuantity = {};
         GS::Array<API_CompositeQuantity> composites;
         API_Quantities quantities = {};
         quantities.elements = &elementQuantity;
         quantities.composites = &composites;
 
-        API_QuantitiesMask mask;
-        ACAPI_ELEMENT_QUANTITIES_MASK_SETFULL (mask);
-
         err = ACAPI_Element_GetQuantities (elemHead.guid, &quantityParams, &quantities, &mask);
         if (err != NoError) {
-            quantitiesOfElements (CreateErrorResponse (err, "Failed to get the quantities of the element"));
+            results.Push (CreateErrorResponse (err, "Failed to get the quantities of the element"));
             continue;
         }
 
-        GS::ObjectState typeSpecificQuantities;
-        AddTypeSpecificQuantities (typeID, elementQuantity, typeSpecificQuantities);
+        results.Push (CreateQuantitiesOfElement (typeID, elementQuantity, composites));
+    }
 
-        GS::ObjectState quantitiesOfElement;
-        quantitiesOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
-        quantitiesOfElement.Add ("quantities", typeSpecificQuantities);
-
-        const auto& compositesList = quantitiesOfElement.AddList<GS::ObjectState> ("composites");
-        for (const API_CompositeQuantity& composite : composites) {
-            GS::ObjectState compositeOs;
-            compositeOs.Add ("buildingMaterialId", CreateAttributeIdObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, composite.buildMatIndices)));
-            compositeOs.Add ("volume", composite.volumes);
-            compositeOs.Add ("projectedArea", composite.projectedArea);
-            compositeOs.Add ("isCore", (composite.flags & APICWallComp_Core) != 0);
-            compositeOs.Add ("isFinish", (composite.flags & APICWallComp_Finish) != 0);
-            if (composite.compositeId.subElementGuid != APINULLGuid) {
-                compositeOs.Add ("subElementId", CreateGuidObjectState (composite.compositeId.subElementGuid));
-            }
-            compositesList (compositeOs);
+    if (!guidsInOneCall.IsEmpty ()) {
+        // Each element gets its own storage, like in the per element call above. All of it is pushed
+        // before any address is taken, so no reallocation can invalidate the pointers.
+        const UIndex count = guidsInOneCall.GetSize ();
+        GS::Array<API_ElementQuantity> elementQuantities;
+        GS::Array<GS::Array<API_CompositeQuantity>> compositesOfElements;
+        for (UIndex i = 0; i < count; ++i) {
+            elementQuantities.Push (API_ElementQuantity {});
+            compositesOfElements.Push (GS::Array<API_CompositeQuantity> ());
         }
 
-        quantitiesOfElements (quantitiesOfElement);
+        GS::Array<API_Quantities> quantities;
+        for (UIndex i = 0; i < count; ++i) {
+            API_Quantities quantitiesOfElement = {};
+            quantitiesOfElement.elements = &elementQuantities[i];
+            quantitiesOfElement.composites = &compositesOfElements[i];
+            quantities.Push (quantitiesOfElement);
+        }
+
+        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsInOneCall, &quantityParams, &quantities, &mask);
+        if (err == NoError && quantities.GetSize () != count) {
+            err = APIERR_GENERAL;
+        }
+
+        const GS::Array<API_CompositeQuantity> noComposites;
+        for (UIndex i = 0; i < count; ++i) {
+            const UIndex resultIndex = resultIndicesInOneCall[i];
+            if (err != NoError) {
+                results[resultIndex] = CreateErrorResponse (err, "Failed to get the quantities of the elements");
+                continue;
+            }
+
+            // Read through the pointers of the returned items rather than the storage directly,
+            // so the result is still right if Archicad replaces the items.
+            const API_Quantities& quantitiesOfElement = quantities[i];
+            if (quantitiesOfElement.elements == nullptr) {
+                results[resultIndex] = CreateErrorResponse (APIERR_GENERAL, "Failed to get the quantities of the element");
+                continue;
+            }
+
+            results[resultIndex] = CreateQuantitiesOfElement (typeIDsInOneCall[i], *quantitiesOfElement.elements,
+                quantitiesOfElement.composites != nullptr ? *quantitiesOfElement.composites : noComposites);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& quantitiesOfElements = response.AddList<GS::ObjectState> ("quantitiesOfElements");
+    for (const GS::ObjectState& result : results) {
+        quantitiesOfElements (result);
     }
 
     return response;
