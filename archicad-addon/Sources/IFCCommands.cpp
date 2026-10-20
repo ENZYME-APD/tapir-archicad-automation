@@ -451,6 +451,84 @@ static GS::UniString GetPropertyValueString (const IFCAPI::Property& property)
 		return PropertyTableValueToString (propertyCast);
 	}
 }
+
+static GS::UniString GetPropertyTypeString (const IFCAPI::Property& property)
+{
+	auto propertyVariant = property.GetTyped ();
+
+	if (std::holds_alternative<IFCAPI::PropertySingleValue> (propertyVariant)) {
+		return "SingleValue";
+	} else if (std::holds_alternative<IFCAPI::PropertyListValue> (propertyVariant)) {
+		return "ListValue";
+	} else if (std::holds_alternative<IFCAPI::PropertyBoundedValue> (propertyVariant)) {
+		return "BoundedValue";
+	} else if (std::holds_alternative<IFCAPI::PropertyEnumeratedValue> (propertyVariant)) {
+		return "EnumeratedValue";
+	} else {
+		return "TableValue";
+	}
+}
+
+static GS::UniString GetFirstValueType (const std::vector<IFCAPI::Value>& values)
+{
+	if (values.empty ())
+		return GS::EmptyUniString;
+
+	return GS::UniString (values.front ().GetType ());
+}
+
+static GS::UniString GetPropertyBoundedValueType (const IFCAPI::PropertyBoundedValue& boundedValue)
+{
+	const auto& lowerBoundValue = boundedValue.GetLowerBoundValue ();
+	const auto& upperBoundValue = boundedValue.GetUpperBoundValue ();
+	const auto& setPointValue = boundedValue.GetSetPointValue ();
+
+	if (lowerBoundValue.GetAnyValue ().has_value ())
+		return GS::UniString (lowerBoundValue.GetType ());
+	if (upperBoundValue.GetAnyValue ().has_value ())
+		return GS::UniString (upperBoundValue.GetType ());
+	if (setPointValue.GetAnyValue ().has_value ())
+		return GS::UniString (setPointValue.GetType ());
+	return GS::UniString (lowerBoundValue.GetType ());
+}
+
+// The IFC type of the values of the property, for a table value the type of its defined values
+static GS::UniString GetPropertyValueType (const IFCAPI::Property& property)
+{
+	auto propertyVariant = property.GetTyped ();
+
+	if (std::holds_alternative<IFCAPI::PropertySingleValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertySingleValue> (propertyVariant);
+		return GS::UniString (propertyCast.GetNominalValue ().GetType ());
+	} else if (std::holds_alternative<IFCAPI::PropertyListValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyListValue> (propertyVariant);
+		return GetFirstValueType (propertyCast.GetListValues ());
+	} else if (std::holds_alternative<IFCAPI::PropertyBoundedValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyBoundedValue> (propertyVariant);
+		return GetPropertyBoundedValueType (propertyCast);
+	} else if (std::holds_alternative<IFCAPI::PropertyEnumeratedValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyEnumeratedValue> (propertyVariant);
+		return GetFirstValueType (propertyCast.GetEnumerationValues ());
+	} else {
+		const auto& propertyCast = std::get<IFCAPI::PropertyTableValue> (propertyVariant);
+		return GetFirstValueType (propertyCast.GetDefinedValues ());
+	}
+}
+
+static GS::ObjectState CreateIFCPropertyObjectState (const IFCAPI::Property& property, const GS::UniString& source)
+{
+	GS::ObjectState ifcProperty (
+		"propertySetName", property.GetPropertySetName (),
+		"name", property.GetName (),
+		"value", GetPropertyValueString (property),
+		"propertyType", GetPropertyTypeString (property),
+		"source", source
+	);
+	const GS::UniString valueType = GetPropertyValueType (property);
+	if (!valueType.IsEmpty ())
+		ifcProperty.Add ("valueType", valueType);
+	return ifcProperty;
+}
 #else
 static GS::UniString PropertyValueToString (const API_IFCPropertyValue& value)
 {
@@ -546,6 +624,47 @@ static GS::UniString GetPropertyValueString (const API_IFCProperty& property)
         return PropertyTableValueToString (property.tableValue);
     }
 }
+
+static GS::UniString GetPropertyTypeString (const API_IFCProperty& property)
+{
+    if (property.head.propertyType == API_IFCPropertySingleValueType) {
+        return "SingleValue";
+    } else if (property.head.propertyType == API_IFCPropertyListValueType) {
+        return "ListValue";
+    } else if (property.head.propertyType == API_IFCPropertyBoundedValueType) {
+        return "BoundedValue";
+    } else if (property.head.propertyType == API_IFCPropertyEnumeratedValueType) {
+        return "EnumeratedValue";
+    } else {
+        return "TableValue";
+    }
+}
+
+static GS::UniString GetFirstValueType (const GS::Array<API_IFCPropertyValue>& values)
+{
+    if (values.IsEmpty ())
+        return GS::EmptyUniString;
+
+    return values[0].valueType;
+}
+
+// The IFC type of the values of the property, for a table value the type of its defined values
+static GS::UniString GetPropertyValueType (const API_IFCProperty& property)
+{
+    if (property.head.propertyType == API_IFCPropertySingleValueType) {
+        return property.singleValue.nominalValue.valueType;
+    } else if (property.head.propertyType == API_IFCPropertyListValueType) {
+        return GetFirstValueType (property.listValue.listValues);
+    } else if (property.head.propertyType == API_IFCPropertyBoundedValueType) {
+        if (!property.boundedValue.lowerBoundValue.valueType.IsEmpty ())
+            return property.boundedValue.lowerBoundValue.valueType;
+        return property.boundedValue.upperBoundValue.valueType;
+    } else if (property.head.propertyType == API_IFCPropertyEnumeratedValueType) {
+        return GetFirstValueType (property.enumeratedValue.enumerationValues);
+    } else {
+        return GetFirstValueType (property.tableValue.definedValues);
+    }
+}
 #endif
 
 GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -584,11 +703,7 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
             auto properties = propertyAccessor.GetPreviewProperties ();
             if (!properties.IsErr ()) {
                 for (const auto& property : properties.Unwrap ()) {
-                    ifcProperties (GS::ObjectState (
-                        "propertySetName", property.GetPropertySetName (),
-                        "name", property.GetName (),
-                        "value", GetPropertyValueString (property)
-                    ));
+                    ifcProperties (CreateIFCPropertyObjectState (property, "preview"));
                 }
             }
         }
@@ -596,11 +711,7 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
             auto properties = propertyAccessor.GetLocalProperties ();
             if (!properties.IsErr ()) {
                 for (const auto& property : properties.Unwrap ()) {
-                    ifcProperties (GS::ObjectState (
-                        "propertySetName", property.GetPropertySetName (),
-                        "name", property.GetName (),
-                        "value", GetPropertyValueString (property)
-                    ));
+                    ifcProperties (CreateIFCPropertyObjectState (property, "local"));
                 }
             }
         }
@@ -613,11 +724,16 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
         }
 
         for (const API_IFCProperty& property : properties) {
-            ifcProperties (GS::ObjectState (
+            GS::ObjectState ifcProperty (
                 "propertySetName", property.head.propertySetName,
                 "name", property.head.propertyName,
-                "value", GetPropertyValueString (property)
-            ));
+                "value", GetPropertyValueString (property),
+                "propertyType", GetPropertyTypeString (property)
+            );
+            const GS::UniString valueType = GetPropertyValueType (property);
+            if (!valueType.IsEmpty ())
+                ifcProperty.Add ("valueType", valueType);
+            ifcProperties (ifcProperty);
         }
 #endif
 
