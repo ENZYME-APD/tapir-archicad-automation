@@ -2,6 +2,7 @@
 #include "MigrationHelper.hpp"
 
 #include "HashSet.hpp"
+#include "HashTable.hpp"
 
 #include <cstring>
 
@@ -33,6 +34,43 @@ static bool FindProjectDataObject (const GS::UniString& name, API_Guid& guid, bo
 
     guid = APINULLGuid;
     return false;
+}
+
+static bool FindProjectDataObjects (const GS::Array<GS::UniString>& names, GS::Array<API_Guid>& guids, GS::HashTable<API_Guid, GS::UniString>& guidToName, GS::UniString& missingName)
+{
+    for (const GS::UniString& name : names) {
+        API_Guid objectGuid;
+        bool clientOnly;
+        if (!FindProjectDataObject (name, objectGuid, clientOnly)) {
+            missingName = name;
+            return false;
+        }
+        if (!guidToName.ContainsKey (objectGuid)) {
+            guids.Push (objectGuid);
+            guidToName.Add (objectGuid, name);
+        }
+    }
+    return true;
+}
+
+static GS::ObjectState CreateMissingProjectDataExecutionResult (const GS::UniString& name)
+{
+    return CreateFailedExecutionResult (APIERR_BADPARS, "There is no project data with the name '" + name + "'.");
+}
+
+static GS::ObjectState CreateProjectDataTeamworkUserObjectState (short userId)
+{
+    GS::UniString userName;
+    ACAPI_Teamwork_GetUsernameFromId (userId, &userName);
+    return GS::ObjectState ("userId", userId, "userName", userName);
+}
+
+// Gives the add-on object a readable name in the Teamwork palette. The name is only shown in the
+// user interface, so a failure does not fail the command that created the object.
+static void SetProjectDataUIProperties (const API_Guid& guid, const GS::UniString& name)
+{
+    constexpr short noDialogMenuStringId = 0;
+    ACAPI_AddOnObject_SetUIProperties (&guid, nullptr, "Tapir Project Data: " + name, noDialogMenuStringId);
 }
 
 static bool IsClientOnlyProjectDataObject (const API_Guid& guid, const GS::UniString& name)
@@ -69,7 +107,7 @@ static GSErrCode GetProjectDataContent (const API_Guid& guid, GS::UniString& nam
 }
 
 GetProjectDataKeysCommand::GetProjectDataKeysCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -100,6 +138,10 @@ GS::Optional<GS::UniString> GetProjectDataKeysCommand::GetRawResponseSchema () c
                         "clientOnly": {
                             "type": "boolean",
                             "description": "True when the project data is kept on this client only and is not shared in Teamwork."
+                        },
+                        "teamworkOwner": {
+                            "$ref": "#/User",
+                            "description": "The Teamwork user who has reserved the project data. Omitted when nobody has reserved it or the project is not a Teamwork project."
                         }
                     },
                     "additionalProperties": false,
@@ -136,10 +178,18 @@ GS::ObjectState GetProjectDataKeysCommand::Execute (const GS::ObjectState& /*par
             continue;
         }
 
-        keys (GS::ObjectState (
+        const bool clientOnly = IsClientOnlyProjectDataObject (objectGuid, name);
+        GS::ObjectState key (
             "name", name,
             "guid", APIGuidToString (objectGuid),
-            "clientOnly", IsClientOnlyProjectDataObject (objectGuid, name)));
+            "clientOnly", clientOnly);
+
+        short ownerId = 0;
+        if (!clientOnly && ACAPI_AddOnObject_GetTeamworkOwnerId (objectGuid, &ownerId) == NoError && ownerId > 0) {
+            key.Add ("teamworkOwner", CreateProjectDataTeamworkUserObjectState (ownerId));
+        }
+
+        keys (key);
     }
 
     return response;
@@ -386,6 +436,9 @@ GS::ObjectState SetProjectDataCommand::Execute (const GS::ObjectState& parameter
                 setErr = ACAPI_AddOnObject_CreateClientOnlyObject (name, contentHandle, &objectGuid);
             } else {
                 setErr = ACAPI_AddOnObject_CreateObject (name, contentHandle, &objectGuid);
+                if (setErr == NoError) {
+                    SetProjectDataUIProperties (objectGuid, name);
+                }
             }
             BMKillHandle (&contentHandle);
 
@@ -409,6 +462,7 @@ GS::ObjectState SetProjectDataCommand::Execute (const GS::ObjectState& parameter
                 results[i] = CreateFailedExecutionResult (createErr != NoError ? createErr : APIERR_GENERAL, "Failed to create the unique project data '" + name + "'.");
                 continue;
             }
+            SetProjectDataUIProperties (newUniqueGuids[j], name);
 
             GS::UniString content;
             values[i].Get ("content", content);
@@ -526,4 +580,312 @@ GS::ObjectState DeleteProjectDataCommand::Execute (const GS::ObjectState& parame
     }
 
     return response;
+}
+
+// Teamwork: shared project data is reserved, released, requested and granted like other Teamwork
+// data. Client-only project data is not shared in Teamwork.
+
+ReserveProjectDataCommand::ReserveProjectDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReserveProjectDataCommand::GetName () const
+{
+    return "ReserveProjectData";
+}
+
+GS::Optional<GS::UniString> ReserveProjectDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The names of the project data to reserve.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "names"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReserveProjectDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "conflicts": {
+                "type": "array",
+                "description": "The project data that could not be reserved because another user has reserved it.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the project data."
+                        },
+                        "user": {
+                            "$ref": "#/User"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "user"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    })";
+}
+
+GS::ObjectState ReserveProjectDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> names;
+    if (!parameters.Get ("names", names)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'names' parameter.");
+    }
+
+    GS::Array<API_Guid> objectGuids;
+    GS::HashTable<API_Guid, GS::UniString> guidToName;
+    GS::UniString missingName;
+    if (!FindProjectDataObjects (names, objectGuids, guidToName, missingName)) {
+        return GS::ObjectState ("executionResult", CreateMissingProjectDataExecutionResult (missingName));
+    }
+
+    GS::HashTable<API_Guid, short> conflicts;
+    const GSErrCode err = ACAPI_AddOnObject_ReserveObjects (objectGuids, &conflicts);
+    if (err != NoError) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, "Failed to reserve the project data."));
+    }
+
+    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+
+    if (!conflicts.IsEmpty ()) {
+        const auto& conflictsOutput = response.AddList<GS::ObjectState> ("conflicts");
+        for (const auto& kv : conflicts) {
+#ifdef ServerMainVers_2800
+            const API_Guid& objectGuid = kv.key;
+            const short userId = kv.value;
+#else
+            const API_Guid& objectGuid = *kv.key;
+            const short userId = *kv.value;
+#endif
+            GS::UniString name;
+            guidToName.Get (objectGuid, &name);
+            conflictsOutput (GS::ObjectState ("name", name, "user", CreateProjectDataTeamworkUserObjectState (userId)));
+        }
+    }
+
+    return response;
+}
+
+ReleaseProjectDataCommand::ReleaseProjectDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReleaseProjectDataCommand::GetName () const
+{
+    return "ReleaseProjectData";
+}
+
+GS::Optional<GS::UniString> ReleaseProjectDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The names of the project data to release.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "names"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReleaseProjectDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ReleaseProjectDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> names;
+    if (!parameters.Get ("names", names)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'names' parameter.");
+    }
+
+    GS::Array<API_Guid> objectGuids;
+    GS::HashTable<API_Guid, GS::UniString> guidToName;
+    GS::UniString missingName;
+    if (!FindProjectDataObjects (names, objectGuids, guidToName, missingName)) {
+        return CreateMissingProjectDataExecutionResult (missingName);
+    }
+
+    const GSErrCode err = ACAPI_AddOnObject_ReleaseObjects (objectGuids);
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to release the project data.");
+}
+
+RequestProjectDataCommand::RequestProjectDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RequestProjectDataCommand::GetName () const
+{
+    return "RequestProjectData";
+}
+
+GS::Optional<GS::UniString> RequestProjectDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The names of the project data to request from the users who have reserved them.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "mailText": {
+                "type": "string",
+                "description": "The message sent with the request. The default is empty."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "names"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RequestProjectDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RequestProjectDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> names;
+    if (!parameters.Get ("names", names)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'names' parameter.");
+    }
+
+    GS::UniString mailText;
+    parameters.Get ("mailText", mailText);
+
+    GS::Array<API_Guid> objectGuids;
+    GS::HashTable<API_Guid, GS::UniString> guidToName;
+    GS::UniString missingName;
+    if (!FindProjectDataObjects (names, objectGuids, guidToName, missingName)) {
+        return CreateMissingProjectDataExecutionResult (missingName);
+    }
+
+    const GSErrCode err = ACAPI_AddOnObject_RequestObjects (objectGuids, mailText);
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to request the project data.");
+}
+
+GrantProjectDataCommand::GrantProjectDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GrantProjectDataCommand::GetName () const
+{
+    return "GrantProjectData";
+}
+
+GS::Optional<GS::UniString> GrantProjectDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "array",
+                "description": "The names of the project data, reserved by the current user, to grant.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "toUserId": {
+                "type": "integer",
+                "description": "The Teamwork user id of the user who gets the project data, for example the userId of a user returned by GetProjectDataKeys or ReserveProjectData.",
+                "minimum": 1,
+                "maximum": 32767
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "names",
+            "toUserId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GrantProjectDataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState GrantProjectDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> names;
+    if (!parameters.Get ("names", names)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'names' parameter.");
+    }
+
+    Int32 toUserId = 0;
+    if (!parameters.Get ("toUserId", toUserId) || toUserId < 1 || toUserId > 32767) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'toUserId' parameter.");
+    }
+
+    GS::Array<API_Guid> objectGuids;
+    GS::HashTable<API_Guid, GS::UniString> guidToName;
+    GS::UniString missingName;
+    if (!FindProjectDataObjects (names, objectGuids, guidToName, missingName)) {
+        return CreateMissingProjectDataExecutionResult (missingName);
+    }
+
+    const GSErrCode err = ACAPI_AddOnObject_GrantObjects (objectGuids, static_cast<short> (toUserId));
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to grant the project data.");
 }
