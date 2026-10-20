@@ -758,6 +758,165 @@ GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectStat
     return response;
 }
 
+SetIFCAttributesOfElementsCommand::SetIFCAttributesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetIFCAttributesOfElementsCommand::GetName () const
+{
+    return "SetIFCAttributesOfElements";
+}
+
+GS::Optional<GS::UniString> SetIFCAttributesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCAttributeValues": {
+                "type": "array",
+                "description": "The IFC attribute values to set.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the IFC attribute, for example Name, Description, ObjectType or Tag. It must be one of the attributes GetIFCAttributesOfElements returns for the element."
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "The new value of the IFC attribute."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "name",
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCAttributeValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetIFCAttributesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetIFCAttributesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_SetIFCAttribute without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Writing IFC attributes is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCAttributeValues;
+    parameters.Get ("elementIFCAttributeValues", elementIFCAttributeValues);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct SettableIFCAttribute {
+        API_Guid         elemGuid;
+        API_IFCAttribute attribute;
+        UIndex           resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCAttributeValues.GetSize ());
+    GS::Array<SettableIFCAttribute> attributesToSet;
+
+    for (const GS::ObjectState& elementIFCAttributeValue : elementIFCAttributeValues) {
+        const GS::ObjectState* elementId = elementIFCAttributeValue.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        GS::UniString name;
+        if (!elementIFCAttributeValue.Get ("name", name) || name.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing"));
+            continue;
+        }
+
+        GS::UniString value;
+        if (!elementIFCAttributeValue.Get ("value", value)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "value must be a string"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Start from the attribute of the element, so its IFC value type is kept
+        GS::Array<API_IFCAttribute> attributes;
+        const GSErrCode err = ACAPI_Element_GetIFCAttributes (elemGuid, false, &attributes);
+        if (err != NoError) {
+            results.Push (CreateFailedExecutionResult (err, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        const API_IFCAttribute* foundAttribute = nullptr;
+        for (const API_IFCAttribute& attribute : attributes) {
+            if (attribute.attributeName == name) {
+                foundAttribute = &attribute;
+                break;
+            }
+        }
+        if (foundAttribute == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("The element has no IFC attribute named %T", name.ToPrintf ())));
+            continue;
+        }
+
+        API_IFCAttribute attribute = *foundAttribute;
+        attribute.attributeValue = value;
+        attribute.isValueSet = true;
+
+        attributesToSet.Push ({ elemGuid, attribute, results.GetSize () });
+        results.PushNew ();
+    }
+
+    ACAPI_CallUndoableCommand ("SetIFCAttributesOfElementsCommand", [&]() -> GSErrCode {
+        for (const SettableIFCAttribute& attributeToSet : attributesToSet) {
+            const GSErrCode err = ACAPI_Element_SetIFCAttribute (attributeToSet.elemGuid, attributeToSet.attribute);
+            results[attributeToSet.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to set the IFC attribute for the element");
+        }
+        return NoError;
+    });
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
+}
+
 SetIFCPropertiesOfElementsCommand::SetIFCPropertiesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
