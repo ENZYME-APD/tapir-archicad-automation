@@ -135,8 +135,22 @@ static void CollectAttributeFolderPaths (const API_AttributeFolder& folder, GS::
     for (const GS::Guid& attributeId : content.attributeIds) {
         folderPathsByAttribute.Put (GSGuid2APIGuid (attributeId), folder.path);
     }
+    // The path of a subfolder is not trusted to be filled in full: a subfolder without a path is resolved by its guid,
+    // and one whose path is not one level below its parent gets the parent path plus its own name.
     for (const API_AttributeFolder& subFolder : content.subFolders) {
-        CollectAttributeFolderPaths (subFolder, folderPathsByAttribute);
+        API_AttributeFolder resolvedSubFolder = subFolder;
+        resolvedSubFolder.typeID = folder.typeID;
+        if (resolvedSubFolder.path.IsEmpty ()) {
+            if (ACAPI_Attribute_GetFolder (resolvedSubFolder) != NoError || resolvedSubFolder.path.IsEmpty ()) {
+                continue;
+            }
+        }
+        if (resolvedSubFolder.path.GetSize () != folder.path.GetSize () + 1) {
+            GS::Array<GS::UniString> path = folder.path;
+            path.Push (resolvedSubFolder.path.GetLast ());
+            resolvedSubFolder.path = path;
+        }
+        CollectAttributeFolderPaths (resolvedSubFolder, folderPathsByAttribute);
     }
 }
 
