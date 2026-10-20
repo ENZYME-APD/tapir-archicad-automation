@@ -5181,7 +5181,7 @@ static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
         }
 
         if (hasExtrusionData) {
-            auto extrusionParameters = modifier.GetExtrusionParameters ();
+            auto&& extrusionParameters = modifier.GetExtrusionParameters ();
             double value = 0.0;
             if (extrusionData.Get ("width", value) && !check (extrusionParameters.SetWidth (value), "the width")) {
                 return;
@@ -5221,7 +5221,7 @@ static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
         }
 
         if (polygon.has_value () || transformation.has_value ()) {
-            auto geometry = modifier.GetOpeningGeometry ();
+            auto&& geometry = modifier.GetOpeningGeometry ();
             if (polygon.has_value ()) {
                 geometry.SetPolygon (*polygon);
             }
