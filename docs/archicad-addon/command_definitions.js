@@ -1334,7 +1334,7 @@ var gCommands = [{
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "Optional list of elements to get details for. When omitted or empty, all elements in the current database (optionally filtered by the filter parameter) are used."
+                "description": "Optional list of elements to get details for. When omitted, all elements in the current database (optionally filtered by the filter parameter) are used; an empty list returns no details."
             },
             "fields": {
                 "type": "array",
