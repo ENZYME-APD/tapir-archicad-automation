@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 08:44 UTC",
+ "generatedAt": "2026-10-20 09:25 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 307,
-  "claimed": 1217,
+  "in progress": 323,
+  "claimed": 1201,
   "done": 743
  },
  "items": [
@@ -3967,6 +3967,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    },
+    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -4995,6 +4999,18 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1376,
+     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
+    },
+    {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    },
+    {
+     "number": 1370,
+     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -7343,6 +7359,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1368,
+     "title": "[3/4] GetSubelementsOfHierarchicalElements: support external hierarchical elements (AC27+)"
+    },
+    {
      "number": 1351,
      "title": "[2/4] Add TriangulatePolygonsOfElements command"
     },
@@ -8753,6 +8773,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1377,
+     "title": "Place Detail and Worksheet markers, and change their settings"
+    },
+    {
      "number": 811,
      "title": "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"
     }
@@ -8958,6 +8982,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1377,
+     "title": "Place Detail and Worksheet markers, and change their settings"
+    },
     {
      "number": 481,
      "title": "CreateWindows/CreateDoors on AC29: command returns a GUID but no opening is created (single item, no crash) — even with a valid favoriteName"
@@ -9663,6 +9691,10 @@
    ],
    "issues": [
     {
+     "number": 1377,
+     "title": "Place Detail and Worksheet markers, and change their settings"
+    },
+    {
      "number": 413,
      "title": "CreateDoors/CreateWindows fail with APIERR_REFUSEDPAR on Archicad 27 despite valid favorite"
     }
@@ -9995,6 +10027,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1368,
+     "title": "[3/4] GetSubelementsOfHierarchicalElements: support external hierarchical elements (AC27+)"
+    },
+    {
      "number": 1351,
      "title": "[2/4] Add TriangulatePolygonsOfElements command"
     },
@@ -10196,9 +10232,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1368,
+     "title": "[3/4] GetSubelementsOfHierarchicalElements: support external hierarchical elements (AC27+)"
+    }
+   ],
    "issues": [
     {
      "number": 1328,
@@ -10222,9 +10263,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1375,
+     "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
+    }
+   ],
    "issues": [
     {
      "number": 1328,
@@ -12553,9 +12599,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1369,
+     "title": "[3/6] Add GetArchicadReleaseInfo and GetPrinterInfo commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -14643,6 +14694,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1366,
+     "title": "[4/6] DeleteEmbeddedLibraryItems: delete with one DeleteEmbeddedLibItems call"
+    },
+    {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
@@ -14667,9 +14722,14 @@
    "olderNames": [
     "APIEnv_DeleteEmbeddedLibItemsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1366,
+     "title": "[4/6] DeleteEmbeddedLibraryItems: delete with one DeleteEmbeddedLibItems call"
+    }
+   ],
    "issues": [
     {
      "number": 1315,
@@ -14749,9 +14809,14 @@
    "olderNames": [
     "APIEnv_GetLibPartOrigLocationID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1371,
+     "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
+    }
+   ],
    "issues": [
     {
      "number": 1315,
@@ -15166,6 +15231,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
+    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -15249,6 +15318,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -15445,9 +15518,14 @@
    "olderNames": [
     "APIIo_GetLastValidEmbeddedLPNameID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    }
+   ],
    "issues": [
     {
      "number": 1316,
@@ -15476,6 +15554,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -15517,6 +15599,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -15592,6 +15678,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
+    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     },
@@ -15652,6 +15742,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1371,
+     "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -19882,9 +19976,14 @@
    "olderNames": [
     "APIEnv_GetMiscAppInfoID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1369,
+     "title": "[3/6] Add GetArchicadReleaseInfo and GetPrinterInfo commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -19966,9 +20065,14 @@
    "olderNames": [
     "APIEnv_GetPrinterParsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1369,
+     "title": "[3/6] Add GetArchicadReleaseInfo and GetPrinterInfo commands"
+    }
+   ],
    "issues": [
     {
      "number": 1327,
@@ -20085,6 +20189,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1372,
+     "title": "[4/5] GetDesignOptionSets: return the Teamwork id of the design options"
+    },
     {
      "number": 1340,
      "title": "[1/5] Add GetTeamworkStatus command"
@@ -20780,6 +20888,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -22827,6 +22939,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -25581,9 +25697,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -25603,9 +25724,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -25651,9 +25777,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -25672,9 +25803,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1374,
+     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
+    }
+   ],
    "issues": [
     {
      "number": 1318,
@@ -26388,6 +26524,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1370,
+     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+    },
+    {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
     }
@@ -26434,7 +26574,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1376,
+     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
+    }
+   ],
    "issues": []
   },
   {
@@ -26450,9 +26595,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1376,
+     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -26509,9 +26659,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1370,
+     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -26533,9 +26688,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1376,
+     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -26586,9 +26746,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1370,
+     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+    }
+   ],
    "issues": [
     {
      "number": 1320,
@@ -26664,6 +26829,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
+    {
+     "number": 1369,
+     "title": "[3/6] Add GetArchicadReleaseInfo and GetPrinterInfo commands"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -26815,6 +26988,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
     {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
@@ -27528,6 +27705,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
     {
      "number": 1346,
      "title": "Support Get3DCutawayStatus / Set3DCutawayStatus on Archicad 25-27"
@@ -65531,6 +65712,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1370,
+     "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
+    },
     {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
