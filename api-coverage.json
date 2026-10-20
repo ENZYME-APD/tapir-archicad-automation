@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 15:17 UTC",
+ "generatedAt": "2026-10-20 17:31 UTC",
  "versions": [
   25,
   26,
@@ -5009,6 +5009,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    },
+    {
      "number": 1376,
      "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
     },
@@ -7212,6 +7216,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    },
+    {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     },
@@ -7359,6 +7367,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    },
     {
      "number": 1368,
      "title": "[3/4] GetSubelementsOfHierarchicalElements: support external hierarchical elements (AC27+)"
@@ -8771,7 +8783,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    }
+   ],
    "issues": [
     {
      "number": 1382,
@@ -15328,6 +15345,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    },
+    {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
@@ -15825,6 +15846,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    },
+    {
      "number": 1234,
      "title": "Add GetGDLParametersOfLibraryParts: default GDL parameters of a library part"
     },
@@ -16226,6 +16251,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1383,
+     "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
+    },
     {
      "number": 1273,
      "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
@@ -25385,6 +25414,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1385,
+     "title": "ChangeWindow: accept a databaseId without windowType"
+    },
     {
      "number": 1135,
      "title": "Add GetDatabases command to list all databases of given types"
