@@ -1263,7 +1263,11 @@ var gCommands = [{
                         },
                         "propertyName": {
                             "type": "string",
-                            "description": "Case-insensitive property definition name."
+                            "description": "Case-insensitive property definition name, as shown in the project's language. An error is returned when it matches no property, or properties in more than one group and propertyGroupName is not given. Prefer propertyId in scripts that must work in any language."
+                        },
+                        "propertyGroupName": {
+                            "type": "string",
+                            "description": "Case-insensitive property group name, to choose between properties of the same name in different groups."
                         },
                         "operator": {
                             "type": "string",
@@ -1286,7 +1290,7 @@ var gCommands = [{
                         },
                         "value": {
                             "type": "string",
-                            "description": "Expected value as a string."
+                            "description": "Expected value as a string. Required for the comparison operators. For number, integer, length, area, volume and angle properties, equals, notEquals and the range operators compare numbers in internal units (m, m², m³, rad) written with a decimal point, independent of the project's display settings; other properties compare the displayed text, case-insensitively."
                         }
                     },
                     "additionalProperties": false
@@ -1298,7 +1302,7 @@ var gCommands = [{
             },
             "limit": {
                 "type": "integer",
-                "description": "Maximum number of matching elements to return.",
+                "description": "Maximum number of matching elements to list. The count is still the total number of matches.",
                 "minimum": 1
             }
         },
@@ -6233,11 +6237,11 @@ var gCommands = [{
             },
             "elements": {
                 "$ref": "#/Elements",
-                "description": "Optional list of target elements when applying a single favorite. If omitted, all elements in the current database (or matching 'filter') are targeted."
+                "description": "Target elements when applying a single favorite. If omitted, 'filter' is required and the favorite is applied to every element of its type that matches the filter."
             },
             "filter": {
                 "type": "object",
-                "description": "Optional server-side element filter when applying a single favorite in bulk.",
+                "description": "Server-side element filter when applying a single favorite in bulk. Elements of 'elements' that do not match it get a failed execution result.",
                 "properties": {
                     "types": {
                         "type": "array",

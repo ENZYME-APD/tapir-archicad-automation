@@ -17,6 +17,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <locale>
+#include <sstream>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
@@ -936,7 +938,8 @@ using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
-    const bool hasElementsParam = parameters.Get ("elements", elements) && !elements.IsEmpty ();
+    // Only an absent "elements" means the whole project; an empty list stays empty.
+    const bool hasElementsParam = parameters.Get ("elements", elements);
 
     GS::Array<GS::UniString> fields;
     const bool filterFields = parameters.Get ("fields", fields) && !fields.IsEmpty ();
@@ -5696,7 +5699,11 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSche
                         },
                         "propertyName": {
                             "type": "string",
-                            "description": "Case-insensitive property definition name."
+                            "description": "Case-insensitive property definition name, as shown in the project's language. An error is returned when it matches no property, or properties in more than one group and propertyGroupName is not given. Prefer propertyId in scripts that must work in any language."
+                        },
+                        "propertyGroupName": {
+                            "type": "string",
+                            "description": "Case-insensitive property group name, to choose between properties of the same name in different groups."
                         },
                         "operator": {
                             "type": "string",
@@ -5719,7 +5726,7 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSche
                         },
                         "value": {
                             "type": "string",
-                            "description": "Expected value as a string."
+                            "description": "Expected value as a string. Required for the comparison operators. For number, integer, length, area, volume and angle properties, equals, notEquals and the range operators compare numbers in internal units (m, m², m³, rad) written with a decimal point, independent of the project's display settings; other properties compare the displayed text, case-insensitively."
                         }
                     },
                     "additionalProperties": false
@@ -5731,7 +5738,7 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSche
             },
             "limit": {
                 "type": "integer",
-                "description": "Maximum number of matching elements to return.",
+                "description": "Maximum number of matching elements to list. The count is still the total number of matches.",
                 "minimum": 1
             }
         },
@@ -5760,6 +5767,39 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetRawResponseSchema (
     })";
 }
 
+// Parses a criterion value written with a decimal point, independent of the C locale.
+static bool ParseCriterionNumber (const GS::UniString& str, double& result)
+{
+    std::istringstream stream (std::string (str.ToCStr ().Get ()));
+    stream.imbue (std::locale::classic ());
+    stream >> result;
+    if (stream.fail ()) {
+        return false;
+    }
+    stream >> std::ws;
+    return stream.eof ();
+}
+
+static bool IsNumericPropertyDefinition (const API_PropertyDefinition& definition)
+{
+    return definition.collectionType == API_PropertySingleCollectionType &&
+        (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
+}
+
+// The typed value in internal units (m, m², m³, rad), not the display string.
+static double GetNumericPropertyValue (const API_Property& property)
+{
+    if (property.definition.valueType == API_PropertyIntegerValueType) {
+        return (double) property.value.singleVariant.variant.intValue;
+    }
+    return property.value.singleVariant.variant.doubleValue;
+}
+
+static bool AreCriterionNumbersEqual (double a, double b)
+{
+    return std::fabs (a - b) <= 1e-9 * std::fmax (1.0, std::fmax (std::fabs (a), std::fabs (b)));
+}
+
 GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     API_ElemFilterFlags filterFlags = APIFilt_None;
@@ -5775,9 +5815,10 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
     if (parameters.Get ("types", typeStrs)) {
         for (const GS::UniString& ts : typeStrs) {
             API_ElemTypeID tid = GetElementTypeFromNonLocalizedName (ts);
-            if (tid != API_ZombieElemID) {
-                allowedTypes.Push (tid);
+            if (tid == API_ZombieElemID) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown element type in types: " + ts);
             }
+            allowedTypes.Push (tid);
         }
     }
 
@@ -5793,52 +5834,136 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
     Int32 limit = 0;
     const bool hasLimit = parameters.Get ("limit", limit) && limit > 0;
 
+    enum class CriterionOperator {
+        Equals, NotEquals, Contains,
+        GreaterThan, LessThan, GreaterOrEqual, LessOrEqual,
+        HasValue, IsUserUndefined, IsNotAvailable, IsDefault
+    };
+    static const GS::HashTable<GS::UniString, CriterionOperator> operatorsByName = {
+        { "equals", CriterionOperator::Equals },
+        { "notEquals", CriterionOperator::NotEquals },
+        { "contains", CriterionOperator::Contains },
+        { "greaterThan", CriterionOperator::GreaterThan },
+        { "lessThan", CriterionOperator::LessThan },
+        { "greaterOrEqual", CriterionOperator::GreaterOrEqual },
+        { "lessOrEqual", CriterionOperator::LessOrEqual },
+        { "hasValue", CriterionOperator::HasValue },
+        { "hasAnyValue", CriterionOperator::HasValue },
+        { "isUndefined", CriterionOperator::IsUserUndefined },
+        { "isUserUndefined", CriterionOperator::IsUserUndefined },
+        { "isNotAvailable", CriterionOperator::IsNotAvailable },
+        { "isDefault", CriterionOperator::IsDefault }
+    };
+
     struct ResolvedPropertyCriterion {
         API_Guid propertyGuid = APINULLGuid;
-        GS::UniString operatorStr;
-        GS::UniString expectedValue;
+        CriterionOperator op = CriterionOperator::Equals;
+        GS::UniString expectedValueLower;
         double numericValue = 0.0;
-        bool isNumeric = false;
+        bool compareNumbers = false;
     };
 
     GS::Array<ResolvedPropertyCriterion> criteriaList;
     GS::Array<GS::ObjectState> rawCriteria;
     if (parameters.Get ("propertyCriteria", rawCriteria) && !rawCriteria.IsEmpty ()) {
-        GS::HashTable<GS::UniString, API_Guid> propNameToGuid;
-        GS::Array<API_PropertyGroup> groups;
-        ACAPI_Property_GetPropertyGroups (groups);
-        for (const API_PropertyGroup& grp : groups) {
-            GS::Array<API_PropertyDefinition> defs;
-            ACAPI_Property_GetPropertyDefinitions (grp.guid, defs);
-            for (const API_PropertyDefinition& def : defs) {
-                propNameToGuid.Add (GetLowerCasedString (def.name), def.guid);
-            }
-        }
+        struct NamedDefinition {
+            API_PropertyDefinition definition;
+            GS::UniString groupName;
+        };
+        GS::Array<NamedDefinition> allDefinitions;
+        bool definitionsLoaded = false;
 
-        for (const GS::ObjectState& c : rawCriteria) {
+        for (UInt32 i = 0; i < rawCriteria.GetSize (); ++i) {
+            const GS::ObjectState& c = rawCriteria[i];
+            const GS::UniString where = GS::UniString::Printf ("propertyCriteria[%u]: ", i);
             ResolvedPropertyCriterion rpc;
+            API_PropertyDefinition definition;
+
             const GS::ObjectState* propIdOs = c.Get ("propertyId");
+            GS::UniString propName;
             if (propIdOs != nullptr) {
-                rpc.propertyGuid = GetGuidFromObjectState (*propIdOs);
+                definition.guid = GetGuidFromObjectState (*propIdOs);
+                if (definition.guid == APINULLGuid || ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+                    return CreateErrorResponse (APIERR_BADPARS, where + "no property with the given propertyId.");
+                }
+            } else if (c.Get ("propertyName", propName)) {
+                if (!definitionsLoaded) {
+                    GS::Array<API_PropertyGroup> groups;
+                    ACAPI_Property_GetPropertyGroups (groups);
+                    for (const API_PropertyGroup& grp : groups) {
+                        GS::Array<API_PropertyDefinition> defs;
+                        ACAPI_Property_GetPropertyDefinitions (grp.guid, defs);
+                        for (const API_PropertyDefinition& def : defs) {
+                            allDefinitions.Push ({ def, grp.name });
+                        }
+                    }
+                    definitionsLoaded = true;
+                }
+
+                GS::UniString groupName;
+                const bool hasGroupName = c.Get ("propertyGroupName", groupName);
+                const GS::UniString propNameLower = GetLowerCasedString (propName);
+                const GS::UniString groupNameLower = GetLowerCasedString (groupName);
+                GS::Array<const NamedDefinition*> matches;
+                for (const NamedDefinition& nd : allDefinitions) {
+                    if (GetLowerCasedString (nd.definition.name) == propNameLower &&
+                        (!hasGroupName || GetLowerCasedString (nd.groupName) == groupNameLower)) {
+                        matches.Push (&nd);
+                    }
+                }
+
+                if (matches.IsEmpty ()) {
+                    return CreateErrorResponse (APIERR_BADPARS, where + "no property named '" + propName + "'" +
+                        (hasGroupName ? " in group '" + groupName + "'." : GS::UniString (".")));
+                }
+                if (matches.GetSize () > 1) {
+                    GS::UniString groupList;
+                    for (const NamedDefinition* nd : matches) {
+                        groupList += (groupList.IsEmpty () ? "'" : ", '") + nd->groupName + "'";
+                    }
+                    return CreateErrorResponse (APIERR_BADPARS, where + "property name '" + propName +
+                        "' is ambiguous, it is in the groups " + groupList + ". Give propertyGroupName or propertyId.");
+                }
+                definition = matches[0]->definition;
             } else {
-                GS::UniString propName;
-                if (c.Get ("propertyName", propName) && propNameToGuid.ContainsKey (GetLowerCasedString (propName))) {
-                    rpc.propertyGuid = propNameToGuid[GetLowerCasedString (propName)];
+                return CreateErrorResponse (APIERR_BADPARS, where + "give propertyId or propertyName.");
+            }
+            rpc.propertyGuid = definition.guid;
+
+            GS::UniString operatorStr;
+            if (!c.Get ("operator", operatorStr) || operatorStr.IsEmpty ()) {
+                operatorStr = "equals";
+            }
+            if (!operatorsByName.ContainsKey (operatorStr)) {
+                return CreateErrorResponse (APIERR_BADPARS, where + "unknown operator '" + operatorStr + "'.");
+            }
+            rpc.op = operatorsByName[operatorStr];
+
+            const bool isRangeOperator = rpc.op == CriterionOperator::GreaterThan || rpc.op == CriterionOperator::LessThan ||
+                rpc.op == CriterionOperator::GreaterOrEqual || rpc.op == CriterionOperator::LessOrEqual;
+            const bool isComparison = isRangeOperator || rpc.op == CriterionOperator::Equals ||
+                rpc.op == CriterionOperator::NotEquals || rpc.op == CriterionOperator::Contains;
+
+            if (isComparison) {
+                GS::UniString expectedValue;
+                if (!c.Get ("value", expectedValue)) {
+                    return CreateErrorResponse (APIERR_BADPARS, where + "operator '" + operatorStr + "' needs a value.");
+                }
+                rpc.expectedValueLower = GetLowerCasedString (expectedValue);
+
+                const bool numericProperty = IsNumericPropertyDefinition (definition);
+                if (isRangeOperator && !numericProperty) {
+                    return CreateErrorResponse (APIERR_BADPARS, where + "operator '" + operatorStr +
+                        "' needs a number, integer, length, area, volume or angle property.");
+                }
+                if (numericProperty && rpc.op != CriterionOperator::Contains) {
+                    if (!ParseCriterionNumber (expectedValue, rpc.numericValue)) {
+                        return CreateErrorResponse (APIERR_BADPARS, where + "value '" + expectedValue +
+                            "' is not a number. Write it in internal units (m, m², m³, rad) with a decimal point.");
+                    }
+                    rpc.compareNumbers = true;
                 }
             }
-
-            if (rpc.propertyGuid == APINULLGuid) {
-                continue;
-            }
-
-            if (!c.Get ("operator", rpc.operatorStr) || rpc.operatorStr.IsEmpty ()) {
-                rpc.operatorStr = "equals";
-            }
-
-            c.Get ("value", rpc.expectedValue);
-            char* endPtr = nullptr;
-            rpc.numericValue = std::strtod (rpc.expectedValue.ToCStr ().Get (), &endPtr);
-            rpc.isNumeric = (endPtr != rpc.expectedValue.ToCStr ().Get ());
 
             criteriaList.Push (rpc);
         }
@@ -5863,10 +5988,6 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
     Int32 matchCount = 0;
 
     for (const API_Guid& elemGuid : candidateGuids) {
-        if (hasLimit && matchCount >= limit) {
-            break;
-        }
-
         API_Elem_Head head = {};
         head.guid = elemGuid;
         if (ACAPI_Element_GetHeader (&head) != NoError) {
@@ -5900,97 +6021,54 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
 
             bool allCriteriaPassed = true;
             for (const auto& crit : criteriaList) {
-                const bool inMap = propMap.ContainsKey (crit.propertyGuid);
-                const API_Property* prop = inMap ? propMap[crit.propertyGuid] : nullptr;
+                const API_Property* prop = propMap.ContainsKey (crit.propertyGuid) ? propMap[crit.propertyGuid] : nullptr;
 
-                // An element property is NOT available if it is not in the map, or its status is API_Property_NotAvailable
-                const bool isNotAvailable = (!inMap || prop == nullptr || prop->status == API_Property_NotAvailable);
+                // Not available: the property does not apply to this element.
+                const bool isNotAvailable = (prop == nullptr || prop->status == API_Property_NotAvailable);
+                // Not evaluated is neither a value nor user undefined.
+                const bool isNotEvaluated = (!isNotAvailable && prop->status == API_Property_NotEvaluated);
+                const bool isUserUndefined = (!isNotAvailable && !isNotEvaluated && prop->value.variantStatus == API_VariantStatusUserUndefined);
+                const bool hasValue = (!isNotAvailable && !isNotEvaluated && !isUserUndefined);
 
-                // An element property is user undefined ("empty") if it is available, but value is UserUndefined
-                const bool isUndefined = (!isNotAvailable && (prop->status != API_Property_HasValue || prop->value.variantStatus == API_VariantStatusUserUndefined));
-
-                // An element property has a value if it is available and not undefined
-                const bool hasValue = (!isNotAvailable && !isUndefined);
-
-                if (crit.operatorStr == "isNotAvailable") {
-                    if (!isNotAvailable) {
-                        allCriteriaPassed = false;
+                bool passed = false;
+                switch (crit.op) {
+                    case CriterionOperator::IsNotAvailable:  passed = isNotAvailable; break;
+                    case CriterionOperator::IsUserUndefined: passed = isUserUndefined; break;
+                    case CriterionOperator::HasValue:        passed = hasValue; break;
+                    case CriterionOperator::IsDefault:       passed = !isNotAvailable && prop->isDefault; break;
+                    default:
+                        // Comparisons only match real values.
+                        if (!hasValue) {
+                            break;
+                        }
+                        if (crit.compareNumbers) {
+                            const double actual = GetNumericPropertyValue (*prop);
+                            switch (crit.op) {
+                                case CriterionOperator::Equals:         passed = AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                case CriterionOperator::NotEquals:      passed = !AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                case CriterionOperator::GreaterThan:    passed = actual > crit.numericValue && !AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                case CriterionOperator::LessThan:       passed = actual < crit.numericValue && !AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                case CriterionOperator::GreaterOrEqual: passed = actual > crit.numericValue || AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                case CriterionOperator::LessOrEqual:    passed = actual < crit.numericValue || AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                default: break;
+                            }
+                        } else {
+                            GS::UniString actualStr;
+                            GetPropertyValueString (*prop, actualStr);
+                            const GS::UniString actualLower = GetLowerCasedString (actualStr);
+                            switch (crit.op) {
+                                case CriterionOperator::Equals:    passed = actualLower == crit.expectedValueLower; break;
+                                case CriterionOperator::NotEquals: passed = actualLower != crit.expectedValueLower; break;
+                                case CriterionOperator::Contains:  passed = actualLower.Contains (crit.expectedValueLower); break;
+                                default: break;
+                            }
+                        }
                         break;
-                    }
-                    continue;
                 }
 
-                if (crit.operatorStr == "isUndefined" || crit.operatorStr == "isUserUndefined") {
-                    if (!isUndefined) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    continue;
-                }
-
-                if (crit.operatorStr == "hasValue" || crit.operatorStr == "hasAnyValue") {
-                    if (!hasValue) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    continue;
-                }
-
-                if (crit.operatorStr == "isDefault") {
-                    if (isNotAvailable || !prop->isDefault) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    continue;
-                }
-
-                // Any comparison operator requires the property to have a value
-                if (!hasValue) {
+                if (!passed) {
                     allCriteriaPassed = false;
                     break;
-                }
-
-                GS::UniString actualStr;
-                GetPropertyValueString (*prop, actualStr);
-
-                if (crit.operatorStr == "equals") {
-                    if (GetLowerCasedString (actualStr) != GetLowerCasedString (crit.expectedValue)) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                } else if (crit.operatorStr == "notEquals") {
-                    if (GetLowerCasedString (actualStr) == GetLowerCasedString (crit.expectedValue)) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                } else if (crit.operatorStr == "contains") {
-                    if (!GetLowerCasedString (actualStr).Contains (GetLowerCasedString (crit.expectedValue))) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                } else if (crit.isNumeric) {
-                    char* endPtr = nullptr;
-                    double actualNum = std::strtod (actualStr.ToCStr ().Get (), &endPtr);
-                    if (endPtr == actualStr.ToCStr ().Get ()) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    if (crit.operatorStr == "greaterThan" && !(actualNum > crit.numericValue)) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    if (crit.operatorStr == "lessThan" && !(actualNum < crit.numericValue)) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    if (crit.operatorStr == "greaterOrEqual" && !(actualNum >= crit.numericValue)) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
-                    if (crit.operatorStr == "lessOrEqual" && !(actualNum <= crit.numericValue)) {
-                        allCriteriaPassed = false;
-                        break;
-                    }
                 }
             }
 
@@ -5999,8 +6077,9 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
             }
         }
 
+        // count is the total number of matches; limit only caps the listed elements.
         matchCount++;
-        if (!countOnly) {
+        if (!countOnly && (!hasLimit || matchCount <= limit)) {
             elementsAdder (CreateElementIdObjectState (elemGuid));
         }
     }

@@ -187,6 +187,45 @@
           "name": "graceful failure for missing favorite"
         }
       ]
+    },
+    {
+      "id": "limit caps the list but count is the total",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": [
+          "Wall",
+          "Slab"
+        ],
+        "limit": 1
+      },
+      "expect": [
+        {
+          "path": "count",
+          "eq": 2,
+          "name": "count is the total"
+        },
+        {
+          "path": "elements",
+          "len": 1,
+          "name": "one element listed"
+        }
+      ]
+    },
+    {
+      "id": "empty elements list returns no details",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": []
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements",
+          "len": 0,
+          "name": "empty in, empty out"
+        }
+      ]
     }
   ]
 }

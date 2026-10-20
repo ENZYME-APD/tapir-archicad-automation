@@ -53,6 +53,21 @@
           "name": "handled missing favorite gracefully"
         }
       ]
+    },
+    {
+      "id": "bulk favorite without elements or filter is rejected",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "NonExistentFavorite_Check_XYZ"
+      },
+      "expect": [
+        {
+          "path": "error.message",
+          "contains": "Give 'elements' or 'filter'",
+          "name": "whole-project apply refused"
+        }
+      ]
     }
   ]
 }

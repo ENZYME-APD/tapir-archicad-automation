@@ -71,6 +71,29 @@
           "name": "count is 1"
         }
       ]
+    },
+    {
+      "id": "unknown property name is an error, not a match-all",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": {
+        "types": [
+          "Wall"
+        ],
+        "propertyCriteria": [
+          {
+            "propertyName": "NoSuchProperty_TapirCheck_XYZ",
+            "operator": "hasValue"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "error.message",
+          "contains": "no property named",
+          "name": "unresolved propertyName rejected"
+        }
+      ]
     }
   ]
 }

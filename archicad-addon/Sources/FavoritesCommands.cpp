@@ -748,11 +748,11 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "elements": {
                 "$ref": "#/Elements",
-                "description": "Optional list of target elements when applying a single favorite. If omitted, all elements in the current database (or matching 'filter') are targeted."
+                "description": "Target elements when applying a single favorite. If omitted, 'filter' is required and the favorite is applied to every element of its type that matches the filter."
             },
             "filter": {
                 "type": "object",
-                "description": "Optional server-side element filter when applying a single favorite in bulk.",
+                "description": "Server-side element filter when applying a single favorite in bulk. Elements of 'elements' that do not match it get a failed execution result.",
                 "properties": {
                     "types": {
                         "type": "array",
@@ -830,6 +830,12 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
     const bool hasSingleFavorite = parameters.Get ("favorite", singleFavoriteName) && !singleFavoriteName.IsEmpty ();
 
     if (hasSingleFavorite) {
+        const GS::ObjectState* filterObj = parameters.Get ("filter");
+        const bool hasElements = parameters.Contains ("elements");
+        if (!hasElements && filterObj == nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "Give 'elements' or 'filter' with 'favorite', so that it is not applied to the whole project by accident.");
+        }
+
         API_Favorite favorite;
         favorite.memo.New ();
         favorite.properties.New ();
@@ -843,21 +849,7 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             return CreateErrorResponse (favErr, GS::UniString::Printf ("Failed to get favorite '%T'.", singleFavoriteName.ToPrintf ()));
         }
 
-        GS::Array<API_Guid> targetGuids;
-        if (parameters.Contains ("elements")) {
-            GS::Array<GS::ObjectState> elements;
-            parameters.Get ("elements", elements);
-            targetGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
-        } else {
-            GSErrCode err = ACAPI_Element_GetElemList (API_ZombieElemID, &targetGuids);
-            if (err != NoError) {
-                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
-                return CreateErrorResponse (err, "Failed to retrieve elements from database.");
-            }
-        }
-
         // Apply server-side filter if present
-        const GS::ObjectState* filterObj = parameters.Get ("filter");
         GS::Array<API_ElemTypeID> allowedTypes;
         GS::Array<Int32> allowedFloors;
         GS::Array<Int32> allowedLayers;
@@ -867,9 +859,11 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             if (filterObj->Get ("types", typeStrs)) {
                 for (const GS::UniString& ts : typeStrs) {
                     API_ElemTypeID tid = GetElementTypeFromNonLocalizedName (ts);
-                    if (tid != API_ZombieElemID) {
-                        allowedTypes.Push (tid);
+                    if (tid == API_ZombieElemID) {
+                        ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+                        return CreateErrorResponse (APIERR_BADPARS, "Unknown element type in filter.types: " + ts);
                     }
+                    allowedTypes.Push (tid);
                 }
             }
             filterObj->Get ("floorIndices", allowedFloors);
@@ -877,6 +871,20 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
         }
 
         const API_ElemTypeID favTypeId = GetElemTypeId (favorite.element.header);
+
+        GS::Array<API_Guid> targetGuids;
+        if (hasElements) {
+            GS::Array<GS::ObjectState> elements;
+            parameters.Get ("elements", elements);
+            targetGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+        } else {
+            // Only elements of the favorite's type can take it.
+            GSErrCode err = ACAPI_Element_GetElemList (favTypeId, &targetGuids);
+            if (err != NoError) {
+                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+                return CreateErrorResponse (err, "Failed to retrieve elements from database.");
+            }
+        }
 
         ACAPI_CallUndoableCommand ("ApplyFavoritesToElements", [&]() -> GSErrCode {
             for (const API_Guid& targetGuid : targetGuids) {
@@ -888,15 +896,16 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                     continue;
                 }
 
-                // Filter checks
+                // Filter checks. Listed elements get a result each, so that the results line up with 'elements'.
                 const API_ElemTypeID targetTypeId = GetElemTypeId (targetElement.header);
-                if (!allowedTypes.IsEmpty () && !allowedTypes.Contains (targetTypeId)) {
-                    continue;
-                }
-                if (!allowedFloors.IsEmpty () && !allowedFloors.Contains (targetElement.header.floorInd)) {
-                    continue;
-                }
-                if (!allowedLayers.IsEmpty () && !allowedLayers.Contains (GetAttributeIndex (targetElement.header.layer))) {
+                const bool matchesFilter =
+                    (allowedTypes.IsEmpty () || allowedTypes.Contains (targetTypeId)) &&
+                    (allowedFloors.IsEmpty () || allowedFloors.Contains (targetElement.header.floorInd)) &&
+                    (allowedLayers.IsEmpty () || allowedLayers.Contains (GetAttributeIndex (targetElement.header.layer)));
+                if (!matchesFilter) {
+                    if (hasElements) {
+                        executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Not applied: the element does not match the filter."));
+                    }
                     continue;
                 }
 
