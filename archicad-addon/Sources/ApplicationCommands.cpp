@@ -124,6 +124,142 @@ GS::ObjectState GetArchicadLocationCommand::Execute (const GS::ObjectState& /*pa
     return GS::ObjectState ("archicadLocation", applicationFileLocation.ToDisplayText ());
 }
 
+GetArchicadReleaseInfoCommand::GetArchicadReleaseInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetArchicadReleaseInfoCommand::GetName () const
+{
+    return "GetArchicadReleaseInfo";
+}
+
+GS::Optional<GS::UniString> GetArchicadReleaseInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "mainVersion": {
+                "type": "integer",
+                "description": "The main version of the running Archicad, e.g. 29."
+            },
+            "releaseVersion": {
+                "type": "integer",
+                "description": "The release (update) version of the running Archicad."
+            },
+            "buildNumber": {
+                "type": "integer",
+                "description": "The build number of the running Archicad."
+            },
+            "caption": {
+                "type": "string",
+                "description": "The caption of the Archicad application window. Missing when Archicad does not report it."
+            },
+            "defaultTitle": {
+                "type": "string",
+                "description": "The title Archicad gives an untitled project. Missing when Archicad does not report it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "mainVersion",
+            "releaseVersion",
+            "buildNumber"
+        ]
+    })";
+}
+
+GS::ObjectState GetArchicadReleaseInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ServerApplicationInfo serverApplicationInfo = {};
+    ACAPI_GetReleaseNumber (&serverApplicationInfo);
+
+    GS::ObjectState response;
+    response.Add ("mainVersion", static_cast<Int32> (serverApplicationInfo.mainVersion));
+    response.Add ("releaseVersion", static_cast<Int32> (serverApplicationInfo.releaseVersion));
+    response.Add ("buildNumber", static_cast<Int32> (serverApplicationInfo.buildNum));
+
+    // The window caption and the untitled project's title are extras: the version
+    // numbers above are still worth returning when they cannot be read.
+    API_MiscAppInfo miscAppInfo = {};
+    if (ACAPI_ProjectOperation_GetMiscAppInfo (&miscAppInfo) == NoError) {
+        response.Add ("caption", GS::UniString (miscAppInfo.caption));
+        response.Add ("defaultTitle", GS::UniString (miscAppInfo.defaultTitle));
+    }
+
+    return response;
+}
+
+GetPrinterInfoCommand::GetPrinterInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetPrinterInfoCommand::GetName () const
+{
+    return "GetPrinterInfo";
+}
+
+GS::Optional<GS::UniString> GetPrinterInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "printArea": {
+                "type": "string",
+                "description": "The area Archicad prints, as set in the print settings. 'unknown' for a value this add-on does not name.",
+                "enum": ["currentView", "entireDrawing", "marquee", "unknown"]
+            },
+            "grid": {
+                "type": "boolean",
+                "description": "Whether the grid is printed."
+            },
+            "fixText": {
+                "type": "boolean",
+                "description": "Whether text is printed in fixed size."
+            },
+            "scale": {
+                "type": "integer",
+                "description": "The print scale."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "printArea",
+            "grid",
+            "fixText",
+            "scale"
+        ]
+    })";
+}
+
+static GS::UniString ConvertPrintAreaToString (const API_PrintPars& printPars)
+{
+    switch (printPars.printArea) {
+        case PrintArea_CurrentView: return "currentView";
+        case PrintArea_EntireDrawing: return "entireDrawing";
+        case PrintArea_Marquee: return "marquee";
+        default: return "unknown";
+    }
+}
+
+GS::ObjectState GetPrinterInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The same settings PrintView takes, read back from Archicad's print settings.
+    API_PrintPars printPars = {};
+    const GSErrCode err = ACAPI_ProjectOperation_GetPrinterPars (&printPars);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the print settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("printArea", ConvertPrintAreaToString (printPars));
+    response.Add ("grid", static_cast<bool> (printPars.grid));
+    response.Add ("fixText", static_cast<bool> (printPars.fixText));
+    response.Add ("scale", static_cast<Int32> (printPars.scale));
+    return response;
+}
+
 QuitArchicadCommand::QuitArchicadCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
