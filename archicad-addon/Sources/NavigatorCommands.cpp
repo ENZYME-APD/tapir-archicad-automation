@@ -616,17 +616,7 @@ GS::Optional<GS::UniString> GetActiveGraphicalOverrideCombinationCommand::GetRaw
         "description": "The graphic override combination applied to the current window. Empty when the current window has no combination applied.",
         "properties": {
             "combinationId": {
-                "type": "object",
-                "description": "The identifier of the graphic override combination.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/GraphicOverrideCombinationId"
             },
             "name": {
                 "type": "string",
@@ -677,38 +667,12 @@ GS::String SetActiveGraphicalOverrideCombinationCommand::GetName () const
 GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "description": "The graphic override combination to apply, given by id or by name.",
-        "properties": {
-            "combinationId": {
-                "type": "object",
-                "description": "The identifier of the graphic override combination, as returned by GetActiveGraphicalOverrideCombination.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
-            }
-        },
-        "additionalProperties": false,
         "oneOf": [
             {
-                "required": [
-                    "combinationId"
-                ]
+                "$ref": "#/ActiveGraphicalOverrideCombinationById"
             },
             {
-                "required": [
-                    "name"
-                ]
+                "$ref": "#/ActiveGraphicalOverrideCombinationByName"
             }
         ]
     })";

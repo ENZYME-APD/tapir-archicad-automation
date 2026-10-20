@@ -4399,63 +4399,13 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
             "type": "array",
             "description": "Array of data to create Texts.",
             "items": {
-                "type": "object",
-                "description": "The parameters of the new Text element.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
-                    },
-                    "coordinate": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
-                    },
-                    "text": {
-                        "type": "string",
-                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
-                    },
-                    "runs": {
-                        "type": "array",
-                        "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
-                        "items": { "$ref": "#/TextRunDetails" },
-                        "minItems": 1
-                    },
-                    "height": {
-                        "type": "number",
-                        "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "Optional pen attribute index. Equivalent to style.penIndex."
-                    },
-                    "angle": {
-                        "type": "number",
-                        "description": "Optional rotation angle in radians. Equivalent to style.angle."
-                    },
-                    "justification": {
-                        "$ref": "#/Justification",
-                        "description": "Optional; equivalent to style.justification."
-                    },
-                    "style": {
-                        "$ref": "#/TextStyleSettableDetails",
-                        "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
-                    },
-                    "floorIndex": {
-                        "type": "integer",
-                        "description": "Optional floor index. If omitted, derived from the coordinate's z value."
-                    },
-                    "layerIndex": {
-                        "type": "integer",
-                        "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "coordinate"
-                ],
                 "anyOf": [
-                    { "required": ["text"] },
-                    { "required": ["runs"] }
+                    {
+                        "$ref": "#/TextDataWithText"
+                    },
+                    {
+                        "$ref": "#/TextDataWithRuns"
+                    }
                 ]
             }
         }
