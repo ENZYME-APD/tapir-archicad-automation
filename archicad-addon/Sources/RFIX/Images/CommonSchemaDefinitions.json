@@ -5814,6 +5814,102 @@
             "$ref": "#/ElementIFCIdsOrError"
         }
     },
+    "ElementIFCClassificationReference": {
+        "type": "object",
+        "description": "An IFC classification reference (IfcClassificationReference) of an element. The text fields are missing when the reference has no value for them.",
+        "properties": {
+            "identification": {
+                "type": "string",
+                "description": "The identification of the classification reference, for example a classification code."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the classification reference."
+            },
+            "location": {
+                "type": "string",
+                "description": "The location of the classification reference, for example a URL."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification reference."
+            },
+            "referencedSource": {
+                "type": "object",
+                "description": "The classification (IfcClassification) the reference belongs to.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the classification."
+                    },
+                    "source": {
+                        "type": "string",
+                        "description": "The source of the classification. Missing when it has no value."
+                    },
+                    "edition": {
+                        "type": "string",
+                        "description": "The edition of the classification. Missing when it has no value."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            "source": {
+                "type": "string",
+                "description": "Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element).",
+                "enum": [
+                    "preview",
+                    "local"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referencedSource",
+            "source"
+        ]
+    },
+    "ElementIFCClassificationReferences": {
+        "type": "object",
+        "description": "The IFC classification references of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcClassificationReferences": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIFCClassificationReference"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcClassificationReferences"
+        ]
+    },
+    "ElementIFCClassificationReferencesOrError": {
+        "type": "object",
+        "description": "Element IFC classification references or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCClassificationReferences"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCClassificationReferencesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC classification references of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCClassificationReferencesOrError"
+        }
+    },
     "ElementsByIFCIds": {
         "type": "array",
         "description": "A list of elements identified by their IFC identifiers or errors.",
