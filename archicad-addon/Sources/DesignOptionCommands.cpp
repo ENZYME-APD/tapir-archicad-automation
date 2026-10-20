@@ -2236,6 +2236,7 @@ GS::ObjectState SetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectSt
             }
 
             GS::Array<GS::ObjectState> activeDesignOptions;
+            GS::HashTable<GS::UniString, GS::UniString> requestedOptionOfSet;
             if (!failure.HasValue () && instanceData.Get ("activeDesignOptions", activeDesignOptions)) {
                 for (const GS::ObjectState& activeDesignOption : activeDesignOptions) {
                     GS::UniString setName;
@@ -2251,6 +2252,7 @@ GS::ObjectState SetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectSt
                         failure = "Failed to change the active design option of the set " + setName;
                         break;
                     }
+                    requestedOptionOfSet.Put (setName, optionName);
                 }
             }
             if (failure.HasValue ()) {
@@ -2267,16 +2269,35 @@ GS::ObjectState SetHotlinkDesignOptionTablesCommand::Execute (const GS::ObjectSt
             // Read the instance back, so a table that was not stored is
             // reported instead of claimed as done.
             API_Element storedElement;
-            if (GetHotlinkInstance (*elementId, storedElement) == NoError) {
-                auto stored = manager->GetHotlinkInstanceDesignOptionTable (storedElement.hotlink);
-                if (stored.IsOk () && filterMode.HasValue () && static_cast<int> (stored->GetFilterMode ()) != filterMode.Get ()) {
-                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The filter mode of the hotlink instance did not change."));
-                    continue;
+            err = GetHotlinkInstance (*elementId, storedElement);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read back the hotlink instance."));
+                continue;
+            }
+            auto stored = manager->GetHotlinkInstanceDesignOptionTable (storedElement.hotlink);
+            if (stored.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (stored.UnwrapErr ().kind, "Failed to read back the design option table of the hotlink instance."));
+                continue;
+            }
+            if (filterMode.HasValue () && static_cast<int> (stored->GetFilterMode ()) != filterMode.Get ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The filter mode of the hotlink instance did not change."));
+                continue;
+            }
+            if (hasCombination && stored->GetActiveCombination ().value_or (GS::UniString ()) != combinationName) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The active design option combination of the hotlink instance did not change."));
+                continue;
+            }
+            for (const GS::ObjectState& activeDesignOption : activeDesignOptions) {
+                GS::UniString setName;
+                activeDesignOption.Get ("setName", setName);
+                if (stored->GetActiveOptionInSet (setName).value_or (GS::UniString ()) != requestedOptionOfSet[setName]) {
+                    failure = "The active design option of the set " + setName + " did not change.";
+                    break;
                 }
-                if (stored.IsOk () && hasCombination && stored->GetActiveCombination ().value_or (GS::UniString ()) != combinationName) {
-                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The active design option combination of the hotlink instance did not change."));
-                    continue;
-                }
+            }
+            if (failure.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, failure.Get ()));
+                continue;
             }
             executionResults (CreateSuccessfulExecutionResult ());
         }
