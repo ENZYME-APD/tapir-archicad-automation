@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 02:20 UTC",
+ "generatedAt": "2026-10-20 02:48 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 308,
   "not applicable": 469,
-  "claimed": 1139,
-  "in progress": 224,
+  "claimed": 1137,
+  "in progress": 226,
   "done": 743
  },
  "items": [
@@ -27744,9 +27744,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1305,
+     "title": "[6/6] Add GetProductVersionInfo, Get3DCutawayStatus and Set3DCutawayStatus"
+    }
+   ],
    "issues": [
     {
      "number": 1298,
@@ -32958,6 +32963,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1304,
+     "title": "[5/6] Add GetAllFavorites and the xml/legacyPRF formats of ExportFavorites"
+    },
+    {
      "number": 1286,
      "title": "[4/4] Add DeleteFavoriteFolder command"
     },
@@ -36777,9 +36786,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1305,
+     "title": "[6/6] Add GetProductVersionInfo, Get3DCutawayStatus and Set3DCutawayStatus"
+    }
+   ],
    "issues": [
     {
      "number": 1298,
