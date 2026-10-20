@@ -3717,18 +3717,10 @@ static GS::ObjectState CreateMEPIdObjectState (const char* idFieldName, const AC
     return CreateIdObjectState (idFieldName, MEPUniqueIDToAPIGuid (id));
 }
 
-// IsEditable is read both as a plain bool and as an ACAPI::Result<bool>, the DevKit decides which one is used.
-static std::optional<bool> ToOptionalBool (bool value)
+// IsEditable returns an ACAPI::Result<void>: it succeeds when the system or group can be modified and fails otherwise.
+static std::optional<bool> ToOptionalBool (ACAPI::Result<void> value)
 {
-    return value;
-}
-
-static std::optional<bool> ToOptionalBool (ACAPI::Result<bool> value)
-{
-    if (value.IsErr ()) {
-        return std::nullopt;
-    }
-    return value.Unwrap ();
+    return value.IsOk ();
 }
 
 static void AddIsEditable (GS::ObjectState& os, const std::optional<bool>& isEditable)
