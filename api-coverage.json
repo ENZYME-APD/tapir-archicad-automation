@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 07:15 UTC",
+ "generatedAt": "2026-10-20 07:34 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,8 @@
   30
  ],
  "counts": {
-  "open": 296,
+  "claimed": 1445,
   "not applicable": 469,
-  "claimed": 1149,
   "in progress": 226,
   "done": 743
  },
@@ -32,10 +31,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnAddOnCommunication_AddMDCLParameter",
@@ -925,10 +929,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_CreateObject",
@@ -946,10 +955,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_CreateUniqueObject",
@@ -967,10 +981,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_CreateUniqueObjectMore",
@@ -988,10 +1007,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_DeleteObject",
@@ -1009,10 +1033,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_ExistsObject",
@@ -1030,10 +1059,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GetClientOnlyObjectGuidFromName",
@@ -1051,10 +1085,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GetObjectContent",
@@ -1072,10 +1111,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GetObjectGuidFromName",
@@ -1093,10 +1137,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GetObjectList",
@@ -1114,10 +1163,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GetTeamworkOwnerId",
@@ -1135,10 +1189,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GetUniqueObjectGuidFromName",
@@ -1156,10 +1215,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_GrantObjects",
@@ -1177,10 +1241,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_InstallAddOnObjectConvertNewFormatHandler",
@@ -1255,10 +1324,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_RegisterAddOnObjectHandler",
@@ -1295,10 +1369,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_RequestObjects",
@@ -1316,10 +1395,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_ReserveObjects",
@@ -1337,10 +1421,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnObject_SetUIProperties",
@@ -1358,10 +1447,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Analytical_AddLoadCaseToLoadCombination",
@@ -3102,10 +3196,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_CreateExt",
@@ -3223,10 +3322,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_EnumerateAttributesByType",
@@ -3242,10 +3346,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_Get",
@@ -3500,10 +3609,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetDef",
@@ -3575,10 +3689,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetFolder",
@@ -3728,10 +3847,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetPropertyValue",
@@ -3770,10 +3894,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetPropertyValuesByGuid",
@@ -3843,10 +3972,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_IsPropertyDefinitionValueEditable",
@@ -3864,10 +3998,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_IsPropertyDefinitionVisible",
@@ -3885,10 +4024,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_Modify",
@@ -3980,10 +4124,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_Move",
@@ -4108,10 +4257,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_SetProperty",
@@ -4522,10 +4676,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Body_AddPolygon",
@@ -5305,10 +5464,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Classification_GetClassificationItemSystem",
@@ -5326,10 +5490,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Classification_GetClassificationSystem",
@@ -5483,10 +5652,15 @@
    "olderNames": [
     "APIAny_ConvertMimePictureID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Conversion_ConvertPicture",
@@ -5506,10 +5680,15 @@
    "olderNames": [
     "APIAny_ConvertPictureID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Conversion_GetConvertedUnitValue",
@@ -5529,10 +5708,15 @@
    "olderNames": [
     "APIEnv_GetConvertedUnitValueID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_CurtainWall_GetCWAbsoluteBottom",
@@ -5735,10 +5919,15 @@
    "olderNames": [
     "APIDb_BuildWindowValidatorID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_ChangeCurrentDatabase",
@@ -5790,10 +5979,15 @@
    "olderNames": [
     "APIDb_CheckWindowValidatorID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_DeleteDatabase",
@@ -5850,10 +6044,15 @@
    "olderNames": [
     "APIDb_DoClipID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetContainingDatabase",
@@ -5942,10 +6141,15 @@
    "olderNames": [
     "APIDb_GetDBUnIdFromGuidID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetDatabasesForType",
@@ -6112,10 +6316,15 @@
    "olderNames": [
     "APIDb_GetGuidFromDBUnIdID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_GetInteriorElevationDatabases",
@@ -6445,10 +6654,15 @@
    "olderNames": [
     "APIDb_RebuildWindowValidatorID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_RedrawCurrentDatabase",
@@ -6468,10 +6682,15 @@
    "olderNames": [
     "APIDb_RedrawCurrentDatabaseID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_StartClippingSession",
@@ -6491,10 +6710,15 @@
    "olderNames": [
     "APIDb_StartClippingSessionID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_StopClippingSession",
@@ -6514,10 +6738,15 @@
    "olderNames": [
     "APIDb_StopClippingSessionID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_ActivateSessionReport",
@@ -7405,10 +7634,15 @@
    "olderNames": [
     "APIEnv_ChangeMarkerDrawingEnabledID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_CheckDrawingStatus",
@@ -7588,10 +7822,15 @@
    "olderNames": [
     "APIEnv_IsMarkerDrawingEnabledID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_StartDrawingData",
@@ -7611,10 +7850,15 @@
    "olderNames": [
     "APIDb_StartDrawingDataID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_StopDrawingData",
@@ -7634,10 +7878,15 @@
    "olderNames": [
     "APIDb_StopDrawingDataID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_Update_Drawings",
@@ -7704,10 +7953,15 @@
    "olderNames": [
     "ACAPI_Element_GetLinkedPropertyObjects"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementLink_GetLinks",
@@ -7783,10 +8037,15 @@
    "olderNames": [
     "ACAPI_Element_SetLinkedPropertyObjects"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementLink_Unlink",
@@ -8669,10 +8928,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_DetachObserver",
@@ -8718,10 +8982,15 @@
    "olderNames": [
     "APIDb_DrawElementID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Edit",
@@ -8839,10 +9108,15 @@
    "olderNames": [
     "ACAPI_Goodies_ElemTypeToNeigID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Filter",
@@ -9180,10 +9454,15 @@
    "olderNames": [
     "APIDb_GetCompoundInfoStringID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetDefaults",
@@ -9271,10 +9550,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElemCreatorToolUnId",
@@ -9294,10 +9578,15 @@
    "olderNames": [
     "APIAny_GetElemCreatorToolUnIdID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElemList",
@@ -9417,10 +9706,15 @@
    "olderNames": [
     "APIDb_GetElementInfoStringID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElementURLRef",
@@ -9747,10 +10041,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetMoreQuantities",
@@ -9768,10 +10067,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetOpeningTransformation",
@@ -9879,10 +10183,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetPropertyValue",
@@ -9926,10 +10235,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetPropertyValues",
@@ -10039,10 +10353,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetQuantities",
@@ -10132,10 +10451,15 @@
    "olderNames": [
     "APIAny_GetSkylightHolePolygonID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetSurfaceQuantities",
@@ -10392,10 +10716,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_IsPropertyDefinitionAvailableDefault",
@@ -10664,10 +10993,15 @@
     "ACAPI_Goodies_NeigIDToElemType",
     "APIAny_NeigIDToElemTypeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_NeigToCoord",
@@ -10687,10 +11021,15 @@
    "olderNames": [
     "APIAny_NeigToCoordID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_RefreshElement",
@@ -10884,10 +11223,15 @@
    "olderNames": [
     "APIAny_SetEmptyHoleUnIdID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetProperties",
@@ -11135,10 +11479,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SolidLink_Remove",
@@ -11177,10 +11526,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_Trim_Elements",
@@ -12025,10 +12379,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_GetToken",
@@ -13879,10 +14238,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_KeepInMemory",
@@ -13923,10 +14287,15 @@
    "olderNames": [
     "APIEnv_AddLibrariesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_ChangeGDLDate",
@@ -13946,10 +14315,15 @@
    "olderNames": [
     "APIEnv_ChangeGDLDateID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_CheckLibraries",
@@ -13969,10 +14343,15 @@
    "olderNames": [
     "APIEnv_CheckLibrariesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_CopyFilesIntoLibrary",
@@ -13992,10 +14371,15 @@
    "olderNames": [
     "APIEnv_CopyFilesIntoLibraryID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_CreateCopyOfGdlUserGlobalsHandle",
@@ -14015,10 +14399,15 @@
    "olderNames": [
     "APIEnv_CreateCopyOfGdlUserGlobalsHandleID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_CreateFolderInLibrary",
@@ -14038,10 +14427,15 @@
    "olderNames": [
     "APIEnv_CreateFolderInLibraryID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_DeleteEmbeddedLibItem",
@@ -14089,10 +14483,15 @@
    "olderNames": [
     "APIEnv_DeleteEmbeddedLibItemsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_DestroyCopyOfGdlUserGlobalsHandle",
@@ -14112,10 +14511,15 @@
    "olderNames": [
     "APIEnv_DestroyCopyOfGdlUserGlobalsHandleID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_GetGDLDate",
@@ -14135,10 +14539,15 @@
    "olderNames": [
     "APIEnv_GetGDLDateID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_GetLibPartOrigLocation",
@@ -14156,10 +14565,15 @@
    "olderNames": [
     "APIEnv_GetLibPartOrigLocationID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_GetLibraries",
@@ -14202,10 +14616,15 @@
    "olderNames": [
     "APIAny_InterpretGDLScript3DID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_NewLibDial",
@@ -14225,10 +14644,15 @@
    "olderNames": [
     "APIEnv_NewLibDialID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_OpenLibraryPart",
@@ -14246,10 +14670,15 @@
    "olderNames": [
     "APIDo_OpenLibraryPartID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_OverwriteLibPart",
@@ -14269,10 +14698,15 @@
    "olderNames": [
     "APIEnv_OverwriteLibPartID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_ResetLibraries",
@@ -14292,10 +14726,15 @@
    "olderNames": [
     "APIEnv_ResetLibrariesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_RunGDLParScript",
@@ -14315,10 +14754,15 @@
    "olderNames": [
     "APIAny_RunGDLParScriptID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_SetLibraries",
@@ -14361,10 +14805,15 @@
    "olderNames": [
     "APIAny_UsableGDLStringID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_AddSection",
@@ -14534,10 +14983,15 @@
    "olderNames": [
     "APIAny_CompareLibPartUnIdsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_Create",
@@ -14581,10 +15035,15 @@
    "olderNames": [
     "ACAPI_LibPart_EndSection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_Get",
@@ -14664,10 +15123,15 @@
    "olderNames": [
     "APIAny_GetBuiltInLibpartUnIdID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetDetails",
@@ -14720,10 +15184,15 @@
    "olderNames": [
     "APIAny_GetElemLibPartUnIdID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetHotspots",
@@ -14739,10 +15208,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetLastValidEmbeddedLPName",
@@ -14762,10 +15236,15 @@
    "olderNames": [
     "APIIo_GetLastValidEmbeddedLPNameID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetLibPartLockStatus",
@@ -14785,10 +15264,15 @@
    "olderNames": [
     "APIEnv_GetLibPartLockStatusID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetLibPartRefGuid",
@@ -14808,10 +15292,15 @@
    "olderNames": [
     "APIEnv_GetLibPartRefGuidID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetLibPartToolVariation",
@@ -14864,10 +15353,15 @@
    "olderNames": [
     "APIEnv_GetLibPartUnIDStrID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetMarkerParent",
@@ -15003,10 +15497,15 @@
    "olderNames": [
     "ACAPI_LibPart_GetSect_2DDrawHdl"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_ParamDef",
@@ -15054,10 +15553,15 @@
    "olderNames": [
     "ACAPI_LibPart_GetSection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetSectionList",
@@ -15077,10 +15581,15 @@
    "olderNames": [
     "ACAPI_LibPart_GetSectionList"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetUnloadedLibpartName",
@@ -15152,10 +15661,15 @@
    "olderNames": [
     "ACAPI_LibPart_NewSection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_OpenParameters",
@@ -15207,10 +15721,15 @@
    "olderNames": [
     "ACAPI_LibPart_PatternSearch"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_Register",
@@ -15253,10 +15772,15 @@
    "olderNames": [
     "ACAPI_LibPart_RegisterAll"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_RegisterESYM",
@@ -15272,10 +15796,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_RegisterSubtype",
@@ -15291,10 +15820,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_Save",
@@ -15374,10 +15908,15 @@
    "olderNames": [
     "ACAPI_LibPart_SetDetails_ParamDef"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_SetUpSect_2DDrawHdl",
@@ -15397,10 +15936,15 @@
    "olderNames": [
     "ACAPI_LibPart_SetUpSect_2DDrawHdl"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_ShapePrims",
@@ -15416,10 +15960,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_UpdateSection",
@@ -15439,10 +15988,15 @@
    "olderNames": [
     "ACAPI_LibPart_UpdateSection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_WriteSection",
@@ -15462,10 +16016,15 @@
    "olderNames": [
     "ACAPI_LibPart_WriteSection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Licensing_CatchLicenseBorrowStatusChange",
@@ -16126,10 +16685,15 @@
    "olderNames": [
     "ACAPI_3D_DecomposePgon"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_GenerateModelWithSeparateComponents",
@@ -16270,10 +16834,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_GetTextureCoord",
@@ -16293,10 +16862,15 @@
    "olderNames": [
     "APIAny_GetTextureCoordID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModulData_Delete",
@@ -16576,10 +17150,15 @@
    "olderNames": [
     "APINavigator_ChangeNavigatorVPItemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorView",
@@ -16743,10 +17322,15 @@
    "olderNames": [
     "APINavigator_CreateNavigatorVPItemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_CreateSubSet",
@@ -17051,10 +17635,15 @@
    "olderNames": [
     "APINavigator_GetNavigatorChildNumID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorChildrenItems",
@@ -17163,10 +17752,15 @@
    "olderNames": [
     "APINavigator_GetNavigatorParentItemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorSet",
@@ -17241,10 +17835,15 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPItemID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorVPItemChildren",
@@ -17264,10 +17863,15 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPItemChildrenID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorVPRootGroups",
@@ -17287,10 +17891,15 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPRootGroupsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorView",
@@ -17545,10 +18154,15 @@
    "olderNames": [
     "APINavigator_RegisterCallbackInterfaceID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_SearchNavigatorItem",
@@ -17604,10 +18218,15 @@
    "olderNames": [
     "APIAny_SetMasterLayoutOnLayoutID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_SetNavigatorItemPosition",
@@ -18212,10 +18831,15 @@
    "olderNames": [
     "APIAny_PolygonId2SurfaceTypeID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Polygon_RegularizePolygon",
@@ -18301,10 +18925,15 @@
    "olderNames": [
     "APIAny_TriangulatePolyID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Preferences_Platform",
@@ -18324,10 +18953,15 @@
    "olderNames": [
     "ACAPI_GetPreferences_Platform"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Preferences_SetOldVersion",
@@ -18342,10 +18976,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProcessWindow_CloseProcessWindow",
@@ -18952,10 +19591,15 @@
    "olderNames": [
     "ACAPI_Inform_AdditionalFileWasCreated"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_CatchProjectEvent",
@@ -19026,10 +19670,15 @@
    "olderNames": [
     "APIEnv_GetMiscAppInfoID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_GetMiscPlotterInfo",
@@ -19049,10 +19698,15 @@
    "olderNames": [
     "APIEnv_GetMiscPlotterInfoID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_GetMiscPrinterInfo",
@@ -19072,10 +19726,15 @@
    "olderNames": [
     "APIEnv_GetMiscPrinterInfoID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_GetPrinterPars",
@@ -19095,10 +19754,15 @@
    "olderNames": [
     "APIEnv_GetPrinterParsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_NewProject",
@@ -19353,10 +20017,15 @@
    "olderNames": [
     "APIEnv_ChangeProjectNotesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_ChangeStorySettings",
@@ -19408,10 +20077,15 @@
    "olderNames": [
     "APIEnv_GetExportToleranceID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_GetLast3DDefLevels",
@@ -19432,10 +20106,15 @@
     "ACAPI_Database_GetLast3DDefLevels",
     "APIDb_GetLast3DDefLevelsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_GetOffset",
@@ -19524,10 +20203,15 @@
    "olderNames": [
     "APIEnv_GetProjectNotesID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_GetSplineMaxDist",
@@ -19547,10 +20231,15 @@
    "olderNames": [
     "APIAny_GetSplineMaxDistID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_GetStorySettings",
@@ -19603,10 +20292,15 @@
     "ACAPI_Database_SetLast3DDefLevels",
     "APIDb_SetLast3DDefLevelsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_SetPreferences",
@@ -20544,10 +21238,15 @@
    "olderNames": [
     "APIAny_GetRenovationStatusNameID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Renovation_SetActualRenovationFilter",
@@ -21043,10 +21742,15 @@
    "olderNames": [
     "APIAny_GetSelectedElementID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Selection_Select",
@@ -21137,10 +21841,15 @@
    "olderNames": [
     "APIAny_SetSelectedElementNeigID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_SetDllTermHookProc",
@@ -21202,10 +21911,15 @@
    "olderNames": [
     "ACAPI_3D_CreateSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_DeleteSight",
@@ -21225,10 +21939,15 @@
    "olderNames": [
     "ACAPI_3D_DeleteSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_GetCurrentWindowSight",
@@ -21248,10 +21967,15 @@
    "olderNames": [
     "ACAPI_3D_GetCurrentWindowSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_GetSelectedSightModel",
@@ -21266,10 +21990,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_SelectSight",
@@ -21289,10 +22018,15 @@
    "olderNames": [
     "ACAPI_3D_SelectSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_Switch3DSight",
@@ -21312,10 +22046,15 @@
    "olderNames": [
     "APIDb_Switch3DSightID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_SurveyPoint_GetSurveyPointTransformation",
@@ -21521,10 +22260,15 @@
    "olderNames": [
     "ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_GetLockableStatus",
@@ -21572,10 +22316,15 @@
    "olderNames": [
     "APIEnv_GetTWAccessRightID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_GetTWOwner",
@@ -21595,10 +22344,15 @@
    "olderNames": [
     "APIDb_GetTWOwnerID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_GetTeamworkProjectDetails",
@@ -21711,10 +22465,15 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasConnection"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_HasCreateRight",
@@ -21734,10 +22493,15 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasCreateRight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_HasDeleteModifyRight",
@@ -21757,10 +22521,15 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasDeleteModifyRight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_IsOnline",
@@ -21808,10 +22577,15 @@
    "olderNames": [
     "ACAPI_TeamworkControl_IsServerLibPart"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_ProjectSharing",
@@ -21831,10 +22605,15 @@
    "olderNames": [
     "APIEnv_ProjectSharingID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_ReceiveChanges",
@@ -21940,10 +22719,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_ReserveElements",
@@ -22055,10 +22839,15 @@
    "olderNames": [
     "ACAPI_TeamworkReserveInterface_SendReleaseCommentMail"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Teamwork_UploadLibraries",
@@ -22072,10 +22861,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Toolbox_GetToolBoxInfo",
@@ -23060,10 +23854,15 @@
    "olderNames": [
     "APIEnv_DeleteGhostRecordID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Get3DCuttingPlanes",
@@ -23432,10 +24231,15 @@
    "olderNames": [
     "APIEnv_GetShowHideStateID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_GetZoom",
@@ -23707,10 +24511,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_SetCurrent3DStyle",
@@ -23767,10 +24576,15 @@
    "olderNames": [
     "APIDb_SetZoomID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ShowAllIn3D",
@@ -23858,10 +24672,15 @@
    "olderNames": [
     "APIDb_StoreViewSettingsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Zoom",
@@ -24058,10 +24877,15 @@
    "olderNames": [
     "ACAPI_ActionCenter_Check"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_CloseWindow",
@@ -24081,10 +24905,15 @@
    "olderNames": [
     "APIDb_CloseWindowID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_DestroyWindowValidator",
@@ -24104,10 +24933,15 @@
    "olderNames": [
     "APIDb_DestroyWindowValidatorID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_GetCurrentWindow",
@@ -24231,10 +25065,15 @@
    "olderNames": [
     "APIDb_GetOwnWindowsID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_NewWindow",
@@ -24254,10 +25093,15 @@
    "olderNames": [
     "APIDb_NewWindowID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_ResetCurrentDatabase",
@@ -24277,10 +25121,15 @@
    "olderNames": [
     "APIDb_ResetCurrentDatabaseID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_ResetCurrentWindow",
@@ -24300,10 +25149,15 @@
    "olderNames": [
     "APIDb_ResetCurrentWindowID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_SetWindowId",
@@ -24323,10 +25177,15 @@
    "olderNames": [
     "APIDb_SetWindowIdID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_WriteReport",
@@ -24498,10 +25357,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AttributeList_DeleteProperty",
@@ -24515,10 +25379,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_AttributeList_ModifyPropertyValue",
@@ -24532,10 +25401,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_AddProperty",
@@ -24548,10 +25422,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_DeleteProperty",
@@ -24564,10 +25443,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetUserData",
@@ -24581,10 +25465,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_SetUserData",
@@ -24598,10 +25487,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Automate",
@@ -24645,6 +25539,10 @@
    ],
    "issues": [
     {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    },
+    {
      "number": 984,
      "title": "Add ZoomToElements (2D and 3D)"
     },
@@ -24665,10 +25563,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_CuttingPlane_IsCuttingPlanesVisible",
@@ -24681,10 +25584,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_CuttingPlane_Set3DCutawayStatus",
@@ -24697,10 +25605,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_CuttingPlane_SetCuttingPlanesVisibility",
@@ -24713,10 +25626,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database",
@@ -24744,6 +25662,10 @@
     {
      "number": 1236,
      "title": "Add ModelToScreen and ScreenToModel commands"
+    },
+    {
+     "number": 1235,
+     "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
     },
     {
      "number": 1167,
@@ -24815,6 +25737,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    },
     {
      "number": 1187,
      "title": "Expose ACAPI_Window_AddTextWindowContent"
@@ -25030,10 +25956,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementList_AddProperty",
@@ -25047,10 +25978,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementList_DeleteProperty",
@@ -25064,10 +26000,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementList_ModifyPropertyValue",
@@ -25081,10 +26022,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_DrwGuidToLinkId",
@@ -25098,10 +26044,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElemListByIFCIdentifier",
@@ -25136,10 +26087,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetIFCClassificationReferences",
@@ -25155,10 +26111,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetIFCIdentifier",
@@ -25211,10 +26172,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetIFCType",
@@ -25246,10 +26212,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_RemoveIFCClassificationReference",
@@ -25265,10 +26236,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_RemoveIFCProperty",
@@ -25284,10 +26260,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetIFCAttribute",
@@ -25303,10 +26284,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetIFCClassificationReference",
@@ -25322,10 +26308,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetIFCProperty",
@@ -25358,10 +26349,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_UnIdToGuid",
@@ -25375,10 +26371,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Environment",
@@ -25406,6 +26407,10 @@
     {
      "number": 1266,
      "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
+    },
+    {
+     "number": 1239,
+     "title": "Add GetCurrentPenTable command (current pen set and pen count)"
     },
     {
      "number": 1121,
@@ -25461,6 +26466,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    },
     {
      "number": 1171,
      "title": "Expose ACAPI_Drawing_GetNumberingGridLines"
@@ -25561,6 +26570,10 @@
    ],
    "issues": [
     {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    },
+    {
      "number": 1164,
      "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
     },
@@ -25606,10 +26619,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_IFC_ComplementIFCDifferenceAndMergeIFCRelationshipData",
@@ -25623,10 +26641,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_IFC_GetIFCDifference",
@@ -25640,10 +26663,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_IFC_GetIFCDifferenceState",
@@ -25657,10 +26685,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_IFC_IFCGuidToAPIGuid",
@@ -25674,10 +26707,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_IFC_InvokeIFCDifferenceExportSettingsDlg",
@@ -25691,10 +26729,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Install_AddOnCommandHandler",
@@ -26133,7 +27176,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibPart_Create",
@@ -26186,10 +27234,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibPart_GetNum",
@@ -26259,10 +27312,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ListData_Get",
@@ -26276,10 +27334,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ListData_GetNum",
@@ -26293,10 +27356,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_ListData_Search",
@@ -26310,10 +27378,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_MarkUp_Create",
@@ -26388,6 +27461,10 @@
    ],
    "issues": [
     {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    },
+    {
      "number": 910,
      "title": "Add command to activate a layer combination"
     },
@@ -26430,10 +27507,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_AddProperty",
@@ -26821,10 +27903,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIAny_APIGuidToIFCGuidID",
@@ -26837,10 +27924,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIAny_ElemTypeToNeigID",
@@ -26853,10 +27945,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIAny_GetIFCDifferenceID",
@@ -26869,10 +27966,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIAny_GetIFCDifferenceStateID",
@@ -26885,10 +27987,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIAny_IFCGuidToAPIGuidID",
@@ -26901,10 +28008,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIAny_InvokeIFCDifferenceExportSettingsDlgID",
@@ -26917,10 +28029,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIDb_ReSetZoomID",
@@ -26938,10 +28055,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIDo_LoadLibrariesID",
@@ -26955,10 +28077,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIDo_SaveID",
@@ -26992,10 +28119,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIEnv_GetMainWindowHWNDID",
@@ -27053,10 +28185,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIEnv_SetPreferencesID",
@@ -27090,10 +28227,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIIo_HighlightElementsID",
@@ -27106,10 +28248,15 @@
     25
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIIo_Is3DCutawayEnabledID",
@@ -27127,10 +28274,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIIo_IsCuttingPlanesVisibleID",
@@ -27145,10 +28297,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIIo_NewSettingsDialogID",
@@ -27163,10 +28320,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIIo_Set3DCutawayStatusID",
@@ -27184,10 +28346,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "APIIo_SetCuttingPlanesVisibilityID",
@@ -27205,10 +28372,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteFolderChanges",
@@ -27223,10 +28395,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::API_IKeynoteEventNotifier::NotifyKeynoteItemChanges",
@@ -27241,10 +28418,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::API_IKeynoteFolderEventHandler::Dispatch",
@@ -27259,10 +28441,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::API_IKeynoteFolderEventHandler::GetName",
@@ -27277,10 +28464,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::API_IKeynoteItemEventHandler::Dispatch",
@@ -27295,10 +28487,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::API_IKeynoteItemEventHandler::GetName",
@@ -27313,10 +28510,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::AddonServiceInterface::GetStatus",
@@ -27849,10 +29051,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination",
@@ -27865,10 +29072,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptionCombinationViewSettings::Modify",
@@ -27881,10 +29093,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptionManager::GetAvailableDesignOptionCombinations",
@@ -27913,10 +29130,15 @@
     27
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::CreateDesignOptionManager",
@@ -28238,10 +29460,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::SetMainModelOnly",
@@ -28394,10 +29621,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::DeleteDesignOption",
@@ -28462,10 +29694,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetActiveDesignOptionsOfCombination",
@@ -28681,10 +29918,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::MoveDesignOptionSet",
@@ -28910,10 +30152,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckModificationAndDeletionRights",
@@ -28927,10 +30174,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionsManipulationRightsChecker::CheckProjectExistanceAndWindowType",
@@ -28944,10 +30196,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::ActivateCombination",
@@ -29224,10 +30481,15 @@
     28
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::EditNotificationInterface::ElementsEdited",
@@ -58441,10 +59703,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "ACAPI::Object::GetToken",
@@ -63545,10 +64812,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Assignments::GetParentObjectTable",
@@ -63563,10 +64835,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Assignments::GetRootGroups",
@@ -63581,10 +64858,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Attribute::GetName",
@@ -63668,10 +64950,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Classification::GetEdition",
@@ -63691,6 +64978,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    },
+    {
      "number": 1306,
      "title": "Expose IFC attributes, IFC value types and IFC classification references (IFCAPI)"
     }
@@ -63709,10 +65000,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Classification::GetLocation",
@@ -63727,10 +65023,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Classification::GetName",
@@ -63836,10 +65137,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ClassificationReference::GetLocation",
@@ -63922,10 +65228,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::GetHookManager",
@@ -63940,10 +65251,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::GetObjectAccessor",
@@ -63985,10 +65301,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::AssignObjects",
@@ -64003,10 +65324,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::CreateIfcGroup",
@@ -64021,10 +65347,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::GetIfcRelAssignsToGroup",
@@ -64039,10 +65370,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::GetIfcRelReferencedInSpatialStructure",
@@ -64055,10 +65391,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::GetIfcRelServicesBuildings",
@@ -64073,10 +65414,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::ReferenceObjects",
@@ -64089,10 +65435,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookAssignments::ServiceBuildings",
@@ -64107,10 +65458,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterAssignmentsHook",
@@ -64125,10 +65481,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterAttributeHook",
@@ -64143,10 +65504,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterClassificationReferenceHook",
@@ -64161,10 +65527,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterPropertyHook",
@@ -64179,10 +65550,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterTypeObjectAttributeHook",
@@ -64197,10 +65573,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterTypeObjectClassificationReferenceHook",
@@ -64215,10 +65596,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::RegisterTypeObjectPropertyHook",
@@ -64233,10 +65619,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterAssignmentsHook",
@@ -64251,10 +65642,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterAttributeHook",
@@ -64269,10 +65665,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterClassificationReferenceHook",
@@ -64287,10 +65688,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterPropertyHook",
@@ -64305,10 +65711,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterTypeObjectAttributeHook",
@@ -64323,10 +65734,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterTypeObjectClassificationReferenceHook",
@@ -64341,10 +65757,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::HookManager::UnregisterTypeObjectPropertyHook",
@@ -64359,10 +65780,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateElementObjectID",
@@ -64395,10 +65821,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateIfcBuildingStoreyObjectID",
@@ -64431,10 +65862,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateIfcSiteObjectID",
@@ -64449,10 +65885,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ObjectAccessor::FindElementsByGlobalId",
@@ -64503,10 +65944,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ObjectAccessor::GetExternalGlobalId",
@@ -64575,10 +66021,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::ObjectAccessor::GetTypeObjectIFCType",
@@ -64611,10 +66062,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::Property::GetName",
@@ -64842,10 +66298,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateClassification",
@@ -64860,10 +66321,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateClassificationReference",
@@ -64878,10 +66344,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateDefaultValue",
@@ -64895,10 +66366,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateEmptyValue",
@@ -64913,10 +66389,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyBoundedValue",
@@ -64931,10 +66412,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyEnumeratedValue",
@@ -64949,10 +66435,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyListValue",
@@ -64967,10 +66458,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertySingleValue",
@@ -64985,10 +66481,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreatePropertyTableValue",
@@ -65003,10 +66504,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyBuilder::CreateValue",
@@ -65021,10 +66527,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyEnumeratedValue::GetEnumerationReference",
@@ -65039,10 +66550,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1311,
+     "title": "Expose the last 296 open Archicad API items on the coverage checklist"
+    }
+   ]
   },
   {
    "id": "IFCAPI::PropertyEnumeratedValue::GetEnumerationValues",
