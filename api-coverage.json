@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 22:22 UTC",
+ "generatedAt": "2026-10-21 22:44 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 322,
+  "in progress": 321,
   "claimed": 1198,
   "done": 743,
-  "merged": 4
+  "merged": 5
  },
  "items": [
   {
@@ -10173,10 +10173,6 @@
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
     },
     {
-     "number": 1036,
-     "title": "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"
-    },
-    {
      "number": 1032,
      "title": "[2/4] Add GetHotspotsOfElements: the hotspots of elements with their neig kind and subindex"
     },
@@ -11444,14 +11440,9 @@
    "olderNames": [
     "APIDb_RoomReductionsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1036,
-     "title": "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26212,10 +26203,6 @@
     {
      "number": 1085,
      "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
-    },
-    {
-     "number": 1036,
-     "title": "[3/4] Add GetZoneReductions: the area reduction polygons of Zones with percentage and area"
     },
     {
      "number": 1018,
