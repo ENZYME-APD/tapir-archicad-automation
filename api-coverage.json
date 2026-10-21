@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 05:18 UTC",
+ "generatedAt": "2026-10-21 06:10 UTC",
  "versions": [
   25,
   26,
@@ -8638,6 +8638,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1393,
+     "title": "Feature request: command to change the library part of placed elements"
+    },
     {
      "number": 1226,
      "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
