@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 01:04 UTC",
+ "generatedAt": "2026-10-21 04:29 UTC",
  "versions": [
   25,
   26,
@@ -7363,6 +7363,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1391,
+     "title": "Dimension creation commands: add favoriteName for text size and frame"
+    },
+    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
@@ -8703,7 +8707,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1391,
+     "title": "Dimension creation commands: add favoriteName for text size and frame"
+    }
+   ],
    "issues": [
     {
      "number": 652,
@@ -8930,6 +8939,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1391,
+     "title": "Dimension creation commands: add favoriteName for text size and frame"
+    },
     {
      "number": 1214,
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
@@ -9662,6 +9675,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1391,
+     "title": "Dimension creation commands: add favoriteName for text size and frame"
+    },
     {
      "number": 1214,
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
@@ -12039,6 +12056,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1391,
+     "title": "Dimension creation commands: add favoriteName for text size and frame"
+    },
     {
      "number": 1292,
      "title": "In-process Criteria Evaluator and Search Commands (#1253)"
