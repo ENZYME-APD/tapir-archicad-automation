@@ -1801,3 +1801,566 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
 
     return response;
 }
+
+// --- Library part of placed elements ---
+
+using LibPartTypeId = decltype (API_LibPart::typeID);
+
+// The library part index of a library part based element, and the library part type a part has
+// to be of to replace it. False for the other elements, and for labels that are text labels.
+static bool GetLibraryPartOfElement (const API_Element& element, Int32& libInd, LibPartTypeId& libTypeId)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_ObjectID:
+            libInd = element.object.libInd;
+            libTypeId = APILib_ObjectID;
+            return true;
+        case API_LampID:
+            libInd = element.lamp.libInd;
+            libTypeId = APILib_LampID;
+            return true;
+        case API_WindowID:
+            libInd = element.window.openingBase.libInd;
+            libTypeId = APILib_WindowID;
+            return true;
+        case API_DoorID:
+            libInd = element.door.openingBase.libInd;
+            libTypeId = APILib_DoorID;
+            return true;
+        case API_SkylightID:
+            libInd = element.skylight.openingBase.libInd;
+            libTypeId = APILib_SkylightID;
+            return true;
+        case API_ZoneID:
+            libInd = element.zone.libInd;
+            libTypeId = APILib_RoomID;
+            return true;
+        case API_LabelID:
+            if (element.label.labelClass != APILblClass_Symbol) {
+                return false;
+            }
+            libInd = element.label.u.symbol.libInd;
+            libTypeId = APILib_LabelID;
+            return true;
+        default:
+            return false;
+    }
+}
+
+// Resolves the library part given by name, index or main guid. The part has to be of libTypeId,
+// which a search with that typeID checks (see ApplyWindowOrDoorLibraryPartToDefaults: the typeID
+// ACAPI_LibraryPart_Get returns does not tell a window from an object); a part given by index or
+// guid is checked by searching for its name.
+static GSErrCode ResolveLibraryPart (const GS::ObjectState& libraryPart, LibPartTypeId libTypeId, Int32& libInd, GS::UniString& errMessage)
+{
+    GS::UniString name;
+    GS::UniString guid;
+    Int32 index = 0;
+    if (libraryPart.Get ("index", index)) {
+        API_LibPart libPart = {};
+        libPart.index = index;
+        const GSErrCode err = ACAPI_LibraryPart_Get (&libPart);
+        delete libPart.location;
+        if (err != NoError) {
+            errMessage = GS::UniString::Printf ("Not found library part with index %d", index);
+            return err;
+        }
+        name = GS::UniString (libPart.docu_UName);
+    } else if (libraryPart.Get ("guid", guid)) {
+        guid.DeleteAll (GS::UniChar (char ('{')));
+        guid.DeleteAll (GS::UniChar (char ('}')));
+        const API_Guid mainGuid = APIGuidFromString (guid.ToCStr ());
+        if (mainGuid == APINULLGuid) {
+            errMessage = GS::UniString::Printf ("Invalid input: '%T' is not a guid", guid.ToPrintf ());
+            return APIERR_BADPARS;
+        }
+        Int32 partCount = 0;
+        const GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+        if (err != NoError) {
+            errMessage = "Failed to enumerate library parts.";
+            return err;
+        }
+        for (Int32 i = 1; i <= partCount && index == 0; ++i) {
+            API_LibPart libPart = {};
+            libPart.index = i;
+            if (ACAPI_LibraryPart_Get (&libPart) != NoError) {
+                continue;
+            }
+            if (GSGuid2APIGuid (GS::UnID (libPart.ownUnID).GetMainGuid ()) == mainGuid) {
+                index = i;
+                name = GS::UniString (libPart.docu_UName);
+            }
+            delete libPart.location;
+        }
+        if (index == 0) {
+            errMessage = GS::UniString::Printf ("Not found library part with guid %T", guid.ToPrintf ());
+            return APIERR_BADID;
+        }
+    } else if (!libraryPart.Get ("name", name)) {
+        errMessage = "Invalid input: libraryPart has none of name, index and guid.";
+        return APIERR_BADPARS;
+    }
+
+    API_LibPart libPart = {};
+    libPart.typeID = libTypeId;
+    const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+    GS::ucscpy (libPart.docu_UName, name.ToUStr (0, GS::Min (name.GetLength (), maxNameLength)).Get ());
+    const GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    delete libPart.location;
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Not found a placeable library part named '%T' of the element's type in the loaded libraries", name.ToPrintf ());
+        return err;
+    }
+
+    libInd = (index != 0) ? index : libPart.index;
+    return NoError;
+}
+
+// Copies the value of a parameter of the element's current parameter list onto the parameter of
+// the same name of the library part opened with ACAPI_LibraryPart_OpenParameters, through
+// ACAPI_LibraryPart_ChangeAParameter as SetGDLParametersOfElements writes values. Only a parameter
+// of the same type and shape is copied, an array only with the same dimensions (an array parameter
+// cannot be resized, see ApplyArrayParameterChanges). A value the new part refuses is left at the
+// part's default.
+static void CopyParameterValue (const API_AddParType& oldParam, const API_AddParType& newParam)
+{
+    if (oldParam.typeID != newParam.typeID || oldParam.typeMod != newParam.typeMod) {
+        return;
+    }
+
+    switch (newParam.typeID) {
+        case APIParT_Integer:
+        case APIParT_Length:
+        case APIParT_Angle:
+        case APIParT_RealNum:
+        case APIParT_LightSw:
+        case APIParT_ColRGB:
+        case APIParT_Intens:
+        case APIParT_LineTyp:
+        case APIParT_Mater:
+        case APIParT_FillPat:
+        case APIParT_PenCol:
+        case APIParT_CString:
+        case APIParT_Boolean:
+        case APIParT_BuildingMaterial:
+        case APIParT_Profile:
+            break;
+        default:
+            // Separators and titles have no value, dictionaries are not supported by the Archicad API yet
+            return;
+    }
+
+    const bool isString = (newParam.typeID == APIParT_CString);
+    if (newParam.typeMod == API_ParSimple) {
+        API_ChangeParamType changeParam = {};
+        CHTruncate (newParam.name, changeParam.name, API_NameLen);
+        GS::uchar_t strValue[MaxStrValueLength] = {};
+        if (isString) {
+            const GS::UniString value (oldParam.value.uStr);
+            GS::ucscpy (strValue, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
+            changeParam.uStrValue = strValue;
+        } else {
+            changeParam.realValue = oldParam.value.real;
+        }
+        ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+        return;
+    }
+
+    if (oldParam.dim1 != newParam.dim1 || oldParam.dim2 != newParam.dim2 || oldParam.value.array == nullptr) {
+        return;
+    }
+
+    Int32 itemIndex = 0;
+    Int32 strPos = 0;
+    for (Int32 i1 = 1; i1 <= oldParam.dim1; ++i1) {
+        for (Int32 i2 = 1; i2 <= oldParam.dim2; ++i2) {
+            API_ChangeParamType changeParam = {};
+            CHTruncate (newParam.name, changeParam.name, API_NameLen);
+            changeParam.ind1 = i1;
+            changeParam.ind2 = i2;
+            GS::uchar_t strValue[MaxStrValueLength] = {};
+            if (isString) {
+                // The same walk as AddValueString: consecutive null-terminated strings.
+                const GS::uchar_t* uValueStr = (reinterpret_cast<GS::uchar_t*> (*oldParam.value.array)) + strPos;
+                strPos += GS::ucslen32 (uValueStr) + 1;
+                const GS::UniString value (uValueStr);
+                GS::ucscpy (strValue, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
+                changeParam.uStrValue = strValue;
+            } else {
+                changeParam.realValue = ((double*) *oldParam.value.array)[itemIndex++];
+            }
+            ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+        }
+    }
+}
+
+static const API_AddParType* FindParameterByName (API_AddParType** params, const char* name)
+{
+    const GSSize nParams = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& param = (*params)[ii];
+        if (param.typeID != APIParT_Separator && CHCompareCStrings (param.name, name) == 0) {
+            return &param;
+        }
+    }
+    return nullptr;
+}
+
+// A or B as a parameter list holds it, in metres.
+static GS::Optional<double> GetSizeParameter (API_AddParType** params, const char* name)
+{
+    const API_AddParType* param = FindParameterByName (params, name);
+    if (param == nullptr || param->typeMod != API_ParSimple || param->typeID != APIParT_Length) {
+        return {};
+    }
+    return param->value.real;
+}
+
+static GSErrCode ChangeLibraryPartOfElement (const GS::ObjectState& elementWithLibraryPart, GS::UniString& errMessage)
+{
+    const GS::ObjectState* elementId = elementWithLibraryPart.Get ("elementId");
+    if (elementId == nullptr) {
+        errMessage = "elementId is missing";
+        return APIERR_BADPARS;
+    }
+    const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+    const GS::ObjectState* libraryPart = elementWithLibraryPart.Get ("libraryPart");
+    if (libraryPart == nullptr) {
+        errMessage = "libraryPart is missing";
+        return APIERR_BADPARS;
+    }
+
+    bool keepParameters = true;
+    bool keepSize = true;
+    elementWithLibraryPart.Get ("keepParameters", keepParameters);
+    elementWithLibraryPart.Get ("keepSize", keepSize);
+
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+        return err;
+    }
+
+    Int32 oldLibInd = 0;
+    LibPartTypeId libTypeId = {};
+    if (!GetLibraryPartOfElement (element, oldLibInd, libTypeId)) {
+        errMessage = GS::UniString::Printf ("Element with guid %T is not an Object, Lamp, Window, Door, Skylight, Zone or symbol Label.", APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADELEMENTTYPE;
+    }
+
+    Int32 newLibInd = 0;
+    err = ResolveLibraryPart (*libraryPart, libTypeId, newLibInd, errMessage);
+    if (err != NoError) {
+        return err;
+    }
+    if (newLibInd == oldLibInd) {
+        // Already the requested part: nothing to change, its parameters are kept as they are.
+        return NoError;
+    }
+
+    // The element keeps its own parameter list even when its library part is missing, so the
+    // values to keep are read from the element, not from its old library part.
+    API_ElementMemo oldMemo = {};
+    const GS::OnExit disposeOldMemo ([&]() { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+    if (keepParameters || keepSize) {
+        err = ACAPI_Element_GetMemo (elemGuid, &oldMemo, APIMemoMask_AddPars);
+        if (err != NoError || oldMemo.params == nullptr) {
+            errMessage = GS::UniString::Printf ("Failed to read the GDL parameters of element with guid %T; set keepParameters and keepSize to false to change its library part without keeping them.", APIGuidToString (elemGuid).ToPrintf ());
+            return (err != NoError) ? err : APIERR_GENERAL;
+        }
+    }
+
+    const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
+    GS::Optional<double> oldA;
+    GS::Optional<double> oldB;
+    if (keepSize) {
+        if (elemTypeId == API_WindowID || elemTypeId == API_DoorID) {
+            oldA = element.window.openingBase.width;
+            oldB = element.window.openingBase.height;
+        } else if (elemTypeId == API_SkylightID) {
+            oldA = element.skylight.openingBase.width;
+            oldB = element.skylight.openingBase.height;
+        } else {
+            // In metres, unlike xRatio/yRatio (see GetStoredSizeScale).
+            oldA = GetSizeParameter (oldMemo.params, "A");
+            oldB = GetSizeParameter (oldMemo.params, "B");
+        }
+    }
+
+    // The new part's own A and B, which xRatio/yRatio of an object without fixed size are relative to.
+    double partA = 1.0;
+    double partB = 1.0;
+    if (elemTypeId == API_ObjectID || elemTypeId == API_LampID) {
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** addPars = nullptr;
+        if (ACAPI_LibraryPart_GetParams (newLibInd, &a, &b, &addParNum, &addPars) == NoError) {
+            if (a > SizeTolerance) {
+                partA = a;
+            }
+            if (b > SizeTolerance) {
+                partB = b;
+            }
+        }
+        if (addPars != nullptr) {
+            ACAPI_DisposeAddParHdl (&addPars);
+        }
+    }
+
+    // The new part's default parameters, opened by its index (no element guid), get the kept
+    // values through the parameter interface, so its parameter script reconciles the others.
+    API_ParamOwnerType paramOwner = {};
+    paramOwner.libInd = newLibInd;
+#ifdef ServerMainVers_2600
+    paramOwner.type = element.header.type;
+#else
+    paramOwner.typeID = element.header.typeID;
+#endif
+    paramOwner.guid = APINULLGuid;
+
+    err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Failed to open the parameters of the library part with index %d", newLibInd);
+        return err;
+    }
+
+    API_GetParamsType getParams = {};
+    const GS::OnExit closeParameters ([&]() {
+        ACAPI_LibraryPart_CloseParameters ();
+        ACAPI_DisposeAddParHdl (&getParams.params);
+    });
+
+    err = ACAPI_LibraryPart_GetActParameters (&getParams);
+    if (err != NoError || getParams.params == nullptr) {
+        errMessage = GS::UniString::Printf ("Failed to read the parameters of the library part with index %d", newLibInd);
+        return (err != NoError) ? err : APIERR_GENERAL;
+    }
+
+    if (keepParameters) {
+        const GSSize nOldParams = BMGetHandleSize ((GSHandle) oldMemo.params) / sizeof (API_AddParType);
+        for (GSIndex ii = 0; ii < nOldParams; ++ii) {
+            const API_AddParType& oldParam = (*oldMemo.params)[ii];
+            // A and B are the size, which keepSize decides about.
+            if (oldParam.typeID == APIParT_Separator || CHCompareCStrings (oldParam.name, "A") == 0 || CHCompareCStrings (oldParam.name, "B") == 0) {
+                continue;
+            }
+            const API_AddParType* newParam = FindParameterByName (getParams.params, oldParam.name);
+            if (newParam != nullptr) {
+                CopyParameterValue (oldParam, *newParam);
+            }
+        }
+    }
+
+    const char* sizeNames[] = { "A", "B" };
+    const GS::Optional<double>* oldSizes[] = { &oldA, &oldB };
+    for (UIndex ii = 0; ii < 2; ++ii) {
+        if (oldSizes[ii]->HasValue () && GetSizeParameter (getParams.params, sizeNames[ii]).HasValue ()) {
+            API_ChangeParamType changeParam = {};
+            CHTruncate (sizeNames[ii], changeParam.name, API_NameLen);
+            changeParam.realValue = **oldSizes[ii];
+            ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+        }
+    }
+
+    ACAPI_DisposeAddParHdl (&getParams.params);
+    err = ACAPI_LibraryPart_GetActParameters (&getParams);
+    if (err != NoError || getParams.params == nullptr) {
+        // Committing an APIMemoMask_AddPars memo with no parameter block leaves the element's
+        // parameters unreadable (see SetGDLParametersOfElements).
+        errMessage = GS::UniString::Printf ("Failed to read back the parameters for element with guid %T, nothing was changed", APIGuidToString (elemGuid).ToPrintf ());
+        return (err != NoError) ? err : APIERR_GENERAL;
+    }
+
+    const GS::Optional<double> newSizeA = GetSizeParameter (getParams.params, "A");
+    const GS::Optional<double> newSizeB = GetSizeParameter (getParams.params, "B");
+    const double newA = newSizeA.HasValue () ? *newSizeA : getParams.a;
+    const double newB = newSizeB.HasValue () ? *newSizeB : getParams.b;
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    switch (elemTypeId) {
+        case API_ObjectID:
+        case API_LampID:
+            // element.lamp aliases element.object (see ApplyObjectLampDetails in ElementCreationCommands).
+            element.object.libInd = newLibInd;
+            element.object.xRatio = element.object.useXYFixSize ? newA : newA / partA;
+            element.object.yRatio = element.object.useXYFixSize ? newB : newB / partB;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, libInd);
+            ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
+            ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
+            break;
+        case API_WindowID:
+        case API_DoorID:
+            element.window.openingBase.libInd = newLibInd;
+            element.window.openingBase.width = newA;
+            element.window.openingBase.height = newB;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.libInd);
+            ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
+            ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
+            break;
+        case API_SkylightID:
+            element.skylight.openingBase.libInd = newLibInd;
+            element.skylight.openingBase.width = newA;
+            element.skylight.openingBase.height = newB;
+            ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.libInd);
+            ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
+            ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
+            break;
+        case API_ZoneID:
+            element.zone.libInd = newLibInd;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, libInd);
+            break;
+        case API_LabelID:
+            element.label.u.symbol.libInd = newLibInd;
+            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.symbol.libInd);
+            break;
+        default:
+            break;
+    }
+
+    API_ElementMemo memo = {};
+    memo.params = getParams.params;
+    err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Failed to change the library part of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
+    }
+    return err;
+}
+
+ChangeLibraryPartOfElementsCommand::ChangeLibraryPartOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeLibraryPartOfElementsCommand::GetName () const
+{
+    return "ChangeLibraryPartOfElements";
+}
+
+GS::Optional<GS::UniString> ChangeLibraryPartOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elementsWithLibraryPart": {
+            "type": "array",
+            "description": "The elements with the library part to change them to.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "libraryPart": {
+                        "type": "object",
+                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries.",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "name"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer",
+                                        "description": "The index of the library part, as GetAvailableLibraryParts returns it."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "index"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "guid": {
+                                        "type": "string",
+                                        "description": "The main guid of the library part, as GetAvailableLibraryParts returns it in guid."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "guid"
+                                ]
+                            }
+                        ]
+                    },
+                    "keepParameters": {
+                        "type": "boolean",
+                        "description": "Copies the values of the element's GDL parameters to the parameters of the new library part that have the same name, type and array dimensions; the other parameters get the new part's defaults. Default: true."
+                    },
+                    "keepSize": {
+                        "type": "boolean",
+                        "description": "Keeps the size (A and B) of the element; when false, the element gets the new part's default size. Default: true."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "libraryPart"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elementsWithLibraryPart"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ChangeLibraryPartOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ChangeLibraryPartOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithLibraryPart;
+    parameters.Get ("elementsWithLibraryPart", elementsWithLibraryPart);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Change Library Part of Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithLibraryPart : elementsWithLibraryPart) {
+            GS::UniString errMessage;
+            const GSErrCode err = ChangeLibraryPartOfElement (elementWithLibraryPart, errMessage);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, errMessage));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
