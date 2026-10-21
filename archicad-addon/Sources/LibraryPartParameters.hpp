@@ -8,6 +8,9 @@
 
 bool IsNumericParam (API_AddParID t);
 
+// GDL parameter names are matched without case, as GDL does: a part's own list may spell
+// ZZYZX as zzyzx (Bed Double 01 does), while a tool's list spells it ZZYZX.
+
 // The parameter of that name that holds a single number, or nullptr.
 API_AddParType* FindParameter (API_AddParType** params, const char* name);
 bool GetNumericParameter (API_AddParType** params, const char* name, double& value);

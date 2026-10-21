@@ -32,7 +32,7 @@ API_AddParType* FindParameter (API_AddParType** params, const char* name)
     const GSSize n = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
     for (GSIndex ii = 0; ii < n; ++ii) {
         API_AddParType& p = (*params)[ii];
-        if (p.typeMod != API_ParArray && IsNumericParam (p.typeID) && CHEqualCStrings (p.name, name)) {
+        if (p.typeMod != API_ParArray && IsNumericParam (p.typeID) && CHEqualCStringsInsensitive (p.name, name)) {
             return &p;
         }
     }
@@ -91,7 +91,7 @@ bool ApplyParameter (API_AddParType** params, const GS::ObjectState& p, GS::Arra
     const GSSize n = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
     for (GSIndex ii = 0; ii < n; ++ii) {
         API_AddParType& actParam = (*params)[ii];
-        if (GS::UniString (actParam.name) != name) {
+        if (!CHEqualCStringsInsensitive (actParam.name, name.ToCStr ())) {
             continue;
         }
         if (actParam.typeMod == API_ParArray) {

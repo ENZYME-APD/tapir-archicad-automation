@@ -1783,7 +1783,9 @@ static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::Stri
 	for (GSIndex ii = 0; ii < nParams; ++ii) {
 		API_AddParType& actParam = (*params)[ii];
 
-		const GS::String name(actParam.name);
+		// Keys in upper case: GDL matches names without case, and a part's own parameter list
+		// may spell them in lower case (Bed Double 01 has zzyzx).
+		const GS::String name (GS::UniString (actParam.name).ToUpperCase ().ToCStr ());
 		const auto* value = changeParamsDictionary.GetPtr (name);
 		if (value == nullptr)
 			continue;
@@ -2071,7 +2073,8 @@ static GS::Optional<GS::ObjectState> ApplyCreationOnlyFields (API_Element& eleme
         for (const GS::ObjectState& p : gdlParameters) {
             GS::UniString name;
             p.Get ("name", name);
-            if (ApplyParameter (memo.params, p, warnings) && (name == "A" || name == "B")) {
+            if (ApplyParameter (memo.params, p, warnings) &&
+                (CHEqualCStringsInsensitive (name.ToCStr (), "A") || CHEqualCStringsInsensitive (name.ToCStr (), "B"))) {
                 sizeChanged = true;
             }
         }
