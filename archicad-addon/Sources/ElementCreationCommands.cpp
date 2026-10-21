@@ -6,6 +6,8 @@
 #include "NotificationCommands.hpp"
 
 #include <algorithm>
+#include <cctype>
+#include <string>
 #include <vector>
 
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
@@ -1784,9 +1786,12 @@ static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::Stri
 		API_AddParType& actParam = (*params)[ii];
 
 		// Keys in upper case: GDL matches names without case, and a part's own parameter list
-		// may spell them in lower case (Bed Double 01 has zzyzx).
-		const GS::String name (GS::UniString (actParam.name).ToUpperCase ().ToCStr ());
-		const auto* value = changeParamsDictionary.GetPtr (name);
+		// may spell them in lower case (Bed Double 01 has zzyzx). Parameter names are ASCII; the
+		// standard library is used because GS::UniString renamed its case functions in Archicad 30.
+		std::string upperName (actParam.name);
+		std::transform (upperName.begin (), upperName.end (), upperName.begin (),
+						[] (unsigned char c) { return static_cast<char> (std::toupper (c)); });
+		const auto* value = changeParamsDictionary.GetPtr (GS::String (upperName.c_str ()));
 		if (value == nullptr)
 			continue;
 
