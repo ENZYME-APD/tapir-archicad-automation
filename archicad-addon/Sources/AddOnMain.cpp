@@ -927,6 +927,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.7.2",
             "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27."
         );
+        err |= RegisterCommand<GetGraphicOverrideRulesByNameCommand> (
+            attributeCommands, "1.7.2",
+            "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27."
+        );
         err |= RegisterCommand<CreateGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
             "Creates graphic override rules. The criterion is given as Archicad's criterion XML or as structured conditions. The rule group is created when no rule group has the given name. Available from Archicad 27."
