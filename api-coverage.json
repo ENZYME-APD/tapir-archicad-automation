@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 21:53 UTC",
+ "generatedAt": "2026-10-21 22:22 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 325,
+  "in progress": 322,
   "claimed": 1198,
   "done": 743,
-  "merged": 1
+  "merged": 4
  },
  "items": [
   {
@@ -4404,12 +4404,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1066,
-     "title": "Add GetFontsByName command exposing ACAPI_Font_SearchFont"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5016,6 +5011,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1399,
+     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
@@ -12305,20 +12304,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1066,
-     "title": "Add GetFontsByName command exposing ACAPI_Font_SearchFont"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1061,
-     "title": "Expose ACAPI_Font_SearchFont"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_FreeCWContourPtr",
@@ -12772,6 +12761,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1399,
+     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -12918,6 +12911,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1399,
+     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -13113,6 +13110,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1399,
+     "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -13662,20 +13663,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1065,
-     "title": "Add GetUserDataOfGroups command (ACAPI_Grouping_GetUserData)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1062,
-     "title": "Expose ACAPI_Grouping_GetUserData"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_SetUserData",
@@ -26473,14 +26464,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1065,
-     "title": "Add GetUserDataOfGroups command (ACAPI_Grouping_GetUserData)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
