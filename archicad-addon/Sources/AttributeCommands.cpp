@@ -5327,3 +5327,121 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
 
     return response;
 }
+
+GetFontsByNameCommand::GetFontsByNameCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFontsByNameCommand::GetName () const
+{
+    return "GetFontsByName";
+}
+
+GS::Optional<GS::UniString> GetFontsByNameCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "fontNames": {
+                "type": "array",
+                "description": "Names of the fonts to find, as the Text tool's font list shows them and GetDetailsOfElements reports them in fontName, e.g. 'Arial'.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fontNames"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFontsByNameCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "fonts": {
+                "type": "array",
+                "description": "One item per name, in the order given: the font found, or an error when no loaded font has the name.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "fontIndex": {
+                                    "type": "integer",
+                                    "description": "Index of the font (from 1), as Text and Label fields reference it in fontIndex."
+                                },
+                                "fontName": {
+                                    "type": "string",
+                                    "description": "Name of the font as Archicad carries it."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "fontIndex",
+                                "fontName"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fonts"
+        ]
+    })";
+}
+
+GS::ObjectState GetFontsByNameCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> fontNames;
+    parameters.Get ("fontNames", fontNames);
+
+    GS::ObjectState response;
+    const auto& fonts = response.AddList<GS::ObjectState> ("fonts");
+
+    for (const GS::UniString& fontName : fontNames) {
+        // Archicad searches by the name uniStringNamePtr points at and reports the index of the font
+        // it found in the head, the way ACAPI_Attribute_Search does for attributes - which fonts
+        // were before Archicad 27 (API_FontID), with their own API (ACAPI_Font_SearchFont) since.
+        GS::UniString nameToSearch = fontName;
+        short fontIndex = 0;
+#ifdef ServerMainVers_2700
+        API_FontType font = {};
+        font.head.uniStringNamePtr = &nameToSearch;
+        const GSErrCode err = ACAPI_Font_SearchFont (font);
+        fontIndex = static_cast<short> (font.head.index);
+#else
+        API_Attr_Head attrHead = {};
+        attrHead.typeID = API_FontID;
+        attrHead.uniStringNamePtr = &nameToSearch;
+        const GSErrCode err = ACAPI_Attribute_Search (&attrHead);
+        fontIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
+#endif
+        if (err != NoError) {
+            fonts (CreateErrorResponse (err, GS::UniString::Printf ("No loaded font is named '%T'.", fontName.ToPrintf ())));
+            continue;
+        }
+
+        // The name is read back from the font found rather than echoed, so the caller sees it as
+        // Archicad carries it even when the search matched a differently written name.
+        const GS::Optional<GS::UniString> foundName = GetFontNameFromIndex (fontIndex);
+
+        GS::ObjectState fontOS;
+        fontOS.Add ("fontIndex", fontIndex);
+        fontOS.Add ("fontName", foundName.HasValue () ? *foundName : fontName);
+        fonts (fontOS);
+    }
+
+    return response;
+}

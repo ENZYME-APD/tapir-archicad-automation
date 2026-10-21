@@ -923,6 +923,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Returns the details of the given Building Material attributes."
         );
+        err |= RegisterCommand<GetFontsByNameCommand> (
+            attributeCommands, "1.7.2",
+            "Finds loaded fonts by name through Archicad's font search and returns their index (as Text and Label fields reference fonts in fontIndex) and name, or an error for a name no loaded font has."
+        );
         err |= RegisterCommand<GetGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
             "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27."
