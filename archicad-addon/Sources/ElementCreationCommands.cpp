@@ -1,5 +1,6 @@
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
+#include "LibraryPartParameters.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
@@ -1686,6 +1687,23 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
+                        "parameters": {
+                            "type": "array",
+                            "description": "Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string" },
+                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["name", "value"]
+                            }
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Optional layer attribute index to place the element on. Default: the layer of the favorite or the tool default. An index that is no layer fails the item."
                         }
                     },
                     "additionalProperties": false,
@@ -1834,28 +1852,6 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
 }
 
 // The library part's own A and B; a and b are left as they are when it has none to divide by.
-static GSErrCode GetLibraryPartSize (Int32 libInd, double& a, double& b)
-{
-    double libraryPartA = 0.0;
-    double libraryPartB = 0.0;
-    Int32 addParNum = 0;
-    API_AddParType** addPars = nullptr;
-    const GSErrCode err = ACAPI_LibraryPart_GetParams (libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
-    if (addPars != nullptr) {
-        ACAPI_DisposeAddParHdl (&addPars);
-    }
-    if (err != NoError) {
-        return err;
-    }
-    if (libraryPartA > 1e-6) {
-        a = libraryPartA;
-    }
-    if (libraryPartB > 1e-6) {
-        b = libraryPartB;
-    }
-    return NoError;
-}
-
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
 // dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
 // per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
@@ -1897,7 +1893,7 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
         double libraryPartA = 1.0;
         double libraryPartB = 1.0;
         if (!useFixSize) {
-            const GSErrCode err = GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+            const GSErrCode err = GetLibraryPartOwnSize (element.object.libInd, libraryPartA, libraryPartB);
             if (err != NoError) {
                 return CreateErrorResponse (err, "Failed to read the library part's own A and B, which 'dimensions' are converted with.");
             }
@@ -2064,13 +2060,91 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     return {};
 }
 
-GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+// parameters and layerIndex, which only creation takes. A parameter that cannot be set fails the
+// item: the response has no room for warnings, and a value quietly left out is worse than an error.
+static GS::Optional<GS::ObjectState> ApplyCreationOnlyFields (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& parameters)
 {
+    GS::Array<GS::ObjectState> gdlParameters;
+    if (parameters.Get ("parameters", gdlParameters)) {
+        GS::Array<GS::UniString> warnings;
+        bool sizeChanged = false;
+        for (const GS::ObjectState& p : gdlParameters) {
+            GS::UniString name;
+            p.Get ("name", name);
+            if (ApplyParameter (memo.params, p, warnings) && (name == "A" || name == "B")) {
+                sizeChanged = true;
+            }
+        }
+        if (!warnings.IsEmpty ()) {
+            GS::UniString message ("Failed to set the GDL parameters: ");
+            for (UIndex ii = 0; ii < warnings.GetSize (); ++ii) {
+                message += (ii > 0 ? "; " : "") + warnings[ii];
+            }
+            return CreateErrorResponse (APIERR_BADPARS, message + ".");
+        }
+        // As for dimensions: xRatio/yRatio have to agree with A and B in the memo.
+        if (sizeChanged) {
+            double libraryPartA = 1.0;
+            double libraryPartB = 1.0;
+            if (!element.object.useXYFixSize) {
+                const GSErrCode err = GetLibraryPartOwnSize (element.object.libInd, libraryPartA, libraryPartB);
+                if (err != NoError) {
+                    return CreateErrorResponse (err, "Failed to read the library part's own A and B, which A and B in 'parameters' are converted with.");
+                }
+            }
+            double a = 0.0;
+            double b = 0.0;
+            if (GetNumericParameter (memo.params, "A", a)) {
+                element.object.xRatio = a / libraryPartA;
+            }
+            if (GetNumericParameter (memo.params, "B", b)) {
+                element.object.yRatio = b / libraryPartB;
+            }
+        }
+    }
+
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex)) {
+        API_Attribute layer = {};
+        layer.header.typeID = API_LayerID;
+        layer.header.index = ACAPI_CreateAttributeIndex (layerIndex);
+        if (layerIndex <= 0 || ACAPI_Attribute_Get (&layer) != NoError) {
+            return CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("layerIndex %d is no layer.", layerIndex));
+        }
+        element.header.layer = layer.header.index;
+    }
+    return {};
+}
+
+// The create path shared by CreateObjects and CreateLamps. The element and memo arrive as the tool
+// defaults (or a favorite applied to them), so when libraryPartName names another part they still
+// hold the size and parameter values of the part the defaults hold, which Archicad keeps on create
+// wherever the names agree (live 21.10.2026: a Bed Double 01 came out 5.4 m wide and 0.2 m high,
+// the Object tool's leftovers). The part's own defaults are loaded then, as the Object Settings
+// dialog does when another part is picked; the same part keeps the settings it has.
+static GS::Optional<GS::ObjectState> PrepareLibraryPartElement (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters)
+{
+    const Int32 defaultsLibInd = element.object.libInd;
     auto err = ResolveLibraryPartName (element, parameters);
     if (err.HasValue ()) {
         return err;
     }
-    return ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+    if (element.object.libInd != defaultsLibInd) {
+        const GSErrCode loadErr = LoadLibraryPartDefaults (element, memo);
+        if (loadErr != NoError) {
+            return CreateErrorResponse (loadErr, "Failed to read the default parameters of the library part.");
+        }
+    }
+    auto detailsErr = ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+    if (detailsErr.HasValue ()) {
+        return detailsErr;
+    }
+    return ApplyCreationOnlyFields (element, memo, parameters);
+}
+
+GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    return PrepareLibraryPartElement (element, memo, stories, parameters);
 }
 
 // CreateLamps — parallel to CreateObjects but for AC subtype Lamp.
@@ -2091,11 +2165,7 @@ GS::Optional<GS::UniString> CreateLampsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateLampsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    auto err = ResolveLibraryPartName (element, parameters);
-    if (err.HasValue ()) {
-        return err;
-    }
-    return ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+    return PrepareLibraryPartElement (element, memo, stories, parameters);
 }
 
 // Shared Modify schema builder for ModifyObjects/ModifyLamps, mirroring
