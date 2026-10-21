@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 15:36 UTC",
+ "generatedAt": "2026-10-21 18:26 UTC",
  "versions": [
   25,
   26,
@@ -8662,6 +8662,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1396,
+     "title": "Drawing details: read/write the printable border (`hasBorderLine`, `borderLineType`, `borderPen`, `borderSize`)"
+    },
     {
      "number": 1393,
      "title": "Feature request: command to change the library part of placed elements"
