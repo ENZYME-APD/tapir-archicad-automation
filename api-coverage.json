@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 10:34 UTC",
+ "generatedAt": "2026-10-21 10:52 UTC",
  "versions": [
   25,
   26,
@@ -3496,6 +3496,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1395,
+     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
+    },
     {
      "number": 1239,
      "title": "Add GetCurrentPenTable command (current pen set and pen count)"
@@ -7214,6 +7218,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1395,
+     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
@@ -15909,6 +15917,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1395,
+     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
