@@ -1556,6 +1556,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
                 }
                 typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                typeSpecificDetails.Add ("hasBorderLine",       elem.drawing.hasBorderLine);
+                typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
+                typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
+                typeSpecificDetails.Add ("borderSize",          elem.drawing.borderSize);
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
@@ -2172,6 +2176,22 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("hasBorderLine", elem.drawing.hasBorderLine)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, hasBorderLine);
+                        }
+                        Int32 borderLineTypeIndex = 0;
+                        if (typeSpecificDetails->Get ("borderLineTypeIndex", borderLineTypeIndex) && borderLineTypeIndex > 0) {
+                            elem.drawing.borderLineType = ACAPI_CreateAttributeIndex (borderLineTypeIndex);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, borderLineType);
+                        }
+                        short borderPen = 0;
+                        if (typeSpecificDetails->Get ("borderPenIndex", borderPen)) {
+                            elem.drawing.borderPen = borderPen;
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, borderPen);
+                        }
+                        if (typeSpecificDetails->Get ("borderSize", elem.drawing.borderSize)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, borderSize);
                         }
                         if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
