@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 06:10 UTC",
+ "generatedAt": "2026-10-21 10:34 UTC",
  "versions": [
   25,
   26,
@@ -5004,6 +5004,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
@@ -7211,6 +7215,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
@@ -7362,6 +7370,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 1391,
      "title": "Dimension creation commands: add favoriteName for text size and frame"
@@ -8593,6 +8605,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     },
@@ -9354,6 +9370,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 1350,
      "title": "[2/3] Add RunParameterScriptOfElements command"
@@ -10208,6 +10228,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 1351,
      "title": "[2/4] Add TriangulatePolygonsOfElements command"
@@ -15155,6 +15179,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 834,
      "title": "SetGDLParametersOfElements: reject the mirrored size parameters of curtain wall frames"
     }
@@ -15248,6 +15276,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 843,
      "title": "SetGDLParametersOfElements: say why Archicad refused the element"
@@ -15365,6 +15397,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
@@ -15420,6 +15456,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 843,
      "title": "SetGDLParametersOfElements: say why Archicad refused the element"
@@ -15798,6 +15838,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 1371,
      "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
     },
@@ -15865,6 +15909,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
@@ -16103,6 +16151,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
+    {
      "number": 843,
      "title": "SetGDLParametersOfElements: say why Archicad refused the element"
     },
@@ -16271,6 +16323,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1394,
+     "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
+    },
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
