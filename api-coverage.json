@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-20 20:52 UTC",
+ "generatedAt": "2026-10-21 00:07 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 327,
-  "claimed": 1197,
+  "in progress": 326,
+  "claimed": 1198,
   "done": 743
  },
  "items": [
@@ -4415,14 +4415,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "claimed",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1365,
-     "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1318,
