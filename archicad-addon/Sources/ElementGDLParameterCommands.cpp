@@ -1828,7 +1828,7 @@ GS::Optional<GS::UniString> SetMarkerLibraryPartOfElementsCommand::GetInputParam
                     },
                     "libraryPartName": {
                         "type": "string",
-                        "description": "The name of the library part the marker should use, as GetMarkerParametersOfElements and GetAvailableLibraryParts report it. It must be of the same library part type as the marker it replaces."
+                        "description": "The name of the library part the marker should use, as GetMarkerParametersOfElements and GetAvailableLibraryParts report it. It should be a marker library part."
                     }
                 },
                 "additionalProperties": false,
@@ -1862,23 +1862,15 @@ GS::Optional<GS::UniString> SetMarkerLibraryPartOfElementsCommand::GetRawRespons
     })";
 }
 
-// Finds the library part named `libName` among the parts of the same type as the marker's
-// current library part. As in ApplyWindowOrDoorLibraryPartToDefaults, the typeID given to the
-// search together with the name limits it to that type.
-static GSErrCode SearchMarkerLibraryPart (Int32 currentLibInd, const GS::UniString& libName, API_LibPart& libPart)
+// Finds the library part named `libName` by its name only, as ResolveLibraryPartName does. The
+// typeID that ACAPI_LibraryPart_Get returns for the marker's current part does not tell a marker
+// from other parts (Archicad reports APILib_ObjectID for every part), and given to the search it
+// made even the marker's own name not found.
+static GSErrCode SearchMarkerLibraryPart (const GS::UniString& libName, API_LibPart& libPart)
 {
-    API_LibPart currentLibPart = {};
-    currentLibPart.index = currentLibInd;
-    GSErrCode err = ACAPI_LibraryPart_Get (&currentLibPart);
-    delete currentLibPart.location;
-    if (err != NoError) {
-        return err;
-    }
-
     libPart = {};
-    libPart.typeID = currentLibPart.typeID;
     GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
-    err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     libPart.location = nullptr;
     return err;
@@ -1923,7 +1915,7 @@ GS::ObjectState SetMarkerLibraryPartOfElementsCommand::Execute (const GS::Object
             }
 
             API_LibPart libPart = {};
-            err = SearchMarkerLibraryPart (marker.subElem.object.libInd, libName, libPart);
+            err = SearchMarkerLibraryPart (libName, libPart);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Not found marker library part with name '%T' for element %T", libName.ToPrintf (), APIGuidToString (elemGuid).ToPrintf ())));
                 continue;
