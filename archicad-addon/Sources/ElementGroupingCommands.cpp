@@ -1,5 +1,6 @@
 #include "ElementGroupingCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Base64Converter.hpp"
 
 #ifdef ServerMainVers_2600
 static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& elemGuids, GSErrCode /*originalErr*/)
@@ -292,6 +293,148 @@ GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& param
             elements(CreateElementIdObjectState(elemGuid));
         }
         elementsOfGroups(elementsItem);
+    }
+
+    return response;
+}
+
+GetUserDataOfGroupsCommand::GetUserDataOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetUserDataOfGroupsCommand::GetName() const
+{
+    return "GetUserDataOfGroups";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to get the user data of.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfGroupsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userDataOfGroups": {
+                "type": "array",
+                "description": "The user data attached to each given group, or an error for groups that have none.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "userData": {
+                                    "type": "object",
+                                    "description": "The user data an add-on attached to the group.",
+                                    "properties": {
+                                        "dataVersion": {
+                                            "type": "integer",
+                                            "description": "The version of the user data, as set by the add-on that attached it."
+                                        },
+                                        "platformSign": {
+                                            "type": "integer",
+                                            "description": "The platform sign of the user data, which tells the byte order the data was written in."
+                                        },
+                                        "flags": {
+                                            "type": "integer",
+                                            "description": "The flags of the user data (APIUserDataFlag_FillWith and APIUserDataFlag_Pickup bits), as set by the add-on that attached it."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "description": "The bytes of the user data, base64 encoded. Empty when the user data has no bytes."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "dataVersion",
+                                        "platformSign",
+                                        "flags",
+                                        "data"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "userData"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userDataOfGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserDataOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& userDataOfGroups = response.AddList<GS::ObjectState>("userDataOfGroups");
+
+    for (const GS::ObjectState& group : groups) {
+        const GS::ObjectState* groupId = group.Get("groupId");
+        if (groupId == nullptr) {
+            userDataOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
+            continue;
+        }
+
+        API_UserData userData = {};
+        const GSErrCode err = ACAPI_Grouping_GetUserData(GetGuidFromObjectState(*groupId), &userData);
+        if (err != NoError) {
+            BMKillHandle(&userData.dataHdl);
+            userDataOfGroups(CreateErrorResponse(err, err == APIERR_NOUSERDATA
+                ? "The group has no user data."
+                : "Failed to get the user data of the group."));
+            continue;
+        }
+
+        // The API hands over the data handle; it is the caller's to dispose.
+        GS::UniString data;
+        if (userData.dataHdl != nullptr) {
+            data = Base64Converter::Encode(*userData.dataHdl, BMGetHandleSize(userData.dataHdl));
+            data.DeleteAll(GS::UniChar(char('\n')));
+        }
+        BMKillHandle(&userData.dataHdl);
+
+        GS::ObjectState userDataItem;
+        userDataItem.Add("dataVersion", static_cast<Int32>(userData.dataVersion));
+        userDataItem.Add("platformSign", static_cast<Int32>(userData.platformSign));
+        userDataItem.Add("flags", static_cast<Int32>(userData.flags));
+        userDataItem.Add("data", data);
+
+        GS::ObjectState item;
+        item.Add("userData", userDataItem);
+        userDataOfGroups(item);
     }
 
     return response;
