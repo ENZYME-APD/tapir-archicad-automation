@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 19:36 UTC",
+ "generatedAt": "2026-10-21 21:53 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,10 @@
  "counts": {
   "open": 147,
   "not applicable": 469,
-  "in progress": 326,
+  "in progress": 325,
   "claimed": 1198,
-  "done": 743
+  "done": 743,
+  "merged": 1
  },
  "items": [
   {
@@ -3497,6 +3498,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1398,
+     "title": "Allow partial modify of Composites and Layer Combinations"
+    },
+    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
@@ -3784,6 +3789,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1398,
+     "title": "Allow partial modify of Composites and Layer Combinations"
+    },
     {
      "number": 1239,
      "title": "Add GetCurrentPenTable command (current pen set and pen count)"
@@ -7302,6 +7311,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1398,
+     "title": "Allow partial modify of Composites and Layer Combinations"
+    },
     {
      "number": 1239,
      "title": "Add GetCurrentPenTable command (current pen set and pen count)"
@@ -13173,20 +13186,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1068,
-     "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1063,
-     "title": "Expose ACAPI_GraphicalOverride_GetOverrideRuleByName"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_GetOverrideRuleGroup",
@@ -13216,10 +13219,6 @@
     {
      "number": 1075,
      "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
-    },
-    {
-     "number": 1068,
-     "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
     },
     {
      "number": 1011,
@@ -13256,10 +13255,6 @@
     {
      "number": 1075,
      "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
-    },
-    {
-     "number": 1068,
-     "title": "Add GetGraphicOverrideRulesByName (ACAPI_GraphicalOverride_GetOverrideRuleByName)"
     },
     {
      "number": 1011,
