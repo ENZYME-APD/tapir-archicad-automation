@@ -229,6 +229,22 @@ GSErrCode Initialize (void)
             applicationCommands, "1.5.6",
             "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."
         );
+        err |= RegisterCommand<GetArchicadVisibilityCommand> (
+            applicationCommands, "1.7.3",
+            "Returns whether the Archicad application is shown or hidden. Supported on Windows only; on macOS it returns an error."
+        );
+        err |= RegisterCommand<SetArchicadVisibilityCommand> (
+            applicationCommands, "1.7.3",
+            "Hides or shows the Archicad application, e.g. to keep it out of the way while a batch runs. A script that hides Archicad must show it again, also when the script fails (e.g. in a finally block). Supported on Windows only; on macOS it returns an error."
+        );
+        err |= RegisterCommand<RunActionCenterChecksCommand> (
+            applicationCommands, "1.7.3",
+            "Runs the given checks of the Action Center (by default the hotlink check). A successful result means the check ran, not that nothing was found: Archicad does not report the outcome to the caller, it shows the Action Center tab when the check found an issue."
+        );
+        err |= RegisterCommand<RedrawCurrentDatabaseCommand> (
+            applicationCommands, "1.7.3",
+            "Redraws the current database, even when its window is in the background. Only the visible region of its window is updated."
+        );
 
         AddCommandGroup (applicationCommands);
     }
