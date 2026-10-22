@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 01:37 UTC",
+ "generatedAt": "2026-10-22 01:51 UTC",
  "versions": [
   25,
   26,
@@ -15172,6 +15172,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1405,
+     "title": "SetGDLParametersOfElements: take Angle parameters in radians, as Get returns them"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"

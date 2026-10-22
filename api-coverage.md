@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 22 % | 90 | 19 | 1 | 35 | 11 | 24 |  | 49 |
 | C++ API (ACAPI::, IFCAPI::) | 29 % | 1576 | 465 |  | 6 | 1049 | 56 |  | 255 |
 
-Archicad 25–30 DevKits; updated 2026-10-22 01:37 UTC.
+Archicad 25–30 DevKits; updated 2026-10-22 01:51 UTC.
 
 | | Status |
 |---|---|
@@ -416,7 +416,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## LibraryPart
 
 - 🚧 `ACAPI_LibraryPart_AddSection` – Adds a new section to the Library Part under creation. <sub>(was `ACAPI_LibPart_AddSection`)</sub> — [#957](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/957 "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters")
-- ✅ `ACAPI_LibraryPart_ChangeAParameter` – Changes a value in an opened Library Part parameter list. <sub>(was `APIAny_ChangeAParameterID`)</sub> — [#1394](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1394 "Add ChangeLibraryPartOfElements to switch placed elements to another library part"), [#834](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/834 "SetGDLParametersOfElements: reject the mirrored size parameters of curtain wall frames")
+- ✅ `ACAPI_LibraryPart_ChangeAParameter` – Changes a value in an opened Library Part parameter list. <sub>(was `APIAny_ChangeAParameterID`)</sub> — [#1405](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1405 "SetGDLParametersOfElements: take Angle parameters in radians, as Get returns them"), [#1394](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1394 "Add ChangeLibraryPartOfElements to switch placed elements to another library part"), [#834](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/834 "SetGDLParametersOfElements: reject the mirrored size parameters of curtain wall frames")
 - 🚧 `ACAPI_LibraryPart_CheckLibPartSubtypeOf` – Checks whether a library part unique ID refers to a subtype of another. <sub>(was `APIAny_CheckLibPartSubtypeOfID`)</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1251](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1251 "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)")
 - 🚧 `ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain` – Checks whether a library part unique ID refers to a subtype of another. <sub>(was `APIAny_CheckLibPartSubtypeOfbyMainID`)</sub> — [#1273](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1273 "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"), [#1251](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1251 "Expose ACAPI_LibraryPart_GetDetails / CheckLibPartSubtypeOf (library part details and subtype check)")
 - ✅ `ACAPI_LibraryPart_CloseParameters` – Closes the Library Part parameter list opened for editing. <sub>(was `APIAny_CloseParametersID`)</sub> — [#1394](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1394 "Add ChangeLibraryPartOfElements to switch placed elements to another library part"), [#843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/843 "SetGDLParametersOfElements: say why Archicad refused the element")
