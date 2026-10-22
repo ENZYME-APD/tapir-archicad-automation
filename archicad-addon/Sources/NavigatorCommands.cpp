@@ -1439,7 +1439,10 @@ GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetInputParametersSchema (
         "properties": {
             "navigatorItemIdToMove": { "$ref": "#/NavigatorItemId" },
             "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
-            "previousNavigatorItemId": { "$ref": "#/NavigatorItemId" }
+            "previousNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The child of the parent to place the item right after. When given, the command reads the parent's children back and fails if Archicad did not place the item there."
+            }
         },
         "additionalProperties": false,
         "required": ["navigatorItemIdToMove", "parentNavigatorItemId"]
@@ -1451,6 +1454,31 @@ GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetRawResponseSchema () co
     return R"({
         "$ref": "#/ExecutionResult"
     })";
+}
+
+// The children of a navigator item are only listed with its map set, and the item
+// does not tell which map it is in, so try the maps an item can be moved in and
+// return the children list that contains childGuid. False when none of them does.
+static bool GetNavigatorChildrenContaining (const API_Guid& parentGuid, const API_Guid& childGuid, GS::Array<API_NavigatorItem>& children)
+{
+    for (API_NavigatorMapID mapId : { API_PublicViewMap, API_LayoutMap, API_ProjectMap }) {
+        API_NavigatorItem parentItem = {};
+        if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+            return false;
+        }
+        parentItem.mapId = mapId;
+        GS::Array<API_NavigatorItem> mapChildren;
+        if (ACAPI_Navigator_GetNavigatorChildrenItems (&parentItem, &mapChildren) != NoError) {
+            continue;
+        }
+        for (const API_NavigatorItem& child : mapChildren) {
+            if (child.guid == childGuid) {
+                children = mapChildren;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 GS::ObjectState MoveNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -1479,8 +1507,33 @@ GS::ObjectState MoveNavigatorItemCommand::Execute (const GS::ObjectState& parame
         return err;
     });
 
+    if (err == APIERR_BADPARS) {
+        return CreateFailedExecutionResult (err, "Archicad refused to move the navigator item to this position.");
+    }
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to move navigator item.");
+    }
+
+    // ACAPI_Navigator_SetNavigatorItemPosition can return NoError and leave the item where
+    // it was (seen for View Map folders reordered under the same parent), so read the
+    // parent's children back and check that the item now follows previousNavigatorItemId.
+    if (prevOS != nullptr) {
+        const API_Guid sourceApiGuid = GetGuidFromObjectState (*itemToMoveOS);
+        const API_Guid prevApiGuid   = GetGuidFromObjectState (*prevOS);
+        GS::Array<API_NavigatorItem> siblings;
+        if (GetNavigatorChildrenContaining (GetGuidFromObjectState (*parentOS), sourceApiGuid, siblings)) {
+            bool placed = false;
+            for (UIndex i = 1; i < siblings.GetSize (); ++i) {
+                if (siblings[i].guid == sourceApiGuid) {
+                    placed = siblings[i - 1].guid == prevApiGuid;
+                    break;
+                }
+            }
+            if (!placed) {
+                return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+                    "Archicad reported success but did not place the navigator item after previousNavigatorItemId.");
+            }
+        }
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -1620,6 +1673,8 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetRawResponseSchema ()
     return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
 }
 
+static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t);
+
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> navigatorItemIds;
@@ -1653,8 +1708,12 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
         }
 
+        // Not only subsets: ACAPI_Navigator_DeleteNavigatorView itself refuses some
+        // item types too, e.g. View Map folders and TOC items, so name the type.
         if (err == APIERR_NOTSUPPORTED) {
-            executionResults (CreateFailedExecutionResult (err, "Deleting layout subsets is not supported by the ArchiCAD API."));
+            executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf (
+                "Archicad does not support deleting this type of navigator item (%T) through its API.",
+                NavigatorItemTypeToString (navItem.itemType).ToPrintf ())));
         } else if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to delete navigator item."));
         } else {
