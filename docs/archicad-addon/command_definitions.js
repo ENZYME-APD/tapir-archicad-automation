@@ -9680,6 +9680,48 @@ var gCommands = [{
         "required": ["navigatorItems"]
     }
             },{
+                "name": "GetLayoutSubsetSettings",
+                "version": "1.7.3",
+                "description": "Gets the ID/numbering settings of Layout Book subsets.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "type": "array",
+                "items": { "$ref": "#/NavigatorItemId" }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIds"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "subsetSettings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name":                { "type": "string" },
+                        "ownPrefix":           { "type": "string" },
+                        "addOwnPrefix":        { "type": "boolean" },
+                        "customNumber":        { "type": "string" },
+                        "customNumbering":     { "type": "boolean" },
+                        "numberingStyle":      { "type": "string", "enum": ["Undefined", "abc", "ABC", "1", "01", "001", "0001", "noID"] },
+                        "startAt":             { "type": "integer" },
+                        "continueNumbering":   { "type": "boolean" },
+                        "useUpperPrefix":       { "type": "boolean" },
+                        "includeToIDSequence":  { "type": "boolean" },
+                        "error": { "$ref": "#/Error" }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["subsetSettings"]
+    }
+            },{
                 "name": "CreateDrawings",
                 "version": "1.4.0",
                 "description": "Creates Drawing elements on the specified or active layout from navigator items.",

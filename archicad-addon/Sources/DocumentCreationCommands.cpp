@@ -648,6 +648,113 @@ GS::ObjectState CreateLayoutSubsetCommand::Execute (const GS::ObjectState& param
     return CreateNavigatorItemsResponse (navigatorItems);
 }
 
+GetLayoutSubsetSettingsCommand::GetLayoutSubsetSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLayoutSubsetSettingsCommand::GetName () const
+{
+    return "GetLayoutSubsetSettings";
+}
+
+GS::Optional<GS::UniString> GetLayoutSubsetSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "type": "array",
+                "items": { "$ref": "#/NavigatorItemId" }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLayoutSubsetSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "subsetSettings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name":                { "type": "string" },
+                        "ownPrefix":           { "type": "string" },
+                        "addOwnPrefix":        { "type": "boolean" },
+                        "customNumber":        { "type": "string" },
+                        "customNumbering":     { "type": "boolean" },
+                        "numberingStyle":      { "type": "string", "enum": ["Undefined", "abc", "ABC", "1", "01", "001", "0001", "noID"] },
+                        "startAt":             { "type": "integer" },
+                        "continueNumbering":   { "type": "boolean" },
+                        "useUpperPrefix":       { "type": "boolean" },
+                        "includeToIDSequence":  { "type": "boolean" },
+                        "error": { "$ref": "#/Error" }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["subsetSettings"]
+    })";
+}
+
+GS::ObjectState GetLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "navigatorItemIds", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::ObjectState response;
+    const auto& subsetSettingsList = response.AddList<GS::ObjectState> ("subsetSettings");
+
+    for (const auto& item : items) {
+        const API_Guid guid = GetGuidFromObjectState (item);
+
+        API_SubSet subSet = {};
+        const GSErrCode err = ACAPI_Navigator_GetSubSet (&guid, &subSet);
+        if (err != NoError) {
+            subsetSettingsList (CreateErrorResponse (err, "Failed to get subset settings."));
+            continue;
+        }
+
+        GS::UniString numberingStyleStr;
+        switch (subSet.numberingStyle) {
+            case API_NS_abc:   numberingStyleStr = "abc";   break;
+            case API_NS_ABC:   numberingStyleStr = "ABC";   break;
+            case API_NS_1:     numberingStyleStr = "1";     break;
+            case API_NS_01:    numberingStyleStr = "01";    break;
+            case API_NS_001:   numberingStyleStr = "001";   break;
+            case API_NS_0001:  numberingStyleStr = "0001";  break;
+            case API_NS_noID:  numberingStyleStr = "noID";  break;
+            default:           numberingStyleStr = "Undefined"; break;
+        }
+
+        GS::ObjectState subsetResult (
+            "name",               GS::UniString (subSet.name),
+            "ownPrefix",          GS::UniString (subSet.ownPrefix),
+            "addOwnPrefix",       subSet.addOwnPrefix,
+            "customNumber",       GS::UniString (subSet.customNumber),
+            "customNumbering",    subSet.customNumbering,
+            "numberingStyle",     numberingStyleStr,
+            "startAt",            subSet.startAt,
+            "continueNumbering",  subSet.continueNumbering,
+            "useUpperPrefix",     subSet.useUpperPrefix,
+            "includeToIDSequence", !subSet.doNotInclude);
+
+        subsetSettingsList (subsetResult);
+    }
+
+    return response;
+}
+
 CreateDrawingsCommand::CreateDrawingsCommand () :
     CommandBase (CommonSchema::Used)
 {

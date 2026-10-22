@@ -1099,6 +1099,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates Layout Book subsets."
         );
+        err |= RegisterCommand<GetLayoutSubsetSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the ID/numbering settings of Layout Book subsets."
+        );
         err |= RegisterCommand<CreateDrawingsCommand> (
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
