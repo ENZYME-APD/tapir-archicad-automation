@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 07:56 UTC",
+ "generatedAt": "2026-10-22 08:17 UTC",
  "versions": [
   25,
   26,
@@ -10,8 +10,8 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 669,
-  "claimed": 757,
+  "in progress": 673,
+  "claimed": 753,
   "done": 743,
   "open": 85,
   "merged": 5
@@ -6872,9 +6872,14 @@
    "olderNames": [
     "APIDb_RedrawCurrentDatabaseID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1417,
+     "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
+    }
+   ],
    "issues": [
     {
      "number": 1413,
@@ -24249,9 +24254,14 @@
    "olderNames": [
     "APIEnv_ChangeShowHideStateID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1417,
+     "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
+    }
+   ],
    "issues": [
     {
      "number": 1413,
@@ -24743,9 +24753,14 @@
    "olderNames": [
     "APIEnv_GetShowHideStateID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1417,
+     "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
+    }
+   ],
    "issues": [
     {
      "number": 1413,
@@ -25404,9 +25419,14 @@
    "olderNames": [
     "ACAPI_ActionCenter_Check"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1417,
+     "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
+    }
+   ],
    "issues": [
     {
      "number": 1413,
@@ -26182,6 +26202,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1417,
+     "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
+    },
     {
      "number": 1359,
      "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
@@ -26989,6 +27013,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1417,
+     "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
+    },
     {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
