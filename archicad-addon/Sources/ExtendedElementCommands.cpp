@@ -538,9 +538,38 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
 // font, ...) are stored per witness point, copied from defNote when the dimension is created,
 // so a favorite only takes effect when it is applied before creation - applying it to a placed
 // dimension does not restyle its texts. Favorites can only be applied through the tool
-// defaults, which are global, so they are snapshotted first and restored right after reading,
-// leaving the user's next manual placement as it was. Returns the error response, if any.
-static GS::Optional<GS::ObjectState> GetDimensionDefaults (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo)
+// defaults, which are global, so they are snapshotted first and restored when this object goes
+// out of scope, leaving the user's next manual placement as it was. Keep it alive until the
+// dimension is created, as CreateElementsCommandBase does: a dimension created after the
+// defaults were restored got the favorite's layer and markers but the tool's text (tested in
+// AC28). For the same reason defNote is also taken straight from the favorite.
+class DimensionDefaults {
+public:
+    DimensionDefaults () = default;
+    DimensionDefaults (const DimensionDefaults&) = delete;
+    DimensionDefaults& operator= (const DimensionDefaults&) = delete;
+    ~DimensionDefaults ();
+
+    // Returns the error response, if any.
+    GS::Optional<GS::ObjectState> Read (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo);
+
+private:
+    API_Element snapshot = {};
+    API_ElementMemo snapshotMemo = {};
+    bool restore = false;
+};
+
+DimensionDefaults::~DimensionDefaults ()
+{
+    if (restore) {
+        API_Element restoreMask;
+        ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+        ACAPI_Element_ChangeDefaults (&snapshot, &snapshotMemo, &restoreMask);
+    }
+    ACAPI_DisposeElemMemoHdls (&snapshotMemo);
+}
+
+GS::Optional<GS::ObjectState> DimensionDefaults::Read (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo)
 {
 #ifdef ServerMainVers_2600
     element.header.type = API_DimensionID;
@@ -557,25 +586,14 @@ static GS::Optional<GS::ObjectState> GetDimensionDefaults (const GS::ObjectState
         return {};
     }
 
-    API_Element defaultsSnapshot = element;
-    API_ElementMemo defaultsSnapshotMemo = {};
-    const GS::OnExit snapshotGuard ([&] () {
-        ACAPI_DisposeElemMemoHdls (&defaultsSnapshotMemo);
-    });
-    GSErrCode err = ACAPI_Element_GetDefaults (&defaultsSnapshot, &defaultsSnapshotMemo);
+    snapshot = element;
+    GSErrCode err = ACAPI_Element_GetDefaults (&snapshot, &snapshotMemo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the dimension defaults.");
     }
+    restore = true;
 
     const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, API_DimensionID);
-    if (favoriteErr == NoError) {
-        err = ACAPI_Element_GetDefaults (&element, &memo);
-    }
-
-    API_Element restoreMask;
-    ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
-    ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
-
     if (favoriteErr != NoError) {
         // Same two usual causes as in CreateElementsCommandBase: ApplyFavoriteToElementDefaults
         // answers APIERR_REFUSEDPAR for a favorite of another element type, and passes on the
@@ -586,9 +604,19 @@ static GS::Optional<GS::ObjectState> GetDimensionDefaults (const GS::ObjectState
         return CreateErrorResponse (favoriteErr,
             "Failed to apply favoriteName '" + favoriteName + "' to the Dimension defaults: " + reason + ".");
     }
+
+    err = ACAPI_Element_GetDefaults (&element, &memo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the dimension defaults.");
     }
+
+    API_Favorite favorite;
+    favorite.name = favoriteName;
+    favorite.memo.New ();
+    if (ACAPI_Favorite_Get (&favorite) == NoError) {
+        element.dimension.defNote = favorite.element.dimension.defNote;
+    }
+    ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
     return {};
 }
 
@@ -5334,7 +5362,8 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            auto defaultsError = GetDimensionDefaults (data, element, memo);
+            DimensionDefaults defaults;
+            auto defaultsError = defaults.Read (data, element, memo);
             if (defaultsError.HasValue ()) {
                 elements.Push (defaultsError.Get ());
                 continue;
@@ -5492,7 +5521,8 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            auto defaultsError = GetDimensionDefaults (data, element, memo);
+            DimensionDefaults defaults;
+            auto defaultsError = defaults.Read (data, element, memo);
             if (defaultsError.HasValue ()) {
                 elements.Push (defaultsError.Get ());
                 continue;
@@ -5623,7 +5653,8 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            auto defaultsError = GetDimensionDefaults (data, element, memo);
+            DimensionDefaults defaults;
+            auto defaultsError = defaults.Read (data, element, memo);
             if (defaultsError.HasValue ()) {
                 elements.Push (defaultsError.Get ());
                 continue;
