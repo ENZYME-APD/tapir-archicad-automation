@@ -506,6 +506,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
         "properties": {
             "detailsOfElements": {
                 "type": "array",
+                "description": "One entry per input element, in the same order as the input elements array. An element that cannot be read gets an error entry in its place, so the position of an entry tells which input element it belongs to.",
                 "items": {
                     "type": "object",
                     "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
@@ -929,7 +930,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         GSErrCode err = ACAPI_Element_Get (&elem);
 
         if (err != NoError) {
-            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element"));
+            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element (element guid: \"" + APIGuidToString (elem.header.guid) + "\")"));
             continue;
         }
 
