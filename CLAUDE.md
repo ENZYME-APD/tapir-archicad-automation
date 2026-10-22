@@ -225,8 +225,11 @@ twin); new work on an element tool follows these rules:
   their first component.
 - **Built from the table:** a tool component derives from `ElementToolComponent`, which builds its
   JSON inputs and outputs from `ToolSettings/<Tool>.json` (embedded in the plugin); the subclass
-  only names the tool, its Create/Modify commands with the keys each accepts, and its geometry
-  inputs.
+  only names the tool, its Create/Modify commands with the keys each accepts, its geometry
+  inputs and its dialog panels (`JsonGroups`). Saved definitions find parameters by position, so
+  the JSON parameters come last and `JsonGroups` is append-only: never reorder or remove a panel.
+  Execute checks the element type first (the Modify commands do not), and `PrepareSettings` drops
+  values the commands cannot write, so a JSON read by Refresh can always be fed back.
 - **Three buttons, one set of JSON objects:** *Refresh* reads (`GetDetailsOfElements`), *Execute*
   writes, *Create* makes new elements (the tool's `Create<Type>` command, starting from the tool
   defaults or the `FavoriteName` input). Writing and creating only happen on a button press; the

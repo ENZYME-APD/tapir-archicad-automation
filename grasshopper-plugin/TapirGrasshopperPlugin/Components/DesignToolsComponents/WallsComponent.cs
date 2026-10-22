@@ -49,6 +49,53 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected override ISet<string> CreateKeys => CreateWallsKeys;
         protected override ISet<string> ModifyKeys => ModifyWallsKeys;
 
+        // The Wall Settings dialog's panels, in its order; append-only (see
+        // ElementToolComponent.JsonGroups).
+        protected override IReadOnlyList<string> JsonGroups { get; } = new[]
+        {
+            "Geometry and Positioning",
+            "Floor Plan and Section",
+            "Model"
+        };
+
+        // The values ModifyWalls takes for these keys (its WallModification*
+        // enums); GetDetailsOfElements also returns Polygonal and Poly, which
+        // cannot be set.
+        private static readonly ISet<string> WritableGeometryTypes = new HashSet<string> { "Straight", "Trapezoid" };
+        private static readonly ISet<string> WritableProfileTypes = new HashSet<string> { "Normal", "Slanted", "Trapez" };
+
+        protected override void PrepareSettings(
+            JObject settings,
+            ISet<string> notes)
+        {
+            var geometryType = settings["geometryType"]?.ToString();
+            if (geometryType != null && !WritableGeometryTypes.Contains(geometryType))
+            {
+                settings.Remove("geometryType");
+                notes.Add($"Geometry Method \"{geometryType}\" cannot be set; it was left unchanged.");
+            }
+
+            var profileType = settings["profileType"]?.ToString();
+            if (profileType != null && !WritableProfileTypes.Contains(profileType))
+            {
+                settings.Remove("profileType");
+                notes.Add($"Wall Complexity \"{profileType}\" cannot be set; it was left unchanged.");
+            }
+
+            // As in the Wall Settings dialog, a top-linked wall's height is not
+            // editable: Archicad computes it from the stories, and ModifyWalls
+            // applies relativeTopStory after height, undoing it.
+            var relativeTopStory = settings["relativeTopStory"];
+            if (settings["height"] != null &&
+                relativeTopStory != null &&
+                relativeTopStory.Type != JTokenType.Null &&
+                (double) relativeTopStory != 0)
+            {
+                settings.Remove("height");
+                notes.Add("Wall Height is not used for a top-linked wall; set Wall Top to 0 (Not Linked) to give a fixed height.");
+            }
+        }
+
         protected WallsComponentBase(
             string name)
             : base(

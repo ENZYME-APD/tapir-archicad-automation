@@ -30,7 +30,9 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         private const int ElementIdIndex = 1;
         private const int LayerIndexIndex = 2;
         private const int DrawOrderIndex = 3;
-        private const int FirstGroupIndex = 4;
+        private const int FavoriteNameIndex = 4;
+        private const int ErrorsOutputIndex = 4;
+        private const int FirstGeometryIndex = 5;
 
         private const string ElementIdPropertyName = "General_ElementID";
 
@@ -81,6 +83,22 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             int firstOutputIndex,
             List<JObject> details);
 
+        // The dialog panels that get a JSON input and output, in the dialog's
+        // order. Saved definitions find parameters by position, so this list
+        // is append-only: never reorder or remove a panel, and add new ones at
+        // its end (the JSON parameters come last, after the geometry).
+        // Fields of the table in another panel are not exposed.
+        protected abstract IReadOnlyList<string> JsonGroups { get; }
+
+        // Lets a tool drop or adjust settings (Add-On keys) it cannot write
+        // as given, e.g. values a Refresh returns but the Modify command does
+        // not take. Each note is shown once as a remark.
+        protected virtual void PrepareSettings(
+            JObject settings,
+            ISet<string> notes)
+        {
+        }
+
         // Lets a tool adjust a Create item after the settings were added.
         protected virtual void PrepareCreateItem(
             JObject item)
@@ -106,12 +124,9 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             }
         }
 
-        private List<string> Groups => Table.Groups;
+        private IReadOnlyList<string> Groups => JsonGroups;
 
-        private int FavoriteNameIndex => FirstGroupIndex + Groups.Count;
-        private int FirstGeometryInputIndex => FavoriteNameIndex + 1;
-        private int FirstGeometryOutputIndex => FirstGroupIndex + Groups.Count;
-        private int ErrorsOutputIndex => FirstGeometryOutputIndex + GeometryInputCount;
+        private int FirstGroupIndex => FirstGeometryIndex + GeometryInputCount;
 
         protected static string GroupParamName(
             string group)
@@ -156,6 +171,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             InIntegers(
                 "DrawOrder",
                 "Draw order (drawIndex) to set (Execute, Create): one for all elements or one per element.");
+            InTexts(
+                "FavoriteName",
+                "Favorite the new elements start from (Create): one for all or one per element.");
+            AddGeometryInputs();
             foreach (var group in Groups)
             {
                 InTexts(
@@ -164,10 +183,6 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     "object (Execute, Create): one for all elements or one per element. Only the given " +
                     "keys are written; read-only keys are ignored, so a JSON read by Refresh can be fed back.");
             }
-            InTexts(
-                "FavoriteName",
-                "Favorite the new elements start from (Create): one for all or one per element.");
-            AddGeometryInputs();
 
             for (var i = 0; i < inManager.ParamCount; i++)
             {
@@ -189,16 +204,16 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             OutIntegers(
                 "DrawOrder",
                 "Draw order (drawIndex) of each element.");
+            OutTexts(
+                "Errors",
+                "One message per element (empty when it succeeded) for the last Refresh, Execute or Create.");
+            AddGeometryOutputs();
             foreach (var group in Groups)
             {
                 OutTexts(
                     GroupParamName(group),
                     $"Settings of the \"{group}\" panel of each element, as a JSON object.");
             }
-            AddGeometryOutputs();
-            OutTexts(
-                "Errors",
-                "One message per element (empty when it succeeded) for the last Refresh, Execute or Create.");
         }
 
         protected override void AppendAdditionalComponentMenuItems(
@@ -321,7 +336,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
             SetGeometryOutputs(
                 da,
-                FirstGeometryOutputIndex,
+                FirstGeometryIndex,
                 entries.Select(e => e?["details"] as JObject).ToList());
 
             da.SetDataList(
@@ -414,15 +429,22 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             }
 
             var errors = guids.Select(g => g == null ? "Invalid element GUID." : "").ToList();
+
+            // The Modify commands write the tool's fields into whatever element
+            // they get, so elements of another type are left out here.
+            var targets = KeepElementsOfTool(guids, errors);
+
             var createOnly = new SortedSet<string>();
+            var notes = new SortedSet<string>();
             var modifyItems = new List<KeyValuePair<int, JObject>>();
             var detailItems = new List<KeyValuePair<int, JObject>>();
             for (var i = 0; i < count; i++)
             {
-                if (guids[i] == null || !TryMergeSettings(inputs, i, errors, out var settings))
+                if (targets[i] == null || !TryMergeSettings(inputs, i, errors, out var settings))
                 {
                     continue;
                 }
+                PrepareSettings(settings, notes);
 
                 var modify = new JObject();
                 var details = new JObject();
@@ -456,9 +478,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             }
 
             SendModify(modifyItems, errors);
-            SendDetails(guids, detailItems, errors);
-            SetElementIds(guids, inputs.ElementIds, errors);
+            SendDetails(targets, detailItems, errors);
+            SetElementIds(targets, inputs.ElementIds, errors);
 
+            AddNotes(notes);
             if (createOnly.Count > 0)
             {
                 AddRuntimeMessage(
@@ -482,7 +505,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         private void Create(
             IGH_DataAccess da)
         {
-            if (!TryGetGeometry(da, FirstGeometryInputIndex, out var geometry))
+            if (!TryGetGeometry(da, FirstGeometryIndex, out var geometry))
             {
                 return;
             }
@@ -499,6 +522,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             }
 
             var errors = Enumerable.Repeat("", count).ToList();
+            var notes = new SortedSet<string>();
             var createIndices = new List<int>();
             var createItems = new JArray();
             var postModify = new Dictionary<int, JObject>();
@@ -508,6 +532,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 {
                     continue;
                 }
+                PrepareSettings(settings, notes);
 
                 var item = new JObject();
                 var rest = new JObject();
@@ -594,6 +619,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             SendDetails(guids, detailItems, errors);
             SetElementIds(guids, inputs.ElementIds, errors);
 
+            AddNotes(notes);
             Refresh(da, guids, errors);
         }
 
@@ -828,6 +854,60 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             for (var k = 0; k < indices.Count && k < messages.Count; k++)
             {
                 AddMessage(errors, indices[k], messages[k]);
+            }
+        }
+
+        // The guids of the elements that are of this tool (null for the
+        // others, with a message), read with GetDetailsOfElements' type field.
+        private List<string> KeepElementsOfTool(
+            List<string> guids,
+            List<string> errors)
+        {
+            var targets = guids.Select(_ => (string) null).ToList();
+            var indices = Enumerable.Range(0, guids.Count).Where(i => guids[i] != null).ToList();
+            if (indices.Count == 0)
+            {
+                return targets;
+            }
+
+            var parameters = new JObject
+            {
+                ["elements"] = new JArray(indices.Select(i => ElementIdObject(guids[i]))),
+                ["fields"] = new JArray("type")
+            };
+            if (!TryGetCadResponse("GetDetailsOfElements", parameters, ToAddOn, out var response))
+            {
+                return targets;
+            }
+
+            var items = response["detailsOfElements"] as JArray ?? new JArray();
+            for (var k = 0; k < indices.Count; k++)
+            {
+                var i = indices[k];
+                var item = k < items.Count ? items[k] as JObject : null;
+                var type = item?["type"]?.ToString();
+                if (type == Table.ElementType)
+                {
+                    targets[i] = guids[i];
+                }
+                else if (item == null || item["error"] != null || type == null)
+                {
+                    AddMessage(errors, i, item?["error"]?["message"]?.ToString() ?? "The element could not be read; it was not changed.");
+                }
+                else
+                {
+                    AddMessage(errors, i, $"The element is a {type}, not a {Table.ElementType}; it was not changed.");
+                }
+            }
+            return targets;
+        }
+
+        private void AddNotes(
+            ISet<string> notes)
+        {
+            foreach (var note in notes)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, note);
             }
         }
 
