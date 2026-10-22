@@ -7,6 +7,8 @@ scripts need no extra packages.
 """
 
 import contextlib
+import glob
+import os
 import sys
 import tkinter as tk
 import traceback
@@ -32,6 +34,29 @@ def _enable_dpi_awareness() -> None:
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
     except (AttributeError, OSError):
         pass
+
+
+def _point_tcl_to_base_python() -> None:
+    """ Lets Tcl/Tk find their scripts when the script runs in a virtual environment.
+
+    uv runs each script in its own virtual environment. The macOS builds of its
+    Python look for Tcl's init.tcl next to the running executable, which is the
+    environment's, not the Python installation that has lib/tcl8.6 and lib/tk8.6:
+    tk.Tk() then fails with "Can't find a usable init.tcl". TCL_LIBRARY and
+    TK_LIBRARY point Tcl/Tk at the installation's copies. Windows Python sets
+    them itself, and a value set by the user is kept.
+    """
+    if sys.platform == "win32":
+        return
+    for variable, pattern, marker in (("TCL_LIBRARY", "tcl8.*", "init.tcl"), ("TK_LIBRARY", "tk8.*", "tk.tcl")):
+        if os.environ.get(variable):
+            continue
+        found = sorted(glob.glob(os.path.join(sys.base_prefix, "lib", pattern, marker)))
+        if found:
+            os.environ[variable] = os.path.dirname(found[-1])
+
+
+_point_tcl_to_base_python()
 
 
 def _pick_theme(style: ttk.Style) -> None:
