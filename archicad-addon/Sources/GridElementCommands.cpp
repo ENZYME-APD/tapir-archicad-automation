@@ -446,7 +446,8 @@ GS::ObjectState CreateGridElementsCommand::Execute (const GS::ObjectState& param
                 for (const GS::ObjectState& p : params) {
                     GS::UniString name;
                     p.Get ("name", name);
-                    if (ApplyParameter (memo.params, p, itemWarnings) && (name == "A" || name == "B")) {
+                    if (ApplyParameter (memo.params, p, itemWarnings) &&
+                        (CHEqualCStringsInsensitive (name.ToCStr (), "A") || CHEqualCStringsInsensitive (name.ToCStr (), "B"))) {
                         sizeChanged = true;
                     }
                 }
