@@ -13,7 +13,15 @@
     "favoriteName"
   ],
   "sources": {
-    "help": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm",
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-13.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-15.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-146.htm"
+    ],
     "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
   },
   "fields": [
@@ -22,9 +30,9 @@
       "set": "geometryType",
       "apiMember": "API_WallType::type",
       "apiDescription": "The type of the geometry of the wall.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Geometry Method",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Geometry Method\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -83,9 +91,9 @@
       "getFrom": "element",
       "apiMember": "API_Elem_Head::floorInd",
       "apiDescription": "The story the element is placed on (home story).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Home Story\"; screenshot WallGeometry.png \"Home Story:\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -93,9 +101,9 @@
       "set": "zCoordinate",
       "apiMember": null,
       "apiDescription": "Absolute Z of the wall bottom (derived from the home story and bottomOffset).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Bottom Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Bottom Elevation [to Reference Level]\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -103,9 +111,9 @@
       "set": "height",
       "apiMember": "API_WallType::height",
       "apiDescription": "The height of the wall relative to its bottom.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Wall Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text \"Wall height\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -115,7 +123,7 @@
       "apiDescription": "Base height of the wall relative to the floor level.",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -125,7 +133,7 @@
       "apiDescription": "The offset from top floor if wall is top linked.",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -133,9 +141,9 @@
       "set": "relativeTopStory",
       "apiMember": "API_WallType::relativeTopStory",
       "apiDescription": "The top linked story (relative to home story). Negative values are invalid. 0 = not top linked.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Wall Top",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text \"Wall top\"; screenshot WallGeometry.png \"Wall Top:\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -153,9 +161,9 @@
       "set": "thickness",
       "apiMember": "API_WallType::thickness",
       "apiDescription": "The thickness of the wall at the beginning point.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Wall Thickness",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Wall Thickness\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -165,7 +173,7 @@
       "apiDescription": "The thickness of the wall at the end point.",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -175,7 +183,7 @@
       "apiDescription": "The offset of the wall's base line from reference line at the beginning point (invalid for center wall directions).",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -195,7 +203,7 @@
       "apiDescription": "If true then the wall is mirrored to the reference line. (true == APIWdir_Left or APIWdir_LCenter ; false == APIWdir_Right or APIWdir_Center in the old API_WallDirID enum).",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -203,9 +211,9 @@
       "set": "referenceLineLocation",
       "apiMember": "API_WallType::referenceLineLocation",
       "apiDescription": "The location of the reference line (see API_WallReferenceLineLocationID).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Reference Line Location",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Reference Line Location\"; screenshot WallGeometry.png \"Reference Line:\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -213,9 +221,9 @@
       "set": "structureType",
       "apiMember": "API_WallType::modelElemStructureType",
       "apiDescription": "The structure type of the wall.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Wall Structure",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Wall Structure\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -223,9 +231,9 @@
       "set": "buildingMaterialId",
       "apiMember": "API_WallType::buildingMaterial",
       "apiDescription": "Building Material index of wall's hatch. Used only, if structure type is API_BasicStrucure.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text \"For a Basic Wall: Use the pop-up to choose its Building Material\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -233,9 +241,9 @@
       "set": "compositeId",
       "apiMember": "API_WallType::composite",
       "apiDescription": "Composite index of wall. Used only, if structure type is API_CompositeStructure.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Composite",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text \"For a Composite Wall: Use the pop-up to choose its Composite structure\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -243,9 +251,9 @@
       "set": "profileId",
       "apiMember": "API_WallType::profileAttr",
       "apiDescription": "Attribute index of the extruded profile (APIInvalidAttributeIndex if not profiled). See API_ProfileAttrType.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Profile",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text \"For a Complex Profile Wall: Use the pop-up to choose its Profile\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -253,9 +261,9 @@
       "set": "profileType",
       "apiMember": "API_WallType::profileType",
       "apiDescription": "The type of the cross section of the wall (Normal, Slanted, Trapez or Poly).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Wall Complexity",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Wall Complexity\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -265,7 +273,7 @@
       "apiDescription": "Defines the angle for slanted and double slanted walls.",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -275,7 +283,7 @@
       "apiDescription": "Defines the angle for double slanted walls.",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -283,9 +291,9 @@
       "set": "polyCanChange",
       "apiMember": "API_WallType::polyCanChange",
       "apiDescription": "The polygon wall's corners can be changed in case of L and T connections.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "PolyWall Corners Can Change",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"PolyWall Corners Can Change\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -295,8 +303,8 @@
       "apiDescription": "The height of the log for log walls (0 means normal wall).",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Model",
+      "subgroup": "Log Details"
     },
     {
       "get": "visibility",
@@ -305,18 +313,18 @@
       "apiDescription": "The option to define which stories display the wall.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
     },
     {
       "get": "isAutoOnStoryVisibility",
       "set": "isAutoOnStoryVisibility",
       "apiMember": "API_WallType::isAutoOnStoryVisibility",
       "apiDescription": "Recalculate the story visibility automatically according to the actual vertical extent of the wall.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "label": "Show on Stories",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-13.htm (heading \"Show On Stories\"; screenshot ShowOnStories.png \"Show on Stories\": All Relevant Stories / Home Story Only)",
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
     },
     {
       "get": "displayOption",
@@ -324,29 +332,29 @@
       "apiMember": "API_WallType::displayOption",
       "apiDescription": "Determines how the wall appears on the floor plan.",
       "label": "Floor Plan Display",
-      "labelSource": "devkit:APIdefs_Elements.h API_WallType::displayOption",
-      "group": null,
-      "subgroup": null
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPDisplay.png \"Floor Plan Display\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
     },
     {
       "get": "viewDepthLimitation",
       "set": "viewDepthLimitation",
       "apiMember": "API_WallType::viewDepthLimitation",
       "apiDescription": "Determines which part of the wall is visible for multi-story walls.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "label": "Show Projection",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-15.htm (screenshot FPDisplay.png \"Show Projection\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
     },
     {
       "get": "cutFillPen",
       "set": "cutFillPen",
       "apiMember": "API_WallType::cutFillPen",
       "apiDescription": "Cut fill pens set in the used structure (building material, composite, complex profile) can be overridden on the element level.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "label": "Cut Fill Foreground Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm (screenshot SlabCutPenOverride.png \"Cut Fill Foreground Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
     },
     {
       "get": "cutFillBackgroundPen",
@@ -355,8 +363,8 @@
       "apiDescription": "Cut fill pens set in the used structure (building material, composite, complex profile) can be overridden on the element level.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
     },
     {
       "get": "contourPen",
@@ -365,8 +373,8 @@
       "apiDescription": "Pen attribute index of wall's contour.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
     },
     {
       "get": "contourLineTypeId",
@@ -375,8 +383,8 @@
       "apiDescription": "The linetype index of wall's contour.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
     },
     {
       "get": "belowViewLineTypeId",
@@ -384,19 +392,19 @@
       "apiMember": "API_WallType::belowViewLineType",
       "apiDescription": "Line type used when \"OutLines Only\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Uncut Lines\" value in the Wall Settings dialog.",
       "label": "Uncut Lines",
-      "labelSource": "devkit:APIdefs_Elements.h API_WallType::belowViewLineType",
-      "group": null,
-      "subgroup": null
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Uncut Lines\"); devkit:APIdefs_Elements.h API_WallType::belowViewLineType",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
     },
     {
       "get": "aboveViewLinePen",
       "set": "aboveViewLinePen",
       "apiMember": "API_WallType::aboveViewLinePen",
       "apiDescription": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Line Pens\" value in the Wall Settings dialog.",
-      "label": "Overhead Line Pens",
-      "labelSource": "devkit:APIdefs_Elements.h API_WallType::aboveViewLinePen",
-      "group": null,
-      "subgroup": null
+      "label": "Overhead Line Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Overhead Line Pen\"; the DevKit comment says \"Overhead Line Pens\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
     },
     {
       "get": "aboveViewLineTypeId",
@@ -404,9 +412,9 @@
       "apiMember": "API_WallType::aboveViewLineType",
       "apiDescription": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup. Corresponds to the \"Overhead Lines\" value in the Wall Settings dialog.",
       "label": "Overhead Lines",
-      "labelSource": "devkit:APIdefs_Elements.h API_WallType::aboveViewLineType",
-      "group": null,
-      "subgroup": null
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-14.htm (screenshot FPOutlines.png \"Overhead Lines\"); devkit:APIdefs_Elements.h API_WallType::aboveViewLineType",
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
     },
     {
       "get": "contourPen3D",
@@ -425,8 +433,8 @@
       "apiDescription": "Material override structure of the surface on the reference line side.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Model",
+      "subgroup": "Override Surfaces"
     },
     {
       "get": "oppositeMaterial",
@@ -435,8 +443,8 @@
       "apiDescription": "Material override structure of the opposite surface.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Model",
+      "subgroup": "Override Surfaces"
     },
     {
       "get": "sideMaterial",
@@ -445,8 +453,8 @@
       "apiDescription": "Material override structure of the side surfaces.",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Model",
+      "subgroup": "Override Surfaces"
     },
     {
       "get": "materialsChained",
@@ -455,17 +463,17 @@
       "apiDescription": "Are surface materials chained?",
       "label": null,
       "labelSource": null,
-      "group": null,
-      "subgroup": null
+      "group": "Model",
+      "subgroup": "Override Surfaces"
     },
     {
       "get": "inheritEndSurface",
       "set": "inheritEndSurface",
       "apiMember": "API_WallType::inheritEndSurface",
       "apiDescription": "The end surface of the wall is inherited from the adjoining wall.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "End Surfaces: Override using Adjoining Walls",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text and screenshot InheritEndSurface1.png \"End Surfaces: Override using Adjoining Walls\")",
+      "group": "Model",
       "subgroup": null
     },
     {
@@ -473,9 +481,9 @@
       "set": "alignTexture",
       "apiMember": "API_WallType::alignTexture",
       "apiDescription": "Align texture mapping to wall edges.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Align Texture to Wall Edges",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (text and screenshot WallInsideOutside.png \"Align Texture to Wall Edges\")",
+      "group": "Model",
       "subgroup": null
     },
     {
@@ -483,9 +491,9 @@
       "set": "zoneRel",
       "apiMember": "API_WallType::zoneRel",
       "apiDescription": "Defines the wall's relation to zones (see API_ZoneRelID).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Relation to Zones",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-146.htm (heading \"Relation to Zones\"; screenshot WallInsideOutside.png \"Relation To Zones:\")",
+      "group": "Model",
       "subgroup": null
     },
     {
@@ -513,9 +521,9 @@
       "set": null,
       "apiMember": "API_WallType::sequence",
       "apiDescription": "Sequence is required when two walls meet with the same priority or when 3 or more walls meet in a junction. It's actual values can be between 0 and 999.",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Junction Order",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-3.htm (heading \"Junction Order\"; screenshot WallInsideOutside.png \"Junction Order:\")",
+      "group": "Model",
       "subgroup": null
     },
     {

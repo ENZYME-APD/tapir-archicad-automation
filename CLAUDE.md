@@ -207,8 +207,10 @@ Every Grasshopper component uses the names a user sees in Archicad, not the API 
   (`<Tool>.json`, e.g. `Wall.json`), checked by `python tools/check_tool_settings.py`. Take the
   labels from there; code only uses that copy.
 - Never invent a label. Add a label to the table only when it is found verbatim on Graphisoft's help
-  page for that settings dialog (help.graphisoft.com, the Archicad version the table names) or in a
-  DevKit comment that names the control; otherwise leave it `null`, and the API name is used.
+  page for that settings dialog (help.graphisoft.com, the Archicad version the table names: its text
+  or its dialog screenshots) or in a DevKit comment that names the control, and name the page and
+  screenshot in `labelSource`; otherwise leave it `null`, and the API name is used. Capitalization
+  follows the dialog (Title Case).
 - Labels are unique per tool, case-insensitively, because the JSON is translated back to API
   names by label. A field belongs to exactly one Group.
 

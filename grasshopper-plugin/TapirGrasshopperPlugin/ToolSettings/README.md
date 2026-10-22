@@ -15,7 +15,7 @@ names (see "Naming from the Archicad GUI" in the repository's `CLAUDE.md`).
 | `apiMember` | The Archicad API member behind it, e.g. `API_WallType::thickness` |
 | `apiDescription` | The DevKit's description of that member (`Support/Inc/APIdefs_Elements.h`) |
 | `label` | The English label of the setting's control in the tool's settings dialog, or `null` when not known yet |
-| `labelSource` | Where the label was found: the Graphisoft help page (URL with anchor) or `devkit:<header> <member>` |
+| `labelSource` | Where the label was found: the Graphisoft help page URL with the heading, text or screenshot, or `devkit:<header> <member>` |
 | `group` | The dialog panel, e.g. "Floor Plan and Section" |
 | `subgroup` | The subheading inside the panel |
 
@@ -24,8 +24,14 @@ names (see "Naming from the Archicad GUI" in the repository's `CLAUDE.md`).
 ## Rules
 
 - A label is only written when it is found verbatim on Graphisoft's help page for that
-  settings dialog (help.graphisoft.com, the `archicadVersion` of the file) or in a DevKit
-  comment that names the control. Never guess one; a field without a label keeps its API name.
+  settings dialog (help.graphisoft.com, the `archicadVersion` of the file: its text or its
+  dialog screenshots) or in a DevKit comment that names the control. `labelSource` names the
+  page and the heading, text or screenshot. Capitalization follows the dialog (Title Case).
+  Never guess one; a field without a label keeps its API name.
+- `group` is the dialog panel ("Geometry and Positioning", "Floor Plan and Section", "Model"),
+  `subgroup` the heading inside it ("Floor Plan Display", "Cut Surfaces", "Outlines", …), as
+  the help page and its screenshots show them. A field that is not a control of the dialog
+  (coordinates drawn in Archicad, output-only values) has neither.
 - Labels are unique per tool, case-insensitively.
 - Every key of the Add-On is in the table exactly once.
 
