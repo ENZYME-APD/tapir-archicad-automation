@@ -1218,6 +1218,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Returns the full navigator item tree for the specified map."
         );
+        err |= RegisterCommand<ReorderNavigatorItemsCommand> (
+            navigatorCommands, "1.7.3",
+            "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a scratch folder."
+        );
         AddCommandGroup (navigatorCommands);
     }
 

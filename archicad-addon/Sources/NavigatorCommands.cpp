@@ -1665,6 +1665,174 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+// ─── ReorderNavigatorItems ────────────────────────────────────────────────────
+
+// ACAPI_Navigator_SetNavigatorItemPosition refuses (or silently no-ops, see #1419) a call
+// that only repositions an item within its CURRENT parent. It works reliably, respecting
+// previousNavigatorItemId exactly, for a genuine re-parent (moving to a DIFFERENT parent).
+// So an item that is already under the right parent, just in the wrong slot, is first
+// bounced out to a scratch folder and back in - two genuine re-parents, no same-parent
+// no-op in between.
+static bool GetNavigatorChildren (const API_Guid& parentGuid, GS::Array<API_NavigatorItem>& children)
+{
+    API_NavigatorItem parentItem = {};
+    parentItem.guid = parentGuid;
+    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+        return false;
+    }
+    for (API_NavigatorMapID mapId : { API_PublicViewMap, API_LayoutMap, API_ProjectMap }) {
+        parentItem.mapId = mapId;
+        if (ACAPI_Navigator_GetNavigatorChildrenItems (&parentItem, &children) == NoError) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsDirectlyAfter (const GS::Array<API_NavigatorItem>& siblings, const API_Guid& itemGuid, const API_Guid* previousGuid)
+{
+    for (UIndex i = 0; i < siblings.GetSize (); ++i) {
+        if (siblings[i].guid != itemGuid) {
+            continue;
+        }
+        if (previousGuid == nullptr) {
+            return i == 0;
+        }
+        return i > 0 && siblings[i - 1].guid == *previousGuid;
+    }
+    return false;
+}
+
+ReorderNavigatorItemsCommand::ReorderNavigatorItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ReorderNavigatorItemsCommand::GetName () const
+{
+    return "ReorderNavigatorItems";
+}
+
+GS::Optional<GS::UniString> ReorderNavigatorItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "parentNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The folder whose children should be reordered."
+            },
+            "orderedNavigatorItemIds": {
+                "type": "array",
+                "description": "The complete, desired order of every child of parentNavigatorItemId. Every current child must be listed.",
+                "items": {
+                    "$ref": "#/NavigatorItemIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "parentNavigatorItemId",
+            "orderedNavigatorItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ReorderNavigatorItemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::ObjectState* parentOS = parameters.Get ("parentNavigatorItemId");
+    GS::Array<GS::ObjectState> orderedItemsOS;
+    parameters.Get ("orderedNavigatorItemIds", orderedItemsOS);
+
+    if (parentOS == nullptr || orderedItemsOS.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "parentNavigatorItemId and a non-empty orderedNavigatorItemIds are required.");
+    }
+
+    const API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
+
+    // A scratch View Map folder to bounce items through. Created fresh for this call,
+    // deleted at the end - a freshly created, empty folder deletes without issue (unlike
+    // some pre-existing ones, see #1418), so this does not leave anything behind.
+    API_NavigatorItem scratchItem = {};
+    scratchItem.itemType   = API_FolderNavItem;
+    scratchItem.mapId      = API_PublicViewMap;
+    scratchItem.customName = true;
+    static const GS::UniString scratchName ("Tapir_ReorderScratch");
+    GS::ucscpy (scratchItem.uName, scratchName.ToUStr ());
+    const GSErrCode scratchErr = ACAPI_Navigator_NewNavigatorView (&scratchItem, nullptr, nullptr, nullptr);
+    if (scratchErr != NoError) {
+        return CreateErrorResponse (scratchErr, "Failed to create the scratch folder needed to reorder items.");
+    }
+    const API_Guid scratchGuid = scratchItem.guid;
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    const API_Guid* previousGuidPtr = nullptr;
+    API_Guid previousGuidStorage = APINULLGuid;
+
+    for (const GS::ObjectState& itemOS : orderedItemsOS) {
+        const API_Guid itemGuid = GetGuidFromNavigatorItemIdArrayItem (itemOS);
+
+        GS::Array<API_NavigatorItem> siblings;
+        const bool gotSiblings = GetNavigatorChildren (parentGuid, siblings);
+        const bool alreadyPlaced = gotSiblings && IsDirectlyAfter (siblings, itemGuid, previousGuidPtr);
+
+        GSErrCode err = NoError;
+        if (!alreadyPlaced) {
+            const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
+            const GS::Guid scratchGsGuid = APIGuid2GSGuid (scratchGuid);
+            ACAPI_CallUndoableCommand ("Reorder Navigator Items", [&]() -> GSErrCode {
+                err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &scratchGsGuid, nullptr);
+                return err;
+            });
+            if (err == NoError) {
+                const GS::Guid parentGsGuid = APIGuid2GSGuid (parentGuid);
+                GS::Guid previousGsGuidStorage;
+                GS::Guid* previousGsGuidPtr = nullptr;
+                if (previousGuidPtr != nullptr) {
+                    previousGsGuidStorage = APIGuid2GSGuid (*previousGuidPtr);
+                    previousGsGuidPtr = &previousGsGuidStorage;
+                }
+                ACAPI_CallUndoableCommand ("Reorder Navigator Items", [&]() -> GSErrCode {
+                    err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &parentGsGuid, previousGsGuidPtr);
+                    return err;
+                });
+            }
+        }
+
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to move the navigator item to its requested position."));
+            // Leave previousGuidPtr as the last correctly placed item: chaining the next
+            // item after one that is not actually in position would only compound the error.
+        } else {
+            executionResults (CreateSuccessfulExecutionResult ());
+            previousGuidStorage = itemGuid;
+            previousGuidPtr = &previousGuidStorage;
+        }
+    }
+
+    bool silentMode = true;
+    ACAPI_Navigator_DeleteNavigatorView (&scratchGuid, &silentMode);
+
+    return response;
+}
+
 // ─── GetNavigatorItemTree ─────────────────────────────────────────────────────
 
 static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t)
