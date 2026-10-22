@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-21 22:44 UTC",
+ "generatedAt": "2026-10-22 01:37 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,10 @@
   30
  ],
  "counts": {
-  "open": 147,
+  "open": 146,
   "not applicable": 469,
   "in progress": 321,
-  "claimed": 1198,
+  "claimed": 1199,
   "done": 743,
   "merged": 5
  },
@@ -14924,10 +14924,15 @@
    "olderNames": [
     "APIAny_InterpretGDLScript3DID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1400,
+     "title": "Add command to read GDL script errors/warnings for a library part"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_NewLibDial",
