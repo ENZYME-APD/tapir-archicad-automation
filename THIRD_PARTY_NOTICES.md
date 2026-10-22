@@ -5,8 +5,9 @@
 The icons listed below, in
 [grasshopper-plugin/TapirGrasshopperPlugin/Resources/](grasshopper-plugin/TapirGrasshopperPlugin/Resources/),
 are Archicad user interface icons taken from Graphisoft's Archicad 29 help
-(help.graphisoft.com). Each one has a small Tapir action badge added in its
-corner (create, modify, details).
+(help.graphisoft.com): the toolbox, the attribute managers, palettes and
+organizers. Where the component has an action, a small Tapir badge is added in
+the corner (create, modify, delete, details); the others show the icon alone.
 
 These icons are © Graphisoft SE, and Tapir uses them with Graphisoft's
 permission. They are **not** covered by this repository's MIT license: do not
