@@ -218,7 +218,8 @@ Elements are handled by **one component per Archicad tool** (Walls, Slabs, Colum
 mirrors the tool's settings dialog. It is introduced tool by tool, starting with Walls; new work on
 an element tool follows these rules:
 - **Name and place:** the plural tool name ("Walls"), in the group Graphisoft puts the tool in:
-  `GroupNames.DesignTools`, `DocumentTools` or `ViewpointTools` ("Design Tools", …).
+  `GroupNames.DesignTools`, `DocumentTools` or `ViewpointTools` ("Design Tools", …; to be added
+  to `GroupNames.cs` with the first tool component).
 - **Three buttons, one set of JSON objects:** *Refresh* reads (`GetDetailsOfElements`), *Execute*
   writes, *Create* makes new elements (the tool's `Create<Type>` command, starting from the tool
   defaults or the `FavoriteName` input). Writing and creating only happen on a button press; the
@@ -234,7 +235,7 @@ an element tool follows these rules:
   `StartPoint`/`EndPoint` for walls, which override the JSON on *Create*.
 - **Execute and Create accept the same keys:** on the add-on side they share one apply-function
   (walls: `ApplyWallDetails`, used by `CreateWalls` and `ModifyWalls`; `SetDetailsOfElements`'s
-  wall case only takes coordinates, height and offset).
+  wall case only takes coordinates, height, offset and the thicknesses of trapezoid walls).
 - **Delete is never part of a tool component**; it stays in the separate `DeleteElements`
   component.
 - A `<Tool>_API` twin with the raw API names may exist for testing.
