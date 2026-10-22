@@ -1538,6 +1538,19 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
                 typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
                 typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                switch (elem.drawing.penTableUsageMode) {
+                    case APIPenTableUsageMode_UseModelPenTable:
+                        typeSpecificDetails.Add ("penTableUsageMode", GS::UniString ("UseModelPenTable"));
+                        break;
+                    case APIPenTableUsageMode_UsePenTableIndex:
+                        typeSpecificDetails.Add ("penTableUsageMode", GS::UniString ("UsePenTableIndex"));
+                        typeSpecificDetails.Add ("penTableId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_PenTableID, elem.drawing.penTableIndex)));
+                        break;
+                    default:
+                    case APIPenTableUsageMode_UseOwnPenTable:
+                        typeSpecificDetails.Add ("penTableUsageMode", GS::UniString ("UseOwnPenTable"));
+                        break;
+                }
                 typeSpecificDetails.Add ("navigatorItemId", CreateGuidObjectState (elem.drawing.drawingGuid));
                 typeSpecificDetails.Add ("bounds", GS::ObjectState (
                     "xMin", elem.drawing.bounds.xMin,
@@ -2131,6 +2144,22 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             // cropping and restores the full extent (#651); true re-enables whatever
                             // clip polygon is still stored on the Drawing.
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
+                        }
+                        GS::UniString penTableUsageModeStr;
+                        if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr)) {
+                            if (penTableUsageModeStr == "UseModelPenTable") {
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UseModelPenTable;
+                            } else if (penTableUsageModeStr == "UsePenTableIndex") {
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UsePenTableIndex;
+                                const GS::ObjectState* penTableIdState = typeSpecificDetails->Get ("penTableId");
+                                if (penTableIdState != nullptr) {
+                                    elem.drawing.penTableIndex = GetAttributeIndexFromGuid (API_PenTableID, GetGuidFromObjectState (*penTableIdState));
+                                }
+                            } else {
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UseOwnPenTable;
+                            }
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
