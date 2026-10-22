@@ -5,10 +5,10 @@ Collects the open pull requests with the lines they add to the Add-On sources
 
 A request GitHub refuses for its rate limit (403 or 429) is retried after the
 wait GitHub names (Retry-After, or the reset time of an exhausted limit), or
-after a minute for a secondary limit that names none. A wait longer than
-MAX_WAIT_SECONDS is not worth holding the runner for: the script stops with a
-message saying when the limit resets, and the next run (hourly at the latest)
-picks the data up.
+after a minute for a secondary limit that names none. The waits of one run
+add up to at most WAIT_BUDGET_SECONDS, well within the job's timeout: a wait
+that does not fit is not held, the script stops with a message saying when the
+limit resets, and the next run (hourly at the latest) picks the data up.
 
     python tools/fetch_api_coverage_github_data.py ENZYME-APD/tapir-archicad-automation github.json
 """
@@ -23,7 +23,8 @@ import urllib.request
 
 API = 'https://api.github.com'
 RETRIES = 5
-MAX_WAIT_SECONDS = 10 * 60
+WAIT_BUDGET_SECONDS = 8 * 60
+waited_seconds = 0
 
 
 def rate_limit_wait (error, attempt):
@@ -43,6 +44,7 @@ def rate_limit_wait (error, attempt):
 
 
 def get (path):
+    global waited_seconds
     request = urllib.request.Request (API + path, headers={
         'Accept': 'application/vnd.github+json',
         'Authorization': 'Bearer ' + os.environ['GITHUB_TOKEN'],
@@ -56,11 +58,12 @@ def get (path):
             wait = rate_limit_wait (error, attempt)
             if wait is None or attempt == RETRIES:
                 raise
-            if wait > MAX_WAIT_SECONDS:
+            if waited_seconds + wait > WAIT_BUDGET_SECONDS:
                 resets = datetime.datetime.now (datetime.timezone.utc) + datetime.timedelta (seconds=wait)
                 sys.exit (f'GitHub API rate limit reached for {path}; it resets at {resets:%H:%M} UTC, the next run will fetch the data.')
             print (f'GitHub API rate limit reached for {path}; retrying in {wait} s', file=sys.stderr)
             time.sleep (wait)
+            waited_seconds += wait
 
 
 def pages (path):
