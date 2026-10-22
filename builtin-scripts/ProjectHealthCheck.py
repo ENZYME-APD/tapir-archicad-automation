@@ -252,9 +252,14 @@ class ProjectHealthCheck:
                 "classificationSystemIds": system_ids,
             }).get("elementClassifications", [])
             for item, entry in zip(chunk, result):
-                # an element without classificationItemId is Unclassified; errors are not findings
-                classification_id = (entry.get("classificationIds") or [{}])[0].get("classificationId")
-                if classification_id is not None and "classificationItemId" not in classification_id:
+                classification = (entry.get("classificationIds") or [{"error": None}])[0]
+                # the Add-On returns the ids directly, the schema wraps them in classificationId
+                classification = classification.get("classificationId", classification)
+                if "error" in classification:
+                    continue
+                # Unclassified: no item, or the null GUID Archicad gives for it
+                item_guid = (classification.get("classificationItemId") or {}).get("guid", "")
+                if not item_guid.strip("0-"):
                     findings.append(self._finding(item, f"in {self.classification_system.get()}"))
         return findings
 
