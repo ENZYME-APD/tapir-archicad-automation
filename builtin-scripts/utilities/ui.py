@@ -66,7 +66,8 @@ def _pick_theme(style: ttk.Style) -> None:
 
 
 class ScriptWindow:
-    def __init__(self, title: str, description: str, min_width: int = 460, min_height: int = 320):
+    def __init__(self, title: str, description: str, min_width: int = 460, min_height: int = 320,
+                 keep_on_top: bool = True):
         _enable_dpi_awareness()
         self.root = tk.Tk()
         self.root.title(title)
@@ -105,7 +106,7 @@ class ScriptWindow:
         self._status = ttk.Label(footer, text="", foreground=STATUS_COLORS["info"])
         self._status.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 6))
 
-        self.keep_on_top = tk.BooleanVar(value=True)
+        self.keep_on_top = tk.BooleanVar(value=keep_on_top)
         ttk.Checkbutton(footer, text="Keep on top", variable=self.keep_on_top,
                         command=self._apply_topmost).grid(row=1, column=0, sticky="w")
         self._buttons = ttk.Frame(footer)
@@ -163,8 +164,12 @@ class ScriptWindow:
     def ask_ok_cancel(self, title: str, message: str) -> bool:
         return messagebox.askokcancel(title, message, parent=self.root)
 
-    def run(self, on_start: Callable[[], None] | None = None, on_close: Callable[[], None] | None = None) -> None:
+    def run(self, on_start: Callable[[], None] | None = None, on_close: Callable[[], None] | None = None,
+            can_close: Callable[[], bool] | None = None) -> None:
+        """ can_close may keep the window open, e.g. after asking the user. """
         def close():
+            if can_close and not can_close():
+                return
             if on_close:
                 self.guarded(on_close)()
             self.root.destroy()
