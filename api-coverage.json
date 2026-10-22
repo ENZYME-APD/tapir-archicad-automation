@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 14:53 UTC",
+ "generatedAt": "2026-10-22 16:00 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "in progress": 673,
-  "claimed": 753,
+  "claimed": 636,
+  "open": 202,
   "done": 743,
-  "open": 85,
   "merged": 5
  },
  "items": [
@@ -262,12 +262,7 @@
    "status": "not applicable",
    "reason": "communication between add-ons",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnAddOnCommunication_RegisterSupportedService",
@@ -1592,15 +1587,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_AddLoadCaseToLoadCombination"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1192,
-     "title": "Expose ACAPI_Analytical_AddLoadCaseToLoadCombination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_ConvertAnalyticalLinkToNonShortest",
@@ -1620,15 +1610,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_ConvertAnalyticalLinkToNonShortest"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1193,
-     "title": "Expose ACAPI_Analytical_ConvertAnalyticalLinkToNonShortest"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_CreateAnalyticalLoadCase",
@@ -1648,15 +1633,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCase"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1194,
-     "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadCase"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_CreateAnalyticalLoadCombination",
@@ -1676,15 +1656,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCombination"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1195,
-     "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadCombination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_CreateAnalyticalLoadGroup",
@@ -1704,15 +1679,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadGroup"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1196,
-     "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadGroup"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_CreateElementFromCurveMember",
@@ -1732,15 +1702,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromCurveMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1197,
-     "title": "Expose ACAPI_Analytical_CreateElementFromCurveMember"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember",
@@ -1760,15 +1725,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSegmentedSurfaceMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1198,
-     "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_CreateElementFromSurfaceMember",
@@ -1788,15 +1748,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateElementFromSurfaceMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_DeleteAnalyticalLoadCase",
@@ -1816,15 +1771,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCase"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_DeleteAnalyticalLoadCombination",
@@ -1844,15 +1794,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCombination"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_DeleteAnalyticalLoadGroup",
@@ -1872,15 +1817,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadGroup"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAllAnalyticalLoadCases",
@@ -1900,15 +1840,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAllAnalyticalLoadCases"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLinkGeometry",
@@ -1928,15 +1863,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLinkGeometry"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCase",
@@ -1956,15 +1886,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCase"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCases",
@@ -1984,15 +1909,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCases"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCombination",
@@ -2012,15 +1932,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombination"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadCombinations",
@@ -2040,15 +1955,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombinations"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadGroup",
@@ -2068,15 +1978,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroup"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalLoadGroups",
@@ -2096,15 +2001,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroups"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalMemberConnections",
@@ -2124,15 +2024,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberConnections"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalMemberPartRefCoord",
@@ -2152,15 +2047,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberPartRefCoord"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalMemberPartRefCurve",
@@ -2180,15 +2070,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberPartRefCurve"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalModel",
@@ -2208,15 +2093,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalModel"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalModelVariation",
@@ -2236,15 +2116,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalModelVariation"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalPointLoadGeometry",
@@ -2264,15 +2139,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalPointLoadGeometry"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalRelease",
@@ -2292,15 +2162,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalRelease"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetAnalyticalSupportGeometry",
@@ -2320,15 +2185,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalSupportGeometry"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetComplementaryProjectMemberType",
@@ -2348,15 +2208,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetComplementaryProjectMemberType"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetCurrentAnalyticalModel",
@@ -2384,12 +2239,7 @@
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
     }
    ],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetCurveElements",
@@ -2409,15 +2259,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurveElements"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetCurveMember",
@@ -2437,15 +2282,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurveMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetCustomCurveMemberStretchValues",
@@ -2459,15 +2299,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetEdgeLoadFromElement",
@@ -2486,15 +2321,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetEdgeLoadFromElement"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetEdgeLoadGeometry",
@@ -2513,15 +2343,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetEdgeLoadGeometry"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetLCSOfAnalyticalMember",
@@ -2541,15 +2366,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLCSOfAnalyticalMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetLCSOfAnalyticalMemberInIntersection",
@@ -2568,15 +2388,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLCSOfAnalyticalMemberInIntersection"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetLinkFromElement",
@@ -2595,15 +2410,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLinkFromElement"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetModelCheckTypeId",
@@ -2625,12 +2435,7 @@
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
     }
    ],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetPointLoadFromElement",
@@ -2649,15 +2454,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetPointLoadFromElement"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetSegmentedSurfaceMember",
@@ -2677,15 +2477,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSegmentedSurfaceMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetSupportFromElement",
@@ -2704,15 +2499,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSupportFromElement"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceElements",
@@ -2732,15 +2522,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceElements"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceLoadFromElement",
@@ -2759,15 +2544,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceLoadFromElement"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceLoadGeometry",
@@ -2786,15 +2566,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceLoadGeometry"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetSurfaceMember",
@@ -2814,15 +2589,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceMember"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_GetVisibilitySettings",
@@ -2841,15 +2611,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetVisibilitySettings"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetAnalyticalRelease",
@@ -2869,15 +2634,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetAnalyticalRelease"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetCustomCurveMember",
@@ -2891,15 +2651,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetEdgeLoadCustomDataFromMemo",
@@ -2918,15 +2673,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetEdgeLoadCustomDataFromMemo"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetElementFromEdgeLoad",
@@ -2945,15 +2695,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromEdgeLoad"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetElementFromLink",
@@ -2972,15 +2717,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromLink"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetElementFromPointLoad",
@@ -2999,15 +2739,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromPointLoad"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetElementFromSupport",
@@ -3026,15 +2761,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromSupport"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetElementFromSurfaceLoad",
@@ -3053,15 +2783,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetElementFromSurfaceLoad"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetGenerationSettingsToNoRule",
@@ -3088,12 +2813,7 @@
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
     }
    ],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetMemoFromEdgeLoadCustomData",
@@ -3112,15 +2832,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetMemoFromEdgeLoadCustomData"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetMemoFromSurfaceLoadCustomData",
@@ -3139,15 +2854,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetMemoFromSurfaceLoadCustomData"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetSurfaceLoadCustomDataFromMemo",
@@ -3166,15 +2876,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetSurfaceLoadCustomDataFromMemo"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_SetVisibilitySettings",
@@ -3193,15 +2898,10 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetVisibilitySettings"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Analytical_UpdateAnalyticalModel",
@@ -3229,12 +2929,7 @@
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
     }
    ],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_AddClassificationItem",
@@ -3260,12 +2955,7 @@
      "title": "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"
     }
    ],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_Create",
@@ -3291,12 +2981,7 @@
      "title": "Fix CreateZoneCategories failing with \"Failed to create.\" for every input"
     }
    ],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_CreateAttributeFolderPicker",
@@ -3542,12 +3227,7 @@
      "title": "Fix CreateZoneCategories failing with \"Failed to create.\" for every input"
     }
    ],
-   "issues": [
-    {
-     "number": 910,
-     "title": "Add command to activate a layer combination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetAttributesByType",
@@ -3601,12 +3281,7 @@
      "title": "Add GetAttributesFromProject: read attributes from another project or template file"
     }
    ],
-   "issues": [
-    {
-     "number": 1216,
-     "title": "Expose ACAPI_Attribute_GetAttributesFromProject (read/load attributes from another .pln/.tpl)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetClassificationInSystem",
@@ -3658,12 +3333,7 @@
      "title": "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"
     }
    ],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetCreationInfo",
@@ -3684,12 +3354,7 @@
      "title": "GetAttributesByType: report attribute creation info on Archicad 30"
     }
    ],
-   "issues": [
-    {
-     "number": 948,
-     "title": "GetAttributesByType: add attribute creation info on Archicad 30 (method, source, creator, time)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetCurrPenSet",
@@ -3921,15 +3586,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 951,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetPenNum",
@@ -4266,15 +3926,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 951,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_ModifyPropertyValue",
@@ -4354,12 +4009,7 @@
      "title": "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes"
     }
    ],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_RenameFolder",
@@ -4600,12 +4250,7 @@
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_GetAutoTexts",
@@ -4672,12 +4317,7 @@
      "title": "Add GetNoteAutotexts command (ACAPI_AutoText_GetNoteAutotexts)"
     }
    ],
-   "issues": [
-    {
-     "number": 1166,
-     "title": "Expose ACAPI_AutoText_GetNoteAutotexts"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_GetNoteKeywordForAutotextID",
@@ -4704,12 +4344,7 @@
      "title": "Add GetNoteAutoTextKeywords (ACAPI_AutoText_GetNoteKeywordForAutotextID)"
     }
    ],
-   "issues": [
-    {
-     "number": 1168,
-     "title": "Expose ACAPI_AutoText_GetNoteKeywordForAutotextID"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_GetPropertyAutoTextKeyTable",
@@ -4732,12 +4367,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_InterpretAutoText",
@@ -4765,12 +4395,7 @@
      "title": "Add GetAllAutoTextKeys and InterpretAutoTexts commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AutoText_SetAnAutoText",
@@ -4871,12 +4496,7 @@
      "title": "Fix CreateMorphs \"size\" box: no per-face surface override, outward bottom face"
     }
    ],
-   "issues": [
-    {
-     "number": 728,
-     "title": "`CreateMorphs` with `size`: every face gets the building material index as its surface override (wrong surface in 3D)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Body_AddVertex",
@@ -5284,50 +4904,6 @@
     {
      "number": 1254,
      "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
-    },
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    },
-    {
-     "number": 1092,
-     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
-    },
-    {
-     "number": 1048,
-     "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
-    },
-    {
-     "number": 1015,
-     "title": "Get and set the drawing scale of the current window"
-    },
-    {
-     "number": 1013,
-     "title": "Element categories: read and set Structural Function, Position and Renovation Status"
-    },
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    },
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    },
-    {
-     "number": 914,
-     "title": "Add UngroupElements command"
-    },
-    {
-     "number": 908,
-     "title": "Add ElevateElements command (vertical move)"
-    },
-    {
-     "number": 907,
-     "title": "Add MirrorElements command"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
     }
    ]
   },
@@ -5357,12 +4933,7 @@
      "title": "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"
     }
    ],
-   "issues": [
-    {
-     "number": 1013,
-     "title": "Element categories: read and set Structural Function, Position and Renovation Status"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Category_GetCategoryValueDefault",
@@ -5382,15 +4953,10 @@
    "olderNames": [
     "ACAPI_Element_GetCategoryValueDefault"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1076,
-     "title": "Expose ACAPI_Category_GetCategoryValueDefault"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Category_GetElementCategories",
@@ -5418,12 +4984,7 @@
      "title": "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"
     }
    ],
-   "issues": [
-    {
-     "number": 1013,
-     "title": "Element categories: read and set Structural Function, Position and Renovation Status"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Category_GetElementCategoryValues",
@@ -5451,12 +5012,7 @@
      "title": "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"
     }
    ],
-   "issues": [
-    {
-     "number": 1013,
-     "title": "Element categories: read and set Structural Function, Position and Renovation Status"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Category_SetCategoryValue",
@@ -5479,12 +5035,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1013,
-     "title": "Element categories: read and set Structural Function, Position and Renovation Status"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Category_SetCategoryValueDefault",
@@ -5968,12 +5519,7 @@
      "title": "Add GetCurtainWallAbsoluteBottoms command"
     }
    ],
-   "issues": [
-    {
-     "number": 1083,
-     "title": "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CurtainWall_GetCWHeight",
@@ -6001,12 +5547,7 @@
      "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
     }
    ],
-   "issues": [
-    {
-     "number": 1080,
-     "title": "Expose ACAPI_CurtainWall_GetCWHeight"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CurtainWall_GetCWSubElemParams",
@@ -6034,12 +5575,7 @@
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
     }
    ],
-   "issues": [
-    {
-     "number": 1081,
-     "title": "Expose ACAPI_CurtainWall_GetCWSubElemParams"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CurtainWall_IsCWPanelDegenerate",
@@ -6067,12 +5603,7 @@
      "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
     }
    ],
-   "issues": [
-    {
-     "number": 1082,
-     "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CuttingPlane_GetCutPolygonInfo",
@@ -6115,15 +5646,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1060,
-     "title": "Expose ACAPI_CuttingPlane_GetCutPolygonInfo_New"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_BuildWindowValidator",
@@ -6237,14 +5763,6 @@
     {
      "number": 1418,
      "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
-    },
-    {
-     "number": 1039,
-     "title": "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today \"Failed to delete navigator item.\")"
-    },
-    {
-     "number": 690,
-     "title": "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items"
     }
    ]
   },
@@ -6297,12 +5815,7 @@
      "title": "Add GetContainingDatabases command to find an element's database"
     }
    ],
-   "issues": [
-    {
-     "number": 1103,
-     "title": "Expose ACAPI_Database_GetContainingDatabase and ACAPI_Element_GetElementFromAnywhere (find and read an element without switching windows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetCurrentDatabase",
@@ -6377,15 +5890,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetDatabasesForTypes",
@@ -6401,15 +5909,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetDetailDatabases",
@@ -6437,12 +5940,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetDocumentFrom3DDatabases",
@@ -6470,12 +5968,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetElevationDatabases",
@@ -6503,12 +5996,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetGuidFromDBUnId",
@@ -6559,12 +6047,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetLayoutDatabases",
@@ -6592,12 +6075,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetLocOrigo",
@@ -6625,12 +6103,7 @@
      "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
     }
    ],
-   "issues": [
-    {
-     "number": 1117,
-     "title": "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetMasterLayoutDatabases",
@@ -6691,12 +6164,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetWorksheetDatabases",
@@ -6724,12 +6192,7 @@
      "title": "Add GetDatabases command to list all databases of given types"
     }
    ],
-   "issues": [
-    {
-     "number": 1128,
-     "title": "Expose ACAPI_Database_GetDatabasesForTypes (list all sections, elevations, details, worksheets, 3D documents)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_JsonQuery",
@@ -6757,12 +6220,7 @@
      "title": "Add ConsolidateLines, ConsolidateFills and GetUsedAttributes commands"
     }
    ],
-   "issues": [
-    {
-     "number": 988,
-     "title": "Line and fill consolidation, and the list of used attributes"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_ModifyDatabase",
@@ -6790,12 +6248,7 @@
      "title": "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"
     }
    ],
-   "issues": [
-    {
-     "number": 755,
-     "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_NewDatabase",
@@ -7590,12 +7043,7 @@
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     }
    ],
-   "issues": [
-    {
-     "number": 1158,
-     "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DisposeCreationOrderTable",
@@ -7615,15 +7063,10 @@
    "olderNames": [
     "APIDb_DisposeCreationOrderTableID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1159,
-     "title": "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderGetNext",
@@ -7651,12 +7094,7 @@
      "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
     }
    ],
-   "issues": [
-    {
-     "number": 1160,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderGetNext"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderInit",
@@ -7676,15 +7114,10 @@
    "olderNames": [
     "APIDb_DrawOrderInitID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1074,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderTerm",
@@ -7704,15 +7137,10 @@
    "olderNames": [
     "APIDb_DrawOrderTermID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1073,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderTerm"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_InitCreationOrderTable",
@@ -7732,15 +7160,10 @@
    "olderNames": [
     "APIDb_InitCreationOrderTableID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1072,
-     "title": "Expose ACAPI_DrawOrder_InitCreationOrderTable"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawingPrimitive_DrawStoryControl",
@@ -7760,15 +7183,10 @@
    "olderNames": [
     "APIDb_DrawStoryControlID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1070,
-     "title": "Expose ACAPI_DrawingPrimitive_DrawStoryControl"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawingPrimitive_ShapePrims",
@@ -7784,23 +7202,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1164,
-     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
-    },
-    {
-     "number": 1163,
-     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
-    },
-    {
-     "number": 1069,
-     "title": "Expose ACAPI_DrawingPrimitive_ShapePrims"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawingPrimitive_ShapePrimsExt",
@@ -7851,12 +7256,7 @@
      "title": "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"
     }
    ],
-   "issues": [
-    {
-     "number": 1015,
-     "title": "Get and set the drawing scale of the current window"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_ChangeMarkerDrawingEnabled",
@@ -7907,12 +7307,7 @@
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
     }
    ],
-   "issues": [
-    {
-     "number": 836,
-     "title": "Feature request: Drawing Manager data for Drawing elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_GetDrawingLink",
@@ -7940,12 +7335,7 @@
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
     }
    ],
-   "issues": [
-    {
-     "number": 836,
-     "title": "Feature request: Drawing Manager data for Drawing elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_GetDrawingScale",
@@ -7973,12 +7363,7 @@
      "title": "Add GetCurrentWindowDrawingScale and SetCurrentWindowDrawingScale"
     }
    ],
-   "issues": [
-    {
-     "number": 1015,
-     "title": "Get and set the drawing scale of the current window"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_GetFullDrawingContentBox",
@@ -8006,12 +7391,7 @@
      "title": "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"
     }
    ],
-   "issues": [
-    {
-     "number": 1122,
-     "title": "Expose ACAPI_Drawing_GetFullDrawingContentBox (full content box of a placed drawing)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_GetNumberingGridLines",
@@ -8031,15 +7411,10 @@
    "olderNames": [
     "APIEnv_GetNumberingGridLinesID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1171,
-     "title": "Expose ACAPI_Drawing_GetNumberingGridLines"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_IsMarkerDrawingEnabled",
@@ -8311,12 +7686,7 @@
      "title": "Add CreateElementSets command (ACAPI_ElementSet_Create)"
     }
    ],
-   "issues": [
-    {
-     "number": 1182,
-     "title": "Expose ACAPI_ElementSet_Create"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementSet_Delete",
@@ -8334,15 +7704,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1183,
-     "title": "Expose ACAPI_ElementSet_Delete"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementSet_GetData",
@@ -8372,16 +7737,7 @@
      "title": "Add GetElementSetData command (ACAPI_ElementSet_GetData)"
     }
    ],
-   "issues": [
-    {
-     "number": 1185,
-     "title": "Expose ACAPI_ElementSet_GetData"
-    },
-    {
-     "number": 1184,
-     "title": "Expose ACAPI_ElementSet_GetData"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementSet_Identify",
@@ -8464,12 +7820,7 @@
      "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
     }
    ],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_AttachObserver",
@@ -8716,18 +8067,6 @@
     {
      "number": 1226,
      "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
-    },
-    {
-     "number": 913,
-     "title": "Add ModifyCurtainWalls command"
-    },
-    {
-     "number": 662,
-     "title": "ModifySlabs: floorFill.orientation.origin appears read-only via API (type and matrix write correctly, origin does not)"
-    },
-    {
-     "number": 371,
-     "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
     }
    ]
   },
@@ -8757,12 +8096,7 @@
      "title": "Add ChangeTextContent (ACAPI_Element_ChangeContent) and rawText of Text/Label content"
     }
    ],
-   "issues": [
-    {
-     "number": 1092,
-     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeDefaults",
@@ -8788,12 +8122,7 @@
      "title": "Dimension creation commands: add favoriteName for text size and frame"
     }
    ],
-   "issues": [
-    {
-     "number": 652,
-     "title": "\"Drawing\" favorite fails every time"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeDefaultsExt",
@@ -8834,15 +8163,10 @@
    "olderNames": [
     "APIDb_ChangeElementInfoStringID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 371,
-     "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeExt",
@@ -8876,10 +8200,6 @@
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
-    },
-    {
-     "number": 811,
-     "title": "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"
     }
    ]
   },
@@ -8911,12 +8231,7 @@
      "title": "ApplyFavoritesToElements: optional keepFields to keep the target's ID, size, sill, reference line and top link"
     }
    ],
-   "issues": [
-    {
-     "number": 902,
-     "title": "Element ID: settable through SetDetailsOfElements and the Create* commands (today read-only)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeMore",
@@ -9039,28 +8354,7 @@
      "title": "CreateLabels: Symbol labels get their library part parameters (#742)"
     }
    ],
-   "issues": [
-    {
-     "number": 742,
-     "title": "CreateLabels: Symbol labels are created without their GDL parameters"
-    },
-    {
-     "number": 578,
-     "title": "CreateStairs rejects multi-segment baselines that turn clockwise (-2130313215)"
-    },
-    {
-     "number": 567,
-     "title": "CreateAssociativeDimensionsOnSection still returns ghost GUIDs: the #512 guard was not applied to it (Interior Elevation, 1.5.8)"
-    },
-    {
-     "number": 531,
-     "title": "CreateWalls: a complex-profile Wall tool default silently overrides explicit parameters (defaults memo leak)"
-    },
-    {
-     "number": 425,
-     "title": "CreateStairs: stepNum / treadDepth / riserHeight are ignored — run length is fixed regardless of parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_CreateExt",
@@ -9090,10 +8384,6 @@
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
-    },
-    {
-     "number": 481,
-     "title": "CreateWindows/CreateDoors on AC29: command returns a GUID but no opening is created (single item, no crash) — even with a valid favoriteName"
     }
    ]
   },
@@ -9274,16 +8564,7 @@
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
-   "issues": [
-    {
-     "number": 908,
-     "title": "Add ElevateElements command (vertical move)"
-    },
-    {
-     "number": 907,
-     "title": "Add MirrorElements command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Elem2UIPriority",
@@ -9334,12 +8615,7 @@
      "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
     }
    ],
-   "issues": [
-    {
-     "number": 1124,
-     "title": "Expose ACAPI_Element_ElemHasVisibleSkin (is an element visible under a Partial Structure Display mode)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ElemTypeToNeigID",
@@ -9520,15 +8796,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 942,
-     "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetClassificationInSystem",
@@ -9614,15 +8885,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetCollisions",
@@ -9669,12 +8935,7 @@
      "title": "Add element component commands: list components and read their properties"
     }
    ],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetComponents_Obsolete",
@@ -9692,15 +8953,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetCompoundInfoString",
@@ -9763,20 +9019,7 @@
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
     }
    ],
-   "issues": [
-    {
-     "number": 742,
-     "title": "CreateLabels: Symbol labels are created without their GDL parameters"
-    },
-    {
-     "number": 652,
-     "title": "\"Drawing\" favorite fails every time"
-    },
-    {
-     "number": 531,
-     "title": "CreateWalls: a complex-profile Wall tool default silently overrides explicit parameters (defaults memo leak)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetDefaultsExt",
@@ -9806,10 +9049,6 @@
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
-    },
-    {
-     "number": 413,
-     "title": "CreateDoors/CreateWindows fail with APIERR_REFUSEDPAR on Archicad 27 despite valid favorite"
     }
    ]
   },
@@ -9932,12 +9171,7 @@
      "title": "Add GetElementTypeNames: localized element type names"
     }
    ],
-   "issues": [
-    {
-     "number": 1100,
-     "title": "Expose ACAPI_Element_GetElemTypeName (localized element type names)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElementFromAnywhere",
@@ -9957,15 +9191,10 @@
    "olderNames": [
     "APIDb_GetElementFromAnywhereID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1103,
-     "title": "Expose ACAPI_Database_GetContainingDatabase and ACAPI_Element_GetElementFromAnywhere (find and read an element without switching windows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElementInfoString",
@@ -10026,12 +9255,7 @@
      "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
     }
    ],
-   "issues": [
-    {
-     "number": 987,
-     "title": "Element web links (URL references): get and set"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElementsWithClassification",
@@ -10057,12 +9281,7 @@
      "title": "Add GetElementsByClassification command"
     }
    ],
-   "issues": [
-    {
-     "number": 1098,
-     "title": "Expose ACAPI_Element_GetElementsWithClassification (all elements of one classification item in one call)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetExtent",
@@ -10113,12 +9332,7 @@
      "title": "Add GetModelExtent command (ACAPI_Element_GetExtent3D)"
     }
    ],
-   "issues": [
-    {
-     "number": 1118,
-     "title": "Expose ACAPI_Element_GetExtent3D (the \"Fit in Window\" extent of the current database)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetHeader",
@@ -10324,16 +9538,7 @@
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
-   "issues": [
-    {
-     "number": 811,
-     "title": "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"
-    },
-    {
-     "number": 742,
-     "title": "CreateLabels: Symbol labels are created without their GDL parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetMemo_ExternalHierarchical",
@@ -10452,12 +9657,7 @@
      "title": "Add element component commands: list components and read their properties"
     }
    ],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyDefinitionsOfDefaultElem",
@@ -10475,15 +9675,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyObjects",
@@ -10522,15 +9717,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyValueOfDefaultElem",
@@ -10577,12 +9767,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyValuesByGuid",
@@ -10616,12 +9801,7 @@
      "title": "Add element component commands: list components and read their properties"
     }
    ],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyValuesOfDefaultElem",
@@ -10647,12 +9827,7 @@
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid",
@@ -10812,12 +9987,7 @@
      "title": "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"
     }
    ],
-   "issues": [
-    {
-     "number": 945,
-     "title": "Add GetSurfaceQuantitiesOfElements: covered and exposed surface areas between elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetSyTran",
@@ -10843,12 +10013,7 @@
      "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
     }
    ],
-   "issues": [
-    {
-     "number": 1126,
-     "title": "Expose ACAPI_Element_GetSyTran (placement transformation of windows, doors, objects, lamps, zones)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetTextLineLength",
@@ -10876,12 +10041,7 @@
      "title": "Add MeasureTexts command: measure text length before placing it"
     }
    ],
-   "issues": [
-    {
-     "number": 1119,
-     "title": "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetTextSizeFactor",
@@ -10909,12 +10069,7 @@
      "title": "Add MeasureTexts command: measure text length before placing it"
     }
    ],
-   "issues": [
-    {
-     "number": 1119,
-     "title": "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetUserData",
@@ -11237,12 +10392,7 @@
      "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
     }
    ],
-   "issues": [
-    {
-     "number": 986,
-     "title": "Element merge: merge elements, read merges, remove a merge"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Merge_GetMergedElements",
@@ -11268,12 +10418,7 @@
      "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
     }
    ],
-   "issues": [
-    {
-     "number": 986,
-     "title": "Element merge: merge elements, read merges, remove a merge"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Merge_Remove",
@@ -11299,12 +10444,7 @@
      "title": "Add MergeElements, UnmergeElements and GetMergedElements commands"
     }
    ],
-   "issues": [
-    {
-     "number": 986,
-     "title": "Element merge: merge elements, read merges, remove a merge"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_NeigIDToElemType",
@@ -11446,12 +10586,7 @@
      "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
     }
    ],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_RoomReductions",
@@ -11530,12 +10665,7 @@
      "title": "Add GetURLReferencesOfElements and SetURLReferencesOfElements (element web links)"
     }
    ],
-   "issues": [
-    {
-     "number": 987,
-     "title": "Element web links (URL references): get and set"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetEmptyHoleUnId",
@@ -11652,12 +10782,7 @@
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     }
    ],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetUserData",
@@ -12147,12 +11272,7 @@
      "title": "Add GetFavoriteDetails: audit a Favorite's classifications, properties and categories"
     }
    ],
-   "issues": [
-    {
-     "number": 652,
-     "title": "\"Drawing\" favorite fails every time"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Favorite_GetNum",
@@ -12371,12 +11491,7 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_CalcSunOnPlace",
@@ -12404,12 +11519,7 @@
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
     }
    ],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_CanChangePlaceSets",
@@ -12429,15 +11539,10 @@
    "olderNames": [
     "APIEnv_CanChangePlaceSetsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_ChangePlaceSets",
@@ -12457,15 +11562,10 @@
    "olderNames": [
     "APIEnv_ChangePlaceSetsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_GetGeoLocation",
@@ -12516,12 +11616,7 @@
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
     }
    ],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_GetSunSets",
@@ -12549,12 +11644,7 @@
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
     }
    ],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GeoLocation_SetGeoLocation",
@@ -12819,12 +11909,7 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": [
-    {
-     "number": 561,
-     "title": "Wish: expose ACAPI_GraphicalOverride_* (create/modify/delete override rules and combinations)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_ChangeOverrideRuleGroup",
@@ -12848,12 +11933,7 @@
      "title": "Add RenameGraphicOverrideRuleGroups (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup)"
     }
    ],
-   "issues": [
-    {
-     "number": 1162,
-     "title": "Expose ACAPI_GraphicalOverride_ChangeOverrideRuleGroup"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_CreateOverrideCombination",
@@ -12909,12 +11989,7 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": [
-    {
-     "number": 561,
-     "title": "Wish: expose ACAPI_GraphicalOverride_* (create/modify/delete override rules and combinations)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_CreateOverrideRuleGroup",
@@ -12998,12 +12073,7 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": [
-    {
-     "number": 561,
-     "title": "Wish: expose ACAPI_GraphicalOverride_* (create/modify/delete override rules and combinations)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_DeleteOverrideRuleGroup",
@@ -13047,15 +12117,10 @@
    "olderNames": [
     "APIAny_EnableRenovationOverrideID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1163,
-     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_EnableVisualOverride",
@@ -13075,15 +12140,10 @@
    "olderNames": [
     "APIAny_EnableVisualOverrideID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1164,
-     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_GetActualOverrideCombination",
@@ -13104,12 +12164,7 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": [
-    {
-     "number": 942,
-     "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_GetOverrideCombination",
@@ -13380,12 +12435,7 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": [
-    {
-     "number": 942,
-     "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_SetOverrideRuleGroupOrder",
@@ -13409,12 +12459,7 @@
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     }
    ],
-   "issues": [
-    {
-     "number": 1165,
-     "title": "Expose ACAPI_GraphicalOverride_SetOverrideRuleGroupOrder"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_SetOverrideRuleOrder",
@@ -13438,12 +12483,7 @@
      "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
     }
    ],
-   "issues": [
-    {
-     "number": 1064,
-     "title": "Expose ACAPI_GraphicalOverride_SetOverrideRuleOrder"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_ChangeSuspendGroup",
@@ -13603,12 +12643,7 @@
      "title": "Add UngroupElements command and Grasshopper component"
     }
    ],
-   "issues": [
-    {
-     "number": 914,
-     "title": "Add UngroupElements command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_GetMainGroupGuid",
@@ -13740,12 +12775,7 @@
      "title": "Add UngroupElements command and Grasshopper component"
     }
    ],
-   "issues": [
-    {
-     "number": 914,
-     "title": "Add UngroupElements command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_CancelHierarchicalElem",
@@ -13841,12 +12871,7 @@
      "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     }
    ],
-   "issues": [
-    {
-     "number": 1207,
-     "title": "Expose ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (find the curtain wall / stair / railing of a sub-element)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInBeamEditMode",
@@ -13874,12 +12899,7 @@
      "title": "Add GetEditModeState command (hierarchical editing mode query)"
     }
    ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInColumnEditMode",
@@ -13907,12 +12927,7 @@
      "title": "Add GetEditModeState command (hierarchical editing mode query)"
     }
    ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInCurtainWallEditMode",
@@ -13940,12 +12955,7 @@
      "title": "Add GetEditModeState command (hierarchical editing mode query)"
     }
    ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInEditMode",
@@ -13967,12 +12977,7 @@
      "title": "Add GetEditModeState command (hierarchical editing mode query)"
     }
    ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInStairEditMode",
@@ -14000,12 +13005,7 @@
      "title": "Add GetEditModeState command (hierarchical editing mode query)"
     }
    ],
-   "issues": [
-    {
-     "number": 1208,
-     "title": "Expose ACAPI_HierarchicalEditing_IsIn*EditMode (tell scripts why writes are refused)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_OkHierarchicalElem",
@@ -14067,12 +13067,7 @@
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
     }
    ],
-   "issues": [
-    {
-     "number": 1210,
-     "title": "Expose ACAPI_HierarchicalEditing_SolveStair (turn an L/U polyline into a valid stair baseline)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_BreakHotlinkNode",
@@ -14100,12 +13095,7 @@
      "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
     }
    ],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_CreateHotlinkNode",
@@ -14156,12 +13146,7 @@
      "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
     }
    ],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetContainingHotlinkGuid",
@@ -14189,12 +13174,7 @@
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     }
    ],
-   "issues": [
-    {
-     "number": 1104,
-     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetHotLinkOwner",
@@ -14222,12 +13202,7 @@
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     }
    ],
-   "issues": [
-    {
-     "number": 1104,
-     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkInstances",
@@ -14255,12 +13230,7 @@
      "title": "GetHotlinks: list the placed instances of each hotlink node"
     }
    ],
-   "issues": [
-    {
-     "number": 983,
-     "title": "GetHotlinks: list the placed instances of each hotlink node"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkNode",
@@ -14413,15 +13383,10 @@
    "olderNames": [
     "APIDb_GetHotlinkSourceStatusID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkStoryInfo",
@@ -15963,12 +14928,7 @@
      "title": "CreateLabels: Symbol labels get their library part parameters (#742)"
     }
    ],
-   "issues": [
-    {
-     "number": 742,
-     "title": "CreateLabels: Symbol labels are created without their GDL parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_2DDrawHdl",
@@ -16963,12 +15923,7 @@
      "title": "Add the ImportMarkupsFromPDF command"
     }
    ],
-   "issues": [
-    {
-     "number": 946,
-     "title": "Add ImportMarkupsFromPDF command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Markup_PDFImportOptions",
@@ -17283,15 +16238,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1093,
-     "title": "Expose ACAPI_ModelAccess_GetConnectionTable (contact surfaces between elements, to check wall joins)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_GetNum",
@@ -17421,15 +16371,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1077,
-     "title": "Expose ACAPI_ModulData_GetInfo"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModulData_GetList",
@@ -17549,16 +16494,7 @@
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
    ],
-   "issues": [
-    {
-     "number": 884,
-     "title": "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"
-    },
-    {
-     "number": 764,
-     "title": "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorItem",
@@ -17590,20 +16526,7 @@
      "title": "Rename Project Map viewpoints through their element and verify renames"
     }
    ],
-   "issues": [
-    {
-     "number": 884,
-     "title": "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"
-    },
-    {
-     "number": 764,
-     "title": "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"
-    },
-    {
-     "number": 755,
-     "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorVPItem",
@@ -17654,16 +16577,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1047,
-     "title": "GetViewSettings: return the \"stored in this view\" flags and the full transformation (split from #876)"
-    },
-    {
-     "number": 688,
-     "title": "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeStructureDisplay",
@@ -17691,12 +16605,7 @@
      "title": "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"
     }
    ],
-   "issues": [
-    {
-     "number": 1099,
-     "title": "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeViewOptions",
@@ -17716,15 +16625,10 @@
    "olderNames": [
     "APIEnv_ChangeViewOptionsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_CloneProjectMapItemToViewMap",
@@ -17747,12 +16651,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_CreateLayout",
@@ -17826,12 +16725,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1105,
-     "title": "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_DeleteNavigatorVPItem",
@@ -17859,16 +16753,7 @@
      "title": "Fix DeleteNavigatorItems for Project Map viewpoints (schedules)"
     }
    ],
-   "issues": [
-    {
-     "number": 1039,
-     "title": "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today \"Failed to delete navigator item.\")"
-    },
-    {
-     "number": 690,
-     "title": "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_DeleteNavigatorView",
@@ -17904,14 +16789,6 @@
     {
      "number": 1418,
      "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
-    },
-    {
-     "number": 1039,
-     "title": "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today \"Failed to delete navigator item.\")"
-    },
-    {
-     "number": 690,
-     "title": "DeleteNavigatorItems fails on Project Map viewpoints (schedules): uses DeleteNavigatorView, which only handles View Map items"
     }
    ]
   },
@@ -17937,12 +16814,7 @@
      "title": "Add GetDimensionStandards command (read dimension standards)"
     }
    ],
-   "issues": [
-    {
-     "number": 1206,
-     "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_DimStand_GetNum",
@@ -17966,12 +16838,7 @@
      "title": "Add GetDimensionStandards command (read dimension standards)"
     }
    ],
-   "issues": [
-    {
-     "number": 1206,
-     "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_DimStand_Search",
@@ -17987,15 +16854,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1206,
-     "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetCurrLayerComb",
@@ -18023,12 +16885,7 @@
      "title": "Add GetCurrentLayerCombination command"
     }
    ],
-   "issues": [
-    {
-     "number": 1116,
-     "title": "Expose ACAPI_Navigator_GetCurrLayerComb (which layer combination the current window uses)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetLayoutBook",
@@ -18087,16 +16944,7 @@
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
    ],
-   "issues": [
-    {
-     "number": 884,
-     "title": "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"
-    },
-    {
-     "number": 764,
-     "title": "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorChildNum",
@@ -18241,10 +17089,6 @@
     {
      "number": 1428,
      "title": "Archicad crashes (internal assertion) after CreateLayout + RenameNavigatorItem + DeleteNavigatorItems in quick succession"
-    },
-    {
-     "number": 755,
-     "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
     }
    ]
   },
@@ -18450,12 +17294,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetStructureDisplay",
@@ -18483,12 +17322,7 @@
      "title": "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"
     }
    ],
-   "issues": [
-    {
-     "number": 1099,
-     "title": "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetSubSet",
@@ -18516,12 +17350,7 @@
      "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
     }
    ],
-   "issues": [
-    {
-     "number": 1105,
-     "title": "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetSubSetDefault",
@@ -18544,12 +17373,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1105,
-     "title": "Expose ACAPI_Navigator_GetSubSet (read the settings of an existing Layout Subset)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetViewOptions",
@@ -18569,15 +17393,10 @@
    "olderNames": [
     "APIEnv_GetViewOptionsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ModelViewOptions_Get",
@@ -18631,15 +17450,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 781,
-     "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_NewNavigatorView",
@@ -19299,12 +18113,7 @@
      "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
     }
    ],
-   "issues": [
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Polygon_InsertPolyNode",
@@ -19411,12 +18220,7 @@
      "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
     }
    ],
-   "issues": [
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Polygon_RegularizePolyline",
@@ -19444,12 +18248,7 @@
      "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
     }
    ],
-   "issues": [
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Polygon_TriangulatePoly",
@@ -20334,12 +19133,7 @@
      "title": "Add the NewProject command"
     }
    ],
-   "issues": [
-    {
-     "number": 928,
-     "title": "Add NewProject command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_Open",
@@ -20362,16 +19156,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 793,
-     "title": "Add a command to open a Teamwork/BIMcloud project by launching a new Archicad instance"
-    },
-    {
-     "number": 791,
-     "title": "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_Print",
@@ -20709,12 +19494,7 @@
      "title": "Add GetCoordinateOrigins command (virtual origin offset and user origin)"
     }
    ],
-   "issues": [
-    {
-     "number": 1117,
-     "title": "Expose ACAPI_ProjectSetting_GetOffset and ACAPI_Database_GetLocOrigo (virtual origin offset and user origin)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectSetting_GetPreferences",
@@ -21006,12 +19786,7 @@
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     }
    ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_CreatePropertyDefinition",
@@ -21219,12 +19994,7 @@
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     }
    ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_GetPropertyGroup",
@@ -21382,12 +20152,7 @@
      "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
     }
    ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_ModifyPropertyValue",
@@ -21411,12 +20176,7 @@
      "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
     }
    ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_RegisterPropertyObjectHandler",
@@ -21587,12 +20347,7 @@
      "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
     }
    ],
-   "issues": [
-    {
-     "number": 960,
-     "title": "Rendering: set the image size and resolution, report the current scene"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Rendering_GetRenderingSceneNames",
@@ -21624,12 +20379,7 @@
      "title": "[1/2] Add the GetRenderingScenes, SetCurrentRenderingScene and PhotoRender commands"
     }
    ],
-   "issues": [
-    {
-     "number": 960,
-     "title": "Rendering: set the image size and resolution, report the current scene"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Rendering_GetRenderingSets",
@@ -21657,12 +20407,7 @@
      "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
     }
    ],
-   "issues": [
-    {
-     "number": 960,
-     "title": "Rendering: set the image size and resolution, report the current scene"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Rendering_PhotoRender",
@@ -21786,16 +20531,7 @@
      "title": "Expose Drawing Manager data for Drawings and the renovation filter name of views"
     }
    ],
-   "issues": [
-    {
-     "number": 976,
-     "title": "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"
-    },
-    {
-     "number": 836,
-     "title": "Feature request: Drawing Manager data for Drawing elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Renovation_GetRenovationFilters",
@@ -21970,12 +20706,7 @@
      "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
     }
    ],
-   "issues": [
-    {
-     "number": 937,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Revision_GetRVMChangeCustomScheme",
@@ -22174,12 +20905,7 @@
      "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom scheme data"
     }
    ],
-   "issues": [
-    {
-     "number": 937,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Revision_GetRVMIssueDocumentRevisions",
@@ -22388,12 +21114,7 @@
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
    ],
-   "issues": [
-    {
-     "number": 314,
-     "title": "Bug: ChangeSelectionOfElements is really slow"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Selection_SetMarquee",
@@ -22650,12 +21371,7 @@
      "title": "Add GetSurveyPointTransformation command"
     }
    ],
-   "issues": [
-    {
-     "number": 1212,
-     "title": "Expose ACAPI_SurveyPoint_GetSurveyPointTransformation (project ↔ survey coordinates)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_SurveyPoint_IsSurveyPointLocked",
@@ -22682,12 +21398,7 @@
      "title": "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"
     }
    ],
-   "issues": [
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_SurveyPoint_IsSurveyPointVisible",
@@ -22715,12 +21426,7 @@
      "title": "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"
     }
    ],
-   "issues": [
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_SurveyPoint_SetSurveyPointLocked",
@@ -22747,12 +21453,7 @@
      "title": "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"
     }
    ],
-   "issues": [
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_SurveyPoint_SetSurveyPointVisibility",
@@ -22780,12 +21481,7 @@
      "title": "Add survey point visibility and lock to GetGeoLocation and SetGeoLocation"
     }
    ],
-   "issues": [
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_FindLockableObjectSet",
@@ -22953,12 +21649,7 @@
      "title": "[1/3] Teamwork: add the GetTeamworkProjectInfo command"
     }
    ],
-   "issues": [
-    {
-     "number": 791,
-     "title": "Add a way to open a Teamwork/BIMcloud project, not just local .pln/.pla files"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_GetUsernameFromId",
@@ -24059,16 +22750,7 @@
      "title": "Set3DCutPlanes: switch the cut off with an empty array; add Get3DCutPlanes"
     }
    ],
-   "issues": [
-    {
-     "number": 1046,
-     "title": "Set3DCutPlanes: allow switching cut planes off, add Get3DCutPlanes (split from #876)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DImageSets",
@@ -24088,15 +22770,10 @@
    "olderNames": [
     "APIEnv_Change3DImageSetsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DProjectionSets",
@@ -24119,12 +22796,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DStyle",
@@ -24152,12 +22824,7 @@
      "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DWindowSets",
@@ -24218,12 +22885,7 @@
      "title": "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"
     }
    ],
-   "issues": [
-    {
-     "number": 935,
-     "title": "Get and set snap grid and auto-intersect settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_ChangeDocumentFrom3DDefaults",
@@ -24276,19 +22938,10 @@
    "olderNames": [
     "APIEnv_ChangeDocumentFrom3DSettingsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1048,
-     "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_ChangeGhostRecord",
@@ -24316,12 +22969,7 @@
      "title": "Add GetGhostStorySettings and SetGhostStorySettings commands"
     }
    ],
-   "issues": [
-    {
-     "number": 936,
-     "title": "Get and set ghost story settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_ChangeShowHideState",
@@ -24415,12 +23063,7 @@
      "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_CreateGhostRecord",
@@ -24499,12 +23142,7 @@
      "title": "Set3DCutPlanes: switch the cut off with an empty array; add Get3DCutPlanes"
     }
    ],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DImageSets",
@@ -24524,15 +23162,10 @@
    "olderNames": [
     "APIEnv_Get3DImageSetsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DProjectionSets",
@@ -24555,12 +23188,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DStyle",
@@ -24588,12 +23216,7 @@
      "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DStyleList",
@@ -24621,16 +23244,7 @@
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    },
-    {
-     "number": 921,
-     "title": "Add 3D style commands and show selection / all in 3D"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DWindowSets",
@@ -24684,12 +23298,7 @@
      "title": "Add the GetCurrentViewImage command: the 3D or rendering window image without a file (Archicad 30)"
     }
    ],
-   "issues": [
-    {
-     "number": 950,
-     "title": "Add GetCurrentViewImage: return the 3D or rendering window image without a file (Archicad 30)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetDocumentFrom3DDefaults",
@@ -24742,19 +23351,10 @@
    "olderNames": [
     "APIEnv_GetDocumentFrom3DSettingsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1048,
-     "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetGhostRecord",
@@ -24782,12 +23382,7 @@
      "title": "Add GetGhostStorySettings and SetGhostStorySettings commands"
     }
    ],
-   "issues": [
-    {
-     "number": 936,
-     "title": "Get and set ghost story settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetGhostStorySettings",
@@ -24815,12 +23410,7 @@
      "title": "Add GetGhostStorySettings and SetGhostStorySettings commands"
     }
    ],
-   "issues": [
-    {
-     "number": 936,
-     "title": "Get and set ghost story settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetShowHideState",
@@ -24909,12 +23499,7 @@
      "title": "Resync the source view's 2D transform before relinking a Drawing"
     }
    ],
-   "issues": [
-    {
-     "number": 645,
-     "title": "ChangeDrawingLink produces a Drawing showing the wrong model content (position wrong, orientation right)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_IsAutoGroupOn",
@@ -24975,12 +23560,7 @@
      "title": "[1/3] Add GetAutoIntersect and SetAutoIntersect commands"
     }
    ],
-   "issues": [
-    {
-     "number": 935,
-     "title": "Get and set snap grid and auto-intersect settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_IsSuspendGroupOn",
@@ -25086,12 +23666,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 984,
-     "title": "Add ZoomToElements (2D and 3D)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Redraw",
@@ -25176,16 +23751,7 @@
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    },
-    {
-     "number": 921,
-     "title": "Add 3D style commands and show selection / all in 3D"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_SetZoom",
@@ -25247,12 +23813,7 @@
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     }
    ],
-   "issues": [
-    {
-     "number": 921,
-     "title": "Add 3D style commands and show selection / all in 3D"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_ShowSelectionIn3D",
@@ -25281,12 +23842,7 @@
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     }
    ],
-   "issues": [
-    {
-     "number": 921,
-     "title": "Add 3D style commands and show selection / all in 3D"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_StoreViewSettings",
@@ -25393,12 +23949,7 @@
      "title": "Add ZoomToElements to zoom the current 2D or 3D window to elements"
     }
    ],
-   "issues": [
-    {
-     "number": 984,
-     "title": "Add ZoomToElements (2D and 3D)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_AddTextWindowContent",
@@ -25418,15 +23969,10 @@
    "olderNames": [
     "APIDb_AddTextWindowContentID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1187,
-     "title": "Expose ACAPI_Window_AddTextWindowContent"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_ChangeGridSettings",
@@ -25446,15 +23992,10 @@
    "olderNames": [
     "APIDb_ChangeGridSettingsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 935,
-     "title": "Get and set snap grid and auto-intersect settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_ChangeWindow",
@@ -25669,15 +24210,10 @@
    "olderNames": [
     "APIDb_GetGridSettingsID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 935,
-     "title": "Get and set snap grid and auto-intersect settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_GetOwnWindows",
@@ -25827,15 +24363,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1067,
-     "title": "Expose ACAPI_3D_GetNum"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnIntegration_InstallAttrManagerImportMethod",
@@ -25900,15 +24431,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AnalyticalModel_GetAnalyticalSurfaceLoadGeometry",
@@ -25921,15 +24447,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AnalyticalModel_GetCurveMemberProfileVectorImage",
@@ -25942,15 +24463,10 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1202,
-     "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AttributeList_AddProperty",
@@ -26159,16 +24675,7 @@
      "title": "Add ZoomToBox command to zoom the current 2D window to a model box"
     }
    ],
-   "issues": [
-    {
-     "number": 984,
-     "title": "Add ZoomToElements (2D and 3D)"
-    },
-    {
-     "number": 928,
-     "title": "Add NewProject command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CuttingPlane_Is3DCutawayEnabled",
@@ -26406,70 +24913,6 @@
     {
      "number": 1312,
      "title": "Expose element info strings and library part / creator tool IDs"
-    },
-    {
-     "number": 1187,
-     "title": "Expose ACAPI_Window_AddTextWindowContent"
-    },
-    {
-     "number": 1160,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderGetNext"
-    },
-    {
-     "number": 1159,
-     "title": "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"
-    },
-    {
-     "number": 1158,
-     "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
-    },
-    {
-     "number": 1082,
-     "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
-    },
-    {
-     "number": 1074,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
-    },
-    {
-     "number": 1073,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderTerm"
-    },
-    {
-     "number": 1072,
-     "title": "Expose ACAPI_DrawOrder_InitCreationOrderTable"
-    },
-    {
-     "number": 1070,
-     "title": "Expose ACAPI_DrawingPrimitive_DrawStoryControl"
-    },
-    {
-     "number": 1015,
-     "title": "Get and set the drawing scale of the current window"
-    },
-    {
-     "number": 1013,
-     "title": "Element categories: read and set Structural Function, Position and Renovation Status"
-    },
-    {
-     "number": 988,
-     "title": "Line and fill consolidation, and the list of used attributes"
-    },
-    {
-     "number": 987,
-     "title": "Element web links (URL references): get and set"
-    },
-    {
-     "number": 983,
-     "title": "GetHotlinks: list the placed instances of each hotlink node"
-    },
-    {
-     "number": 976,
-     "title": "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"
-    },
-    {
-     "number": 371,
-     "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
     }
    ]
   },
@@ -26493,12 +24936,7 @@
      "title": "Add element component commands: list components and read their properties"
     }
    ],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElemComponent_GetPropertyValue",
@@ -26512,15 +24950,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElemComponent_GetPropertyValues",
@@ -26534,15 +24967,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElemComponent_GetPropertyValuesByGuid",
@@ -26564,12 +24992,7 @@
      "title": "Add element component commands: list components and read their properties"
     }
    ],
-   "issues": [
-    {
-     "number": 1014,
-     "title": "Element components: list the building-material components of elements and read their properties"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElementGroup_Create",
@@ -27233,22 +25656,6 @@
     {
      "number": 1315,
      "title": "Expose GDL date, library check/reset and embedded library folders"
-    },
-    {
-     "number": 1171,
-     "title": "Expose ACAPI_Drawing_GetNumberingGridLines"
-    },
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
-    },
-    {
-     "number": 910,
-     "title": "Add command to activate a layer combination"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
     }
    ]
   },
@@ -27404,38 +25811,6 @@
     {
      "number": 1312,
      "title": "Expose element info strings and library part / creator tool IDs"
-    },
-    {
-     "number": 1164,
-     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
-    },
-    {
-     "number": 1163,
-     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
-    },
-    {
-     "number": 1092,
-     "title": "Expose ACAPI_Element_ChangeContent, and return the raw Autotext keys of a Text (edit one line without losing the Autotexts)"
-    },
-    {
-     "number": 1091,
-     "title": "Expose ACAPI_AutoText_GetAutoTextKeys and ACAPI_AutoText_InterpretAutoText (find and test non-property Autotext keys)"
-    },
-    {
-     "number": 1083,
-     "title": "Expose ACAPI_CurtainWall_GetCWAbsoluteBottom"
-    },
-    {
-     "number": 1081,
-     "title": "Expose ACAPI_CurtainWall_GetCWSubElemParams"
-    },
-    {
-     "number": 1080,
-     "title": "Expose ACAPI_CurtainWall_GetCWHeight"
-    },
-    {
-     "number": 976,
-     "title": "Give the Claude bots the Archicad DevKit headers (issue bot, steward fix, PR review)"
     }
    ]
   },
@@ -28287,14 +26662,6 @@
     {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
-    },
-    {
-     "number": 910,
-     "title": "Add command to activate a layer combination"
-    },
-    {
-     "number": 876,
-     "title": "Feature request: Get/Set view commands"
     }
    ]
   },
@@ -28310,15 +26677,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1059,
-     "title": "Expose ACAPI_Override_GetOverrideRule"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Preferences_OldVersion",
@@ -28355,12 +26717,7 @@
      "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
     }
    ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_DeleteProperty",
@@ -28381,12 +26738,7 @@
      "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
     }
    ],
-   "issues": [
-    {
-     "number": 1145,
-     "title": "Expose ACAPI_Property missing functions"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Register_AddOnObjectHandler",
@@ -28955,12 +27307,7 @@
    "status": "not applicable",
    "reason": "user interface",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1071,
-     "title": "Expose APIEnv_GetMainWindowHWNDID"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIEnv_GetPreferencesID",
@@ -29608,15 +27955,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1177,
-     "title": "Expose ACAPI::CreatePropertyOperationManager"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::CreateZoneBoundaryQuery",
@@ -29912,12 +28254,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1169,
-     "title": "Expose ACAPI::DesignOptionCombinationViewSettings::GetName"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptionCombinationViewSettings::GetStatus",
@@ -29938,12 +28275,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1170,
-     "title": "Expose ACAPI::DesignOptionCombinationViewSettings::GetStatus"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly",
@@ -30227,12 +28559,7 @@
      "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
     }
    ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOption::SetId",
@@ -30366,12 +28693,7 @@
      "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
     }
    ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombination::SetName",
@@ -30411,12 +28733,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::GetStatus",
@@ -30439,12 +28756,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly",
@@ -30457,15 +28769,10 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1172,
-     "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetMainModelOnly"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination",
@@ -30478,19 +28785,10 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1174,
-     "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination"
-    },
-    {
-     "number": 1173,
-     "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modify",
@@ -30533,12 +28831,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionCombinationViewSettings::SetStandardCombination",
@@ -30560,12 +28853,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination",
@@ -30587,12 +28875,7 @@
      "title": "Add ActivateDesignOptionsInCombinations command"
     }
    ],
-   "issues": [
-    {
-     "number": 1175,
-     "title": "Expose ACAPI::DesignOptions::DesignOptionManager::ActivateDesignOptionInCombination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::CanBeMovedToOtherDesignOption",
@@ -30614,12 +28897,7 @@
      "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
     }
    ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::CreateDesignOption",
@@ -30861,12 +29139,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetDesignOptionCombinations",
@@ -30995,12 +29268,7 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     }
    ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetHotlinkInstanceDesignOptionTable",
@@ -31022,12 +29290,7 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     }
    ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionManager::GetTWID",
@@ -31208,12 +29471,7 @@
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     }
    ],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionSet::GetGuid",
@@ -31311,12 +29569,7 @@
      "title": "Design options: isEditable in the getters and CanMoveElementsToDesignOptions"
     }
    ],
-   "issues": [
-    {
-     "number": 1111,
-     "title": "Expose the design option pre-checks (IsEditable, CanBeMovedToOtherDesignOption) so writes can explain why they would fail"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::DesignOptionSet::SetName",
@@ -31418,15 +29671,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::ActivateOptionInSet",
@@ -31440,15 +29688,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateCombination",
@@ -31462,15 +29705,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::DeactivateOptionsInSet",
@@ -31484,15 +29722,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetActiveCombination",
@@ -31506,15 +29739,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetActiveOptionInSet",
@@ -31528,15 +29756,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetCombinationsNames",
@@ -31550,15 +29773,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetFilterMode",
@@ -31572,15 +29790,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetNodeGuid",
@@ -31594,15 +29807,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetOptionsNamesOfSet",
@@ -31616,15 +29824,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::GetSetsNames",
@@ -31638,15 +29841,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::DesignOptions::HotlinkDesignOptionTable::SetFilterMode",
@@ -31660,15 +29858,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1109,
-     "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::EditNotificationInterface::ElementsEdited",
@@ -33124,10 +31317,6 @@
     {
      "number": 1298,
      "title": "Expose the remaining C++ Archicad API (ACAPI::) functions"
-    },
-    {
-     "number": 959,
-     "title": "ModifyOpenings: support Archicad 29 and 30 through ACAPI::Element::Opening::Modify"
     }
    ]
   },
@@ -33555,12 +31744,7 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": [
-    {
-     "number": 959,
-     "title": "ModifyOpenings: support Archicad 29 and 30 through ACAPI::Element::Opening::Modify"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Element::OpeningDefault::GetExtrusionParameters",
@@ -41350,6 +39534,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1431,
+     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
+    },
     {
      "number": 1397,
      "title": "Drawing details: read/write the printable border"
@@ -49735,6 +47923,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1431,
+     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
+    },
     {
      "number": 1408,
      "title": "ModifyMeshes: keep holes when only the outline changes, apply holes sent alone"
@@ -58737,6 +56929,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1431,
+     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
+    },
+    {
      "number": 1397,
      "title": "Drawing details: read/write the printable border"
     },
@@ -62935,6 +61131,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1431,
+     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
+    },
+    {
      "number": 1397,
      "title": "Drawing details: read/write the printable border"
     },
@@ -64909,12 +63109,7 @@
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
    ],
-   "issues": [
-    {
-     "number": 1108,
-     "title": "Expose a saved view's design option combination (GetDesignOptionCombinationSettingsOf) - follow-up of #846"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::ModelViews::View::GetGuid",
@@ -69988,12 +68183,7 @@
      "title": "Add SetZoneLabelingSettings command (automatic Zone labeling)"
     }
    ],
-   "issues": [
-    {
-     "number": 1156,
-     "title": "Expose ACAPI::ZoneLabelingSettings::Modifier::SetAutomaticLabeling"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::ZoneLabelingSettings::Modifier::SetSelectedFavorite",
