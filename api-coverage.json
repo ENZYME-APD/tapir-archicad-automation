@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 13:20 UTC",
+ "generatedAt": "2026-10-22 13:52 UTC",
  "versions": [
   25,
   26,
@@ -17888,10 +17888,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
-    },
-    {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     },
@@ -18640,12 +18636,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1421,
-     "title": "Add ReorderNavigatorItems command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
