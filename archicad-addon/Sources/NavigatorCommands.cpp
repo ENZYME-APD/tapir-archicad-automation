@@ -1765,20 +1765,25 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
 
     const API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
 
-    // A scratch View Map folder to bounce items through. Created fresh for this call,
-    // deleted at the end - a freshly created, empty folder deletes without issue (unlike
-    // some pre-existing ones, see #1418), so this does not leave anything behind.
-    API_NavigatorItem scratchItem = {};
-    scratchItem.itemType   = API_FolderNavItem;
-    scratchItem.mapId      = API_PublicViewMap;
-    scratchItem.customName = true;
-    static const GS::UniString scratchName ("Tapir_ReorderScratch");
-    GS::ucscpy (scratchItem.uName, scratchName.ToUStr ());
-    const GSErrCode scratchErr = ACAPI_Navigator_NewNavigatorView (&scratchItem, nullptr, nullptr, nullptr);
-    if (scratchErr != NoError) {
-        return CreateErrorResponse (scratchErr, "Failed to create the scratch folder needed to reorder items.");
-    }
-    const API_Guid scratchGuid = scratchItem.guid;
+    // Items are bounced through a different parent to work around the same-parent no-op
+    // (#1418): moving an item OUT then back IN, both genuine re-parents, reliably respects
+    // previousNavigatorItemId even when a same-parent reposition would not. No scratch
+    // folder/subset needs to be created or cleaned up for this - an existing SIBLING of the
+    // item (any other current child of parentGuid) is always a valid, already-existing
+    // container in the right map to bounce through. This also makes the command map-
+    // agnostic: a View Map folder cannot be a Layout Book item's scratch parent (wrong map),
+    // but a sibling navigator item always is. parentGuid's own PARENT was tried first and
+    // dropped: one level up from the Layout Book's top project item or the View Map's top
+    // folder lands on the map's absolute root (an UndefinedItem), which accepts an item
+    // moved out but then refuses the move back in - a sibling has no such failure mode.
+    auto findSiblingOtherThan = [] (const GS::Array<API_NavigatorItem>& siblings, const API_Guid& exclude) -> GS::Optional<API_Guid> {
+        for (const API_NavigatorItem& sibling : siblings) {
+            if (sibling.guid != exclude) {
+                return sibling.guid;
+            }
+        }
+        return GS::NoValue;
+    };
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
@@ -1795,6 +1800,18 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
 
         GSErrCode err = NoError;
         if (!alreadyPlaced) {
+            // Prefer the last correctly placed item as the bounce sibling (always a current
+            // child of parentGuid by construction); otherwise any other current child.
+            GS::Optional<API_Guid> scratchGuidOpt = previousGuidPtr != nullptr
+                ? GS::Optional<API_Guid> (*previousGuidPtr)
+                : (gotSiblings ? findSiblingOtherThan (siblings, itemGuid) : GS::NoValue);
+            if (!scratchGuidOpt.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    "No sibling available to bounce this item through; parentNavigatorItemId has no other child yet."));
+                continue;
+            }
+            const API_Guid scratchGuid = scratchGuidOpt.Get ();
+
             const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
             const GS::Guid scratchGsGuid = APIGuid2GSGuid (scratchGuid);
             ACAPI_CallUndoableCommand ("Reorder Navigator Items", [&]() -> GSErrCode {
@@ -1826,9 +1843,6 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
             previousGuidPtr = &previousGuidStorage;
         }
     }
-
-    bool silentMode = true;
-    ACAPI_Navigator_DeleteNavigatorView (&scratchGuid, &silentMode);
 
     return response;
 }
