@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 09:56 UTC",
+ "generatedAt": "2026-10-22 12:04 UTC",
  "versions": [
   25,
   26,
@@ -6226,6 +6226,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1418,
+     "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
+    },
     {
      "number": 1039,
      "title": "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today \"Failed to delete navigator item.\")"
@@ -17877,6 +17881,10 @@
    ],
    "issues": [
     {
+     "number": 1418,
+     "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
+    },
+    {
      "number": 1039,
      "title": "DeleteNavigatorItems: delete independent Worksheets and Details through ACAPI_Database_DeleteDatabase (today \"Failed to delete navigator item.\")"
     },
@@ -18711,7 +18719,12 @@
      "title": "CreateLayout: let the caller choose the new layout's place in its subset"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1418,
+     "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_CatchAttributeReplacement",
