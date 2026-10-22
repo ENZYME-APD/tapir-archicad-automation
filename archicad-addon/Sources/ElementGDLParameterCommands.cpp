@@ -2047,12 +2047,18 @@ static bool CopyParameterValue (const API_AddParType& oldParam, const API_AddPar
     return written;
 }
 
+// GDL parameter names are case-insensitive, and parts may spell the same name differently (ZZYZX, zzyzx).
+static bool IsSameParameterName (const char* name1, const char* name2)
+{
+    return GS::UniString (name1).Compare (GS::UniString (name2), CaseInsensitive) == GS::UniString::Equal;
+}
+
 static const API_AddParType* FindParameterByName (API_AddParType** params, const char* name)
 {
     const GSSize nParams = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
     for (GSIndex ii = 0; ii < nParams; ++ii) {
         const API_AddParType& param = (*params)[ii];
-        if (param.typeID != APIParT_Separator && CHCompareCStrings (param.name, name) == 0) {
+        if (param.typeID != APIParT_Separator && IsSameParameterName (param.name, name)) {
             return &param;
         }
     }
@@ -2200,7 +2206,7 @@ static GSErrCode ChangeLibraryPartOfElement (const GS::ObjectState& elementWithL
         const GSSize nOldParams = BMGetHandleSize ((GSHandle) oldMemo.params) / sizeof (API_AddParType);
         for (GSIndex ii = 0; ii < nOldParams; ++ii) {
             const API_AddParType& oldParam = (*oldMemo.params)[ii];
-            if (oldParam.typeID == APIParT_Separator || CHCompareCStrings (oldParam.name, "A") == 0 || CHCompareCStrings (oldParam.name, "B") == 0) {
+            if (oldParam.typeID == APIParT_Separator || IsSameParameterName (oldParam.name, "A") || IsSameParameterName (oldParam.name, "B")) {
                 continue;
             }
             const API_AddParType* newParam = FindParameterByName (getParams.params, oldParam.name);
