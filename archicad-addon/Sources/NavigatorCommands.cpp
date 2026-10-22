@@ -1591,6 +1591,10 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         }
     }
 
+    // Best-effort flush of the navigator state just changed above; see the same call in
+    // DeleteNavigatorItemsCommand::Execute for why (issue #1428). Error intentionally ignored.
+    ACAPI_Database_RedrawCurrentDatabase ();
+
     return CreateSuccessfulExecutionResult ();
 }
 
@@ -1622,6 +1626,12 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetRawResponseSchema ()
 
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    // Flush any pending navigator state from a preceding Create/Rename before walking the
+    // tree below: a database create or rename followed immediately by a delete has been seen
+    // to crash ArchiCAD internally (ProjectManager::FindGroup type-compatibility violation,
+    // see issue #1428); this is a best-effort mitigation, its error is intentionally ignored.
+    ACAPI_Database_RedrawCurrentDatabase ();
+
     GS::Array<GS::ObjectState> navigatorItemIds;
     parameters.Get ("navigatorItemIds", navigatorItemIds);
 

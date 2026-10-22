@@ -417,6 +417,11 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
                         continue;
                     }
                 }
+
+                // Best-effort flush of the navigator/database state just created above: a new
+                // database followed soon after by a RenameNavigatorItem + DeleteNavigatorItems
+                // has been seen to crash ArchiCAD internally (issue #1428). Error ignored.
+                ACAPI_Database_RedrawCurrentDatabase ();
             }
         }
 
