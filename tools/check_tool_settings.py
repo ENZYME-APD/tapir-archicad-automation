@@ -9,8 +9,8 @@ components take their names from these tables (see CLAUDE.md, "Naming from
 the Archicad GUI").
 
 The keys are read from the Add-On sources, without Archicad:
-  * GetDetailsOfElements: the typeSpecificDetails.Add (and polygon) keys of
-    the tool's case in GetDetailsOfElementsCommand::Execute (ElementCommands.cpp),
+  * GetDetailsOfElements: the properties of the tool's details schema (e.g.
+    WallDetails) in the common schema definitions, following $ref and allOf,
   * Create/Modify: the item properties of the commands' input schemas,
     evaluated like tools/generate_addon_docs.py does.
 
@@ -30,34 +30,40 @@ import argparse
 import glob
 import json
 import os
-import re
 import sys
 
 import generate_addon_docs
 
 REPO_ROOT = os.path.dirname (os.path.dirname (os.path.abspath (__file__)))
 TOOL_SETTINGS_DIR = os.path.join (REPO_ROOT, 'grasshopper-plugin', 'TapirGrasshopperPlugin', 'ToolSettings')
-ELEMENT_COMMANDS_FILE = os.path.join (REPO_ROOT, 'archicad-addon', 'Sources', 'ElementCommands.cpp')
 
 FIELD_PROPERTIES = {'get', 'set', 'getFrom', 'apiMember', 'apiDescription', 'label', 'labelSource', 'group', 'subgroup'}
 GET_FROM_VALUES = {'typeSpecificDetails', 'element'}
 
 
-def GetDetailsKeys (getCase):
-    with open (ELEMENT_COMMANDS_FILE, encoding='utf-8') as f:
-        text = f.read ()
-    start = text.find ('GS::ObjectState GetDetailsOfElementsCommand::Execute')
-    if start < 0:
-        raise ValueError ('GetDetailsOfElementsCommand::Execute not found in ElementCommands.cpp')
-    m = re.compile (r'^(\s*)case ' + re.escape (getCase) + r':', re.M).search (text, start)
-    if m is None:
-        raise ValueError ('case %s not found in GetDetailsOfElementsCommand::Execute' % getCase)
-    end = re.compile ('^' + m.group (1) + r'(case \w+:|default:)', re.M).search (text, m.end ())
-    block = text[m.end ():end.start () if end else len (text)]
-    keys = set (re.findall (r'typeSpecificDetails\.Add \("(\w+)"', block))
-    for args in re.findall (r'AddPolygonFromMemoCoords \(([^;]*)\);', block):
-        keys.update (re.findall (r'"(\w+)"', args))
+def GetSchemaProperties (definitions, node, seen=()):
+    keys = set ()
+    if not isinstance (node, dict):
+        return keys
+    if '$ref' in node:
+        name = node['$ref'].split ('/')[-1]
+        if name not in definitions:
+            raise ValueError ('schema definition %s not found' % name)
+        if name not in seen:
+            keys |= GetSchemaProperties (definitions, definitions[name], seen + (name,))
+    keys |= set (node.get ('properties', {}))
+    for combinator in ('allOf', 'oneOf', 'anyOf'):
+        for sub in node.get (combinator, []):
+            keys |= GetSchemaProperties (definitions, sub, seen)
     return keys
+
+
+def GetDetailsKeys (getSchema):
+    with open (generate_addon_docs.COMMON_SCHEMA_FILE, encoding='utf-8') as f:
+        definitions = json.load (f)
+    if getSchema not in definitions:
+        raise ValueError ('details schema %s not found in the common schema definitions' % getSchema)
+    return GetSchemaProperties (definitions, definitions[getSchema])
 
 
 def GetSchemaItemKeys (interpreter, className):
@@ -77,7 +83,7 @@ def CheckTable (path, interpreter):
     fields = table.get ('fields', [])
     plainKeys = set (table.get ('plainKeys', []))
 
-    getKeys = GetDetailsKeys (commands['getCase'])
+    getKeys = GetDetailsKeys (commands['getSchema'])
     setKeys = set ()
     for role in ('create', 'modify'):
         if role in commands:
@@ -124,7 +130,7 @@ def CheckTable (path, interpreter):
     for key in sorted (getKeys - set (tableGet)):
         errors.append ('%s: GetDetailsOfElements returns "%s", which is not in the table' % (name, key))
     for key in sorted (set (tableGet) - getKeys):
-        errors.append ('%s: get key "%s" is not returned by GetDetailsOfElements (%s)' % (name, key, commands['getCase']))
+        errors.append ('%s: get key "%s" is not in the details schema %s' % (name, key, commands['getSchema']))
     for key in sorted (setKeys - set (tableSet) - plainKeys):
         errors.append ('%s: the Create/Modify schemas take "%s", which is not in the table' % (name, key))
     for key in sorted ((set (tableSet) | plainKeys) - setKeys):
