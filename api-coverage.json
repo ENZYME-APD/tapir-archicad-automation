@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 12:28 UTC",
+ "generatedAt": "2026-10-22 12:37 UTC",
  "versions": [
   25,
   26,
@@ -5011,6 +5011,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1421,
+     "title": "Add ReorderNavigatorItems command"
+    },
     {
      "number": 1399,
      "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
@@ -17875,6 +17879,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1421,
+     "title": "Add ReorderNavigatorItems command"
+    },
+    {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     },
@@ -18136,6 +18144,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1421,
+     "title": "Add ReorderNavigatorItems command"
+    },
+    {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     },
@@ -18171,6 +18183,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1421,
+     "title": "Add ReorderNavigatorItems command"
+    },
     {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
@@ -18615,7 +18631,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1421,
+     "title": "Add ReorderNavigatorItems command"
+    }
+   ],
    "issues": []
   },
   {
@@ -18726,6 +18747,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1421,
+     "title": "Add ReorderNavigatorItems command"
+    },
     {
      "number": 1419,
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
