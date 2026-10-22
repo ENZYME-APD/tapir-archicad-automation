@@ -4,7 +4,7 @@
   "archicadVersion": 29,
   "commands": {
     "get": "GetDetailsOfElements",
-    "getCase": "API_WallID",
+    "getSchema": "WallDetails",
     "create": "CreateWallsCommand",
     "modify": "ModifyWallsCommand"
   },
