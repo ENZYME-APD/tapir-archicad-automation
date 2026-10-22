@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22 12:04 UTC",
+ "generatedAt": "2026-10-22 12:28 UTC",
  "versions": [
   25,
   26,
@@ -17875,6 +17875,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1419,
+     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
+    },
+    {
      "number": 1050,
      "title": "DeleteNavigatorItems: delete independent worksheets and details of the Project Map"
     }
@@ -18132,6 +18136,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1419,
+     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
+    },
+    {
      "number": 885,
      "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
     },
@@ -18163,6 +18171,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1419,
+     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
+    },
     {
      "number": 1112,
      "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
@@ -18715,11 +18727,19 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1419,
+     "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
+    },
+    {
      "number": 761,
      "title": "CreateLayout: let the caller choose the new layout's place in its subset"
     }
    ],
    "issues": [
+    {
+     "number": 1420,
+     "title": "Add a command to reorder Navigator items (works around MoveNavigatorItem's same-parent no-op)"
+    },
     {
      "number": 1418,
      "title": "View Map: DeleteNavigatorItems rejects folders/TOC items, and item ordering within a folder is unreliable"
