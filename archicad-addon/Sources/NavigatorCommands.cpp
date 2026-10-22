@@ -1597,7 +1597,20 @@ GS::ObjectState MoveNavigatorItemCommand::Execute (const GS::ObjectState& parame
 
     API_NavigatorMapID  mapId = API_PublicViewMap;
     GS::Array<API_Guid> childGuidsBefore;
-    const bool alreadyInParent =GetChildrenContaining (parentApiGuid, sourceApiGuid, mapId, childGuidsBefore);
+    const bool alreadyInParent = GetChildrenContaining (parentApiGuid, sourceApiGuid, mapId, childGuidsBefore);
+
+    // Checked before anything is moved, so that a wrong previousNavigatorItemId does not
+    // leave the item in another folder
+    if (prevApiGuidPtr != nullptr) {
+        API_NavigatorMapID  prevMapId = API_PublicViewMap;
+        GS::Array<API_Guid> prevSiblingGuids;
+        const bool prevInParent = alreadyInParent ?
+            childGuidsBefore.Contains (prevApiGuid) :
+            GetChildrenContaining (parentApiGuid, prevApiGuid, prevMapId, prevSiblingGuids);
+        if (!prevInParent) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "previousNavigatorItemId must be a child of parentNavigatorItemId.");
+        }
+    }
 
     GSErrCode     err = NoError;
     GS::UniString errorMessage;
@@ -1626,21 +1639,38 @@ GS::ObjectState MoveNavigatorItemCommand::Execute (const GS::ObjectState& parame
             }
             const GS::Guid temporaryParentGuid = APIGuid2GSGuid (temporaryParentApiGuid);
             err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGuid, &temporaryParentGuid, nullptr);
-            if (err == NoError) {
-                err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGuid, &parentGuid, prevGuidPtr);
-            }
             if (err != NoError) {
                 errorMessage = "Failed to move navigator item within its parent.";
                 return err;
             }
-            moved = GetChildrenContaining (parentApiGuid, sourceApiGuid, mapId, childGuids) &&
-                    IsAtRequestedPosition (childGuids, sourceApiGuid, prevApiGuidPtr);
+            err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGuid, &parentGuid, prevGuidPtr);
+            const bool backInParent = GetChildrenContaining (parentApiGuid, sourceApiGuid, mapId, childGuids);
+            if (!backInParent) {
+                // Put the item back where it was, after its previous sibling, instead of
+                // leaving it in the temporary folder
+                const UIndex originalIndex = childGuidsBefore.FindFirst (sourceApiGuid);
+                GS::Guid  originalPrevGuid;
+                GS::Guid* originalPrevGuidPtr = nullptr;
+                if (originalIndex != MaxUIndex && originalIndex > 0) {
+                    originalPrevGuid    = APIGuid2GSGuid (childGuidsBefore[originalIndex - 1]);
+                    originalPrevGuidPtr = &originalPrevGuid;
+                }
+                ACAPI_Navigator_SetNavigatorItemPosition (&sourceGuid, &parentGuid, originalPrevGuidPtr);
+            }
+            if (err != NoError || !backInParent) {
+                if (err == NoError) {
+                    err = APIERR_REFUSEDPAR;
+                }
+                errorMessage = "Failed to move navigator item within its parent.";
+                return err;
+            }
+            moved = IsAtRequestedPosition (childGuids, sourceApiGuid, prevApiGuidPtr);
         }
 
         if (!moved) {
             err          = APIERR_REFUSEDPAR;
             errorMessage = prevApiGuidPtr != nullptr ?
-                "Archicad did not move the navigator item to the requested position. previousNavigatorItemId must be a child of parentNavigatorItemId." :
+                "Archicad did not move the navigator item to the requested position." :
                 "Archicad did not move the navigator item to the requested parent.";
             return err;
         }
