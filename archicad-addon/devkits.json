@@ -1,0 +1,11 @@
+{
+    "_comment": "The Archicad versions Tapir is built for, and the GRAPHISOFT/archicad-api-devkit release of each. Read by the build checks, the release, the API coverage, the Claude jobs' DevKit download, build_all_win.bat and the docs generator. tools/update_devkits.py (run daily by .github/workflows/archicad_devkit_update.yml) appends a new Archicad version when Graphisoft publishes its DevKit.",
+    "devkits": [
+        { "archicad": 25, "release": "25.3002" },
+        { "archicad": 26, "release": "26.3000" },
+        { "archicad": 27, "release": "27.3001" },
+        { "archicad": 28, "release": "28.3001" },
+        { "archicad": 29, "release": "29.3000" },
+        { "archicad": 30, "release": "30.3000" }
+    ]
+}

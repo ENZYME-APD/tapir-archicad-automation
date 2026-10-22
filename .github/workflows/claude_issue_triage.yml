@@ -72,7 +72,7 @@ name: Claude Issue Triage
 #   reply - CLAUDE_LIGHT_MODEL, default `sonnet`: mostly answering questions
 #           and pointing to pull requests.
 #   fix   - CLAUDE_MODEL, default `opus`: writing C++ against the Archicad API
-#           without the DevKit or a compiler.
+#           with the DevKit headers but no compiler.
 #   A fix run that did work (more than one turn) but left nothing on the
 #   issue - no comment, no pull request, for example because it hit
 #   --max-turns - is started once more on CLAUDE_ESCALATION_MODEL, default
@@ -229,6 +229,12 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      # The DevKit headers, so the fix can be checked against the API instead of
+      # guessed from existing call sites (#976). This checkout is the workflow's
+      # own commit (main), so the action is trusted code; it runs before Claude.
+      - name: Download the DevKit headers
+        uses: ./.github/actions/download-devkits
 
       # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
       # started before this one are in progress (see the header of claude_issue_triage.yml).
@@ -387,13 +393,20 @@ jobs:
 
             Rules that matter here:
 
-            - THE DEVKIT IS NOT ON THIS RUNNER. archicad-addon/Build is
-              gitignored build output and nothing here downloads it, so you
-              cannot open a DevKit header or its Examples folder. Do not
-              pretend otherwise. Use how the same API is already called in
-              archicad-addon/Sources as your evidence, and say plainly that a
-              maintainer must confirm any claim about a struct field, a memo
-              layout or a documented remark against the DevKit.
+            - THE DEVKIT HEADERS ARE ON THIS RUNNER, under
+              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/),
+              one folder per Archicad version in archicad-addon/devkits.json,
+              and the newest also has the DevKit's Examples folder
+              (archicad-addon/Build/DevKits/AC<NN>/Examples). The folder is
+              gitignored, so a search of the whole repository skips it: give
+              Grep and Glob that path explicitly. Before you use a struct
+              member, function, API ID or enum value, find its declaration
+              there, and check that it exists, with the same name and type, in
+              every version your code builds it for (the ServerMainVers_* /
+              AC_VERSION guards); AC25 and AC26 call many functions through
+              ACAPI_Database, ACAPI_Environment and ACAPI_Goodies with an
+              APIDb_/APIEnv_/APIAny_ ID instead. Never commit anything under
+              archicad-addon/Build.
             - You cannot run Archicad or build the add-on here; the build
               checks build it after you push, but nothing runs it in Archicad.
               State plainly in the pull request that the change is untested in
@@ -665,6 +678,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The DevKit headers, so the fix can be checked against the API instead of
+      # guessed from existing call sites (#976). This checkout is the workflow's
+      # own commit (main), so the action is trusted code; it runs before Claude.
+      - name: Download the DevKit headers
+        uses: ./.github/actions/download-devkits
+
       # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
       # started before this one are in progress (see the header of claude_issue_triage.yml).
       - name: Wait for a model slot
@@ -805,13 +824,20 @@ jobs:
 
             Rules that matter here:
 
-            - THE DEVKIT IS NOT ON THIS RUNNER. archicad-addon/Build is
-              gitignored build output and nothing here downloads it, so you
-              cannot open a DevKit header or its Examples folder. Do not
-              pretend otherwise. Use how the same API is already called in
-              archicad-addon/Sources as your evidence, and say plainly that a
-              maintainer must confirm any claim about a struct field, a memo
-              layout or a documented remark against the DevKit.
+            - THE DEVKIT HEADERS ARE ON THIS RUNNER, under
+              archicad-addon/Build/DevKits/AC<NN>/Support (Inc/ and Modules/),
+              one folder per Archicad version in archicad-addon/devkits.json,
+              and the newest also has the DevKit's Examples folder
+              (archicad-addon/Build/DevKits/AC<NN>/Examples). The folder is
+              gitignored, so a search of the whole repository skips it: give
+              Grep and Glob that path explicitly. Before you use a struct
+              member, function, API ID or enum value, find its declaration
+              there, and check that it exists, with the same name and type, in
+              every version your code builds it for (the ServerMainVers_* /
+              AC_VERSION guards); AC25 and AC26 call many functions through
+              ACAPI_Database, ACAPI_Environment and ACAPI_Goodies with an
+              APIDb_/APIEnv_/APIAny_ ID instead. Never commit anything under
+              archicad-addon/Build.
             - You cannot run Archicad or build the add-on here. Anything that
               needs a live seat must be stated as unverified, and say what a
               maintainer with a seat should run to verify it.
