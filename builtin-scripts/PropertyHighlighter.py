@@ -26,7 +26,7 @@ DIMMED_COLOR = [200, 200, 200, 160]
 NOT_AVAILABLE = "(not available)"
 EMPTY = "(empty)"
 NOT_A_NUMBER = "(not a number)"
-SPECIAL_COLOR = [150, 150, 150, 255]
+SPECIAL_COLOR = (150, 150, 150)
 ALL_TYPES = "All types"
 ELEMENT_TYPES = [
     ALL_TYPES, "Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Morph", "Mesh", "Window", "Door", "Skylight",
