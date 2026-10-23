@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-23 08:19 UTC",
+ "generatedAt": "2026-10-23 10:42 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 30,
+  "open": 34,
   "merged": 1,
   "claimed": 2,
   "not applicable": 1
@@ -968,6 +968,21 @@
     "databases",
     "filters"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementTypeNames",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Gets the localized names of the given element types, as the running Archicad shows them (for example 'Wand' for Wall in German Archicad). The output is aligned with the input array of element types. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -3572,6 +3587,21 @@
    "coveredParameters": [
     "suspendGroups"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementSetsOfElements",
+   "group": "Element grouping Commands",
+   "version": "1.7.3",
+   "brief": "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6287,6 +6317,36 @@
      "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
     }
    ]
+  },
+  {
+   "id": "GetStructureDisplay",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetStructureDisplay",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Sets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, e.g. the floor plan, a section or the 3D window. The change cannot be undone. The saved view is not changed (see SetViewSettings for that). Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetView2DTransformations",

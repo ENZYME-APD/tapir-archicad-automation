@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 08:19 UTC",
+ "generatedAt": "2026-10-23 10:42 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 660,
+  "in progress": 655,
   "claimed": 746,
   "done": 743,
   "open": 88,
-  "merged": 22
+  "merged": 27
  },
  "items": [
   {
@@ -5989,14 +5989,9 @@
    "olderNames": [
     "APIAny_GetCWHeightID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1084,
-     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8400,20 +8395,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1260,
-     "title": "Add GetElementSetsOfElements command (ACAPI_ElementSet_Identify)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1242,
-     "title": "Expose ACAPI_ElementSet_Identify (find the element sets that contain an element)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_AddClassificationItem",
@@ -9923,20 +9908,10 @@
     "ACAPI_Goodies_GetElemTypeName",
     "APIAny_GetElemTypeNameID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1106,
-     "title": "Add GetElementTypeNames: localized element type names"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1100,
-     "title": "Expose ACAPI_Element_GetElemTypeName (localized element type names)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElementFromAnywhere",
@@ -17711,20 +17686,10 @@
    "olderNames": [
     "APIEnv_ChangeStructureDisplayID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1102,
-     "title": "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1099,
-     "title": "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeViewOptions",
@@ -18503,20 +18468,10 @@
    "olderNames": [
     "APIEnv_GetStructureDisplayID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1102,
-     "title": "Add GetStructureDisplay / SetStructureDisplay (Partial Structure Display of the current window)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1099,
-     "title": "Expose ACAPI_Navigator_GetStructureDisplay / ChangeStructureDisplay (Partial Structure Display of the current window)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetSubSet",
@@ -27358,10 +27313,6 @@
     {
      "number": 1086,
      "title": "Add GetCalculatedParametersOfCurtainWallSubElements (ACAPI_CurtainWall_GetCWSubElemParams)"
-    },
-    {
-     "number": 1084,
-     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
     },
     {
      "number": 967,
@@ -41311,10 +41262,6 @@
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     },
     {
-     "number": 1084,
-     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
-    },
-    {
      "number": 1045,
      "title": "GetDetailsOfElements: return the reference point of automatic zones"
     },
@@ -49748,10 +49695,6 @@
      "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
     },
     {
-     "number": 1260,
-     "title": "Add GetElementSetsOfElements command (ACAPI_ElementSet_Identify)"
-    },
-    {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
     },
@@ -49830,10 +49773,6 @@
     {
      "number": 1110,
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
-    },
-    {
-     "number": 1106,
-     "title": "Add GetElementTypeNames: localized element type names"
     },
     {
      "number": 1095,
@@ -58729,10 +58668,6 @@
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     },
     {
-     "number": 1084,
-     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
-    },
-    {
      "number": 1045,
      "title": "GetDetailsOfElements: return the reference point of automatic zones"
     },
@@ -62965,10 +62900,6 @@
     {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
-     "number": 1084,
-     "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
     },
     {
      "number": 1045,
