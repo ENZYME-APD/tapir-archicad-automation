@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 01:56 UTC",
+ "generatedAt": "2026-10-23 04:26 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "in progress": 672,
-  "claimed": 753,
+  "claimed": 757,
   "done": 743,
-  "open": 85,
+  "open": 81,
   "merged": 6
  },
  "items": [
@@ -5278,6 +5278,10 @@
    ],
    "issues": [
     {
+     "number": 1436,
+     "title": "Elements: read and set the legacy property objects (by criteria / individual) and their descriptors"
+    },
+    {
      "number": 1254,
      "title": "Expose DesignOptionManager::SetDesignOptionAsDefault / MoveDesignOptionSet / MoveDesignOptionWithinSet"
     },
@@ -8171,10 +8175,15 @@
    "olderNames": [
     "ACAPI_Element_GetLinkedPropertyObjects"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1436,
+     "title": "Elements: read and set the legacy property objects (by criteria / individual) and their descriptors"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementLink_GetLinks",
@@ -8250,10 +8259,15 @@
    "olderNames": [
     "ACAPI_Element_SetLinkedPropertyObjects"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1436,
+     "title": "Elements: read and set the legacy property objects (by criteria / individual) and their descriptors"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementLink_Unlink",
@@ -9825,10 +9839,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1436,
+     "title": "Elements: read and set the legacy property objects (by criteria / individual) and their descriptors"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElemCreatorToolUnId",
@@ -10497,10 +10516,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1436,
+     "title": "Elements: read and set the legacy property objects (by criteria / individual) and their descriptors"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetPropertyValue",
@@ -15458,7 +15482,12 @@
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1436,
+     "title": "Elements: read and set the legacy property objects (by criteria / individual) and their descriptors"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetActParameters",

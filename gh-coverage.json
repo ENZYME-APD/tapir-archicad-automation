@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 01:56 UTC",
+ "generatedAt": "2026-10-23 04:26 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
@@ -1097,10 +1097,6 @@
    ],
    "issues": [
     {
-     "number": 1142,
-     "title": "`ModifyMorphs`: `rotationDegreesZ` turns the morph about the world Y axis through the project origin, not about the vertical axis"
-    },
-    {
      "number": 913,
      "title": "Add ModifyCurtainWalls command"
     },
@@ -1148,10 +1144,6 @@
    ],
    "issues": [
     {
-     "number": 1142,
-     "title": "`ModifyMorphs`: `rotationDegreesZ` turns the morph about the world Y axis through the project origin, not about the vertical axis"
-    },
-    {
      "number": 913,
      "title": "Add ModifyCurtainWalls command"
     }
@@ -1177,12 +1169,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1142,
-     "title": "`ModifyMorphs`: `rotationDegreesZ` turns the morph about the world Y axis through the project origin, not about the vertical axis"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "Get3DGeometryOfElements",
@@ -1511,10 +1498,6 @@
    "missingParameters": [],
    "pullRequests": [],
    "issues": [
-    {
-     "number": 1142,
-     "title": "`ModifyMorphs`: `rotationDegreesZ` turns the morph about the world Y axis through the project origin, not about the vertical axis"
-    },
     {
      "number": 907,
      "title": "Add MirrorElements command"
@@ -2060,12 +2043,7 @@
     "morphsData.zAxis"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1142,
-     "title": "`ModifyMorphs`: `rotationDegreesZ` turns the morph about the world Y axis through the project origin, not about the vertical axis"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateRoofs",
@@ -3125,12 +3103,7 @@
     "morphsWithDetails.zAxis"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1142,
-     "title": "`ModifyMorphs`: `rotationDegreesZ` turns the morph about the world Y axis through the project origin, not about the vertical axis"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ModifyRoofs",
