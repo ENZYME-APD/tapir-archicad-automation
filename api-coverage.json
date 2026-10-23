@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 04:26 UTC",
+ "generatedAt": "2026-10-23 05:31 UTC",
  "versions": [
   25,
   26,
@@ -10,8 +10,8 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 672,
-  "claimed": 757,
+  "in progress": 676,
+  "claimed": 753,
   "done": 743,
   "open": 81,
   "merged": 6
@@ -5012,6 +5012,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    },
+    {
      "number": 1421,
      "title": "Add ReorderNavigatorItems command"
     },
@@ -8175,9 +8179,18 @@
    "olderNames": [
     "ACAPI_Element_GetLinkedPropertyObjects"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1438,
+     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1436,
@@ -8259,9 +8272,14 @@
    "olderNames": [
     "ACAPI_Element_SetLinkedPropertyObjects"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1436,
@@ -9839,9 +9857,22 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1438,
+     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1437,
+     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1436,
@@ -10154,6 +10185,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1438,
+     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1437,
+     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
+    },
     {
      "number": 1368,
      "title": "[3/4] GetSubelementsOfHierarchicalElements: support external hierarchical elements (AC27+)"
@@ -10516,9 +10559,22 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1438,
+     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1437,
+     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1436,
@@ -15445,6 +15501,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1439,
+     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1438,
+     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
+    },
+    {
+     "number": 1437,
+     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
