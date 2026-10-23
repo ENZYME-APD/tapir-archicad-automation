@@ -524,6 +524,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.0",
             "Gets witness point data (coordinates, measured values) from existing dimension chains."
         );
+        err |= RegisterCommand<GetOpeningTransformationsCommand> (
+            elementCommands, "1.7.3",
+            "Gets the placement of Opening elements without changing them: the global-to-local transformation matrix Archicad returns, its inverse, and the origin and axes of the opening in world coordinates derived from the inverse. Mirrored openings give a left-handed matrix (isMirrored). Needs Archicad 27 or later."
+        );
         err |= RegisterCommand<CreateZonesCommand> (
             elementCommands, "1.1.8",
             "Creates Zone elements based on the given parameters."
