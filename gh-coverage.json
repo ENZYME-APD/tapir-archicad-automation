@@ -1,10 +1,10 @@
 {
- "generatedAt": "2026-10-23 08:12 UTC",
+ "generatedAt": "2026-10-23 08:19 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
+  "open": 30,
   "merged": 1,
-  "open": 28,
   "claimed": 2,
   "not applicable": 1
  },
@@ -1167,6 +1167,21 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ConvertRevealOffsets",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -5612,6 +5627,21 @@
    "coveredParameters": [
     "filterByTypeId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetLibraryPartScripts",
+   "group": "Library Commands",
+   "version": "1.7.3",
+   "brief": "Sets the master, parameter, 2D, 3D and properties scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 8,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

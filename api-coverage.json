@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 08:12 UTC",
+ "generatedAt": "2026-10-23 08:19 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 673,
+  "in progress": 660,
   "claimed": 746,
   "done": 743,
   "open": 88,
-  "merged": 9
+  "merged": 22
  },
  "items": [
   {
@@ -5112,10 +5112,6 @@
      "title": "Add RefreshElements command (ACAPI_Element_RefreshElement)"
     },
     {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    },
-    {
      "number": 1204,
      "title": "[1/6] Analytical commands: current analytical model, update, generation settings, model check type"
     },
@@ -6001,12 +5997,7 @@
      "title": "GetDetailsOfElements: return the calculated height of curtain walls (ACAPI_CurtainWall_GetCWHeight)"
     }
    ],
-   "issues": [
-    {
-     "number": 1080,
-     "title": "Expose ACAPI_CurtainWall_GetCWHeight"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CurtainWall_GetCWSubElemParams",
@@ -6059,20 +6050,10 @@
    "olderNames": [
     "APIDb_IsCWPanelDegenerateID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1085,
-     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1082,
-     "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_CuttingPlane_GetCutPolygonInfo",
@@ -8562,14 +8543,9 @@
    "olderNames": [
     "APIAny_CalcCoreOffsetToSideOffsetID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1270,
-     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8590,14 +8566,9 @@
    "olderNames": [
     "APIAny_CalcSideOffsetToCoreOffsetID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1270,
-     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10206,10 +10177,6 @@
     {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
-    },
-    {
-     "number": 1270,
-     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
     },
     {
      "number": 1267,
@@ -26395,10 +26362,6 @@
      "title": "Add GetContainingDatabases command to find an element's database"
     },
     {
-     "number": 1085,
-     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
-    },
-    {
      "number": 1018,
      "title": "Add GetElementCategories, GetCategoryValuesOfElements and SetCategoryValuesOfElements"
     },
@@ -26471,10 +26434,6 @@
     {
      "number": 1158,
      "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
-    },
-    {
-     "number": 1082,
-     "title": "Expose ACAPI_CurtainWall_IsCWPanelDegenerate"
     },
     {
      "number": 1074,
@@ -27473,10 +27432,6 @@
     {
      "number": 1081,
      "title": "Expose ACAPI_CurtainWall_GetCWSubElemParams"
-    },
-    {
-     "number": 1080,
-     "title": "Expose ACAPI_CurtainWall_GetCWHeight"
     },
     {
      "number": 976,
@@ -38047,20 +38002,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::IsHierarchicalPagesUsed",
@@ -38586,20 +38531,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::Set2DVectorImage",
@@ -38637,20 +38572,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetAuthor",
@@ -38985,20 +38910,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetParameterScript",
@@ -39013,20 +38928,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetParameters",
@@ -39133,20 +39038,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GSMObject::Modifier::SetUIDefault",
@@ -39184,20 +39079,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1222,
-     "title": "Expose ACAPI::Library::GSMObject::Modify with script setters (edit our own embedded library parts)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::Library::GetLibraryManager",
@@ -39212,7 +39097,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -39226,10 +39111,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
     }
    ],
    "issues": []
@@ -39481,10 +39362,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
     },
     {
      "number": 1227,
@@ -40001,7 +39878,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -40011,10 +39888,6 @@
     {
      "number": 1272,
      "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
-    },
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
     }
    ],
    "issues": [
@@ -40120,7 +39993,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -40134,10 +40007,6 @@
     {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
-    },
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
     }
    ],
    "issues": [
@@ -41350,6 +41219,26 @@
      "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
     },
     {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
+    {
+     "number": 1371,
+     "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
+    },
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    },
+    {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
@@ -41394,6 +41283,22 @@
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
     {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    },
+    {
+     "number": 1272,
+     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
+    },
+    {
+     "number": 1244,
+     "title": "Add GetLibrariesOfLibParts command"
+    },
+    {
+     "number": 1227,
+     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
+    },
+    {
      "number": 1211,
      "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     },
@@ -41404,10 +41309,6 @@
     {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
-     "number": 1085,
-     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
     },
     {
      "number": 1084,
@@ -41440,6 +41341,10 @@
     {
      "number": 958,
      "title": "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands"
+    },
+    {
+     "number": 957,
+     "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     },
     {
      "number": 900,
@@ -49829,10 +49734,6 @@
     {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
-    },
-    {
-     "number": 1270,
-     "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
     },
     {
      "number": 1269,
@@ -58736,6 +58637,26 @@
      "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
     },
     {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
+    {
+     "number": 1371,
+     "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
+    },
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    },
+    {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
@@ -58780,6 +58701,22 @@
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
     {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    },
+    {
+     "number": 1272,
+     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
+    },
+    {
+     "number": 1244,
+     "title": "Add GetLibrariesOfLibParts command"
+    },
+    {
+     "number": 1227,
+     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
+    },
+    {
      "number": 1211,
      "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     },
@@ -58790,10 +58727,6 @@
     {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
-     "number": 1085,
-     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
     },
     {
      "number": 1084,
@@ -58826,6 +58759,10 @@
     {
      "number": 958,
      "title": "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands"
+    },
+    {
+     "number": 957,
+     "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     },
     {
      "number": 900,
@@ -62938,6 +62875,26 @@
      "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
     },
     {
+     "number": 1373,
+     "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
+    },
+    {
+     "number": 1371,
+     "title": "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)"
+    },
+    {
+     "number": 1364,
+     "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
+    },
+    {
+     "number": 1353,
+     "title": "[2/4] Add SearchLibraryParts (library part pattern search)"
+    },
+    {
+     "number": 1337,
+     "title": "[1/4] Add GetLibraryPartIdentities and CompareLibraryPartUnIds"
+    },
+    {
      "number": 1326,
      "title": "GetDetailsOfElements: return info strings and library part / creator tool IDs on request"
     },
@@ -62982,6 +62939,22 @@
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
     },
     {
+     "number": 1273,
+     "title": "Add GetLibraryPartDetails and IsLibraryPartSubtypeOf (library part details and subtype check)"
+    },
+    {
+     "number": 1272,
+     "title": "Add GetLibraryPartMetadata command (description, keywords, author, placeable)"
+    },
+    {
+     "number": 1244,
+     "title": "Add GetLibrariesOfLibParts command"
+    },
+    {
+     "number": 1227,
+     "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
+    },
+    {
      "number": 1211,
      "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     },
@@ -62992,10 +62965,6 @@
     {
      "number": 1161,
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
-    },
-    {
-     "number": 1085,
-     "title": "GetDetailsOfElements: report isDegenerate for curtain wall panels"
     },
     {
      "number": 1084,
@@ -63028,6 +62997,10 @@
     {
      "number": 958,
      "title": "[1/2] Add LinkElements, UnlinkElements and GetLinksOfElements commands"
+    },
+    {
+     "number": 957,
+     "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     },
     {
      "number": 900,
@@ -71598,10 +71571,6 @@
     {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    },
-    {
-     "number": 1233,
-     "title": "Add SetLibraryPartScripts command (GSMObject::Modify script setters)"
     },
     {
      "number": 1227,
