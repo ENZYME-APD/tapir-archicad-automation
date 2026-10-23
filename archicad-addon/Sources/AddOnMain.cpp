@@ -633,7 +633,7 @@ GSErrCode Initialize (void)
             "Modifies Label elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyZonesCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link and floor thickness. Only the given fields are changed; the polygon is kept."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (

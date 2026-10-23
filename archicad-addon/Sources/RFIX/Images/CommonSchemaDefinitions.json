@@ -9614,7 +9614,7 @@
             },
             "relativeTopStory": {
                 "type": "number",
-                "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height."
+                "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height (ModifyZones) in the same call: whichever is applied last wins."
             },
             "floorThickness": {
                 "type": "number",
