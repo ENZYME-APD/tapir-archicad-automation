@@ -1179,7 +1179,7 @@ GSErrCode Initialize (void)
             "Zooms to the given elements or fits everything in the window."
         );
         err |= RegisterCommand<ZoomToBoxCommand> (
-            navigatorCommands, "1.7.2",
+            navigatorCommands, "1.7.3",
             "Zooms the current 2D window to the given box in model coordinates."
         );
         err |= RegisterCommand<CreateSectionsCommand> (
