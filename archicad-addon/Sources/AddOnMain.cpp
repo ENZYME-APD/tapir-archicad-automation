@@ -633,7 +633,7 @@ GSErrCode Initialize (void)
             "Modifies Label elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyCurtainWallsCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
