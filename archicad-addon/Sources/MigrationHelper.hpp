@@ -203,6 +203,16 @@ inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
 }
 
+inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
+{
+    return ACAPI_Database (APIDb_SetZoomID, (void*) zoomBox, (void*) tranmat);
+}
+
+inline GSErrCode ACAPI_View_ResetZoom (short* numOfStepsBack)
+{
+    return ACAPI_Database (APIDb_ReSetZoomID, (void*) numOfStepsBack);
+}
+
 inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniString, 3>>* autotexts, API_AutotextType autotextType)
 {
     return ACAPI_Goodies (APIAny_GetAutoTextsID, autotexts, (void*) (GS::IntPtr) autotextType);
