@@ -646,6 +646,36 @@ inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head
 #endif
 }
 
+// The classification of the tool defaults of a plain element type (generic variation):
+// since AC26 the API takes an API_ElemType, which an API_ElemTypeID converts to; before
+// that the typeID and the variationID are separate arguments.
+inline GSErrCode TAPIR_Element_GetClassificationInSystemDefault (API_ElemTypeID typeID, const API_Guid& systemGuid, API_ClassificationItem& item)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetClassificationInSystemDefault (typeID, systemGuid, item);
+#else
+    return ACAPI_Element_GetClassificationInSystemDefault (typeID, APIVarId_Generic, systemGuid, item);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_AddClassificationItemDefault (API_ElemTypeID typeID, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_AddClassificationItemDefault (typeID, itemGuid);
+#else
+    return ACAPI_Element_AddClassificationItemDefault (typeID, APIVarId_Generic, itemGuid);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_RemoveClassificationItemDefault (API_ElemTypeID typeID, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_RemoveClassificationItemDefault (typeID, itemGuid);
+#else
+    return ACAPI_Element_RemoveClassificationItemDefault (typeID, APIVarId_Generic, itemGuid);
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& elemHead, const API_ElemCategoryValue& categoryValue)
 {
 #ifdef ServerMainVers_2700
