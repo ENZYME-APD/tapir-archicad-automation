@@ -159,6 +159,26 @@
       "subgroup": null
     },
     {
+      "get": "penTableUsageMode",
+      "set": null,
+      "apiMember": "API_DrawingType::penTableUsageMode",
+      "apiDescription": "Determines which pen table will be used by the drawing (see API_PenTableUsageModeValues).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "penTableId",
+      "set": null,
+      "apiMember": "API_DrawingType::penTableIndex",
+      "apiDescription": "Index of the pen table to use (if penTableUsageMode is set to APIPenTableUsageMode_UsePenTableIndex).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "titleLibraryPartIndex",
       "set": null,
       "apiMember": "API_DrawingTitle::libInd",
