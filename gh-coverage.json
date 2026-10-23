@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-23 12:40 UTC",
+ "generatedAt": "2026-10-23 12:48 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 43,
+  "open": 45,
   "merged": 1,
   "claimed": 2,
   "not applicable": 1
@@ -6698,6 +6698,36 @@
      "title": "Add ZoomToElements (2D and 3D)"
     }
    ]
+  },
+  {
+   "id": "SetZoom",
+   "group": "Navigator Commands",
+   "version": "1.7.3",
+   "brief": "Zooms the current 2D window to the given box in model coordinates.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ResetZoom",
+   "group": "Navigator Commands",
+   "version": "1.7.3",
+   "brief": "Steps back in the zoom history of the current window, like Archicad's Zoom Back.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateSections",
