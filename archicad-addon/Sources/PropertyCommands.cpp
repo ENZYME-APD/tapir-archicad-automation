@@ -178,7 +178,7 @@ constexpr uint32_t PackTypes (API_PropertyCollectionType colType, API_VariantTyp
     return (static_cast<uint32_t> (colType) << 16) | static_cast<uint32_t> (valType);
 }
 
-static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString)
+GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString)
 {
     if (propertyValue.value.variantStatus == API_VariantStatusUserUndefined) {
         resultString = "<Undefined>";
@@ -1949,3 +1949,236 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
     return response;
 }
+
+SearchPropertiesCommand::SearchPropertiesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SearchPropertiesCommand::GetName () const
+{
+    return "SearchProperties";
+}
+
+GS::Optional<GS::UniString> SearchPropertiesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Case-insensitive substring to search in property name or property group name."
+            },
+            "propertyGroup": {
+                "type": "string",
+                "description": "Optional case-insensitive substring to filter by property group name."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "Optional filter by property definition type.",
+                "enum": ["StaticBuiltIn", "DynamicBuiltIn", "Custom"]
+            },
+            "valueType": {
+                "type": "string",
+                "description": "Optional filter by property value type.",
+                "enum": ["Integer", "Real", "String", "Boolean", "Guid"]
+            },
+            "collectionType": {
+                "type": "string",
+                "description": "Optional filter by property collection type.",
+                "enum": ["Single", "List", "SingleChoiceEnumeration", "MultipleChoiceEnumeration"]
+            },
+            "includeEnumValues": {
+                "type": "boolean",
+                "description": "If true, includes possibleEnumValues for enumeration properties. Default is false to minimize token footprint."
+            },
+            "includeAvailability": {
+                "type": "boolean",
+                "description": "If true, includes classification availability. Default is false to minimize token footprint."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching properties to return.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> SearchPropertiesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "properties": {
+                "type": "array",
+                "description": "A list of property details matching the search criteria.",
+                "items": {
+                    "$ref": "#/PropertyDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    })";
+}
+
+GS::ObjectState SearchPropertiesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString query;
+    bool hasQuery = parameters.Get ("query", query) && !query.IsEmpty ();
+    GS::UniString queryLower = hasQuery ? GetLowerCasedString (query) : GS::EmptyUniString;
+
+    GS::UniString propertyGroupFilter;
+    bool hasGroupFilter = parameters.Get ("propertyGroup", propertyGroupFilter) && !propertyGroupFilter.IsEmpty ();
+    GS::UniString groupFilterLower = hasGroupFilter ? GetLowerCasedString (propertyGroupFilter) : GS::EmptyUniString;
+
+    GS::UniString propertyTypeFilter;
+    bool hasPropertyTypeFilter = parameters.Get ("propertyType", propertyTypeFilter) && !propertyTypeFilter.IsEmpty ();
+
+    GS::UniString valueTypeFilter;
+    bool hasValueTypeFilter = parameters.Get ("valueType", valueTypeFilter) && !valueTypeFilter.IsEmpty ();
+
+    GS::UniString collectionTypeFilter;
+    bool hasCollectionTypeFilter = parameters.Get ("collectionType", collectionTypeFilter) && !collectionTypeFilter.IsEmpty ();
+
+    bool includeEnumValues = false;
+    parameters.Get ("includeEnumValues", includeEnumValues);
+
+    bool includeAvailability = false;
+    parameters.Get ("includeAvailability", includeAvailability);
+
+    Int32 limit = 0;
+    bool hasLimit = parameters.Get ("limit", limit) && limit > 0;
+
+    GS::ObjectState response;
+    auto propertyAdder = response.AddList<GS::ObjectState> ("properties");
+
+    GS::Array<API_PropertyGroup> groups;
+    ACAPI_Property_GetPropertyGroups (groups);
+
+    Int32 matchCount = 0;
+
+    for (const API_PropertyGroup& group : groups) {
+        if (hasLimit && matchCount >= limit) {
+            break;
+        }
+
+        const GS::UniString groupNameLower = GetLowerCasedString (group.name);
+        if (hasGroupFilter && !groupNameLower.Contains (groupFilterLower)) {
+            continue;
+        }
+
+        const bool groupMatchesQuery = hasQuery && groupNameLower.Contains (queryLower);
+
+        GS::Array<API_PropertyDefinition> definitions;
+        ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
+
+        for (const API_PropertyDefinition& definition : definitions) {
+            if (hasLimit && matchCount >= limit) {
+                break;
+            }
+
+            const GS::UniString propTypeStr = GetPropertyTypeString (definition.definitionType);
+            if (hasPropertyTypeFilter && propTypeStr != propertyTypeFilter) {
+                continue;
+            }
+
+            const GS::UniString valTypeStr = GetPropertyTypeString (definition.valueType);
+            if (hasValueTypeFilter && valTypeStr != valueTypeFilter) {
+                continue;
+            }
+
+            const GS::UniString collTypeStr = GetPropertyTypeString (definition.collectionType);
+            if (hasCollectionTypeFilter && collTypeStr != collectionTypeFilter) {
+                continue;
+            }
+
+            if (hasQuery) {
+                const GS::UniString propNameLower = GetLowerCasedString (definition.name);
+                if (!groupMatchesQuery && !propNameLower.Contains (queryLower)) {
+                    continue;
+                }
+            }
+
+            GS::ObjectState details;
+            GS::ObjectState propertyId;
+            propertyId.Add ("guid", APIGuidToString (definition.guid));
+            details.Add ("propertyId", propertyId);
+
+            details.Add ("propertyType", propTypeStr);
+            details.Add ("propertyGroupName", group.name);
+            details.Add ("propertyName", definition.name);
+            details.Add ("propertyCollectionType", collTypeStr);
+            details.Add ("propertyValueType", valTypeStr);
+            details.Add ("propertyMeasureType", GetPropertyTypeString (definition.measureType));
+            details.Add ("propertyIsEditable", definition.canValueBeEditable);
+            details.Add ("isExpressionBased", definition.defaultValue.hasExpression);
+            details.Add ("propertyGroupId", CreateGuidObjectState (group.guid));
+
+            if (!definition.description.IsEmpty ()) {
+                details.Add ("propertyDescription", definition.description);
+            }
+
+            if (definition.definitionType == API_PropertyCustomDefinitionType) {
+                if (!definition.defaultValue.hasExpression &&
+                    definition.defaultValue.basicValue.variantStatus == API_VariantStatusNormal) {
+                    API_Property defaultProperty;
+                    defaultProperty.definition = definition;
+                    defaultProperty.isDefault = true;
+                    defaultProperty.status = API_Property_HasValue;
+                    defaultProperty.value = definition.defaultValue.basicValue;
+                    GS::UniString defaultString;
+                    if (GetPropertyValueString (defaultProperty, defaultString) == NoError) {
+                        details.Add ("defaultValueDisplay", defaultString);
+                    }
+                }
+
+                if (includeAvailability) {
+                    const auto& availabilityList = details.AddList<GS::ObjectState> ("availability");
+                    for (const API_Guid& itemGuid : definition.availability) {
+                        availabilityList (CreateIdObjectState ("classificationItemId", itemGuid));
+                    }
+                }
+
+                if (includeEnumValues) {
+                    if (!definition.defaultValue.hasExpression &&
+                        definition.defaultValue.basicValue.variantStatus == API_VariantStatusNormal) {
+                        if (definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType) {
+                            const auto& ids = details.AddList<GS::ObjectState> ("defaultEnumValueIds");
+                            ids (CreateGuidObjectState (definition.defaultValue.basicValue.singleVariant.variant.guidValue));
+                        } else if (definition.collectionType == API_PropertyMultipleChoiceEnumerationCollectionType) {
+                            const auto& ids = details.AddList<GS::ObjectState> ("defaultEnumValueIds");
+                            for (const API_Variant& v : definition.defaultValue.basicValue.listVariant.variants) {
+                                ids (CreateGuidObjectState (v.guidValue));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (includeEnumValues && !definition.possibleEnumValues.IsEmpty ()) {
+                const auto& enumValueList = details.AddList<GS::ObjectState> ("possibleEnumValues");
+                for (const API_SingleEnumerationVariant& variant : definition.possibleEnumValues) {
+                    enumValueList (CreateEnumValueObjectState (variant));
+                }
+            }
+
+            if (definition.defaultValue.hasExpression) {
+                const auto& expressionList = details.AddList<GS::UniString> ("expressions");
+                for (const GS::UniString& expr : definition.defaultValue.propertyExpressions) {
+                    expressionList (expr);
+                }
+            }
+
+            propertyAdder (details);
+            matchCount++;
+        }
+    }
+
+    return response;
+}
+

@@ -1,0 +1,73 @@
+{
+  "title": "ApplyFavoritesToElements command",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "create test wall",
+      "command": "CreateWalls",
+      "creates": true,
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 0.0,
+              "y": 0.0
+            },
+            "endCoordinate": {
+              "x": 5.0,
+              "y": 0.0
+            },
+            "height": 3.0
+          }
+        ]
+      },
+      "save": {
+        "wallId": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall created"
+        }
+      ]
+    },
+    {
+      "id": "apply missing favorite gracefully returns failure execution result",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favoritesToApply": [
+          {
+            "favorite": "NonExistentFavorite_Check_XYZ",
+            "elementId": {
+              "guid": "${wallId}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "handled missing favorite gracefully"
+        }
+      ]
+    },
+    {
+      "id": "bulk favorite without elements or filter is rejected",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "NonExistentFavorite_Check_XYZ"
+      },
+      "expect": [
+        {
+          "path": "error.message",
+          "contains": "Give 'elements' or 'filter'",
+          "name": "whole-project apply refused"
+        }
+      ]
+    }
+  ]
+}

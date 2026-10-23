@@ -1218,14 +1218,123 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetElementsByCriteria",
+                "version": "1.7.3",
+                "description": "Finds and evaluates elements matching property criteria, types, stories, layers, and status flags server-side. Supports countOnly to minimize token consumption.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "types": {
+                "type": "array",
+                "description": "Optional filter for element types (e.g. ['Wall', 'Column']).",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "floorIndices": {
+                "type": "array",
+                "description": "Optional filter for story/floor indices (e.g. [0, 1]).",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "layerIndices": {
+                "type": "array",
+                "description": "Optional filter for layer attribute indices.",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "filters": {
+                "type": "array",
+                "description": "Optional Archicad API element filter flags.",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                }
+            },
+            "propertyCriteria": {
+                "type": "array",
+                "description": "Optional list of property evaluation criteria. All criteria must match (AND condition).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "propertyName": {
+                            "type": "string",
+                            "description": "Case-insensitive property definition name, as shown in the project's language. An error is returned when it matches no property, or properties in more than one group and propertyGroupName is not given. Prefer propertyId in scripts that must work in any language."
+                        },
+                        "propertyGroupName": {
+                            "type": "string",
+                            "description": "Case-insensitive property group name, to choose between properties of the same name in different groups."
+                        },
+                        "operator": {
+                            "type": "string",
+                            "description": "Evaluation operator. Default is 'equals'.",
+                            "enum": [
+                                "equals",
+                                "notEquals",
+                                "contains",
+                                "greaterThan",
+                                "lessThan",
+                                "greaterOrEqual",
+                                "lessOrEqual",
+                                "hasValue",
+                                "hasAnyValue",
+                                "isUndefined",
+                                "isUserUndefined",
+                                "isNotAvailable",
+                                "isDefault"
+                            ]
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "Expected value as a string. Required for the comparison operators. For number, integer, length, area, volume and angle properties, equals, notEquals and the range operators compare numbers in internal units (m, m², m³, rad) written with a decimal point, independent of the project's display settings; other properties compare the displayed text, case-insensitively."
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "countOnly": {
+                "type": "boolean",
+                "description": "If true, only returns the count of matching elements without listing their GUIDs. Minimizes token usage."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching elements to list. The count is still the total number of matches.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "count": {
+                "type": "integer",
+                "description": "Total number of matching elements."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "List of matching elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "count"
+        ]
+    }
+            },{
                 "name": "GetDetailsOfElements",
                 "version": "1.5.7",
-                "description": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons).",
+                "description": "Gets the details of elements (geometry parameters, etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried automatically; an empty elements list returns no details. Use the optional fields parameter to project only the fields you need (e.g. elementId, type, id, floorIndex) and skip computing unneeded fields (such as heavy floorPlanPolygons).",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "Optional list of elements to get details for. When omitted, all elements in the current database (optionally filtered by the filter parameter) are used; an empty list returns no details."
             },
             "fields": {
                 "type": "array",
@@ -1234,12 +1343,38 @@ var gCommands = [{
                     "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
+            },
+            "filter": {
+                "type": "object",
+                "description": "Optional server-side filter. When given, only elements matching these conditions are returned.",
+                "properties": {
+                    "types": {
+                        "type": "array",
+                        "description": "Optional filter for element types (e.g. ['Wall', 'Column']).",
+                        "items": {
+                            "$ref": "#/ElementType"
+                        }
+                    },
+                    "floorIndices": {
+                        "type": "array",
+                        "description": "Optional filter for story indices (e.g. [0, 1]).",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "layerIndices": {
+                        "type": "array",
+                        "description": "Optional filter for layer attribute indices.",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "additionalProperties": false
             }
         },
         "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "required": []
     },
                 "outputScheme": {
         "type": "object",
@@ -1250,6 +1385,10 @@ var gCommands = [{
                     "type": "object",
                     "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
                     "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The unique identifier of the element."
+                        },
                         "type": {
                             "$ref": "#/ElementType"
                         },
@@ -6092,6 +6231,39 @@ var gCommands = [{
                     ]
                 }
             },
+            "favorite": {
+                "type": "string",
+                "description": "Name of a single favorite to apply to all target elements in bulk."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Target elements when applying a single favorite. If omitted, 'filter' is required and the favorite is applied to every element of its type that matches the filter."
+            },
+            "filter": {
+                "type": "object",
+                "description": "Server-side element filter when applying a single favorite in bulk. Elements of 'elements' that do not match it get a failed execution result.",
+                "properties": {
+                    "types": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/ElementType"
+                        }
+                    },
+                    "floorIndices": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "layerIndices": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
             "applySettings": {
                 "type": "boolean",
                 "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. Default is true."
@@ -6109,10 +6281,7 @@ var gCommands = [{
                 "description": "Whether to apply the Favorite's property values. Default is true."
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "favoritesToApply"
-        ]
+        "additionalProperties": false
     },
                 "outputScheme": {
         "type": "object",
@@ -6212,6 +6381,66 @@ var gCommands = [{
             "executionResults"
         ]
     }
+            },{
+                "name": "SearchFavorites",
+                "version": "1.7.3",
+                "description": "Searches project favorites by keyword (matching favorite name or folder) and/or element type.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Optional case-insensitive substring to search in favorite name or folder hierarchy."
+            },
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Optional filter by element type. If omitted, searches across all element types."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching favorites to return.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "List of matching favorites.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the favorite."
+                        },
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "folder": {
+                            "type": "array",
+                            "description": "The folder hierarchy of the favorite.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "elementType"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    }
             }]
         },{
             "name": "Property Commands",
@@ -6235,6 +6464,68 @@ var gCommands = [{
                 "description": "Every property group, including empty ones.",
                 "items": {
                     "$ref": "#/PropertyGroupDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    }
+            },{
+                "name": "SearchProperties",
+                "version": "1.7.3",
+                "description": "Searches properties by name or group substring with optional filtering by property type, value type, and collection type.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Case-insensitive substring to search in property name or property group name."
+            },
+            "propertyGroup": {
+                "type": "string",
+                "description": "Optional case-insensitive substring to filter by property group name."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "Optional filter by property definition type.",
+                "enum": ["StaticBuiltIn", "DynamicBuiltIn", "Custom"]
+            },
+            "valueType": {
+                "type": "string",
+                "description": "Optional filter by property value type.",
+                "enum": ["Integer", "Real", "String", "Boolean", "Guid"]
+            },
+            "collectionType": {
+                "type": "string",
+                "description": "Optional filter by property collection type.",
+                "enum": ["Single", "List", "SingleChoiceEnumeration", "MultipleChoiceEnumeration"]
+            },
+            "includeEnumValues": {
+                "type": "boolean",
+                "description": "If true, includes possibleEnumValues for enumeration properties. Default is false to minimize token footprint."
+            },
+            "includeAvailability": {
+                "type": "boolean",
+                "description": "If true, includes classification availability. Default is false to minimize token footprint."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching properties to return.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "properties": {
+                "type": "array",
+                "description": "A list of property details matching the search criteria.",
+                "items": {
+                    "$ref": "#/PropertyDetails"
                 }
             }
         },
