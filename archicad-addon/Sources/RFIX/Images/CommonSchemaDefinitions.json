@@ -3508,6 +3508,31 @@
         ],
         "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
     },
+    "DrawingStatus": {
+        "type": "string",
+        "enum": [
+            "UpToDate",
+            "Modified",
+            "Unknown"
+        ],
+        "description": "The Drawing Manager's Status column: UpToDate (OK) when the drawing matches its source, Modified when the source changed since the drawing was last updated, Unknown when the status cannot be determined (e.g. a missing external source)."
+    },
+    "DrawingLinkType": {
+        "type": "string",
+        "enum": [
+            "InternalView",
+            "ExternalView",
+            "Drawing",
+            "DXF_DWG",
+            "PDF",
+            "Image",
+            "PlotMaker",
+            "AddOn",
+            "Unknown",
+            "Other"
+        ],
+        "description": "The kind of source a drawing is linked to (the Drawing Manager's Source column): a view of this project (InternalView), a view of another Archicad project file (ExternalView), a drawing file, a DWG/DXF file, a PDF, an image, a PlotMaker file, an Add-On generated drawing, or an unknown/other source."
+    },
     "MEPCrossSectionShape": {
         "type": "string",
         "description": "Shape of an MEP routing segment's cross section.",
@@ -6420,6 +6445,10 @@
                 "$ref": "#/GuidId",
                 "description": "Identifier of the renovation filter applied to the view."
             },
+            "renovationFilterName": {
+                "type": "string",
+                "description": "Name of the renovation filter applied to the view. Read-only (GetViewSettings): present together with renovationFilterGuid when the name could be resolved; set the filter via renovationFilterGuid."
+            },
             "d3styleName": {
                 "type": "string",
                 "description": "Name of the 3D style. Empty if not set."
@@ -8321,6 +8350,26 @@
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "manualUpdate": {
+                "type": "boolean",
+                "description": "The Drawing Manager's Update Type: true for Manual, false for Automatic. Read-only."
+            },
+            "storedInProject": {
+                "type": "boolean",
+                "description": "The Drawing Manager's Stored in Project column: whether the drawing's content is stored in the project file. Read-only."
+            },
+            "status": {
+                "$ref": "#/DrawingStatus",
+                "description": "The Drawing Manager's Status column. Read-only; absent when Archicad could not check the drawing."
+            },
+            "linkType": {
+                "$ref": "#/DrawingLinkType",
+                "description": "The Drawing Manager's Source column: what kind of source the drawing is linked to. Read-only; absent when the link could not be read."
+            },
+            "linkPath": {
+                "type": "string",
+                "description": "Path of the drawing's external source file (the Drawing Manager's Path column). Present only when the source is a file (external view, DWG/DXF, PDF, image, ...). Read-only."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
@@ -8343,6 +8392,8 @@
             "nameType",
             "numberingType",
             "isInNumbering",
+            "manualUpdate",
+            "storedInProject",
             "titleLibraryPartIndex"
         ]
     },
