@@ -381,7 +381,7 @@ GSErrCode Initialize (void)
             "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
         );
         err |= RegisterCommand<GetVisibleSkinStatusCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Checks whether elements have a visible skin in a given Partial Structure Display mode (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly), e.g. a finish-only slab has none in CoreOnly. The current window is not changed. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
