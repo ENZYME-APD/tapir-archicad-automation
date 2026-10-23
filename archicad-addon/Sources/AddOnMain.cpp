@@ -739,6 +739,14 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.4",
             "Delete existing favorites."
         );
+        err |= RegisterCommand<GetFavoriteSettingsCommand> (
+            favoritesCommands, "1.7.3",
+            "Reads the stored settings of the given favorites without applying them or placing an element: "
+            "the element type, the folder, the library part and GDL parameters, the marker (library part and "
+            "parameters) of Window and Door favorites, and the sub-elements. A favorite without a marker has no "
+            "marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) "
+            "are not returned."
+        );
         AddCommandGroup (favoritesCommands);
     }
 

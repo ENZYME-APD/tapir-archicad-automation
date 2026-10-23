@@ -68,6 +68,11 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Adds "libPart" (when the library part can be read) and "parameters" to `os` from a GDL
+// parameter list held in a memo, without a parameter interface: how
+// GetMarkerParametersOfElements reports a marker and GetFavoriteSettings a Favorite.
+void AddLibPartAndGDLParameters (GS::ObjectState& os, Int32 libInd, API_AddParType** params);
+
 class SetMarkerParametersOfElementsCommand : public CommandBase
 {
 public:
