@@ -10,6 +10,7 @@
 
 #include "3DCutPlaneCommands.hpp"
 #include "3DProjectionCommands.hpp"
+#include "3DStyleCommands.hpp"
 
 
 
@@ -1246,6 +1247,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
+        );
+        err |= RegisterCommand<Get3DStyleDetailsCommand> (
+            navigatorCommands, "1.7.2",
+            "Gets the settings of 3D styles by name (an empty name or no names means the current 3D style): rendering engine, model type, monochrome and background colors, contours, shadows and hatching. Available from Archicad 27."
+        );
+        err |= RegisterCommand<Create3DStylesCommand> (
+            navigatorCommands, "1.7.2",
+            "Creates 3D styles. Each new style starts from the current 3D style and differs from it only in the given fields. Available from Archicad 27."
+        );
+        err |= RegisterCommand<Change3DStylesCommand> (
+            navigatorCommands, "1.7.2",
+            "Changes the given fields of existing 3D styles, identified by name. Available from Archicad 27."
         );
         err |= RegisterCommand<Get3DProjectionSettingsCommand> (
             navigatorCommands, "1.7.1",
