@@ -5685,7 +5685,31 @@
                 "type": "string"
             },
             "value": {
-                "type": "string"
+                "type": "string",
+                "description": "The value of the property as a string. List and enumerated values are separated by semicolons."
+            },
+            "valueType": {
+                "type": "string",
+                "description": "The IFC type of the value, for example IfcLabel or IfcLengthMeasure. For a table value it is the type of its defined values. Left out when the property has no value to take the type from."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "The kind of the IFC property.",
+                "enum": [
+                    "SingleValue",
+                    "ListValue",
+                    "BoundedValue",
+                    "EnumeratedValue",
+                    "TableValue"
+                ]
+            },
+            "source": {
+                "type": "string",
+                "description": "Where the property comes from: preview for the properties mapped by the preview IFC export translator, local for the IFC properties stored in the element. Available from Archicad 28.",
+                "enum": [
+                    "preview",
+                    "local"
+                ]
             }
         },
         "additionalProperties": false,
