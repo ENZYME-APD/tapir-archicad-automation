@@ -218,24 +218,36 @@ GSErrCode GetStyleFromObjectState (const GS::ObjectState& os, API_OverrideRuleSt
     return NoError;
 }
 
-GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& ruleGroupGuid)
+// Finds a rule group by name; ruleIds, when given, receives its rules in their order.
+bool FindRuleGroupByName (const GS::UniString& name, API_Guid& ruleGroupGuid, GS::Array<API_Guid>* ruleIds = nullptr)
 {
     GS::Array<API_Guid> ruleGroupIds;
-    GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds);
-    if (err != NoError) {
-        return err;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+        return false;
     }
     for (const API_Guid& ruleGroupId : ruleGroupIds) {
         API_OverrideRuleGroup ruleGroup = {};
         ruleGroup.guid = ruleGroupId;
-        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError && ruleGroup.name == name) {
+        GS::Array<API_Guid> groupRuleIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &groupRuleIds) == NoError && ruleGroup.name == name) {
             ruleGroupGuid = ruleGroup.guid;
-            return NoError;
+            if (ruleIds != nullptr) {
+                *ruleIds = groupRuleIds;
+            }
+            return true;
         }
+    }
+    return false;
+}
+
+GSErrCode FindOrCreateRuleGroup (const GS::UniString& name, API_Guid& ruleGroupGuid)
+{
+    if (FindRuleGroupByName (name, ruleGroupGuid)) {
+        return NoError;
     }
     API_OverrideRuleGroup ruleGroup = {};
     ruleGroup.name = name;
-    err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (ruleGroup);
+    const GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (ruleGroup);
     ruleGroupGuid = ruleGroup.guid;
     return err;
 }
@@ -1157,22 +1169,6 @@ GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::Objec
 
     // Archicad deletes the rules of a group together with the group, and a rule cannot live
     // outside a group. So the rules are moved first, deleted on request, or the group is kept.
-    const auto findRuleGroup = [] (const GS::UniString& name, API_Guid& ruleGroupGuid, GS::Array<API_Guid>& ruleIds) -> bool {
-        GS::Array<API_Guid> ruleGroupIds;
-        if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
-            return false;
-        }
-        for (const API_Guid& ruleGroupId : ruleGroupIds) {
-            API_OverrideRuleGroup ruleGroup = {};
-            ruleGroup.guid = ruleGroupId;
-            ruleIds.Clear ();
-            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &ruleIds) == NoError && ruleGroup.name == name) {
-                ruleGroupGuid = ruleGroup.guid;
-                return true;
-            }
-        }
-        return false;
-    };
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
@@ -1180,7 +1176,7 @@ GS::ObjectState DeleteGraphicOverrideRuleGroupsCommand::Execute (const GS::Objec
         for (const GS::UniString& ruleGroupName : ruleGroupNames) {
             API_Guid ruleGroupGuid = APINULLGuid;
             GS::Array<API_Guid> ruleIds;
-            if (!findRuleGroup (ruleGroupName, ruleGroupGuid, ruleIds)) {
+            if (!FindRuleGroupByName (ruleGroupName, ruleGroupGuid, &ruleIds)) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + ruleGroupName + "'."));
                 continue;
             }
@@ -1311,35 +1307,6 @@ GS::ObjectState DeleteGraphicOverrideCombinationsCommand::Execute (const GS::Obj
 #endif
 }
 
-#ifdef ServerMainVers_2700
-
-namespace {
-
-bool FindRuleGroupByName (const GS::UniString& name, API_Guid& ruleGroupGuid, GS::Array<API_Guid>* ruleIds = nullptr)
-{
-    GS::Array<API_Guid> ruleGroupIds;
-    if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
-        return false;
-    }
-    for (const API_Guid& ruleGroupId : ruleGroupIds) {
-        API_OverrideRuleGroup ruleGroup = {};
-        ruleGroup.guid = ruleGroupId;
-        GS::Array<API_Guid> groupRuleIds;
-        if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup, &groupRuleIds) == NoError && ruleGroup.name == name) {
-            ruleGroupGuid = ruleGroup.guid;
-            if (ruleIds != nullptr) {
-                *ruleIds = groupRuleIds;
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-}
-
-#endif
-
 MoveGraphicOverrideRulesCommand::MoveGraphicOverrideRulesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1429,19 +1396,12 @@ GS::ObjectState MoveGraphicOverrideRulesCommand::Execute (const GS::ObjectState&
                 continue;
             }
             API_Guid targetGuid = APINULLGuid;
-            const bool targetIsNew = !FindRuleGroupByName (ruleGroupName, targetGuid);
-            GSErrCode err = FindOrCreateRuleGroup (ruleGroupName, targetGuid);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to find or create the rule group '" + ruleGroupName + "'."));
-                continue;
-            }
+            GS::Array<API_Guid> targetRuleIds;
+            const bool targetIsNew = !FindRuleGroupByName (ruleGroupName, targetGuid, &targetRuleIds);
             const GS::ObjectState* beforeId = item.Get ("beforeGraphicOverrideRuleId");
             API_Guid beforeGuid = APINULLGuid;
             if (beforeId != nullptr) {
                 beforeGuid = GetGuidFromObjectState (*beforeId);
-                GS::Array<API_Guid> targetRuleIds;
-                API_Guid dummy = APINULLGuid;
-                FindRuleGroupByName (ruleGroupName, dummy, &targetRuleIds);
                 if (!targetRuleIds.Contains (beforeGuid)) {
                     executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'beforeGraphicOverrideRuleId' is not a rule of the group '" + ruleGroupName + "'."));
                     continue;
@@ -1451,11 +1411,13 @@ GS::ObjectState MoveGraphicOverrideRulesCommand::Execute (const GS::ObjectState&
                     continue;
                 }
             }
+            GSErrCode err = FindOrCreateRuleGroup (ruleGroupName, targetGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find or create the rule group '" + ruleGroupName + "'."));
+                continue;
+            }
             // Archicad refuses to move a rule into its own group (APIERR_NAMEALREADYUSED): change its place
             // in the group's order instead.
-            GS::Array<API_Guid> targetRuleIds;
-            API_Guid targetCheck = APINULLGuid;
-            FindRuleGroupByName (ruleGroupName, targetCheck, &targetRuleIds);
             if (targetRuleIds.Contains (rule.guid)) {
                 GS::Array<API_Guid> newOrder;
                 for (const API_Guid& ruleGuid : targetRuleIds) {
