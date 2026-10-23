@@ -160,6 +160,118 @@ GS::ObjectState UpdateDrawingsCommand::Execute(const GS::ObjectState& parameters
 #endif
 }
 
+GetDrawingContentBoxesCommand::GetDrawingContentBoxesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDrawingContentBoxesCommand::GetName () const
+{
+    return "GetDrawingContentBoxes";
+}
+
+GS::Optional<GS::UniString> GetDrawingContentBoxesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetDrawingContentBoxesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "contentBoxes": {
+                "type": "array",
+                "description": "One item per input element, in the same order: the full content box of the Drawing, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "contentBox": {
+                                    "$ref": "#/BoundingBox2D",
+                                    "description": "The full boundary box of the Drawing's content, independent of its frame, as returned by Archicad."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "contentBox"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "contentBoxes"
+        ]
+    })";
+}
+
+GS::ObjectState GetDrawingContentBoxesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& contentBoxes = response.AddList<GS::ObjectState> ("contentBoxes");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            contentBoxes (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            contentBoxes (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        if (GetElemTypeId (elemHead) != API_DrawingID) {
+            contentBoxes (CreateErrorResponse (APIERR_BADID, "The given element is not a Drawing."));
+            continue;
+        }
+
+        API_Box contentBox = {};
+        err = ACAPI_Drawing_GetFullDrawingContentBox (&contentBox, &elemHead.guid);
+        if (err != NoError) {
+            contentBoxes (CreateErrorResponse (err, "Failed to get the content box of the Drawing."));
+            continue;
+        }
+
+        contentBoxes (GS::ObjectState ("contentBox", GS::ObjectState (
+            "xMin", contentBox.xMin,
+            "yMin", contentBox.yMin,
+            "xMax", contentBox.xMax,
+            "yMax", contentBox.yMax)));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetDrawingContentBoxes is not supported in Archicad versions earlier than 27.");
+#endif
+}
+
 GetDatabaseIdFromNavigatorItemIdCommand::GetDatabaseIdFromNavigatorItemIdCommand () :
     CommandBase (CommonSchema::Used)
 {}
