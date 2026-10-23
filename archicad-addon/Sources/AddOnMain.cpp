@@ -731,6 +731,26 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.4",
             "Delete existing favorites."
         );
+        err |= RegisterCommand<GetFavoriteFoldersCommand> (
+            favoritesCommands, "1.7.3",
+            "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder "
+            "and the names of the Favorites in it. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateFavoriteFolderCommand> (
+            favoritesCommands, "1.7.3",
+            "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. "
+            "Available from Archicad 29."
+        );
+        err |= RegisterCommand<RenameFavoriteFolderCommand> (
+            favoritesCommands, "1.7.3",
+            "Renames a folder of the Favorites palette given by its path. The root folder cannot be renamed. Returns the renamed folder. "
+            "Available from Archicad 29."
+        );
+        err |= RegisterCommand<MoveFavoritesCommand> (
+            favoritesCommands, "1.7.3",
+            "Moves Favorites given by their names into a folder of the Favorites palette given by its path. "
+            "Returns an execution result for each Favorite. Available from Archicad 29."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
