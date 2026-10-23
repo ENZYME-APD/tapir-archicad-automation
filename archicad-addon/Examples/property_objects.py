@@ -62,3 +62,27 @@ for wall, propertyObjectsOfWall, descriptorsOfWall, linkedPropertyObjectsOfWall 
 
 print ('Wall defaults')
 PrintLinkedPropertyObjects (linkedPropertyObjectsOfWalls[-1])
+
+# SetLinkedPropertyObjectsOfElements changes the links; a link that is not given stays unchanged,
+# and individualLibraryPartIndex 0 removes the individually assigned property object.
+# Remove it from the first wall that has one, then read that wall back.
+for wall, linkedPropertyObjectsOfWall in zip (walls, linkedPropertyObjectsOfWalls):
+    if linkedPropertyObjectsOfWall.get ('individualLibraryPartIndex', 0) == 0:
+        continue
+
+    executionResults = aclib.RunTapirCommand ('SetLinkedPropertyObjectsOfElements', {
+        'elementsWithLinkedPropertyObjects': [{
+            'elementId': wall['elementId'],
+            'individualLibraryPartIndex': 0
+        }]
+    }, debug = False)['executionResults']
+    print ('Removed the individually assigned property object of wall {}: {}'.format (
+        wall['elementId']['guid'], aclib.JsonDumpDictionary (executionResults[0])))
+
+    linkedPropertyObjectsOfWall = aclib.RunTapirCommand ('GetLinkedPropertyObjectsOfElements', {
+        'elements': [wall]
+    }, debug = False)['linkedPropertyObjectsOfElements'][0]
+    PrintLinkedPropertyObjects (linkedPropertyObjectsOfWall)
+    break
+else:
+    print ('No wall has an individually assigned property object.')

@@ -742,3 +742,14 @@ inline GSErrCode TAPIR_ElementLink_GetLinkedPropertyObjects (const API_Elem_Head
     return err;
 #endif
 }
+
+// Links property objects to an element, or to the defaults of head's type when head.guid is
+// APINULLGuid. ACAPI_Element_SetLinkedPropertyObjects before Archicad 27.
+inline GSErrCode TAPIR_ElementLink_SetLinkedPropertyObjects (API_Elem_Head& head, bool criteria, Int32 individuallyLibInd)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_ElementLink_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#else
+    return ACAPI_Element_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#endif
+}

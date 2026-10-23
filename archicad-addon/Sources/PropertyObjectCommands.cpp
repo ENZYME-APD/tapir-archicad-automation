@@ -569,3 +569,142 @@ GS::ObjectState GetLinkedPropertyObjectsOfElementsCommand::Execute (const GS::Ob
 
     return response;
 }
+
+SetLinkedPropertyObjectsOfElementsCommand::SetLinkedPropertyObjectsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLinkedPropertyObjectsOfElementsCommand::GetName () const
+{
+    return "SetLinkedPropertyObjectsOfElements";
+}
+
+GS::Optional<GS::UniString> SetLinkedPropertyObjectsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithLinkedPropertyObjects": {
+                "type": "array",
+                "description": "The property object links to set, each for an element or for the element defaults of an element type. A link that is not given stays unchanged.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "linkByCriteria": {
+                                    "type": "boolean",
+                                    "description": "Link the property objects matching their criteria to the element."
+                                },
+                                "individualLibraryPartIndex": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "description": "The index of the library part of the property object to assign to the element individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType",
+                                    "description": "Set the links of the element defaults of this type instead of an element."
+                                },
+                                "linkByCriteria": {
+                                    "type": "boolean",
+                                    "description": "Link the property objects matching their criteria to the element defaults."
+                                },
+                                "individualLibraryPartIndex": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "description": "The index of the library part of the property object to assign to the element defaults individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementType"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithLinkedPropertyObjects"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLinkedPropertyObjectsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetLinkedPropertyObjectsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithLinkedPropertyObjects;
+    parameters.Get ("elementsWithLinkedPropertyObjects", elementsWithLinkedPropertyObjects);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetLinkedPropertyObjectsOfElementsCommand", [&]() {
+        for (const GS::ObjectState& elementWithLinkedPropertyObjects : elementsWithLinkedPropertyObjects) {
+            API_Elem_Head elemHead = {};
+            GS::ObjectState error;
+            if (GetElementOrDefaultsHeader (elementWithLinkedPropertyObjects, elemHead, error) != NoError) {
+                executionResults (CreateFailedExecutionResult (error));
+                continue;
+            }
+
+            // A link that is not given keeps its current value.
+            bool criteria = false;
+            Int32 individuallyLibInd = 0;
+            GS::Array<Int32> critLibInds;
+            GSErrCode err = TAPIR_ElementLink_GetLinkedPropertyObjects (elemHead, criteria, individuallyLibInd, critLibInds);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to get the linked property objects of the element"));
+                continue;
+            }
+
+            elementWithLinkedPropertyObjects.Get ("linkByCriteria", criteria);
+            elementWithLinkedPropertyObjects.Get ("individualLibraryPartIndex", individuallyLibInd);
+            if (individuallyLibInd < 0) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "individualLibraryPartIndex must not be negative"));
+                continue;
+            }
+
+            err = TAPIR_ElementLink_SetLinkedPropertyObjects (elemHead, criteria, individuallyLibInd);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to set the linked property objects of the element"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
