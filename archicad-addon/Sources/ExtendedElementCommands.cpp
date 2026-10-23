@@ -534,15 +534,15 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
 }
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
-// "favoriteName" applied to them first (#1390). A dimension's text settings (size, frame,
-// font, ...) are stored per witness point, copied from defNote when the dimension is created,
-// so a favorite only takes effect when it is applied before creation - applying it to a placed
-// dimension does not restyle its texts. Favorites can only be applied through the tool
-// defaults, which are global, so they are snapshotted first and restored when this object goes
-// out of scope, leaving the user's next manual placement as it was. Keep it alive until the
-// dimension is created, as CreateElementsCommandBase does: a dimension created after the
-// defaults were restored got the favorite's layer and markers but the tool's text (tested in
-// AC28). For the same reason defNote is also taken straight from the favorite.
+// "favoriteName" applied to them first (#1390), then the item's optional "textHeight" and
+// "textPen" applied to defNote, which both creation paths copy into every witness point.
+// Favorites can only be applied through the tool defaults, which are global, so they are
+// snapshotted first and restored when this object goes out of scope, leaving the user's next
+// manual placement as it was. Keep it alive until the dimension is created, as
+// CreateElementsCommandBase does. A favorite gave the new dimension its layer, line pen and
+// markers but not its text size, text pen or text frame (tested in AC28, also with defNote and
+// the first witness point's note taken straight from the favorite), so the text is set with
+// textHeight and textPen instead.
 class DimensionDefaults {
 public:
     DimensionDefaults () = default;
@@ -554,6 +554,8 @@ public:
     GS::Optional<GS::ObjectState> Read (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo);
 
 private:
+    GS::Optional<GS::ObjectState> ReadWithFavorite (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo);
+
     API_Element snapshot = {};
     API_ElementMemo snapshotMemo = {};
     bool restore = false;
@@ -570,6 +572,26 @@ DimensionDefaults::~DimensionDefaults ()
 }
 
 GS::Optional<GS::ObjectState> DimensionDefaults::Read (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo)
+{
+    auto error = ReadWithFavorite (data, element, memo);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    double textHeight = 0.0;
+    if (data.Get ("textHeight", textHeight) && textHeight > 0.0) {
+        element.dimension.defNote.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (data.Get ("textPen", textPen) && textPen > 0) {
+        element.dimension.defNote.notePen = static_cast<short> (textPen);
+    }
+
+    return {};
+}
+
+GS::Optional<GS::ObjectState> DimensionDefaults::ReadWithFavorite (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo)
 {
 #ifdef ServerMainVers_2600
     element.header.type = API_DimensionID;
@@ -609,22 +631,6 @@ GS::Optional<GS::ObjectState> DimensionDefaults::Read (const GS::ObjectState& da
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the dimension defaults.");
     }
-
-    // The favorite's defNote alone still gave the tool's text (tested in AC28), so the text
-    // style is taken from the favorite's first witness point when it stores one, and from its
-    // defNote otherwise. Both creation paths copy defNote into every witness point.
-    API_Favorite favorite;
-    favorite.name = favoriteName;
-    favorite.memo.New ();
-    if (ACAPI_Favorite_Get (&favorite) == NoError) {
-        element.dimension.defNote = favorite.element.dimension.defNote;
-        API_DimElem** favoriteDimElems = favorite.memo.Get ().dimElems;
-        if (favoriteDimElems != nullptr && *favoriteDimElems != nullptr &&
-            BMGetHandleSize ((GSHandle) favoriteDimElems) / sizeof (API_DimElem) > 0) {
-            element.dimension.defNote = (*favoriteDimElems)[0].note;
-        }
-    }
-    ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
     return {};
 }
 
@@ -5282,7 +5288,15 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its text size, text frame and pens. Its settings are applied first, then the command sets the geometry and its usual text placement. The Dimension tool defaults are left as they were."
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
                         },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" },
@@ -5433,7 +5447,15 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its text size, text frame and pens. Its settings are applied first, then the command sets the geometry and its usual text placement. The Dimension tool defaults are left as they were."
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
                         },
                         "sectionElementId": {
                             "$ref": "#/ElementId",
@@ -5597,7 +5619,15 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                     "properties": {
                         "favoriteName": {
                             "type": "string",
-                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its text size, text frame and pens. Its settings are applied first, then the command sets the geometry and its usual text placement. The Dimension tool defaults are left as they were."
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
                         },
                         "wallId": { "$ref": "#/ElementId" },
                         "referencePoint": { "$ref": "#/Coordinate2D" },

@@ -1,14 +1,16 @@
 """
 Example for issue #1390: CreateAssociativeDimensions, CreateAssociativeDimensionsOnSection and
 CreateWallThicknessDimensions take an optional 'favoriteName', so a dimension is created with
-the settings of a saved Dimension favorite - its text size, text frame, pens and so on. A
-dimension's texts are styled when it is created, so this is the way to place dimensions with a
-favorite's text settings; ApplyFavoritesToElements does not restyle the texts of a placed one.
+the settings of a saved Dimension favorite - its layer, line pen, markers and so on. The
+favorite's text size, text pen and text frame are not applied (tested in Archicad 28), so the
+same commands take an optional 'textHeight' (mm) and 'textPen' for the dimension texts.
 
 The script places two walls and a dimension between them, saves that dimension as a favorite,
-then dimensions the walls again from the favorite, tries a favorite that does not exist, and
-cleans up after itself. In Archicad, save a favorite with a larger text or a text frame and pass
-its name instead to see its settings on the new dimensions.
+then dimensions the walls again from the favorite, once with a larger text in pen 20, tries a
+favorite that does not exist, and cleans up after itself. In Archicad, save a favorite with
+other markers or pens and pass its name instead to see its settings on the new dimensions.
+The texts are not read back (GetDetailsOfElements does not support dimensions), so check
+them in the floor plan.
 """
 import aclib
 
@@ -81,12 +83,14 @@ check ('dimension without favorite created', True, 'elementId' in response['elem
 created += [e for e in response['elements'] if 'elementId' in e]
 
 # --- 2. a wall thickness dimension from the favorite ----------------------------------
-print ('CreateWallThicknessDimensions with favoriteName')
+print ('CreateWallThicknessDimensions with favoriteName, textHeight and textPen')
 response = run ('CreateWallThicknessDimensions', {'dimensionsData': [{
     'wallId': wallIds[0],
     'referencePoint': {'x': 2.0, 'y': -79.0},
     'direction': {'x': 0.0, 'y': 1.0},
-    'favoriteName': favoriteName
+    'favoriteName': favoriteName,
+    'textHeight': 5.0,
+    'textPen': 20
 }]})
 check ('wall thickness dimension created', True, 'elementId' in response['elements'][0])
 created += [e for e in response['elements'] if 'elementId' in e]
