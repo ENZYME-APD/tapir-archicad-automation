@@ -369,6 +369,16 @@ inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_Libra
     return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_CreateFolderInLibrary (const IO::Location* newFolderLocationInLibrary)
+{
+    return ACAPI_Environment (APIEnv_CreateFolderInLibraryID, (void*) newFolderLocationInLibrary);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_CopyFilesIntoLibrary (const IO::Location* targetFolderLocationInLibrary, const GS::Array<IO::Location>* filesToCopy, const bool* overwriteIfExists)
+{
+    return ACAPI_Environment (APIEnv_CopyFilesIntoLibraryID, (void*) targetFolderLocationInLibrary, (void*) filesToCopy, (void*) overwriteIfExists);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* location, GS::Array<API_Elem_Head>* elemHead = nullptr)
 {
     // AC25/26 take the element list as a handle (APIDo_SaveAsModuleFileID par2:

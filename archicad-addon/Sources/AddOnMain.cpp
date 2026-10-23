@@ -1099,6 +1099,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.6.0",
             "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
         );
+        err |= RegisterCommand<CreateFolderInEmbeddedLibraryCommand> (
+            libraryCommands, "1.7.3",
+            "Creates a folder, with any missing parent folders, inside the embedded library. The folderPath is relative to the embedded library, like the outputPath of AddFilesToEmbeddedLibrary."
+        );
+        err |= RegisterCommand<CopyFilesIntoEmbeddedLibraryCommand> (
+            libraryCommands, "1.7.3",
+            "Copies the given files, keeping their names, into a folder of the embedded library with one library operation. The target folder is created when it is missing. With overwriteIfExists an item of the same name in that folder is replaced."
+        );
         err |= RegisterCommand<SetLibrariesCommand> (
             libraryCommands, "1.5.9",
             "Makes the given folders the project's local libraries; built-in, embedded, server and web libraries are kept. Set the libraries before opening a file that needs them and the missing-library dialog does not appear."
