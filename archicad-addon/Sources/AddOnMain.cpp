@@ -381,7 +381,7 @@ GSErrCode Initialize (void)
             "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
         );
         err |= RegisterCommand<GetCurtainWallAbsoluteBottomsCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Gets the absolute bottom level of curtain walls or their subelements (segments, frames, panels, junctions, accessories). The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
