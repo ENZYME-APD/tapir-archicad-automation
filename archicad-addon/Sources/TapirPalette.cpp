@@ -40,6 +40,10 @@
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
+std::atomic<bool>     TapirPalette::quitting (false);
+std::mutex                    TapirPalette::postedTasksMutex;
+std::vector<GS::RunnableTask> TapirPalette::postedTasks;
+std::vector<GS::RunnableTask> TapirPalette::finishedTasks;
 
 // True while UpdateAddOn runs. Archicad handles its events during the installer download, so the palette's
 // Run button and the shortcut slots must not start a script that the installer would then interrupt.
@@ -476,6 +480,53 @@ TapirPalette& TapirPalette::Instance ()
         instance = new TapirPalette ();
     }
     return *instance;
+}
+
+void TapirPalette::StopRunningScriptOnQuit ()
+{
+    if (!HasInstance ()) {
+        return;
+    }
+    // The output reader checks this before it touches the process or posts anything to the message loop: a task
+    // posted now would only run after the add-on has been unloaded.
+    quitting = true;
+    TapirPalette& palette = Instance ();
+    if (palette.IsProcessRunning ()) {
+        try {
+            palette.process.Kill ();
+        } catch (...) {
+        }
+    }
+    palette.executor.Wait (GS::Timeout (0, 0, 2));
+
+    // Output posted while Archicad was already closing is still queued, and the message loop does not run it any
+    // more: Archicad would destroy those tasks after this add-on is unloaded and crash in their destructors. Keep
+    // them alive on purpose (never freed), so that discarding them later does not call into the unloaded add-on.
+    std::lock_guard<std::mutex> lock (postedTasksMutex);
+    finishedTasks.clear ();
+    if (!postedTasks.empty ()) {
+        new std::vector<GS::RunnableTask> (std::move (postedTasks));
+        postedTasks.clear ();
+    }
+}
+
+void TapirPalette::KeepPostedTask (const GS::RunnableTask& task)
+{
+    std::lock_guard<std::mutex> lock (postedTasksMutex);
+    finishedTasks.clear ();
+    postedTasks.push_back (task);
+}
+
+void TapirPalette::ForgetPostedTask (const GS::Runnable* task)
+{
+    std::lock_guard<std::mutex> lock (postedTasksMutex);
+    for (auto it = postedTasks.begin (); it != postedTasks.end (); ++it) {
+        if (it->operator-> () == task) {
+            finishedTasks.push_back (*it);
+            postedTasks.erase (it);
+            return;
+        }
+    }
 }
 
 void TapirPalette::Show ()
@@ -994,6 +1045,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             IconUpdateTask () = default;
             virtual void Run ()
             {
+                ForgetPostedTask (this);
                 TapirPalette::Instance ().SetRunButtonIcon ();
             }
         };
@@ -1005,6 +1057,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             {}
             virtual void Run ()
             {
+                ForgetPostedTask (this);
                 TapirPalette::Instance ().WriteReport (type, text);
             }
         };
@@ -1022,14 +1075,23 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 #endif
 
             if (lowerContent.Contains ("error:") || lowerContent.Contains ("failed") || lowerContent.Contains ("traceback (most recent call last)")) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stderrContent));
+                Post (new OutputUpdateTask (DG_ERROR, stderrContent));
                 return;
             }
             if (lowerContent.Contains ("warning:")) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_WARNING, stderrContent));
+                Post (new OutputUpdateTask (DG_WARNING, stderrContent));
                 return;
             }
-            GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stderrContent));
+            Post (new OutputUpdateTask (DG_INFORMATION, stderrContent));
+        }
+
+        // A task posted while Archicad is closing would only run after the add-on has been unloaded.
+        static void Post (const GS::RunnableTask& task)
+        {
+            if (!quitting) {
+                KeepPostedTask (task);
+                GS::MessageLoopExecutor ().Execute (task);
+            }
         }
 
     public:
@@ -1055,24 +1117,30 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
             const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
             if (!stdOutput.IsEmpty ()) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stdOutput));
+                Post (new OutputUpdateTask (DG_INFORMATION, stdOutput));
             }
         }
         virtual void Run () override final
         {
-            GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
+            Post (new IconUpdateTask ());
 
             const GS::Timeout Timeout = {0, 0, 0, 10 /*ms*/};
             while (!process.WaitFor (Timeout)) {
+                if (quitting) {
+                    return;   // StopRunningScriptOnQuit kills the process and waits for this thread
+                }
                 ReadFromChannels ();
+            }
+            if (quitting) {
+                return;
             }
 
             const int exitCode = process.GetExitCode ();
             ReadFromChannels ();
             process = {}; // Reset the process to an invalid state
 
-            GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
-            GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
+            Post (new IconUpdateTask ());
+            Post (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
         }
     };
 
