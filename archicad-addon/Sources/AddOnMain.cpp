@@ -1236,7 +1236,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ReorderNavigatorItemsCommand> (
             navigatorCommands, "1.7.3",
-            "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a scratch folder."
+            "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling."
         );
         AddCommandGroup (navigatorCommands);
     }

@@ -1671,8 +1671,8 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
 // that only repositions an item within its CURRENT parent. It works reliably, respecting
 // previousNavigatorItemId exactly, for a genuine re-parent (moving to a DIFFERENT parent).
 // So an item that is already under the right parent, just in the wrong slot, is first
-// bounced out to a scratch folder and back in - two genuine re-parents, no same-parent
-// no-op in between.
+// bounced out to a sibling and back in - two genuine re-parents, no same-parent no-op in
+// between.
 static bool GetNavigatorChildren (const API_Guid& parentGuid, GS::Array<API_NavigatorItem>& children)
 {
     API_NavigatorItem parentItem = {};
@@ -1701,6 +1701,25 @@ static bool IsDirectlyAfter (const GS::Array<API_NavigatorItem>& siblings, const
         return i > 0 && siblings[i - 1].guid == *previousGuid;
     }
     return false;
+}
+
+// Only a few item types can themselves host other navigator items - everything else
+// (layouts, master layouts, drawings, views, schedules, ...) is a leaf. The bounce target
+// must be one of these: re-parenting an item under a leaf sibling is not a real move and
+// is refused by ACAPI_Navigator_SetNavigatorItemPosition, which is exactly the "bounce
+// target can be a leaf" defect this was reworked to fix.
+static bool IsContainerNavItemType (API_NavigatorItemTypeID t)
+{
+    switch (t) {
+        case API_FolderNavItem:
+        case API_SubSetNavItem:
+        case API_BookNavItem:
+        case API_MasterFolderNavItem:
+        case API_ProjectNavItem:
+            return true;
+        default:
+            return false;
+    }
 }
 
 ReorderNavigatorItemsCommand::ReorderNavigatorItemsCommand () :
@@ -1765,25 +1784,58 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
 
     const API_Guid parentGuid = GetGuidFromObjectState (*parentOS);
 
+    GS::Array<API_NavigatorItem> currentChildren;
+    if (!GetNavigatorChildren (parentGuid, currentChildren)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Failed to get the children of parentNavigatorItemId.");
+    }
+
+    GS::Array<API_Guid> orderedGuids;
+    for (const GS::ObjectState& itemOS : orderedItemsOS) {
+        orderedGuids.Push (GetGuidFromNavigatorItemIdArrayItem (itemOS));
+    }
+
+    // orderedNavigatorItemIds must be exactly the current children, no more, no fewer, each
+    // once: any item left unlisted would otherwise end up moved to an arbitrary position by
+    // the bounce below, and any id that isn't actually a current child can't be placed at
+    // all. Reject the whole call up front instead of reordering a partial or wrong list.
+    GS::HashSet<API_Guid> currentChildSet;
+    for (const API_NavigatorItem& child : currentChildren) {
+        currentChildSet.Add (child.guid);
+    }
+    GS::HashSet<API_Guid> orderedGuidSet;
+    for (const API_Guid& guid : orderedGuids) {
+        if (!currentChildSet.Contains (guid)) {
+            return CreateErrorResponse (APIERR_BADPARS, "orderedNavigatorItemIds contains an id that is not a current child of parentNavigatorItemId.");
+        }
+        if (!orderedGuidSet.Add (guid)) {
+            return CreateErrorResponse (APIERR_BADPARS, "orderedNavigatorItemIds lists the same id more than once.");
+        }
+    }
+    if (orderedGuidSet.GetSize () != currentChildSet.GetSize ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "orderedNavigatorItemIds must list every current child of parentNavigatorItemId exactly once.");
+    }
+
     // Items are bounced through a different parent to work around the same-parent no-op
     // (#1418): moving an item OUT then back IN, both genuine re-parents, reliably respects
-    // previousNavigatorItemId even when a same-parent reposition would not. No scratch
-    // folder/subset needs to be created or cleaned up for this - an existing SIBLING of the
-    // item (any other current child of parentGuid) is always a valid, already-existing
-    // container in the right map to bounce through. This also makes the command map-
-    // agnostic: a View Map folder cannot be a Layout Book item's scratch parent (wrong map),
-    // but a sibling navigator item always is. parentGuid's own PARENT was tried first and
-    // dropped: one level up from the Layout Book's top project item or the View Map's top
-    // folder lands on the map's absolute root (an UndefinedItem), which accepts an item
-    // moved out but then refuses the move back in - a sibling has no such failure mode.
-    auto findSiblingOtherThan = [] (const GS::Array<API_NavigatorItem>& siblings, const API_Guid& exclude) -> GS::Optional<API_Guid> {
-        for (const API_NavigatorItem& sibling : siblings) {
-            if (sibling.guid != exclude) {
-                return sibling.guid;
-            }
+    // previousNavigatorItemId even when a same-parent reposition would not. The bounce
+    // target must itself be able to host children - re-parenting under a leaf sibling
+    // (a layout, master layout, drawing, view, ...) is not a real move and is refused - so a
+    // single container sibling is found once up front and reused for every item; if the
+    // current children are all leaves there is no valid bounce target at all, and the whole
+    // call fails rather than reordering only some of them.
+    GS::Optional<API_Guid> bounceGuidOpt;
+    for (const API_NavigatorItem& child : currentChildren) {
+        if (IsContainerNavItemType (child.itemType)) {
+            bounceGuidOpt = child.guid;
+            break;
         }
-        return GS::NoValue;
-    };
+    }
+    if (!bounceGuidOpt.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            "None of the current children of parentNavigatorItemId can host another item (all are leaves), so there is no sibling to bounce items through.");
+    }
+    const GS::Guid bounceGsGuid = APIGuid2GSGuid (bounceGuidOpt.Get ());
+    const GS::Guid parentGsGuid = APIGuid2GSGuid (parentGuid);
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
@@ -1791,58 +1843,49 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
     const API_Guid* previousGuidPtr = nullptr;
     API_Guid previousGuidStorage = APINULLGuid;
 
-    for (const GS::ObjectState& itemOS : orderedItemsOS) {
-        const API_Guid itemGuid = GetGuidFromNavigatorItemIdArrayItem (itemOS);
+    ACAPI_CallUndoableCommand ("Reorder Navigator Items", [&]() -> GSErrCode {
+        for (const API_Guid& itemGuid : orderedGuids) {
+            GS::Array<API_NavigatorItem> siblings;
+            const bool gotSiblings = GetNavigatorChildren (parentGuid, siblings);
+            const bool alreadyPlaced = gotSiblings && IsDirectlyAfter (siblings, itemGuid, previousGuidPtr);
 
-        GS::Array<API_NavigatorItem> siblings;
-        const bool gotSiblings = GetNavigatorChildren (parentGuid, siblings);
-        const bool alreadyPlaced = gotSiblings && IsDirectlyAfter (siblings, itemGuid, previousGuidPtr);
-
-        GSErrCode err = NoError;
-        if (!alreadyPlaced) {
-            // Prefer the last correctly placed item as the bounce sibling (always a current
-            // child of parentGuid by construction); otherwise any other current child.
-            GS::Optional<API_Guid> scratchGuidOpt = previousGuidPtr != nullptr
-                ? GS::Optional<API_Guid> (*previousGuidPtr)
-                : (gotSiblings ? findSiblingOtherThan (siblings, itemGuid) : GS::NoValue);
-            if (!scratchGuidOpt.HasValue ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
-                    "No sibling available to bounce this item through; parentNavigatorItemId has no other child yet."));
-                continue;
-            }
-            const API_Guid scratchGuid = scratchGuidOpt.Get ();
-
-            const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
-            const GS::Guid scratchGsGuid = APIGuid2GSGuid (scratchGuid);
-            ACAPI_CallUndoableCommand ("Reorder Navigator Items", [&]() -> GSErrCode {
-                err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &scratchGsGuid, nullptr);
-                return err;
-            });
-            if (err == NoError) {
-                const GS::Guid parentGsGuid = APIGuid2GSGuid (parentGuid);
-                GS::Guid previousGsGuidStorage;
-                GS::Guid* previousGsGuidPtr = nullptr;
-                if (previousGuidPtr != nullptr) {
-                    previousGsGuidStorage = APIGuid2GSGuid (*previousGuidPtr);
-                    previousGsGuidPtr = &previousGsGuidStorage;
-                }
-                ACAPI_CallUndoableCommand ("Reorder Navigator Items", [&]() -> GSErrCode {
+            GSErrCode err = NoError;
+            bool strandedInBounce = false;
+            if (!alreadyPlaced) {
+                const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
+                err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &bounceGsGuid, nullptr);
+                if (err == NoError) {
+                    GS::Guid previousGsGuidStorage;
+                    GS::Guid* previousGsGuidPtr = nullptr;
+                    if (previousGuidPtr != nullptr) {
+                        previousGsGuidStorage = APIGuid2GSGuid (*previousGuidPtr);
+                        previousGsGuidPtr = &previousGsGuidStorage;
+                    }
                     err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &parentGsGuid, previousGsGuidPtr);
-                    return err;
-                });
+                    if (err != NoError) {
+                        // Left inside the bounce sibling by the failed move back - recover it
+                        // under the right parent (position unspecified) rather than leaving it
+                        // stranded; this second attempt ignores previousNavigatorItemId, so the
+                        // caller may still need to re-run the reorder once this is fixed.
+                        strandedInBounce = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &parentGsGuid, nullptr) != NoError;
+                    }
+                }
+            }
+
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, strandedInBounce
+                    ? "Failed to move the navigator item to its requested position, and the recovery move back to its parent also failed; the item may still be nested inside a sibling."
+                    : "Failed to move the navigator item to its requested position."));
+                // Leave previousGuidPtr as the last correctly placed item: chaining the next
+                // item after one that is not actually in position would only compound the error.
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+                previousGuidStorage = itemGuid;
+                previousGuidPtr = &previousGuidStorage;
             }
         }
-
-        if (err != NoError) {
-            executionResults (CreateFailedExecutionResult (err, "Failed to move the navigator item to its requested position."));
-            // Leave previousGuidPtr as the last correctly placed item: chaining the next
-            // item after one that is not actually in position would only compound the error.
-        } else {
-            executionResults (CreateSuccessfulExecutionResult ());
-            previousGuidStorage = itemGuid;
-            previousGuidPtr = &previousGuidStorage;
-        }
-    }
+        return NoError;
+    });
 
     return response;
 }
