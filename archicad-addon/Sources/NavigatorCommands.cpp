@@ -1819,22 +1819,23 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
     // (#1418): moving an item OUT then back IN, both genuine re-parents, reliably respects
     // previousNavigatorItemId even when a same-parent reposition would not. The bounce
     // target must itself be able to host children - re-parenting under a leaf sibling
-    // (a layout, master layout, drawing, view, ...) is not a real move and is refused - so a
-    // single container sibling is found once up front and reused for every item; if the
-    // current children are all leaves there is no valid bounce target at all, and the whole
-    // call fails rather than reordering only some of them.
-    GS::Optional<API_Guid> bounceGuidOpt;
+    // (a layout, master layout, drawing, view, ...) is not a real move and is refused - so
+    // every container sibling is collected once up front; if the current children are all
+    // leaves there is none at all, and the whole call fails rather than reordering only some
+    // of them. A container being reordered can't bounce through itself
+    // (SetNavigatorItemPosition(x, x, ...) is nonsensical), so a second container is kept as
+    // the fallback bounce target for that one item; with only one container among the
+    // current children, that one item alone fails instead of corrupting the tree.
+    GS::Array<API_Guid> containerGuids;
     for (const API_NavigatorItem& child : currentChildren) {
         if (IsContainerNavItemType (child.itemType)) {
-            bounceGuidOpt = child.guid;
-            break;
+            containerGuids.Push (child.guid);
         }
     }
-    if (!bounceGuidOpt.HasValue ()) {
+    if (containerGuids.IsEmpty ()) {
         return CreateErrorResponse (APIERR_BADPARS,
             "None of the current children of parentNavigatorItemId can host another item (all are leaves), so there is no sibling to bounce items through.");
     }
-    const GS::Guid bounceGsGuid = APIGuid2GSGuid (bounceGuidOpt.Get ());
     const GS::Guid parentGsGuid = APIGuid2GSGuid (parentGuid);
 
     GS::ObjectState response;
@@ -1852,7 +1853,22 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
             GSErrCode err = NoError;
             bool strandedInBounce = false;
             if (!alreadyPlaced) {
+                // A container can't bounce through itself; use another container instead, or
+                // fail just this one item when it is the only container among the children.
+                const API_Guid* bounceGuidPtr = nullptr;
+                for (const API_Guid& candidate : containerGuids) {
+                    if (candidate != itemGuid) {
+                        bounceGuidPtr = &candidate;
+                        break;
+                    }
+                }
+                if (bounceGuidPtr == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                        "This item is the only sibling that can host another item, so it cannot be bounced through anything else to reposition it."));
+                    continue;
+                }
                 const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
+                const GS::Guid bounceGsGuid = APIGuid2GSGuid (*bounceGuidPtr);
                 err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGsGuid, &bounceGsGuid, nullptr);
                 if (err == NoError) {
                     GS::Guid previousGsGuidStorage;
