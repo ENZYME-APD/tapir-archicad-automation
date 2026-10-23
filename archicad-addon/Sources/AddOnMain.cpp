@@ -377,7 +377,7 @@ GSErrCode Initialize (void)
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
         );
         err |= RegisterCommand<GetLibPartTransformationsCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
