@@ -46,6 +46,7 @@
 #include "GraphicOverrideCommands.hpp"
 #include "GridElementCommands.hpp"
 #include "GraphicalOverrideCommands.hpp"
+#include "PolygonCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -671,6 +672,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RemoveElementNotificationClientCommand> (
             elementCommands, "1.2.8",
             "Removes an element notification client."
+        );
+        err |= RegisterCommand<RegularizePolygonsCommand> (
+            elementCommands, "1.7.2",
+            "Regularizes polygons with Archicad's own polygon regularization, before they are used to create slabs, zones or fills: removes duplicate points, fixes the orientation, resolves self-intersections and touching holes. Each input polygon gives 0, 1 or more valid polygons in the format of CreateSlabs, optionally with the input vertex and edge each result vertex and edge came from. Changes nothing in the project."
+        );
+        err |= RegisterCommand<RegularizePolylinesCommand> (
+            elementCommands, "1.7.2",
+            "Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project."
         );
         AddCommandGroup (elementCommands);
     }
