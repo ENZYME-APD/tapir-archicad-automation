@@ -1372,6 +1372,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_CurtainWallID: {
                 typeSpecificDetails.Add ("height", elem.curtainWall.height);
+                double actualHeight = 0.0;
+                if (ACAPI_CurtainWall_GetCWHeight (&elem.header.guid, &actualHeight) == NoError) {
+                    typeSpecificDetails.Add ("actualHeight", actualHeight);
+                }
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
             } break;
