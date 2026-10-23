@@ -323,6 +323,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.4.0",
             "Gets the project calculation units."
         );
+        err |= RegisterCommand<GetProjectPreferencesCommand> (
+            projectCommands, "1.7.2",
+            "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Further pages may follow."
+        );
+        err |= RegisterCommand<SetProjectPreferencesCommand> (
+            projectCommands, "1.7.2",
+            "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27."
+        );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
             "Gets the project location details."
@@ -378,7 +386,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
             elementCommands, "1.7.2",
-            "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
+            "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
@@ -783,6 +791,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ImportPropertiesXmlCommand> (
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
+        );
+        err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Makes a property definition available for all the given elements. Available only in Archicad 27."
+        );
+        err |= RegisterCommand<MakePropertyUnavailableForElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Makes a property definition unavailable for all the given elements. Available only in Archicad 27."
         );
         AddCommandGroup (propertyCommands);
     }

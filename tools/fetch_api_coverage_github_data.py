@@ -1,7 +1,9 @@
 """Write the live GitHub data tools/generate_api_coverage.py reads (--github-data).
 
 Collects the open pull requests with the lines they add to each Add-On source
-file (archicad-addon/Sources), and the open issues, of the repository. Standard library only; GITHUB_TOKEN authenticates.
+file (archicad-addon/Sources) and Grasshopper plugin source file (the .cs files
+of grasshopper-plugin, read by tools/generate_gh_coverage.py), and the open
+issues, of the repository. Standard library only; GITHUB_TOKEN authenticates.
 
 A request GitHub refuses for its rate limit (403 or 429) is retried after the
 wait GitHub names (Retry-After, or the reset time of an exhausted limit), or
@@ -88,7 +90,9 @@ def main ():
         for changed in pages (f'/repos/{repo}/pulls/{pr["number"]}/files'):
             # Only code counts: docs, examples or this checklist's own data
             # naming a function do not make it in progress.
-            if not changed['filename'].startswith ('archicad-addon/Sources/'):
+            name = changed['filename']
+            if not (name.startswith ('archicad-addon/Sources/') or
+                    (name.startswith ('grasshopper-plugin/') and name.endswith ('.cs'))):
                 continue
             added = [line[1:] for line in (changed.get ('patch') or '').splitlines ()
                      if line.startswith ('+') and not line.startswith ('+++')]
