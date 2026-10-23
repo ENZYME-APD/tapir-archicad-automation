@@ -3023,6 +3023,143 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
     return response;
 }
 
+GetHierarchicalElementOwnersCommand::GetHierarchicalElementOwnersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHierarchicalElementOwnersCommand::GetName () const
+{
+    return "GetHierarchicalElementOwners";
+}
+
+GS::Optional<GS::UniString> GetHierarchicalElementOwnersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements whose owners are looked up, e.g. Curtain Wall frames or panels, Stair treads or Railing posts."
+            },
+            "ownerMode": {
+                "type": "string",
+                "enum": ["root", "parent"],
+                "description": "root (default): the root of the hierarchical element tree, e.g. the Curtain Wall, Stair or Railing. parent: the immediate parent, which may itself be a subelement."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHierarchicalElementOwnersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "owners": {
+                "type": "array",
+                "description": "The owner of each element, aligned with the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "ownerElementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The owner element. For a main element (e.g. a Curtain Wall) or an element that is not part of a hierarchical element, Archicad returns the input element itself."
+                                },
+                                "hierarchicalElementType": {
+                                    "type": "string",
+                                    "enum": ["MainElement", "ChildElement", "SingleElement"],
+                                    "description": "The classification of the input element (not of its owner): MainElement is the main element of a hierarchical element (e.g. a Curtain Wall, Stair or Railing), ChildElement is a subelement of one (e.g. a frame or a tread), SingleElement is not part of a hierarchical element."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "ownerElementId",
+                                "hierarchicalElementType"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "owners"
+        ]
+    })";
+}
+
+static GS::Optional<GS::UniString> GetHierarchicalElemTypeName (API_HierarchicalElemType hierarchicalElemType)
+{
+    switch (hierarchicalElemType) {
+        case API_MainElemInMultipleElem:    return GS::UniString ("MainElement");
+        case API_ChildElemInMultipleElem:   return GS::UniString ("ChildElement");
+        case API_SingleElem:                return GS::UniString ("SingleElement");
+        default:                            return {};
+    }
+}
+
+GS::ObjectState GetHierarchicalElementOwnersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_HierarchicalOwnerType ownerType = API_RootHierarchicalOwner;
+    GS::UniString ownerModeStr;
+    if (parameters.Get ("ownerMode", ownerModeStr)) {
+        if (ownerModeStr == "parent") {
+            ownerType = API_ParentHierarchicalOwner;
+        } else if (ownerModeStr != "root") {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid ownerMode '%T'.", ownerModeStr.ToPrintf ()));
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& owners = response.AddList<GS::ObjectState> ("owners");
+
+    for (const GS::ObjectState& elementOS : elements) {
+        const GS::ObjectState* elementId = elementOS.Get ("elementId");
+        if (elementId == nullptr) {
+            owners (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+        API_HierarchicalElemType hierarchicalElemType = API_UnknownElemType;
+        API_Guid ownerGuid = APINULLGuid;
+        const GSErrCode err = ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (&elemGuid, &ownerType, &hierarchicalElemType, &ownerGuid);
+        if (err != NoError) {
+            owners (CreateErrorResponse (err, "Failed to get the owner of the element"));
+            continue;
+        }
+
+        const GS::Optional<GS::UniString> hierarchicalElemTypeName = GetHierarchicalElemTypeName (hierarchicalElemType);
+        if (!hierarchicalElemTypeName.HasValue () || ownerGuid == APINULLGuid) {
+            owners (CreateErrorResponse (APIERR_BADID, "Failed to get the owner of the element"));
+            continue;
+        }
+
+        GS::ObjectState ownerOS;
+        ownerOS.Add ("ownerElementId", CreateGuidObjectState (ownerGuid));
+        ownerOS.Add ("hierarchicalElementType", *hierarchicalElemTypeName);
+        owners (ownerOS);
+    }
+
+    return response;
+}
+
 GetConnectedElementsCommand::GetConnectedElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

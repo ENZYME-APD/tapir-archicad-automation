@@ -79,6 +79,11 @@
 #define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
 #define ACAPI_Element_GetRoomImage(par1) ACAPI_Goodies(APIAny_GetRoomImageID,par1)
 
+inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const API_Guid* elemApiGuid, const API_HierarchicalOwnerType* hierarchicalOwnerType, API_HierarchicalElemType* hierarchicalElemType, API_Guid* ownerElemApiGuid)
+{
+    return ACAPI_Goodies (APIAny_GetHierarchicalElementOwnerID, const_cast<API_Guid*> (elemApiGuid), const_cast<API_HierarchicalOwnerType*> (hierarchicalOwnerType), hierarchicalElemType, ownerElemApiGuid);
+}
+
 #define ACAPI_AddOnAddOnCommunication_Call ACAPI_Command_Call
 
 #define ACAPI_GraphicalOverride_GetVisualOverriddenImage ACAPI_Element_GetVisualOverriddenImage
