@@ -5,11 +5,9 @@
 // Property objects are the GDL library parts of the old listing system, linked to construction
 // elements by criteria or individually; the descriptors are the listing data in them.
 
-// Adds the index of the library part, and its name and guid when the library part can be read.
-// The index is the same as the index returned by GetAvailableLibraryParts.
-static void AddLibraryPartOfPropertyObject (GS::ObjectState& os, Int32 libIndex)
+// Adds the name and guid of the library part under the given keys, when the library part can be read.
+static void AddNameAndGuidOfLibraryPart (GS::ObjectState& os, Int32 libIndex, const char* nameKey, const char* guidKey)
 {
-    os.Add ("libraryPartIndex", libIndex);
     if (libIndex <= 0) {
         return;
     }
@@ -20,12 +18,20 @@ static void AddLibraryPartOfPropertyObject (GS::ObjectState& os, Int32 libIndex)
         return;
     }
 
-    os.Add ("name", GS::UniString (libPart.docu_UName));
-    os.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
+    os.Add (nameKey, GS::UniString (libPart.docu_UName));
+    os.Add (guidKey, GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
 
     // ACAPI_LibraryPart_Get allocates libPart.location.
     delete libPart.location;
     libPart.location = nullptr;
+}
+
+// Adds the index of the library part, and its name and guid when the library part can be read.
+// The index is the same as the index returned by GetAvailableLibraryParts.
+static void AddLibraryPartOfPropertyObject (GS::ObjectState& os, Int32 libIndex)
+{
+    os.Add ("libraryPartIndex", libIndex);
+    AddNameAndGuidOfLibraryPart (os, libIndex, "name", "guid");
 }
 
 static GSErrCode GetElementHeader (const GS::ObjectState& element, API_Elem_Head& elemHead, GS::ObjectState& error)
@@ -43,6 +49,37 @@ static GSErrCode GetElementHeader (const GS::ObjectState& element, API_Elem_Head
         error = CreateErrorResponse (err, "Failed to find element in Archicad");
     }
     return err;
+}
+
+// Reads the header of the element given by elementId, or makes the header of the element defaults
+// of the type given by elementType (guid is APINULLGuid).
+static GSErrCode GetElementOrDefaultsHeader (const GS::ObjectState& element, API_Elem_Head& elemHead, GS::ObjectState& error)
+{
+    if (element.Get ("elementId") != nullptr) {
+        return GetElementHeader (element, elemHead, error);
+    }
+
+    GS::UniString elementTypeStr;
+    if (!element.Get ("elementType", elementTypeStr)) {
+        error = CreateErrorResponse (APIERR_BADPARS, "elementId or elementType is missing");
+        return APIERR_BADPARS;
+    }
+
+    const API_ElemTypeID elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    if (elemType == API_ZombieElemID) {
+        error = CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        return APIERR_BADPARS;
+    }
+
+    elemHead = {};
+#ifdef ServerMainVers_2600
+    elemHead.type = elemType;
+#else
+    elemHead.typeID = elemType;
+#endif
+    elemHead.guid = APINULLGuid;
+    return NoError;
 }
 
 // The pointer overload of ACAPI_Element_GetPropertyObjects is deprecated from Archicad 30, and
@@ -364,6 +401,170 @@ GS::ObjectState GetDescriptorsOfElementsCommand::Execute (const GS::ObjectState&
             }
         }
         descriptorsOfElements (descriptorsOfElement);
+    }
+
+    return response;
+}
+
+GetLinkedPropertyObjectsOfElementsCommand::GetLinkedPropertyObjectsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLinkedPropertyObjectsOfElementsCommand::GetName () const
+{
+    return "GetLinkedPropertyObjectsOfElements";
+}
+
+GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "A list of elements, or of element types to read the links of the element defaults of that type.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/ElementIdArrayItem"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType",
+                                    "description": "Read the links of the element defaults of this type instead of an element."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementType"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "linkedPropertyObjectsOfElements": {
+                "type": "array",
+                "description": "The property object links of each element or element default, aligned with the input array of elements, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "linkByCriteria": {
+                                    "type": "boolean",
+                                    "description": "True when the property objects matching their criteria are linked to the element."
+                                },
+                                "individualLibraryPartIndex": {
+                                    "type": "integer",
+                                    "description": "The index of the library part of the individually assigned property object, the same as the index returned by GetAvailableLibraryParts. 0 when no property object is assigned individually."
+                                },
+                                "individualLibraryPartName": {
+                                    "type": "string",
+                                    "description": "The name of the individually assigned library part. Absent when there is none or it cannot be read."
+                                },
+                                "individualLibraryPartGuid": {
+                                    "type": "string",
+                                    "description": "The guid of the individually assigned library part, the same as the guid returned by GetAvailableLibraryParts. Absent when there is none or it cannot be read."
+                                },
+                                "criteriaPropertyObjects": {
+                                    "type": "array",
+                                    "description": "The linked property objects whose criteria match the element.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "libraryPartIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts."
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The name of the library part. Absent when the library part cannot be read."
+                                            },
+                                            "guid": {
+                                                "type": "string",
+                                                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "libraryPartIndex"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "linkByCriteria",
+                                "individualLibraryPartIndex",
+                                "criteriaPropertyObjects"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkedPropertyObjectsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetLinkedPropertyObjectsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& linkedPropertyObjectsOfElements = response.AddList<GS::ObjectState> ("linkedPropertyObjectsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        API_Elem_Head elemHead = {};
+        GS::ObjectState error;
+        if (GetElementOrDefaultsHeader (element, elemHead, error) != NoError) {
+            linkedPropertyObjectsOfElements (error);
+            continue;
+        }
+
+        bool criteria = false;
+        Int32 individuallyLibInd = 0;
+        GS::Array<Int32> critLibInds;
+        const GSErrCode err = TAPIR_ElementLink_GetLinkedPropertyObjects (elemHead, criteria, individuallyLibInd, critLibInds);
+        if (err != NoError) {
+            linkedPropertyObjectsOfElements (CreateErrorResponse (err, "Failed to get the linked property objects of the element"));
+            continue;
+        }
+
+        GS::ObjectState linkedPropertyObjects;
+        linkedPropertyObjects.Add ("linkByCriteria", criteria);
+        linkedPropertyObjects.Add ("individualLibraryPartIndex", individuallyLibInd);
+        AddNameAndGuidOfLibraryPart (linkedPropertyObjects, individuallyLibInd, "individualLibraryPartName", "individualLibraryPartGuid");
+        const auto& criteriaPropertyObjects = linkedPropertyObjects.AddList<GS::ObjectState> ("criteriaPropertyObjects");
+        for (Int32 critLibInd : critLibInds) {
+            GS::ObjectState propertyObject;
+            AddLibraryPartOfPropertyObject (propertyObject, critLibInd);
+            criteriaPropertyObjects (propertyObject);
+        }
+        linkedPropertyObjectsOfElements (linkedPropertyObjects);
     }
 
     return response;

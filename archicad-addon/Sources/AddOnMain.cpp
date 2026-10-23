@@ -425,6 +425,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Gets the descriptors of the given elements: the listing descriptors in the property objects of each element, with the library part that declares them (index, name and guid), their listing database set and index, and their status (Normal, Deleted or Local). The output is aligned with the input array of elements."
         );
+        err |= RegisterCommand<GetLinkedPropertyObjectsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Gets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, which of them match, and which one is assigned individually, each with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
             "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
