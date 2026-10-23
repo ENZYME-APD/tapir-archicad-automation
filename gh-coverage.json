@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-23 21:04 UTC",
+ "generatedAt": "2026-10-23 22:37 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 47,
+  "open": 49,
   "merged": 3,
   "claimed": 2,
   "not applicable": 1
@@ -5723,6 +5723,36 @@
     "embeddedLibraryItems",
     "embeddedLibraryItems.path"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateFolderInEmbeddedLibrary",
+   "group": "Library Commands",
+   "version": "1.7.3",
+   "brief": "Creates a folder, with any missing parent folders, inside the embedded library. The folderPath is relative to the embedded library, like the outputPath of AddFilesToEmbeddedLibrary.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CopyFilesIntoEmbeddedLibrary",
+   "group": "Library Commands",
+   "version": "1.7.3",
+   "brief": "Copies the given files, keeping their names, into a folder of the embedded library with one library operation. The target folder is created when it is missing. With overwriteIfExists an item of the same name in that folder is replaced.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

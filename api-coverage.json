@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 21:04 UTC",
+ "generatedAt": "2026-10-23 22:37 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 637,
+  "in progress": 635,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 45
+  "merged": 47
  },
  "items": [
   {
@@ -14625,14 +14625,9 @@
    "olderNames": [
     "APIEnv_CopyFilesIntoLibraryID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1315,
@@ -14681,14 +14676,9 @@
    "olderNames": [
     "APIEnv_CreateFolderInLibraryID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1315,
@@ -20760,10 +20750,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
-    },
     {
      "number": 957,
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
@@ -26845,10 +26831,6 @@
     {
      "number": 1359,
      "title": "[2/6] Add GetExportTolerance and Get/SetLast3DDefaultLevels commands"
-    },
-    {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
     },
     {
      "number": 1353,
@@ -38953,10 +38935,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
-    },
-    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
@@ -39006,10 +38984,6 @@
     {
      "number": 1361,
      "title": "[3/3] Add IsUsableGDLString command"
-    },
-    {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
     },
     {
      "number": 1353,
@@ -71119,10 +71093,6 @@
     {
      "number": 1361,
      "title": "[3/3] Add IsUsableGDLString command"
-    },
-    {
-     "number": 1357,
-     "title": "[3/6] Add CreateFolderInEmbeddedLibrary and CopyFilesIntoEmbeddedLibrary"
     },
     {
      "number": 1355,
