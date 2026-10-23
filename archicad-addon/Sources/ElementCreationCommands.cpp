@@ -4730,3 +4730,193 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
 
     return {};
 }
+
+MeasureTextsCommand::MeasureTextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MeasureTextsCommand::GetName () const
+{
+    return "MeasureTexts";
+}
+
+GS::Optional<GS::UniString> MeasureTextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "texts": {
+                "type": "array",
+                "description": "The texts to measure, each with the font, style and height it would be placed with. Nothing is created.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "text": { "type": "string", "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF." },
+                        "fontIndex": { "type": "integer", "description": "The index of the font, as GetDetailsOfElements reports it in fontIndex." },
+                        "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it and GetDetailsOfElements reports it in fontName, e.g. 'Arial'. Resolved to the font's index (exact match first, then case-insensitive); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
+                        "height": { "type": "number", "description": "The character height in millimetres, as a Text's height." },
+                        "bold": { "type": "boolean", "description": "Bold style. Optional, default false." },
+                        "italic": { "type": "boolean", "description": "Italic style. Optional, default false." },
+                        "underline": { "type": "boolean", "description": "Underline style. Optional, default false." },
+                        "slant": { "type": "number", "description": "The slant angle of the characters in radians; pi/2 (the default) is upright text." },
+                        "inModelUnits": { "type": "boolean", "description": "When true, Archicad applies the drawing scale correction and the lengths are model distances at the current drawing scale; when false (the default), they are lengths on paper in millimetres." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["text", "height"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["texts"]
+    })";
+}
+
+GS::Optional<GS::UniString> MeasureTextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "measurements": {
+                "type": "array",
+                "description": "One item per input text, in the same order. The measurement takes no width factor or character spacing into account.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "length": { "type": "number", "description": "The length of the longest line." },
+                                "longestLineIndex": { "type": "integer", "description": "The zero-based index of the longest line (the first of them on a tie)." },
+                                "lineLengths": {
+                                    "type": "array",
+                                    "description": "The length of every line, in order. An empty line is 0.",
+                                    "items": { "type": "number" }
+                                },
+                                "capitalSizeFactor": { "type": "number", "description": "The ratio of the font's capital size to its typographic size. Absent when Archicad does not return it for the font." }
+                            },
+                            "additionalProperties": false,
+                            "required": ["length", "longestLineIndex", "lineLengths"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["measurements"]
+    })";
+}
+
+GS::ObjectState MeasureTextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> texts;
+    parameters.Get ("texts", texts);
+
+    GS::ObjectState response;
+    const auto& measurements = response.AddList<GS::ObjectState> ("measurements");
+
+    for (const GS::ObjectState& item : texts) {
+        GS::UniString text;
+        double height = 0.0;
+        if (!item.Get ("text", text) || !item.Get ("height", height)) {
+            measurements (CreateErrorResponse (APIERR_BADPARS, "Each text requires 'text' and 'height'."));
+            continue;
+        }
+        if (height <= 0.0) {
+            measurements (CreateErrorResponse (APIERR_BADPARS, "'height' must be greater than zero."));
+            continue;
+        }
+
+        GS::Optional<short> fontIndex;
+        const auto fontErr = TextLabelDetails::GetFontIndexFromDetails (item, fontIndex);
+        if (fontErr.HasValue ()) {
+            measurements (*fontErr);
+            continue;
+        }
+        if (!fontIndex.HasValue ()) {
+            measurements (CreateErrorResponse (APIERR_BADPARS, "Each text requires 'fontName' or 'fontIndex'."));
+            continue;
+        }
+
+        bool bold = false;
+        bool italic = false;
+        bool underline = false;
+        item.Get ("bold", bold);
+        item.Get ("italic", italic);
+        item.Get ("underline", underline);
+        double slant = 1.5707963267948966;
+        item.Get ("slant", slant);
+        bool inModelUnits = false;
+        item.Get ("inModelUnits", inModelUnits);
+
+        // Every line is measured on its own as a string without a line terminator (index -1),
+        // so the result does not depend on how the API picks or reports the longest line.
+        const GS::UniString normalized = NormalizeLineBreaks (text);
+        GS::Array<GS::UniString> lines;
+        UIndex lineStart = 0;
+        for (UIndex i = 0; i < normalized.GetLength (); ++i) {
+            if (normalized[i] == GS::UniChar ('\n')) {
+                lines.Push (GS::UniString (normalized.GetSubstring (lineStart, i - lineStart)));
+                lineStart = i + 1;
+            }
+        }
+        lines.Push (GS::UniString (normalized.GetSubstring (lineStart, normalized.GetLength () - lineStart)));
+
+        GS::Array<double> lineLengths;
+        GSErrCode err = NoError;
+        for (GS::UniString& line : lines) {
+            double lineLength = 0.0;
+            if (!line.IsEmpty ()) {
+                API_TextLinePars textLinePars = {};
+                textLinePars.index = -1;
+                textLinePars.drvScaleCorr = inModelUnits;
+                textLinePars.wantsLongestIndex = false;
+                textLinePars.wFont = *fontIndex;
+                textLinePars.wFace = static_cast<short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+                textLinePars.wSlant = slant;
+                textLinePars.wSize = height;
+                textLinePars.lineStr = nullptr;
+                textLinePars.lineUniStr = &line;
+                err = ACAPI_Element_GetTextLineLength (&textLinePars, &lineLength);
+                if (err != NoError) {
+                    break;
+                }
+            }
+            lineLengths.Push (lineLength);
+        }
+        if (err != NoError) {
+            measurements (CreateErrorResponse (err, "Failed to measure the text."));
+            continue;
+        }
+
+        double longest = 0.0;
+        UIndex longestLineIndex = 0;
+        for (UIndex i = 0; i < lineLengths.GetSize (); ++i) {
+            if (lineLengths[i] > longest) {
+                longest = lineLengths[i];
+                longestLineIndex = i;
+            }
+        }
+
+        GS::ObjectState measurement;
+        measurement.Add ("length", longest);
+        measurement.Add ("longestLineIndex", static_cast<Int32> (longestLineIndex));
+        const auto& lineLengthList = measurement.AddList<double> ("lineLengths");
+        for (double lineLength : lineLengths) {
+            lineLengthList (lineLength);
+        }
+
+        short sizeFactorFont = *fontIndex;
+        double capitalSizeFactor = 0.0;
+        if (ACAPI_Element_GetTextSizeFactor (&sizeFactorFont, &capitalSizeFactor) == NoError) {
+            measurement.Add ("capitalSizeFactor", capitalSizeFactor);
+        }
+
+        measurements (measurement);
+    }
+
+    return response;
+}
