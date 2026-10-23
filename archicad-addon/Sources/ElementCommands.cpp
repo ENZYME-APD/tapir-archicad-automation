@@ -2149,17 +2149,24 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr)) {
                             if (penTableUsageModeStr == "UseModelPenTable") {
                                 elem.drawing.penTableUsageMode = APIPenTableUsageMode_UseModelPenTable;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
                             } else if (penTableUsageModeStr == "UsePenTableIndex") {
-                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UsePenTableIndex;
                                 const GS::ObjectState* penTableIdState = typeSpecificDetails->Get ("penTableId");
-                                if (penTableIdState != nullptr) {
-                                    elem.drawing.penTableIndex = GetAttributeIndexFromGuid (API_PenTableID, GetGuidFromObjectState (*penTableIdState));
+                                const API_AttributeIndex penTableIndex = penTableIdState != nullptr
+                                    ? GetAttributeIndexFromGuid (API_PenTableID, GetGuidFromObjectState (*penTableIdState))
+                                    : ACAPI_CreateAttributeIndex (-1);
+                                if (penTableIdState == nullptr || !penTableIndex.IsPositive ()) {
+                                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "penTableId is required and must resolve to an existing Pen Table when penTableUsageMode is UsePenTableIndex."));
+                                    continue;
                                 }
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UsePenTableIndex;
+                                elem.drawing.penTableIndex = penTableIndex;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
                             } else {
                                 elem.drawing.penTableUsageMode = APIPenTableUsageMode_UseOwnPenTable;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
                             }
-                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
-                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
