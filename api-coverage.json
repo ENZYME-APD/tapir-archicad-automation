@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 13:48 UTC",
+ "generatedAt": "2026-10-23 18:42 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 638,
+  "in progress": 637,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 44
+  "merged": 45
  },
  "items": [
   {
@@ -5072,10 +5072,6 @@
      "title": "[2/6] Add SetIFCAttributesOfElements command (Archicad 25-27)"
     },
     {
-     "number": 1350,
-     "title": "[2/3] Add RunParameterScriptOfElements command"
-    },
-    {
      "number": 1345,
      "title": "[1/2] Project data store: Get/Set/Delete project data in add-on objects"
     },
@@ -9366,10 +9362,6 @@
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
-    },
-    {
-     "number": 1350,
-     "title": "[2/3] Add RunParameterScriptOfElements command"
     },
     {
      "number": 1348,
@@ -15025,14 +15017,9 @@
    "olderNames": [
     "APIAny_RunGDLParScriptID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1350,
-     "title": "[2/3] Add RunParameterScriptOfElements command"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1317,
@@ -27021,10 +27008,6 @@
     {
      "number": 1351,
      "title": "[2/4] Add TriangulatePolygonsOfElements command"
-    },
-    {
-     "number": 1350,
-     "title": "[2/3] Add RunParameterScriptOfElements command"
     },
     {
      "number": 1348,
@@ -49363,10 +49346,6 @@
     {
      "number": 1351,
      "title": "[2/4] Add TriangulatePolygonsOfElements command"
-    },
-    {
-     "number": 1350,
-     "title": "[2/3] Add RunParameterScriptOfElements command"
     },
     {
      "number": 1347,

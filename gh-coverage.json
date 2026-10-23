@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-23 13:48 UTC",
+ "generatedAt": "2026-10-23 18:42 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 46,
+  "open": 47,
   "merged": 3,
   "claimed": 2,
   "not applicable": 1
@@ -1726,6 +1726,21 @@
    "missingParameters": [
     "elementsWithMarkerParameters.markerParameters.index"
    ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RunParameterScriptOfElements",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Runs the parameter script of the library part of the given elements (objects, lamps, windows, doors, etc.), so that parameter values that depend on other parameters are updated, e.g. after SetGDLParametersOfElements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
