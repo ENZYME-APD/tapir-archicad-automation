@@ -500,16 +500,17 @@ GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& o
     return os;
 }
 
-API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os)
+API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation)
 {
-    API_HatchOrientation orientation = {};
+    API_HatchOrientation orientation = currentOrientation;
     GS::UniString typeStr;
     if (os.Get ("type", typeStr)) {
-        orientation.type = HatchOrientationTypeFromString (typeStr);
+        orientation.type = HatchOrientationTypeFromString (typeStr, orientation.type);
     }
     GS::ObjectState originOs;
     if (os.Get ("origin", originOs)) {
-        orientation.origo = Get2DCoordinateFromObjectState (originOs);
+        originOs.Get ("x", orientation.origo.x);
+        originOs.Get ("y", orientation.origo.y);
     }
     os.Get ("matrix00", orientation.matrix00);
     os.Get ("matrix10", orientation.matrix10);
