@@ -1,10 +1,9 @@
 {
- "generatedAt": "2026-10-23 05:31 UTC",
+ "generatedAt": "2026-10-23 07:56 UTC",
  "counts": {
-  "done": 287,
+  "done": 288,
   "in progress": 5,
-  "merged": 1,
-  "open": 24,
+  "open": 26,
   "claimed": 2,
   "not applicable": 1
  },
@@ -1340,7 +1339,7 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -4097,6 +4096,36 @@
     "conflictPolicy",
     "xml"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MakePropertyAvailableForElements",
+   "group": "Property Commands",
+   "version": "1.7.2",
+   "brief": "Makes a property definition available for all the given elements. Available only in Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MakePropertyUnavailableForElements",
+   "group": "Property Commands",
+   "version": "1.7.2",
+   "brief": "Makes a property definition unavailable for all the given elements. Available only in Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

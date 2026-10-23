@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 05:31 UTC",
+ "generatedAt": "2026-10-23 07:56 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,10 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 676,
+  "in progress": 674,
   "claimed": 753,
-  "done": 743,
-  "open": 81,
-  "merged": 6
+  "done": 751,
+  "open": 81
  },
  "items": [
   {
@@ -5134,10 +5133,6 @@
     {
      "number": 1176,
      "title": "Add RenameGraphicOverrideRuleGroups (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup)"
-    },
-    {
-     "number": 1149,
-     "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
     },
     {
      "number": 1148,
@@ -11547,7 +11542,7 @@
    "olderNames": [
     "APIDb_RoomReductionsID"
    ],
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -12402,7 +12397,7 @@
     30
    ],
    "olderNames": [],
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -13285,7 +13280,7 @@
     30
    ],
    "olderNames": [],
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -13761,7 +13756,7 @@
     30
    ],
    "olderNames": [],
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -20977,7 +20972,7 @@
     30
    ],
    "olderNames": [],
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "pullRequests": [
     {
@@ -21228,10 +21223,6 @@
     {
      "number": 1238,
      "title": "Add GetPropertyEditability command (property value editability and visibility)"
-    },
-    {
-     "number": 1149,
-     "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
     },
     {
      "number": 1148,
@@ -26685,7 +26676,7 @@
     26
    ],
    "olderNames": [],
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -28428,14 +28419,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1149,
-     "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -28454,14 +28440,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1149,
-     "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1145,
@@ -71704,10 +71685,6 @@
     {
      "number": 1227,
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1149,
-     "title": "[4/4] Make property definitions available or unavailable for elements (Archicad 27)"
     },
     {
      "number": 1148,
