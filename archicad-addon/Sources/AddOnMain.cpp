@@ -633,7 +633,7 @@ GSErrCode Initialize (void)
             "Modifies Label elements based on the given parameters."
         );
         err |= RegisterCommand<ChangeTextContentCommand> (
-            elementCommands, "1.7.2",
+            elementCommands, "1.7.3",
             "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
