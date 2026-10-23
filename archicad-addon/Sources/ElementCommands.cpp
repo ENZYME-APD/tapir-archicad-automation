@@ -4847,13 +4847,18 @@ static void CollectSubelementBodies (APIElemType* subelemArray, GS::Array<GS::Ob
 }
 
 // A Stair carries its 3D geometry in its subelements (see CalculateStairBounds above), and so do
-// a Railing and a Curtain Wall, so their subelements' bodies are collected too. Returns whether
-// the element is one of those.
+// a Railing and a Curtain Wall, so their subelements' bodies are collected too. The 3D model of a
+// Column or a Beam belongs to its segments, so theirs are collected when the element itself has
+// no body, which keeps a body from being answered twice. Returns whether the element is one of those.
 static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
 {
     const API_ElemTypeID typeID = GetElemTypeId (elemHead);
-    if (typeID != API_StairID && typeID != API_RailingID && typeID != API_CurtainWallID) {
+    const bool isSegmented = typeID == API_ColumnID || typeID == API_BeamID;
+    if (typeID != API_StairID && typeID != API_RailingID && typeID != API_CurtainWallID && !isSegmented) {
         return false;
+    }
+    if (isSegmented && !bodies.IsEmpty ()) {
+        return true;
     }
 
     API_ElementMemo memo = {};
@@ -4884,6 +4889,9 @@ static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array
     CollectSubelementBodies (memo.cWallPanels, bodies);
     CollectSubelementBodies (memo.cWallJunctions, bodies);
     CollectSubelementBodies (memo.cWallAccessories, bodies);
+
+    CollectSubelementBodies (memo.columnSegments, bodies);
+    CollectSubelementBodies (memo.beamSegments, bodies);
 
     return true;
 }
@@ -4929,7 +4937,7 @@ GS::Optional<GS::UniString> Get3DGeometryOfElementsCommand::GetRawResponseSchema
                             "properties": {
                                 "bodies": {
                                     "type": "array",
-                                    "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
+                                    "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall, and of its segments for a Column or Beam. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
                                     "items": {
                                         "$ref": "#/Body3D"
                                     }
