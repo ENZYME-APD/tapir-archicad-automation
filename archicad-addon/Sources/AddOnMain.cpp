@@ -1202,6 +1202,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.2",
             "Applies a graphic override combination, given by id or by name, to the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...). To remove the overrides, apply the project's 'No Overrides' combination. The saved view is not changed (see SetViewSettings for that). Available from Archicad 30."
         );
+        err |= RegisterCommand<GetStructureDisplayCommand> (
+            navigatorCommands, "1.7.2",
+            "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27."
+        );
+        err |= RegisterCommand<SetStructureDisplayCommand> (
+            navigatorCommands, "1.7.2",
+            "Sets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, e.g. the floor plan, a section or the 3D window. The change cannot be undone. The saved view is not changed (see SetViewSettings for that). Available from Archicad 27."
+        );
         err |= RegisterCommand<GetView2DTransformationsCommand> (
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"

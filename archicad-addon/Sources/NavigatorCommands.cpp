@@ -768,6 +768,144 @@ GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS:
 #endif
 }
 
+// The Partial Structure Display of the current (front) window, as opposed to
+// the one stored in a saved view (Get/SetViewSettings "structureDisplay").
+
+#ifdef ServerMainVers_2700
+static GS::UniString StructureDisplayToString (API_StructureDisplay structureDisplay)
+{
+    switch (structureDisplay) {
+        case API_CoreOnly:        return "CoreOnly";
+        case API_WithoutFinishes: return "WithoutFinishes";
+        case API_StructureOnly:   return "StructureOnly";
+        default:                  return "EntireStructure";
+    }
+}
+
+static bool StringToStructureDisplay (const GS::UniString& str, API_StructureDisplay& structureDisplay)
+{
+    if      (str == "EntireStructure")  structureDisplay = API_EntireStructure;
+    else if (str == "CoreOnly")         structureDisplay = API_CoreOnly;
+    else if (str == "WithoutFinishes")  structureDisplay = API_WithoutFinishes;
+    else if (str == "StructureOnly")    structureDisplay = API_StructureOnly;
+    else                                return false;
+    return true;
+}
+#endif
+
+GetStructureDisplayCommand::GetStructureDisplayCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String GetStructureDisplayCommand::GetName () const
+{
+    return "GetStructureDisplay";
+}
+
+GS::Optional<GS::UniString> GetStructureDisplayCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The Partial Structure Display of the current window.",
+        "properties": {
+            "structureDisplay": {
+                "type": "string",
+                "description": "The Partial Structure Display mode of the current window.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            },
+            "is3D": {
+                "type": "boolean",
+                "description": "True when the setting belongs to the 3D window."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureDisplay",
+            "is3D"
+        ]
+    })";
+}
+
+GS::ObjectState GetStructureDisplayCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    API_UIStructureDisplay uiStructureDisplay = {};
+    GSErrCode err = ACAPI_Navigator_GetStructureDisplay (&uiStructureDisplay);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Partial Structure Display of the current window. The current window must be a floor plan, section, elevation, interior elevation, worksheet, detail or 3D window.");
+    }
+
+    return GS::ObjectState (
+        "structureDisplay", StructureDisplayToString (uiStructureDisplay.structureDisplay),
+        "is3D", uiStructureDisplay.is3D);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+SetStructureDisplayCommand::SetStructureDisplayCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetStructureDisplayCommand::GetName () const
+{
+    return "SetStructureDisplay";
+}
+
+GS::Optional<GS::UniString> SetStructureDisplayCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "structureDisplay": {
+                "type": "string",
+                "description": "The Partial Structure Display mode to apply to the current window.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureDisplay"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetStructureDisplayCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetStructureDisplayCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString structureDisplayStr;
+    API_StructureDisplay structureDisplay = API_EntireStructure;
+    if (!parameters.Get ("structureDisplay", structureDisplayStr) || !StringToStructureDisplay (structureDisplayStr, structureDisplay)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "structureDisplay must be one of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.");
+    }
+
+    // Read the current setting first, so the owner database stays the one of the current window.
+    API_UIStructureDisplay uiStructureDisplay = {};
+    GSErrCode err = ACAPI_Navigator_GetStructureDisplay (&uiStructureDisplay);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the Partial Structure Display of the current window. The current window must be a floor plan, section, elevation, interior elevation, worksheet, detail or 3D window.");
+    }
+
+    uiStructureDisplay.structureDisplay = structureDisplay;
+    err = ACAPI_Navigator_ChangeStructureDisplay (&uiStructureDisplay);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the Partial Structure Display of the current window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
 GetView2DTransformationsCommand::GetView2DTransformationsCommand () :
     CommandBase (CommonSchema::Used)
 {}
