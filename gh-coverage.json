@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-10-23 12:48 UTC",
+ "generatedAt": "2026-10-23 13:48 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 45,
-  "merged": 1,
+  "open": 46,
+  "merged": 3,
   "claimed": 2,
   "not applicable": 1
  },
  "parameters": {
-  "all": 234,
+  "all": 236,
   "partial": 17,
   "json": 37
  },
@@ -1269,6 +1269,21 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetHierarchicalElementOwners",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether the given element is a main element, a subelement or not part of a hierarchical element.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -4311,6 +4326,63 @@
    ]
   },
   {
+   "id": "GetClassificationsOfElementDefaults",
+   "group": "Classification Commands",
+   "version": "1.7.3",
+   "brief": "Returns the classification of the tool defaults (the settings new elements get) of the given element types in the given classification systems.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetClassificationsOfElementDefaultsComponent",
+     "path": "Components/ClassificationsComponents/GetClassificationsOfElementDefaultsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "classificationSystemIds",
+    "elementTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 944,
+     "title": "Get and set property values and classifications of tool defaults"
+    }
+   ]
+  },
+  {
+   "id": "SetClassificationsOfElementDefaults",
+   "group": "Classification Commands",
+   "version": "1.7.3",
+   "brief": "Sets the classifications of the tool defaults (the settings new elements get) of the given element types. In order to set a default to unclassified, omit the classificationItemId field.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetClassificationsOfElementDefaultsComponent",
+     "path": "Components/ClassificationsComponents/SetClassificationsOfElementDefaultsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementDefaultClassifications",
+    "elementDefaultClassifications.classificationId",
+    "elementDefaultClassifications.elementType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 944,
+     "title": "Get and set property values and classifications of tool defaults"
+    }
+   ]
+  },
+  {
    "id": "CreateClassificationSystems",
    "group": "Classification Commands",
    "version": "1.5.0",
@@ -6797,7 +6869,7 @@
    "id": "RenameNavigatorItem",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Renames a navigator item or changes its ID. Fails when Archicad does not apply the new name (e.g. on Project Map schedule items, which are named by their scheme). With customName false the item drops its custom name and follows its Project Map source again.",
+   "brief": "Renames a navigator item or changes its ID. newId sets the custom layout number of a layout and the custom ID of any other item. Fails when Archicad refuses the change or does not apply the new name or ID (e.g. Project Map items, whose schedule items are named by their scheme). With customName false the item drops its custom name and follows its Project Map source again.",
    "status": "done",
    "reason": "",
    "components": [

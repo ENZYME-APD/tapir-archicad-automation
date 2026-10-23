@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 12:48 UTC",
+ "generatedAt": "2026-10-23 13:48 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 641,
+  "in progress": 638,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 41
+  "merged": 44
  },
  "items": [
   {
@@ -5140,10 +5140,6 @@
      "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
     },
     {
-     "number": 1140,
-     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
-    },
-    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
@@ -8429,12 +8425,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1140,
-     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 944,
@@ -8671,10 +8662,6 @@
     {
      "number": 913,
      "title": "Add ModifyCurtainWalls command"
-    },
-    {
-     "number": 662,
-     "title": "ModifySlabs: floorFill.orientation.origin appears read-only via API (type and matrix write correctly, origin does not)"
     },
     {
      "number": 371,
@@ -9518,14 +9505,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1140,
-     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11389,14 +11371,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1140,
-     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 944,
@@ -13808,20 +13785,10 @@
    "olderNames": [
     "APIAny_GetHierarchicalElementOwnerID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1211,
-     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1207,
-     "title": "Expose ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (find the curtain wall / stair / railing of a sub-element)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_HierarchicalEditing_IsInBeamEditMode",
@@ -17533,24 +17500,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 885,
-     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
-    },
-    {
      "number": 765,
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
    ],
-   "issues": [
-    {
-     "number": 884,
-     "title": "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"
-    },
-    {
-     "number": 764,
-     "title": "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorItem",
@@ -17574,23 +17528,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 885,
-     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
-    },
-    {
      "number": 756,
      "title": "Rename Project Map viewpoints through their element and verify renames"
     }
    ],
    "issues": [
-    {
-     "number": 884,
-     "title": "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"
-    },
-    {
-     "number": 764,
-     "title": "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"
-    },
     {
      "number": 755,
      "title": "RenameNavigatorItem reports success without renaming Project Map exterior elevations (AC28, Tapir 1.6.0); View Map control works"
@@ -18057,10 +17999,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 885,
-     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
-    },
-    {
      "number": 825,
      "title": "Change and report the master layout in SetLayoutSettings and GetLayoutSettings"
     },
@@ -18069,16 +18007,7 @@
      "title": "RenameNavigatorItem: set a view's ID with newId and fail when the ID is kept"
     }
    ],
-   "issues": [
-    {
-     "number": 884,
-     "title": "Renaming / re-IDing Project Map items, Schedules and Layout Book folders via RenameNavigatorItem"
-    },
-    {
-     "number": 764,
-     "title": "newId never sets a view's ID: RenameNavigatorItem writes it for layouts only, and still reports success"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorChildNum",
@@ -18147,10 +18076,6 @@
      "title": "Navigator: name the refused item type on delete, verify MoveNavigatorItem's position"
     },
     {
-     "number": 885,
-     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
-    },
-    {
      "number": 761,
      "title": "CreateLayout: let the caller choose the new layout's place in its subset"
     }
@@ -18193,10 +18118,6 @@
     {
      "number": 1112,
      "title": "Add GetLayoutSubsetSettings: read the settings of existing Layout Book subsets"
-    },
-    {
-     "number": 885,
-     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
     },
     {
      "number": 841,
@@ -18287,10 +18208,6 @@
     {
      "number": 1427,
      "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
-    },
-    {
-     "number": 885,
-     "title": "RenameNavigatorItem: apply newId to View Map items and fail when the ID is not applied"
     },
     {
      "number": 761,
@@ -27134,10 +27051,6 @@
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     },
     {
-     "number": 1211,
-     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
-    },
-    {
      "number": 1146,
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
@@ -32884,10 +32797,6 @@
     {
      "number": 750,
      "title": "CreateStairs: pin an explicit treadDepth in the stair rules so it takes effect"
-    },
-    {
-     "number": 676,
-     "title": "ModifySlabs: merge partial floorFill.orientation instead of replacing it (#662)"
     },
     {
      "number": 463,
@@ -41085,10 +40994,6 @@
     {
      "number": 1227,
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1211,
-     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     },
     {
      "number": 1167,
@@ -49550,10 +49455,6 @@
     {
      "number": 1214,
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
-    },
-    {
-     "number": 1211,
-     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     },
     {
      "number": 1209,
@@ -58489,10 +58390,6 @@
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
     },
     {
-     "number": 1211,
-     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
-    },
-    {
      "number": 1167,
      "title": "Add GetElementsInDrawOrder command exposing ACAPI_DrawOrder_DrawOrderGetNext"
     },
@@ -62721,10 +62618,6 @@
     {
      "number": 1227,
      "title": "Add GetMissingLibPartNames command (ACAPI_LibraryPart_GetUnloadedLibpartName)"
-    },
-    {
-     "number": 1211,
-     "title": "Add GetHierarchicalElementOwners command (owner of curtain wall / stair / railing subelements)"
     },
     {
      "number": 1167,
@@ -70195,10 +70088,6 @@
     {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
-    },
-    {
-     "number": 1140,
-     "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
     },
     {
      "number": 1101,
