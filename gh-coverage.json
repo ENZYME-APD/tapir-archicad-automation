@@ -1,8 +1,9 @@
 {
- "generatedAt": "2026-10-23 07:56 UTC",
+ "generatedAt": "2026-10-23 08:02 UTC",
  "counts": {
-  "done": 288,
+  "done": 287,
   "in progress": 5,
+  "merged": 1,
   "open": 26,
   "claimed": 2,
   "not applicable": 1
@@ -1339,7 +1340,7 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements.",
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "components": [
     {

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 07:56 UTC",
+ "generatedAt": "2026-10-23 08:02 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,9 @@
   "not applicable": 620,
   "in progress": 674,
   "claimed": 753,
-  "done": 751,
-  "open": 81
+  "done": 743,
+  "open": 81,
+  "merged": 8
  },
  "items": [
   {
@@ -11542,7 +11543,7 @@
    "olderNames": [
     "APIDb_RoomReductionsID"
    ],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -12397,7 +12398,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -13280,7 +13281,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -13756,7 +13757,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -20972,7 +20973,7 @@
     30
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -26676,7 +26677,7 @@
     26
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -28419,7 +28420,7 @@
     27
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": [
@@ -28440,7 +28441,7 @@
     27
    ],
    "olderNames": [],
-   "status": "done",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": [
