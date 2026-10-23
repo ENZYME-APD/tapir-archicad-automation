@@ -851,7 +851,8 @@ void ApplyDialogAutoCloseFromEnvironment ()
         return;
     }
 
-    const GS::UniString valueStr = GS::UniString (value).ToLowerCase ();
+    GS::UniString valueStr (value);
+    valueStr.SetToLowerCase ();
     if (valueStr == "1" || valueStr == "true" || valueStr == "yes" || valueStr == "on") {
         DGEnableAutoClose ();
     }
