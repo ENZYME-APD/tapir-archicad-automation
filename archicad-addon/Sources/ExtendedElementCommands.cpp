@@ -610,11 +610,19 @@ GS::Optional<GS::ObjectState> DimensionDefaults::Read (const GS::ObjectState& da
         return CreateErrorResponse (err, "Failed to read the dimension defaults.");
     }
 
+    // The favorite's defNote alone still gave the tool's text (tested in AC28), so the text
+    // style is taken from the favorite's first witness point when it stores one, and from its
+    // defNote otherwise. Both creation paths copy defNote into every witness point.
     API_Favorite favorite;
     favorite.name = favoriteName;
     favorite.memo.New ();
     if (ACAPI_Favorite_Get (&favorite) == NoError) {
         element.dimension.defNote = favorite.element.dimension.defNote;
+        API_DimElem** favoriteDimElems = favorite.memo.Get ().dimElems;
+        if (favoriteDimElems != nullptr && *favoriteDimElems != nullptr &&
+            BMGetHandleSize ((GSHandle) favoriteDimElems) / sizeof (API_DimElem) > 0) {
+            element.dimension.defNote = (*favoriteDimElems)[0].note;
+        }
     }
     ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
     return {};
