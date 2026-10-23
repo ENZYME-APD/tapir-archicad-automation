@@ -384,6 +384,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.2",
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
         );
+        err |= RegisterCommand<ConvertRevealOffsetsCommand> (
+            elementCommands, "1.7.3",
+            "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27."
+        );
         err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
             elementCommands, "1.7.2",
             "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."

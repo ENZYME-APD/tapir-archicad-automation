@@ -4699,6 +4699,156 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ConvertRevealOffsetsCommand::GetName () const
+{
+    return "ConvertRevealOffsets";
+}
+
+GS::Optional<GS::UniString> ConvertRevealOffsetsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openings": {
+                "type": "array",
+                "description": "Windows and doors placed in walls, each with exactly one of coreOffset or sideOffset.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "A window or door placed in a wall."
+                        },
+                        "coreOffset": {
+                            "type": "number",
+                            "description": "Reveal depth offset measured from the core skin of the owner wall, to convert to the wall side reference."
+                        },
+                        "sideOffset": {
+                            "type": "number",
+                            "description": "Reveal depth offset measured from the side of the owner wall, to convert to the core skin reference."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "openings"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ConvertRevealOffsetsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "revealOffsets": {
+                "type": "array",
+                "description": "The reveal depth offset of each opening in both references, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "coreOffset": {
+                                    "type": "number",
+                                    "description": "Reveal depth offset measured from the core skin of the owner wall."
+                                },
+                                "sideOffset": {
+                                    "type": "number",
+                                    "description": "Reveal depth offset measured from the side of the owner wall."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "coreOffset",
+                                "sideOffset"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revealOffsets"
+        ]
+    })";
+}
+
+GS::ObjectState ConvertRevealOffsetsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> openings;
+    parameters.Get ("openings", openings);
+
+    GS::ObjectState response;
+    const auto& revealOffsets = response.AddList<GS::ObjectState> ("revealOffsets");
+
+    for (const GS::ObjectState& opening : openings) {
+        const GS::ObjectState* elementId = opening.Get ("elementId");
+        if (elementId == nullptr) {
+            revealOffsets (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const bool hasCoreOffset = opening.Contains ("coreOffset");
+        const bool hasSideOffset = opening.Contains ("sideOffset");
+        if (hasCoreOffset == hasSideOffset) {
+            revealOffsets (CreateErrorResponse (APIERR_BADPARS, "Exactly one of coreOffset or sideOffset must be given"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            revealOffsets (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (typeID != API_WindowID && typeID != API_DoorID) {
+            revealOffsets (CreateErrorResponse (APIERR_BADPARS, "The element is not a window or a door"));
+            continue;
+        }
+
+        double coreOffset = 0.0;
+        double sideOffset = 0.0;
+        if (hasCoreOffset) {
+            opening.Get ("coreOffset", coreOffset);
+            err = ACAPI_Element_CalcCoreOffsetToSideOffset (&elemHead.guid, &coreOffset, &sideOffset);
+        } else {
+            opening.Get ("sideOffset", sideOffset);
+            err = ACAPI_Element_CalcSideOffsetToCoreOffset (&elemHead.guid, &sideOffset, &coreOffset);
+        }
+        if (err != NoError) {
+            revealOffsets (CreateErrorResponse (err, "Failed to convert the reveal depth offset; the element must be a window or door placed in a wall"));
+            continue;
+        }
+
+        revealOffsets (GS::ObjectState ("coreOffset", coreOffset, "sideOffset", sideOffset));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 // Body-local vertex -> world coordinates with the body's placement. API_Tranmat is a 3x4 matrix
 // stored row by row (tmx[3], tmx[7] and tmx[11] are the translation), the same layout the Morph
 // code in ExtendedElementCommands.cpp reads and writes.
