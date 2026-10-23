@@ -17,6 +17,18 @@
 #include <algorithm>
 #include <cmath>
 
+// Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method;
+// AC27+ replaced it with a class. Kept local (same as the identical helper in
+// AttributeCommands.cpp) since it is only used in this file.
+static bool IsPositiveAttributeIndex (const API_AttributeIndex& index)
+{
+#ifdef ServerMainVers_2700
+    return index.IsPositive ();
+#else
+    return index > 0;
+#endif
+}
+
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
 // not carried: a curved pivot edge comes back as its end points (schema says so).
@@ -2155,7 +2167,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                                 const API_AttributeIndex penTableIndex = penTableIdState != nullptr
                                     ? GetAttributeIndexFromGuid (API_PenTableID, GetGuidFromObjectState (*penTableIdState))
                                     : ACAPI_CreateAttributeIndex (-1);
-                                if (penTableIdState == nullptr || !penTableIndex.IsPositive ()) {
+                                if (penTableIdState == nullptr || !IsPositiveAttributeIndex (penTableIndex)) {
                                     executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "penTableId is required and must resolve to an existing Pen Table when penTableUsageMode is UsePenTableIndex."));
                                     continue;
                                 }
