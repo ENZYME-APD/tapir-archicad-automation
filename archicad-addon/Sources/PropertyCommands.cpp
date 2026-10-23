@@ -1949,3 +1949,160 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
     return response;
 }
+
+#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+        if (elemGuid == APINULLGuid) {
+            failedResult = CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing or invalid");
+            return false;
+        }
+        elemGuids.Push (elemGuid);
+    }
+    if (elemGuids.IsEmpty ()) {
+        failedResult = CreateFailedExecutionResult (APIERR_BADPARS, "elements is empty");
+        return false;
+    }
+
+    const GS::ObjectState* propertyId = parameters.Get ("propertyId");
+    if (propertyId == nullptr) {
+        failedResult = CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing");
+        return false;
+    }
+
+    definition.guid = GetGuidFromObjectState (*propertyId);
+    GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+    if (err != NoError) {
+        failedResult = CreateFailedExecutionResult (err, "property not found");
+        return false;
+    }
+    return true;
+}
+#endif
+
+MakePropertyAvailableForElementsCommand::MakePropertyAvailableForElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MakePropertyAvailableForElementsCommand::GetName () const
+{
+    return "MakePropertyAvailableForElements";
+}
+
+GS::Optional<GS::UniString> MakePropertyAvailableForElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to make the property available for."
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "propertyId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MakePropertyAvailableForElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState MakePropertyAvailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+    GS::Array<API_Guid> elemGuids;
+    API_PropertyDefinition definition;
+    GS::ObjectState failedResult;
+    if (!GetPropertyAvailabilityParameters (parameters, elemGuids, definition, failedResult)) {
+        return failedResult;
+    }
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyAvailableForElements", [&]() -> GSErrCode {
+        return ACAPI_Property_AddProperty (definition, elemGuids);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to make the property available for the given elements.");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+#endif
+}
+
+MakePropertyUnavailableForElementsCommand::MakePropertyUnavailableForElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MakePropertyUnavailableForElementsCommand::GetName () const
+{
+    return "MakePropertyUnavailableForElements";
+}
+
+GS::Optional<GS::UniString> MakePropertyUnavailableForElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to make the property unavailable for."
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "propertyId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MakePropertyUnavailableForElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState MakePropertyUnavailableForElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+    GS::Array<API_Guid> elemGuids;
+    API_PropertyDefinition definition;
+    GS::ObjectState failedResult;
+    if (!GetPropertyAvailabilityParameters (parameters, elemGuids, definition, failedResult)) {
+        return failedResult;
+    }
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("MakePropertyUnavailableForElements", [&]() -> GSErrCode {
+        return ACAPI_Property_DeleteProperty (definition.guid, elemGuids);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to make the property unavailable for the given elements.");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 27.");
+#endif
+}

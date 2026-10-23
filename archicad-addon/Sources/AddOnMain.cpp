@@ -323,6 +323,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.4.0",
             "Gets the project calculation units."
         );
+        err |= RegisterCommand<GetProjectPreferencesCommand> (
+            projectCommands, "1.7.2",
+            "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Further pages may follow."
+        );
+        err |= RegisterCommand<SetProjectPreferencesCommand> (
+            projectCommands, "1.7.2",
+            "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27."
+        );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
             "Gets the project location details."
@@ -378,7 +386,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<Get3DGeometryOfElementsCommand> (
             elementCommands, "1.7.2",
-            "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
+            "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while."
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
@@ -403,6 +411,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetZoneBoundariesCommand> (
             elementCommands, "1.2.3",
             "Gets the boundaries of the given Zones (connected elements, neighbour zones, etc.). Accepts either a single zoneElementId or a list of zones. Prefer the list: the expensive boundary recalculation runs once per call, so querying many Zones in one call is much faster than calling the command once per Zone."
+        );
+        err |= RegisterCommand<GetZoneReductionsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
@@ -665,6 +677,10 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Gets the elements directly contained by each given group."
         );
+        err |= RegisterCommand<GetUserDataOfGroupsCommand> (
+            elementGroupingCommands, "1.7.2",
+            "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded). Returns an error for groups that have no user data."
+        );
         err |= RegisterCommand<GetSuspendGroupsModeCommand> (
             elementGroupingCommands, "1.5.6",
             "Gets the current state of the Suspend Groups mode."
@@ -775,6 +791,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ImportPropertiesXmlCommand> (
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
+        );
+        err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Makes a property definition available for all the given elements. Available only in Archicad 27."
+        );
+        err |= RegisterCommand<MakePropertyUnavailableForElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Makes a property definition unavailable for all the given elements. Available only in Archicad 27."
         );
         AddCommandGroup (propertyCommands);
     }
@@ -923,9 +947,17 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Returns the details of the given Building Material attributes."
         );
+        err |= RegisterCommand<GetFontsByNameCommand> (
+            attributeCommands, "1.7.2",
+            "Finds loaded fonts by name through Archicad's font search and returns their index (as Text and Label fields reference fonts in fontIndex) and name, or an error for a name no loaded font has."
+        );
         err |= RegisterCommand<GetGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
             "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetGraphicOverrideRulesByNameCommand> (
+            attributeCommands, "1.7.2",
+            "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",

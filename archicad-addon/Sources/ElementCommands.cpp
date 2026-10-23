@@ -3499,6 +3499,285 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
 #endif
 }
 
+GetZoneReductionsCommand::GetZoneReductionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetZoneReductionsCommand::GetName () const
+{
+    return "GetZoneReductions";
+}
+
+GS::Optional<GS::UniString> GetZoneReductionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "A list of Zones."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetZoneReductionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "reductionsOfZones": {
+                "type": "array",
+                "description": "The area reductions of each Zone, aligned with the input array of elements, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "reductions": {
+                                    "type": "array",
+                                    "description": "The reduction polygons of the Zone, as its Zone Stamp's area calculation uses them: the parts of the Zone polygon covered by Walls, Columns and reducing Fills, and the parts under a low ceiling (for example under a sloping Roof), each with the percentage it is reduced by and its area. Empty when nothing reduces the Zone's area.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "description": "What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (a low ceiling, for example the part under a sloping Roof below the low ceiling height), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name.",
+                                                "enum": [
+                                                    "Rest",
+                                                    "Wall",
+                                                    "Column",
+                                                    "Hatch",
+                                                    "Gable",
+                                                    "Unknown"
+                                                ]
+                                            },
+                                            "percent": {
+                                                "type": "number",
+                                                "description": "The percentage by which the area of the polygon reduces the Zone area, as the DevKit reports it."
+                                            },
+                                            "area": {
+                                                "type": "number",
+                                                "description": "The area of the polygon in square meters."
+                                            },
+                                            "polygonOutline": {
+                                                "type": "array",
+                                                "description": "The 2D coordinates of the outline of the polygon in meters; the last coordinate repeats the first.",
+                                                "items": {
+                                                    "$ref": "#/Coordinate2D"
+                                                }
+                                            },
+                                            "polygonArcs": {
+                                                "type": "array",
+                                                "description": "The arcs of the outline, indices into polygonOutline. Absent when the outline has no arc.",
+                                                "items": {
+                                                    "$ref": "#/PolyArc"
+                                                }
+                                            },
+                                            "holes": {
+                                                "$ref": "#/Holes2D"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "type",
+                                            "percent",
+                                            "area",
+                                            "polygonOutline",
+                                            "holes"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "reductions"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "reductionsOfZones"
+        ]
+    })";
+}
+
+// API_RoomReductionPolyType::type is a short holding an APIRoomReduction_* value.
+static GS::UniString RoomReductionPolyTypeToString (short type)
+{
+    switch (type) {
+        case APIRoomReduction_Rest:   return "Rest";
+        case APIRoomReduction_Wall:   return "Wall";
+        case APIRoomReduction_Column: return "Column";
+        case APIRoomReduction_Hatch:  return "Hatch";
+        case APIRoomReduction_Gable:  return "Gable";
+        default:                      return "Unknown";
+    }
+}
+
+// ACAPI_Element_RoomReductions (ACAPI_Database with APIDb_RoomReductionsID before Archicad 27,
+// see MigrationHelper.hpp) hands every reduction polygon to a plain callback without a user
+// data parameter, so the list under construction is reached through a thread local pointer, the
+// same way the floor plan primitive collector above does it.
+static thread_local GS::Array<GS::ObjectState>* tl_roomReductions = nullptr;
+
+// Adds the coordinates startIndex..endIndex (1 based, inclusive) of a reduction polygon as
+// polygonOutline and the arcs between them as polygonArcs (only when there is one), with the arc
+// indices rebased to that subpolygon the same way GetPolygonsFromMemoCoords does.
+static void AddRoomReductionSubPolygon (GS::ObjectState& os, const API_RoomReductionPolyType& roomReduction, Int32 startIndex, Int32 endIndex)
+{
+    const auto& coords = os.AddList<GS::ObjectState> ("polygonOutline");
+    for (Int32 iCoord = startIndex; iCoord <= endIndex; ++iCoord) {
+        coords (Create2DCoordinateObjectState ((*roomReduction.coords)[iCoord]));
+    }
+
+    GS::Array<GS::ObjectState> arcsOfSubPoly;
+    const Int32 nArcs = roomReduction.arcs == nullptr ? 0 : roomReduction.nArcs;
+    for (Int32 iArc = 0; iArc < nArcs; ++iArc) {
+        API_PolyArc arc = (*roomReduction.arcs)[iArc];
+        if (arc.begIndex < startIndex || arc.endIndex > endIndex) {
+            continue;
+        }
+        arc.begIndex -= startIndex - 1;
+        arc.endIndex -= startIndex - 1;
+        arcsOfSubPoly.Push (CreatePolyArcObjectState (arc));
+    }
+    if (arcsOfSubPoly.IsEmpty ()) {
+        return;
+    }
+
+    const auto& arcs = os.AddList<GS::ObjectState> ("polygonArcs");
+    for (const GS::ObjectState& arcOS : arcsOfSubPoly) {
+        arcs (arcOS);
+    }
+}
+
+// The polygon of a reduction uses the memo polygon convention: coords[0] is unused, the
+// coordinates of subpolygon k run from subPolys[k - 1] + 1 to subPolys[k] (both 1 based), the
+// first subpolygon is the outline and the rest are holes, every subpolygon repeats its first
+// coordinate as its last one, and the arcs index into the whole coordinate array.
+static void CollectRoomReduction (const API_RoomReductionPolyType* roomReduction)
+{
+    if (roomReduction == nullptr) {
+        return;
+    }
+    // The handles of the polygon are the callback's to dispose of (API_RoomReductionPolyType).
+    const GS::OnExit polygonGuard ([roomReduction] () {
+        API_Coord** coords = roomReduction->coords;
+        Int32** subPolys = roomReduction->subPolys;
+        API_PolyArc** arcs = roomReduction->arcs;
+        BMKillHandle (reinterpret_cast<GSHandle*> (&coords));
+        BMKillHandle (reinterpret_cast<GSHandle*> (&subPolys));
+        BMKillHandle (reinterpret_cast<GSHandle*> (&arcs));
+    });
+    if (tl_roomReductions == nullptr) {
+        return;
+    }
+
+    GS::ObjectState reductionOS;
+    reductionOS.Add ("type", RoomReductionPolyTypeToString (roomReduction->type));
+    reductionOS.Add ("percent", roomReduction->percent);
+    reductionOS.Add ("area", roomReduction->area);
+
+    const auto& holes = reductionOS.AddList<GS::ObjectState> ("holes");
+
+    const Int32 nCoords = roomReduction->coords == nullptr ? 0 : roomReduction->nCoords;
+    // Without subpolygon end indices the whole coordinate array is the outline.
+    const Int32 nSubPolys = roomReduction->subPolys == nullptr ? 1 : roomReduction->nSubPolys;
+
+    bool outlineAdded = false;
+    Int32 startIndex = 1;
+    for (Int32 iSubPoly = 1; iSubPoly <= nSubPolys && startIndex <= nCoords; ++iSubPoly) {
+        // Clamp so a subpolygon count that disagrees with the coordinate count cannot read past the array.
+        Int32 endIndex = roomReduction->subPolys == nullptr ? nCoords : (*roomReduction->subPolys)[iSubPoly];
+        if (endIndex > nCoords) {
+            endIndex = nCoords;
+        }
+        if (endIndex < startIndex) {
+            break;
+        }
+
+        if (!outlineAdded) {
+            AddRoomReductionSubPolygon (reductionOS, *roomReduction, startIndex, endIndex);
+            outlineAdded = true;
+        } else {
+            GS::ObjectState holeOS;
+            AddRoomReductionSubPolygon (holeOS, *roomReduction, startIndex, endIndex);
+            holes (holeOS);
+        }
+
+        startIndex = endIndex + 1;
+    }
+
+    if (!outlineAdded) {
+        reductionOS.AddList<GS::ObjectState> ("polygonOutline");
+    }
+
+    tl_roomReductions->Push (reductionOS);
+}
+
+static GS::ObjectState GetReductionsOfZone (const API_Guid& zoneGuid)
+{
+    API_Elem_Head elemHead = {};
+    elemHead.guid = zoneGuid;
+    GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to find element in Archicad");
+    }
+
+    if (GetElemTypeId (elemHead) != API_ZoneID) {
+        return CreateErrorResponse (APIERR_BADELEMENTTYPE, "Element is not a Zone");
+    }
+
+    GS::Array<GS::ObjectState> reductions;
+    tl_roomReductions = &reductions;
+    const GS::OnExit guard ([] () { tl_roomReductions = nullptr; });
+
+    err = ACAPI_Element_RoomReductions (&elemHead.guid, CollectRoomReduction);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the area reductions of the Zone");
+    }
+
+    GS::ObjectState reductionsOfZone;
+    const auto& reductionsList = reductionsOfZone.AddList<GS::ObjectState> ("reductions");
+    for (const GS::ObjectState& reduction : reductions) {
+        reductionsList (reduction);
+    }
+    return reductionsOfZone;
+}
+
+GS::ObjectState GetZoneReductionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& reductionsOfZones = response.AddList<GS::ObjectState> ("reductionsOfZones");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            reductionsOfZones (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        reductionsOfZones (GetReductionsOfZone (GetGuidFromObjectState (*elementId)));
+    }
+
+    return response;
+}
+
 UpdateZonesCommand::UpdateZonesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -4604,13 +4883,18 @@ static void CollectSubelementBodies (APIElemType* subelemArray, GS::Array<GS::Ob
 }
 
 // A Stair carries its 3D geometry in its subelements (see CalculateStairBounds above), and so do
-// a Railing and a Curtain Wall, so their subelements' bodies are collected too. Returns whether
-// the element is one of those.
+// a Railing and a Curtain Wall, so their subelements' bodies are collected too. The 3D model of a
+// Column or a Beam belongs to its segments, so theirs are collected when the element itself has
+// no body, which keeps a body from being answered twice. Returns whether the element is one of those.
 static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
 {
     const API_ElemTypeID typeID = GetElemTypeId (elemHead);
-    if (typeID != API_StairID && typeID != API_RailingID && typeID != API_CurtainWallID) {
+    const bool isSegmented = typeID == API_ColumnID || typeID == API_BeamID;
+    if (typeID != API_StairID && typeID != API_RailingID && typeID != API_CurtainWallID && !isSegmented) {
         return false;
+    }
+    if (isSegmented && !bodies.IsEmpty ()) {
+        return true;
     }
 
     API_ElementMemo memo = {};
@@ -4641,6 +4925,9 @@ static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array
     CollectSubelementBodies (memo.cWallPanels, bodies);
     CollectSubelementBodies (memo.cWallJunctions, bodies);
     CollectSubelementBodies (memo.cWallAccessories, bodies);
+
+    CollectSubelementBodies (memo.columnSegments, bodies);
+    CollectSubelementBodies (memo.beamSegments, bodies);
 
     return true;
 }
@@ -4686,7 +4973,7 @@ GS::Optional<GS::UniString> Get3DGeometryOfElementsCommand::GetRawResponseSchema
                             "properties": {
                                 "bodies": {
                                     "type": "array",
-                                    "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
+                                    "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall, and of its segments for a Column or Beam. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
                                     "items": {
                                         "$ref": "#/Body3D"
                                     }
