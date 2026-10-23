@@ -6,6 +6,8 @@
 #include "DGModule.hpp"
 #include "Folder.hpp"
 
+#include <cstdlib>
+
 static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
 {
     ULong hashValue = projectLocation.GenerateHashValue ();
@@ -788,5 +790,70 @@ GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& paramet
     GS::ObjectState response;
     response.Add ("position", Create3DCoordinateObjectState (pointInfo.pos));
     return response;
+}
+
+SetDialogAutoCloseCommand::SetDialogAutoCloseCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetDialogAutoCloseCommand::GetName () const
+{
+    return "SetDialogAutoClose";
+}
+
+GS::Optional<GS::UniString> SetDialogAutoCloseCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "enabled": {
+                "type": "boolean",
+                "description": "True turns the dialog auto close on: Archicad closes the dialogs it would show with their default button instead of waiting for the user. False turns it off."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "enabled"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetDialogAutoCloseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetDialogAutoCloseCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool enabled = false;
+    parameters.Get ("enabled", enabled);
+
+    if (enabled) {
+        DGEnableAutoClose ();
+    } else {
+        DGDisableAutoClose ();
+    }
+
+    if (DGIsAutoCloseEnabled () != enabled) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, enabled ? "Failed to turn the dialog auto close on." : "Failed to turn the dialog auto close off.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+void ApplyDialogAutoCloseFromEnvironment ()
+{
+    const char* value = std::getenv ("TAPIR_DG_AUTOCLOSE");
+    if (value == nullptr) {
+        return;
+    }
+
+    const GS::UniString valueStr = GS::UniString (value).ToLowerCase ();
+    if (valueStr == "1" || valueStr == "true" || valueStr == "yes" || valueStr == "on") {
+        DGEnableAutoClose ();
+    }
 }
 

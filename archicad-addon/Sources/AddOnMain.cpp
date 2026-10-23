@@ -193,6 +193,9 @@ GSErrCode Initialize (void)
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
 
+    // The Add-On is preloaded, so this runs before Archicad opens the first project.
+    ApplyDialogAutoCloseFromEnvironment ();
+
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
         err |= RegisterCommand<GetAddOnVersionCommand> (
@@ -230,6 +233,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetSpecialFoldersCommand> (
             applicationCommands, "1.5.6",
             "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."
+        );
+        err |= RegisterCommand<SetDialogAutoCloseCommand> (
+            applicationCommands, "1.7.3",
+            "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DG_AUTOCLOSE environment variable to 1 (or true, yes, on) for the Archicad process before starting it."
         );
 
         AddCommandGroup (applicationCommands);
