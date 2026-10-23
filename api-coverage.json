@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 01:06 UTC",
+ "generatedAt": "2026-10-23 01:45 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 673,
+  "in progress": 672,
   "claimed": 753,
   "done": 743,
   "open": 85,
-  "merged": 5
+  "merged": 6
  },
  "items": [
   {
@@ -5170,10 +5170,6 @@
     {
      "number": 1028,
      "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 1025,
-     "title": "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"
     },
     {
      "number": 1018,
@@ -20742,10 +20738,6 @@
      "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
     },
     {
-     "number": 1025,
-     "title": "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
      "number": 964,
      "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
     }
@@ -20888,16 +20880,12 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 1028,
      "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 1025,
-     "title": "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"
     },
     {
      "number": 964,
@@ -27171,10 +27159,6 @@
     {
      "number": 1028,
      "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 1025,
-     "title": "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"
     },
     {
      "number": 1004,
@@ -49990,10 +49974,6 @@
     {
      "number": 1026,
      "title": "[3/4] Add folderPath to GetAttributesByType"
-    },
-    {
-     "number": 1025,
-     "title": "[2/4] Add the Dimensions page to GetProjectPreferences and SetProjectPreferences"
     },
     {
      "number": 1024,

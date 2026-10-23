@@ -1,24 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="292" viewBox="0 0 760 292" role="img" aria-label="Archicad API coverage of Tapir: 748 of 2259 items (33 %)">
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="292" viewBox="0 0 760 292" role="img" aria-label="Archicad API coverage of Tapir: 749 of 2259 items (33 %)">
 <rect x="0.5" y="0.5" width="759" height="291" rx="8" fill="#22262c" stroke="#3d444d"/>
 <defs>
 <pattern id="claimed" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#33373d"/><rect width="3" height="6" fill="#256abf"/></pattern>
 </defs>
 <text x="24" y="34" font-size="15" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">Archicad API coverage of Tapir</text>
 <text x="24" y="84" font-size="44" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">33 %</text>
-<text x="168" y="64" font-size="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">748 of 2259</tspan> applicable Archicad API items are used</text>
-<text x="168" y="85" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">673 more in open pull requests, 753 claimed by open issues, 85 open</text>
+<text x="168" y="64" font-size="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">749 of 2259</tspan> applicable Archicad API items are used</text>
+<text x="168" y="85" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">672 more in open pull requests, 753 claimed by open issues, 85 open</text>
 <clipPath id="bar104"><rect x="24" y="104" width="712" height="14" rx="7.0"/></clipPath>
 <rect x="24" y="104" width="712" height="14" rx="7.0" fill="#33373d"/>
 <rect x="24.0" y="104" width="234.2" height="14" fill="#9ec5f4" clip-path="url(#bar104)"/>
-<rect x="258.2" y="104" width="1.6" height="14" fill="#5598e7" clip-path="url(#bar104)"/>
-<rect x="259.8" y="104" width="212.1" height="14" fill="#256abf" clip-path="url(#bar104)"/>
+<rect x="258.2" y="104" width="1.9" height="14" fill="#5598e7" clip-path="url(#bar104)"/>
+<rect x="260.1" y="104" width="211.8" height="14" fill="#256abf" clip-path="url(#bar104)"/>
 <rect x="471.9" y="104" width="237.3" height="14" fill="url(#claimed)" clip-path="url(#bar104)"/>
 <rect x="24.0" y="134" width="10" height="10" rx="2" fill="#9ec5f4" stroke="#3d444d"/>
 <text x="39.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">used on main <tspan style="fill:#e6edf3">743</tspan></text>
 <rect x="161.5" y="134" width="10" height="10" rx="2" fill="#5598e7" stroke="#3d444d"/>
-<text x="176.5" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">not yet released <tspan style="fill:#e6edf3">5</tspan></text>
+<text x="176.5" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">not yet released <tspan style="fill:#e6edf3">6</tspan></text>
 <rect x="313.0" y="134" width="10" height="10" rx="2" fill="#256abf" stroke="#3d444d"/>
-<text x="328.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">in a pull request <tspan style="fill:#e6edf3">673</tspan></text>
+<text x="328.0" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">in a pull request <tspan style="fill:#e6edf3">672</tspan></text>
 <rect x="485.5" y="134" width="10" height="10" rx="2" fill="url(#claimed)" stroke="#3d444d"/>
 <text x="500.5" y="143" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">claimed in an issue <tspan style="fill:#e6edf3">753</tspan></text>
 <rect x="672.0" y="134" width="10" height="10" rx="2" fill="#33373d" stroke="#3d444d"/>
@@ -27,8 +27,8 @@
 <clipPath id="bar176"><rect x="180" y="176" width="400" height="12" rx="6.0"/></clipPath>
 <rect x="180" y="176" width="400" height="12" rx="6.0" fill="#33373d"/>
 <rect x="180.0" y="176" width="139.8" height="12" fill="#9ec5f4" clip-path="url(#bar176)"/>
-<rect x="319.8" y="176" width="2.2" height="12" fill="#5598e7" clip-path="url(#bar176)"/>
-<rect x="322.0" y="176" width="153.3" height="12" fill="#256abf" clip-path="url(#bar176)"/>
+<rect x="319.8" y="176" width="2.7" height="12" fill="#5598e7" clip-path="url(#bar176)"/>
+<rect x="322.5" y="176" width="152.8" height="12" fill="#256abf" clip-path="url(#bar176)"/>
 <rect x="475.3" y="176" width="75.0" height="12" fill="url(#claimed)" clip-path="url(#bar176)"/>
 <text x="736" y="187" font-size="13" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">35 %</tspan><tspan style="fill:#9198a1"> of 741</tspan></text>
 <text x="24" y="215" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">Archicad 25/26 only</text>
@@ -46,5 +46,5 @@
 <rect x="309.5" y="232" width="98.6" height="12" fill="#256abf" clip-path="url(#bar232)"/>
 <rect x="408.1" y="232" width="168.2" height="12" fill="url(#claimed)" clip-path="url(#bar232)"/>
 <text x="736" y="243" font-size="13" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">32 %</tspan><tspan style="fill:#9198a1"> of 1436</tspan></text>
-<text x="24" y="276" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">Archicad 25–30 DevKits; not applicable and skipped items are left out. Updated 2026-10-23 01:06 UTC.</text>
+<text x="24" y="276" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">Archicad 25–30 DevKits; not applicable and skipped items are left out. Updated 2026-10-23 01:45 UTC.</text>
 </svg>

@@ -1,11 +1,11 @@
 {
- "generatedAt": "2026-10-23 01:06 UTC",
+ "generatedAt": "2026-10-23 01:45 UTC",
  "counts": {
   "done": 287,
+  "in progress": 5,
   "merged": 1,
   "open": 24,
   "claimed": 2,
-  "in progress": 3,
   "not applicable": 1
  },
  "parameters": {
@@ -750,6 +750,46 @@
    "issues": []
   },
   {
+   "id": "GetProjectPreferences",
+   "group": "Project Commands",
+   "version": "1.7.2",
+   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Further pages may follow.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1030,
+     "title": "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "SetProjectPreferences",
+   "group": "Project Commands",
+   "version": "1.7.2",
+   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 21,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1030,
+     "title": "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components"
+    }
+   ],
+   "issues": []
+  },
+  {
    "id": "GetGeoLocation",
    "group": "Project Commands",
    "version": "1.1.6",
@@ -1148,7 +1188,7 @@
    "id": "Get3DGeometryOfElements",
    "group": "Element Commands",
    "version": "1.7.2",
-   "brief": "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while.",
+   "brief": "Gets the 3D geometry of elements as the solid bodies of their 3D model: a vertex list in world coordinates and the planar faces (with their holes) referencing it, each face with its surface attribute when that is a project attribute. The bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while.",
    "status": "done",
    "reason": "",
    "components": [
