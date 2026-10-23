@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 10:42 UTC",
+ "generatedAt": "2026-10-23 12:40 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 655,
-  "claimed": 746,
+  "in progress": 644,
+  "claimed": 745,
   "done": 743,
-  "open": 88,
-  "merged": 27
+  "open": 89,
+  "merged": 38
  },
  "items": [
   {
@@ -5012,6 +5012,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
+    {
      "number": 1439,
      "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
     },
@@ -5138,10 +5142,6 @@
     {
      "number": 1140,
      "title": "[2/3] Get/SetClassificationsOfElementDefaults commands"
-    },
-    {
-     "number": 1130,
-     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
     },
     {
      "number": 1115,
@@ -6814,15 +6814,10 @@
    "olderNames": [
     "APIDb_RebuildCurrentDatabaseID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1258,
-     "title": "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_RebuildWindowValidator",
@@ -7970,20 +7965,10 @@
    "olderNames": [
     "APIDb_GetFullDrawingContentBoxID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1131,
-     "title": "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1122,
-     "title": "Expose ACAPI_Drawing_GetFullDrawingContentBox (full content box of a placed drawing)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_GetNumberingGridLines",
@@ -10170,10 +10155,6 @@
      "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
     },
     {
-     "number": 1131,
-     "title": "Add GetDrawingContentBoxes (ACAPI_Drawing_GetFullDrawingContentBox)"
-    },
-    {
      "number": 1110,
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     },
@@ -10858,20 +10839,10 @@
    "olderNames": [
     "APIAny_GetTextLineLengthID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1129,
-     "title": "Add MeasureTexts command: measure text length before placing it"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1119,
-     "title": "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetTextSizeFactor",
@@ -10891,20 +10862,10 @@
    "olderNames": [
     "APIAny_GetTextSizeFactorID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1129,
-     "title": "Add MeasureTexts command: measure text length before placing it"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1119,
-     "title": "Expose ACAPI_Element_GetTextLineLength and ACAPI_Element_GetTextSizeFactor (measure text before placing it)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetUserData",
@@ -13009,6 +12970,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -13175,6 +13140,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -13218,6 +13187,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
+    {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
@@ -13253,6 +13226,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
     {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
@@ -13341,6 +13318,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -13419,6 +13400,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1441,
+     "title": "Add MoveGraphicOverrideRules"
+    },
     {
      "number": 1075,
      "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
@@ -19274,20 +19259,10 @@
    "olderNames": [
     "APIAny_DisposeRegularizedPolyID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1134,
-     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Polygon_InsertPolyNode",
@@ -19309,12 +19284,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1134,
-     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19386,20 +19356,10 @@
    "olderNames": [
     "APIAny_RegularizePolygonID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1134,
-     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Polygon_RegularizePolyline",
@@ -19419,20 +19379,10 @@
    "olderNames": [
     "APIAny_RegularizePolylineID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1134,
-     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1127,
-     "title": "Expose ACAPI_Polygon_RegularizePolygon / RegularizePolyline (clean a polygon before creating slabs, zones, fills)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Polygon_TriangulatePoly",
@@ -24115,20 +24065,10 @@
    "olderNames": [
     "APIEnv_Change3DStyleID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1130,
-     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DWindowSets",
@@ -24148,20 +24088,10 @@
    "olderNames": [
     "APIEnv_Change3DWindowSetsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1277,
-     "title": "Add Get3DWindowSettings and Set3DWindowSettings commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1258,
-     "title": "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_ChangeAutoIntersect",
@@ -24378,20 +24308,10 @@
    "olderNames": [
     "APIEnv_Create3DStyleID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1130,
-     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_CreateGhostRecord",
@@ -24551,20 +24471,10 @@
    "olderNames": [
     "APIEnv_Get3DStyleID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1130,
-     "title": "Add Get3DStyleDetails, Create3DStyles and Change3DStyles commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DStyleList",
@@ -24594,10 +24504,6 @@
    ],
    "issues": [
     {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    },
-    {
      "number": 921,
      "title": "Add 3D style commands and show selection / all in 3D"
     }
@@ -24621,20 +24527,10 @@
    "olderNames": [
     "APIEnv_Get3DWindowSetsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1277,
-     "title": "Add Get3DWindowSettings and Set3DWindowSettings commands"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1258,
-     "title": "Expose ACAPI_View_Get3DWindowSets / Change3DWindowSets (3D window pixel size and projection zoom)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetCurrentImage",
@@ -25148,10 +25044,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 1120,
-     "title": "Expose ACAPI_View_Get3DStyle / Create3DStyle / Change3DStyle (read, create and edit 3D styles) - complements #921"
-    },
     {
      "number": 921,
      "title": "Add 3D style commands and show selection / all in 3D"
@@ -27116,10 +27008,6 @@
      "title": "Add GetDocumentFrom3DDefaults and SetDocumentFrom3DDefaults"
     },
     {
-     "number": 1277,
-     "title": "Add Get3DWindowSettings and Set3DWindowSettings commands"
-    },
-    {
      "number": 1266,
      "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
     },
@@ -27287,16 +27175,8 @@
      "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
     {
-     "number": 1134,
-     "title": "Add RegularizePolygons and RegularizePolylines (ACAPI_Polygon_RegularizePolygon)"
-    },
-    {
      "number": 1133,
      "title": "Add GetVisibleSkinStatus command (ACAPI_Element_ElemHasVisibleSkin)"
-    },
-    {
-     "number": 1129,
-     "title": "Add MeasureTexts command: measure text length before placing it"
     },
     {
      "number": 1095,
@@ -49765,10 +49645,6 @@
     {
      "number": 1132,
      "title": "Add GetLibPartTransformations command (ACAPI_Element_GetSyTran)"
-    },
-    {
-     "number": 1129,
-     "title": "Add MeasureTexts command: measure text length before placing it"
     },
     {
      "number": 1110,

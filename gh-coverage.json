@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-23 10:42 UTC",
+ "generatedAt": "2026-10-23 12:40 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 34,
+  "open": 43,
   "merged": 1,
   "claimed": 2,
   "not applicable": 1
@@ -3360,6 +3360,21 @@
    "issues": []
   },
   {
+   "id": "MeasureTexts",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Measures texts before placing them: the length of every line for a given font, style and height, on paper in millimetres or in the model at the current drawing scale, and the font's capital size factor. Creates nothing.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 10,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetElementPreviewImage",
    "group": "Element Commands",
    "version": "1.2.7",
@@ -3448,6 +3463,36 @@
    "components": [],
    "parameters": null,
    "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RegularizePolygons",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Regularizes polygons with Archicad's own polygon regularization, before they are used to create slabs, zones or fills: removes duplicate points, fixes the orientation, resolves self-intersections and touching holes. Each input polygon gives 0, 1 or more valid polygons in the format of CreateSlabs, optionally with the input vertex and edge each result vertex and edge came from. Changes nothing in the project.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RegularizePolylines",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -5918,6 +5963,21 @@
    "issues": []
   },
   {
+   "id": "GetDrawingContentBoxes",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Returns the full content box of the given Drawing elements, independent of their frames, as ACAPI_Drawing_GetFullDrawingContentBox reports it. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetDatabaseIdFromNavigatorItemId",
    "group": "Navigator Commands",
    "version": "1.1.4",
@@ -6486,6 +6546,51 @@
    "issues": []
   },
   {
+   "id": "Get3DStyleDetails",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Gets the settings of 3D styles by name (an empty name or no names means the current 3D style): rendering engine, model type, monochrome and background colors, contours, shadows and hatching. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Create3DStyles",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Creates 3D styles. Each new style starts from the current 3D style and differs from it only in the given fields. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 23,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Change3DStyles",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Changes the given fields of existing 3D styles, identified by name. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 23,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "Get3DProjectionSettings",
    "group": "Navigator Commands",
    "version": "1.7.1",
@@ -6531,6 +6636,36 @@
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
     }
    ]
+  },
+  {
+   "id": "Get3DWindowSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.3",
+   "brief": "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Set3DWindowSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.3",
+   "brief": "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 6,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "FitInWindow",
