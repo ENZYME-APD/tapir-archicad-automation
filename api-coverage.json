@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23 08:02 UTC",
+ "generatedAt": "2026-10-23 08:12 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 674,
-  "claimed": 753,
+  "in progress": 673,
+  "claimed": 746,
   "done": 743,
-  "open": 81,
-  "merged": 8
+  "open": 88,
+  "merged": 9
  },
  "items": [
   {
@@ -7446,10 +7446,6 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
-     "number": 1274,
-     "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
-    },
-    {
      "number": 1237,
      "title": "Add ReadFavoritesFile command (ACAPI_Favorite_Read)"
     },
@@ -8574,12 +8570,7 @@
      "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
     }
    ],
-   "issues": [
-    {
-     "number": 1247,
-     "title": "Expose ACAPI_Element_CalcCoreOffsetToSideOffset / CalcSideOffsetToCoreOffset (reveal depth for windows/doors)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_CalcSideOffsetToCoreOffset",
@@ -8607,12 +8598,7 @@
      "title": "Add ConvertRevealOffsets command (core skin / wall side reveal offset)"
     }
    ],
-   "issues": [
-    {
-     "number": 1247,
-     "title": "Expose ACAPI_Element_CalcCoreOffsetToSideOffset / CalcSideOffsetToCoreOffset (reveal depth for windows/doors)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_CatchChangeDefaults",
@@ -10467,20 +10453,10 @@
    "olderNames": [
     "APIAny_GetOpeningTransformationID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1271,
-     "title": "Add GetOpeningTransformations (read Opening placement via ACAPI_Element_GetOpeningTransformation)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1248,
-     "title": "Expose ACAPI_Element_GetOpeningTransformation (position and direction of an Opening element)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetPropertyDefinitions",
@@ -12209,10 +12185,6 @@
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    },
-    {
-     "number": 1274,
-     "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
     },
     {
      "number": 1241,
@@ -33135,10 +33107,6 @@
      "title": "[1/6] Add GetOpeningDetails: Opening geometry, extrusion parameters and connections (AC29-30)"
     },
     {
-     "number": 1271,
-     "title": "Add GetOpeningTransformations (read Opening placement via ACAPI_Element_GetOpeningTransformation)"
-    },
-    {
      "number": 1214,
      "title": "Add SolveStairBaseline command (ACAPI_HierarchicalEditing_SolveStair)"
     },
@@ -35440,15 +35408,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementMarker",
@@ -35462,15 +35425,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementType",
@@ -35484,15 +35442,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetMemo",
@@ -35506,15 +35459,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetMemoMarker",
@@ -35528,15 +35476,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetName",
@@ -35576,10 +35519,6 @@
     {
      "number": 1279,
      "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
-    },
-    {
-     "number": 1274,
-     "title": "Add GetFavoriteSettings: read a Favorite's GDL parameters, marker, sub-elements and folder"
     },
     {
      "number": 1257,
@@ -35639,15 +35578,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetPreviewImage",
@@ -35705,15 +35639,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::IsValid",
@@ -36470,12 +36399,7 @@
      "title": "[1/4] Add GetFavoriteFolders command (Favorites palette folder tree)"
     }
    ],
-   "issues": [
-    {
-     "number": 1252,
-     "title": "Expose ACAPI::Favorite::Favorite element default, memo and marker (read the full settings of a favorite)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::FindViewByGuid",
@@ -49905,10 +49829,6 @@
     {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
-    },
-    {
-     "number": 1271,
-     "title": "Add GetOpeningTransformations (read Opening placement via ACAPI_Element_GetOpeningTransformation)"
     },
     {
      "number": 1270,

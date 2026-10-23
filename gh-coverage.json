@@ -1,10 +1,10 @@
 {
- "generatedAt": "2026-10-23 08:02 UTC",
+ "generatedAt": "2026-10-23 08:12 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
   "merged": 1,
-  "open": 26,
+  "open": 28,
   "claimed": 2,
   "not applicable": 1
  },
@@ -2223,6 +2223,21 @@
    "issues": []
   },
   {
+   "id": "GetOpeningTransformations",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Gets the placement of Opening elements without changing them: the global-to-local transformation matrix Archicad returns, its inverse, and the origin and axes of the opening in world coordinates derived from the inverse. Mirrored openings give a left-handed matrix (isMirrored). Needs Archicad 27 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateZones",
    "group": "Element Commands",
    "version": "1.1.8",
@@ -3784,6 +3799,21 @@
    "coveredParameters": [
     "favorites"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetFavoriteSettings",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Reads the stored settings of the given favorites without applying them or placing an element: the element type, the folder, the library part and GDL parameters, the marker (library part and parameters) of Window and Door favorites, and the sub-elements. A favorite without a marker has no marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) are not returned.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
