@@ -456,6 +456,11 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
+{
+    return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
