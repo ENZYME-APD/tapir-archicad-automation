@@ -60,6 +60,8 @@
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
 #define ACAPI_Element_RoomReductions(par1, par2) ACAPI_Database (APIDb_RoomReductionsID, (void*) par1, (void*) par2)
 
+#define ACAPI_DrawOrder_CreationOrderGetNext(par1) ACAPI_Database (APIDb_CreationOrderGetNextID, par1)
+
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
 #define ACAPI_Revision_GetRVMDocumentRevisions(par1) ACAPI_Database (APIDb_GetRVMDocumentRevisionsID, par1)
