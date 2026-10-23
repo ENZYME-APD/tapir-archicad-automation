@@ -892,8 +892,8 @@ static void AddObjectLampDetails (GS::ObjectState& typeSpecificDetails, const AP
     for (GSIndex ii = 0; ii < nParams; ++ii) {
         API_AddParType& actParam = (*objectMemo.params)[ii];
 
-        const GS::String name (actParam.name);
-        if (name == "ZZYZX") {
+        // Without case, as GDL: a part's own list may spell it zzyzx.
+        if (CHEqualCStringsInsensitive (actParam.name, "ZZYZX")) {
             zDimension = actParam.value.real;
             break;
         }
