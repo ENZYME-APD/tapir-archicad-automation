@@ -605,6 +605,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetURLReferencesOfElementsCommand> (
             elementCommands, "1.7.3",
             "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Fails with APIERR_MOREUSER for an element that already holds a link."
+        );
         err |= RegisterCommand<RunParameterScriptOfElementsCommand> (
             elementCommands, "1.7.3",
             "Runs the parameter script of the library part of the given elements (objects, lamps, windows, doors, etc.), so that parameter values that depend on other parameters are updated, e.g. after SetGDLParametersOfElements."
