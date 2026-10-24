@@ -52,6 +52,7 @@
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
+#define ACAPI_Selection_DeselectAll ACAPI_Element_DeselectAll
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
 #define ACAPI_ElementLink_Link ACAPI_Element_Link
@@ -268,6 +269,27 @@ inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
 }
 
+// Show Selection in 3D / Show All in 3D (APIdefs_Automate.h) take no parameters.
+inline GSErrCode ACAPI_View_ShowSelectionIn3D ()
+{
+    return ACAPI_Automate (APIDo_ShowSelectionIn3DID);
+}
+
+inline GSErrCode ACAPI_View_ShowAllIn3D ()
+{
+    return ACAPI_Automate (APIDo_ShowAllIn3DID);
+}
+
+// 3D styles (APIdefs_Environment.h): par1 the style names, par2 the current one;
+// APIEnv_SetCurrent3DStyleID takes the name of the style to make current as par1.
+inline GSErrCode ACAPI_View_Get3DStyleList (GS::Array<GS::UniString>* styles, GS::UniString* current)
+{
+    return ACAPI_Environment (APIEnv_Get3DStyleListID, (void*) styles, (void*) current);
+}
+
+inline GSErrCode ACAPI_View_SetCurrent3DStyle (GS::UniString* name)
+{
+    return ACAPI_Environment (APIEnv_SetCurrent3DStyleID, (void*) name);
 inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
 {
     return ACAPI_Database (APIDb_SetZoomID, (void*) zoomBox, (void*) tranmat);

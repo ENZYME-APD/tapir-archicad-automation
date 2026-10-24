@@ -1544,6 +1544,17 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.1",
             "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
         );
+        err |= RegisterCommand<Get3DStylesCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses."
+        );
+        err |= RegisterCommand<SetCurrent3DStyleCommand> (
+            navigatorCommands, "1.7.3",
+            "Sets the current 3D style of the 3D window by name, one of the names Get3DStyles returns."
+        );
+        err |= RegisterCommand<ShowElementsIn3DCommand> (
+            navigatorCommands, "1.7.3",
+            "Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does."
         err |= RegisterCommand<Get3DWindowSettingsCommand> (
             navigatorCommands, "1.7.3",
             "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection."
