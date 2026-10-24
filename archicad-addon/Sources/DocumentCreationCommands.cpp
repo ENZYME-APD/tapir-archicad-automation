@@ -88,6 +88,98 @@ GS::Optional<API_DatabaseInfo> FindMasterLayoutDatabaseByName (const GS::UniStri
     return foundMasterLayout;
 }
 
+// Finds the Layout Book navigator item of a master layout database. Used both to tell master
+// layouts from layouts (the master layout of a layout is stored on its database, not in its
+// API_LayoutInfo) and to report a layout's master the way the Navigator shows it.
+GS::Optional<API_NavigatorItem> FindMasterLayoutNavigatorItem (const API_DatabaseUnId& masterLayoutUnId)
+{
+    API_NavigatorItem filterItem = {};
+    filterItem.mapId           = API_LayoutMap;
+    filterItem.itemType        = API_MasterLayoutNavItem;
+    filterItem.db.databaseUnId = masterLayoutUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return {};
+    }
+
+    // The search is already filtered by the database, so the first master layout item it
+    // returns is the one asked for (the same way IsMasterLayoutDatabase has always worked).
+    for (const auto& result : results) {
+        if (result.itemType == API_MasterLayoutNavItem) {
+            return result;
+        }
+    }
+    return {};
+}
+
+// Adds the master layout of a layout database (masterLayoutDatabaseId, masterNavigatorItemId,
+// masterLayoutName) to a GetLayoutSettings result. Master layouts have no master of their own,
+// so nothing is added for them.
+void AddMasterLayoutOfLayout (API_DatabaseInfo layoutDbInfo, GS::ObjectState& layoutResult)
+{
+    if (ACAPI_Window_GetDatabaseInfo (&layoutDbInfo) != NoError ||
+        layoutDbInfo.typeID != APIWind_LayoutID ||
+        layoutDbInfo.masterLayoutUnId.elemSetId == APINULLGuid) {
+        return;
+    }
+
+    API_DatabaseInfo masterDbInfo = {};
+    masterDbInfo.typeID       = APIWind_MasterLayoutID;
+    masterDbInfo.databaseUnId = layoutDbInfo.masterLayoutUnId;
+    layoutResult.Add ("masterLayoutDatabaseId", CreateGuidObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (masterDbInfo)));
+
+    const auto masterNavItem = FindMasterLayoutNavigatorItem (layoutDbInfo.masterLayoutUnId);
+    if (masterNavItem.HasValue ()) {
+        layoutResult.Add ("masterNavigatorItemId", CreateGuidObjectState (masterNavItem.Get ().guid));
+    }
+
+    if (ACAPI_Window_GetDatabaseInfo (&masterDbInfo) == NoError) {
+        layoutResult.Add ("masterLayoutName", GS::UniString (masterDbInfo.name));
+    }
+}
+
+// Resolves the master layout a SetLayoutSettings item asks for, given as masterNavigatorItemId,
+// masterLayoutDatabaseId or masterLayoutName (in this order of precedence). Returns false, with
+// the failed execution result filled, when one is given but does not name a master layout.
+bool ResolveRequestedMasterLayout (const GS::ObjectState& item, GS::Optional<API_DatabaseUnId>& masterLayoutUnId, GS::ObjectState& failedResult)
+{
+    const GS::ObjectState* masterNavItemOS = item.Get ("masterNavigatorItemId");
+    const GS::ObjectState* masterDbIdOS    = item.Get ("masterLayoutDatabaseId");
+    GS::UniString masterLayoutName;
+
+    if (masterNavItemOS != nullptr) {
+        API_Guid masterNavGuid = GetGuidFromObjectState (*masterNavItemOS);
+        API_NavigatorItem masterNavItem = {};
+        const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&masterNavGuid, &masterNavItem);
+        if (navErr != NoError) {
+            failedResult = CreateFailedExecutionResult (navErr, "Failed to get navigator item from masterNavigatorItemId.");
+            return false;
+        }
+        if (masterNavItem.itemType != API_MasterLayoutNavItem) {
+            failedResult = CreateFailedExecutionResult (APIERR_BADID, "masterNavigatorItemId is not a master layout.");
+            return false;
+        }
+        masterLayoutUnId = masterNavItem.db.databaseUnId;
+    } else if (masterDbIdOS != nullptr) {
+        const API_DatabaseInfo masterDbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*masterDbIdOS));
+        if (!FindMasterLayoutNavigatorItem (masterDbInfo.databaseUnId).HasValue ()) {
+            failedResult = CreateFailedExecutionResult (APIERR_BADID, "masterLayoutDatabaseId is not a master layout.");
+            return false;
+        }
+        masterLayoutUnId = masterDbInfo.databaseUnId;
+    } else if (item.Get ("masterLayoutName", masterLayoutName)) {
+        const auto masterDbInfo = FindMasterLayoutDatabaseByName (masterLayoutName);
+        if (!masterDbInfo.HasValue ()) {
+            failedResult = CreateFailedExecutionResult (APIERR_BADID, "No master layout found with the given masterLayoutName.");
+            return false;
+        }
+        masterLayoutUnId = masterDbInfo.Get ().databaseUnId;
+    }
+
+    return true;
+}
+
 GS::Optional<API_Guid> FindLayoutDatabaseGuidByName (const GS::UniString& layoutName)
 {
     GS::Optional<API_Guid> foundLayoutGuid;
@@ -1297,6 +1389,18 @@ GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetRawResponseSchema () co
                         "customLayoutNumbering":    { "type": "boolean" },
                         "doNotIncludeInNumbering":  { "type": "boolean" },
                         "displayMasterLayoutBelow": { "type": "boolean" },
+                        "masterLayoutDatabaseId": {
+                            "$ref": "#/DatabaseId",
+                            "description": "The database of the master layout of the layout. Not present for master layouts."
+                        },
+                        "masterNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The Layout Book navigator item of the master layout of the layout. Not present for master layouts."
+                        },
+                        "masterLayoutName": {
+                            "type": "string",
+                            "description": "The name of the master layout of the layout. Not present for master layouts."
+                        },
                         "customData": {
                             "type": "array",
                             "items": {
@@ -1368,6 +1472,8 @@ GS::ObjectState GetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             "doNotIncludeInNumbering",  layoutInfo.doNotIncludeInNumbering,
             "displayMasterLayoutBelow", layoutInfo.showMasterBelow);
 
+        AddMasterLayoutOfLayout (dbInfo, layoutResult);
+
         if (layoutInfo.customData != nullptr && !layoutInfo.customData->IsEmpty ()) {
             const auto& customDataList = layoutResult.AddList<GS::ObjectState> ("customData");
             for (auto& kv : *layoutInfo.customData) {
@@ -1434,6 +1540,19 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                         "customLayoutNumbering":    { "type": "boolean" },
                         "doNotIncludeInNumbering":  { "type": "boolean" },
                         "showMasterBelow":          { "type": "boolean" },
+                        "masterNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The master layout to assign to the layout, as its Layout Book navigator item. Only layouts can be given a master layout, master layouts cannot."
+                        },
+                        "masterLayoutDatabaseId": {
+                            "$ref": "#/DatabaseId",
+                            "description": "The master layout to assign to the layout, as its database. Used when masterNavigatorItemId is not given."
+                        },
+                        "masterLayoutName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "The master layout to assign to the layout, by name. Used when neither masterNavigatorItemId nor masterLayoutDatabaseId is given."
+                        },
                         "customData": {
                             "type": "array",
                             "items": {
@@ -1457,22 +1576,7 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetRawResponseSchema () co
 
 bool IsMasterLayoutDatabase (const API_DatabaseUnId& targetUnId)
 {
-    API_NavigatorItem filterItem = {};
-    filterItem.mapId           = API_LayoutMap;
-    filterItem.itemType        = API_MasterLayoutNavItem;
-    filterItem.db.databaseUnId = targetUnId;
-
-    GS::Array<API_NavigatorItem> results;
-    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
-        return false;
-    }
-
-    for (const auto& result : results) {
-        if (result.itemType == API_MasterLayoutNavItem) {
-            return true;
-        }
-    }
-    return false;
+    return FindMasterLayoutNavigatorItem (targetUnId).HasValue ();
 }
 
 GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -1521,8 +1625,40 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             continue;
         }
 
+        GS::Optional<API_DatabaseUnId> requestedMasterLayoutUnId;
+        GS::ObjectState masterLayoutFailedResult;
+        if (!ResolveRequestedMasterLayout (item, requestedMasterLayoutUnId, masterLayoutFailedResult)) {
+            executionResults.Push (masterLayoutFailedResult);
+            continue;
+        }
+        if (requestedMasterLayoutUnId.HasValue () && isMasterLayout) {
+            executionResults.Push (CreateFailedExecutionResult (APIERR_NOTSUPPORTED,
+                "The master layout can only be changed on layouts, not on master layouts."));
+            continue;
+        }
+
+        GSErrCode err = NoError;
+
+        // The master layout is not part of API_LayoutInfo but of the layout's database, so it is
+        // changed first, through the database. The layout settings are read afterwards, so the
+        // values the new master layout gives the layout are kept unless the item overrides them.
+        if (requestedMasterLayoutUnId.HasValue ()) {
+            API_DatabaseInfo layoutDbInfo = dbInfo;
+            err = ACAPI_Window_GetDatabaseInfo (&layoutDbInfo);
+            if (err != NoError) {
+                executionResults.Push (CreateFailedExecutionResult (err, "Failed to get the database of the layout."));
+                continue;
+            }
+            layoutDbInfo.masterLayoutUnId = requestedMasterLayoutUnId.Get ();
+            err = ACAPI_Database_ModifyDatabase (&layoutDbInfo);
+            if (err != NoError) {
+                executionResults.Push (CreateFailedExecutionResult (err, "Failed to change the master layout of the layout."));
+                continue;
+            }
+        }
+
         API_LayoutInfo layoutInfo = {};
-        GSErrCode err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
+        err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
         if (err != NoError) {
             executionResults.Push (CreateFailedExecutionResult (err, "Failed to read current layout settings."));
             continue;

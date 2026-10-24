@@ -135,6 +135,7 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
 #define ACAPI_Navigator_GetCurrLayerComb(par1) ACAPI_Environment (APIEnv_GetCurrLayerCombID, par1)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
+#define ACAPI_Database_ModifyDatabase(par1) ACAPI_Database (APIDb_ModifyDatabaseID, par1)
 
 inline GSErrCode ACAPI_DrawOrder_DrawOrderGetNext (API_ElemFilterFlags filterBits, API_Elem_Head* elemHead)
 {
