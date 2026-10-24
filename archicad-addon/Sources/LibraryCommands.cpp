@@ -1345,6 +1345,8 @@ GS::ObjectState IsLibraryPartSubtypeOfCommand::Execute (const GS::ObjectState& p
     }
 
     return response;
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {

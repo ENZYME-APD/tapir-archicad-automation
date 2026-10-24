@@ -599,6 +599,8 @@ inline GSErrCode ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain (const char* succ
 inline GSErrCode ACAPI_LibraryPart_GetLibPartToolVariation (API_LibPart* libPart, API_ToolBoxItem* toolboxItem)
 {
     return ACAPI_Goodies (APIAny_GetLibPartToolVariationID, libPart, toolboxItem);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
 {
     return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
