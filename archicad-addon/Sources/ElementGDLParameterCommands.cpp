@@ -1891,6 +1891,10 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
 
         hotspotsOfElementsAdder (hotspotsOfElement);
     }
+
+    return response;
+}
+
 RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
