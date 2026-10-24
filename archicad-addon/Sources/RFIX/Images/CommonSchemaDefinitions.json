@@ -858,6 +858,56 @@
             "designOptionSetId"
         ]
     },
+    "ProjectInfoGroupId": {
+        "type": "object",
+        "description": "The identifier of a Project Info group. Available from Archicad 30.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ProjectInfoGroupIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupId"
+        ]
+    },
+    "ProjectInfoFieldId": {
+        "type": "object",
+        "description": "The identifier of a field of a Project Info group. It is not the autotext key that GetProjectInfoFields returns as projectInfoId. Available from Archicad 30.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ProjectInfoFieldIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFieldId"
+        ]
+    },
     "LayersOfLayerCombination": {
         "type": "array",
         "description": "List of Layers included in the Layer Combination.",
@@ -5892,6 +5942,25 @@
             "$ref": "#/DesignOptionCombinationIdOrError"
         }
     },
+    "ProjectInfoGroupIdOrError": {
+        "type": "object",
+        "description": "A Project Info group identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ProjectInfoGroupIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ProjectInfoGroupIdsOrErrors": {
+        "type": "array",
+        "description": "A list of Project Info group identifiers or errors.",
+        "items": {
+            "$ref": "#/ProjectInfoGroupIdOrError"
+        }
+    },
     "ElementClassificationItemArray": {
         "description": "A wrapper containing a list of element classification identifiers or errors.",
         "properties": {
@@ -10836,6 +10905,64 @@
             "projectInfoId",
             "projectInfoName",
             "projectInfoValue"
+        ]
+    },
+    "ProjectInfoGroups": {
+        "type": "array",
+        "description": "The Project Info groups in their order in the Project Info dialog. Available from Archicad 30.",
+        "items": {
+            "$ref": "#/ProjectInfoGroup"
+        }
+    },
+    "ProjectInfoGroup": {
+        "type": "object",
+        "properties": {
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the group."
+            },
+            "fields": {
+                "type": "array",
+                "description": "The fields of the group in their order, including the subfields of calculated fields (e.g. the address components of a full address field).",
+                "items": {
+                    "$ref": "#/ProjectInfoGroupField"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupId",
+            "name",
+            "fields"
+        ]
+    },
+    "ProjectInfoGroupField": {
+        "type": "object",
+        "properties": {
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the field visible on UI."
+            },
+            "value": {
+                "type": "string",
+                "description": "The value of the field. The value of a field with subfields is calculated from the subfields."
+            },
+            "projectInfoId": {
+                "type": "string",
+                "description": "The autotext key of the field, as GetProjectInfoFields returns it and SetProjectInfoField takes it. Given when exactly one project info autotext has the name of the field, omitted otherwise."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFieldId",
+            "name",
+            "value"
         ]
     },
     "LibraryFileAdditions": {

@@ -296,6 +296,26 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.4",
             "Deletes one or more custom project info fields. Hardcoded fields cannot be deleted."
         );
+        err |= RegisterCommand<GetProjectInfoGroupsCommand> (
+            projectCommands, "1.7.3",
+            "Retrieves the Project Info groups in their order, each with its fields: id, name, value and, when exactly one project info autotext has the name of the field, the autotext key that SetProjectInfoField takes. Available from Archicad 30."
+        );
+        err |= RegisterCommand<CreateProjectInfoGroupsCommand> (
+            projectCommands, "1.7.3",
+            "Creates Project Info groups with the given names, at the end of the group list. Available from Archicad 30."
+        );
+        err |= RegisterCommand<RenameProjectInfoGroupsCommand> (
+            projectCommands, "1.7.3",
+            "Renames Project Info groups. Available from Archicad 30."
+        );
+        err |= RegisterCommand<DeleteProjectInfoGroupsCommand> (
+            projectCommands, "1.7.3",
+            "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30."
+        );
+        err |= RegisterCommand<MoveProjectInfoGroupsCommand> (
+            projectCommands, "1.7.3",
+            "Moves Project Info groups before another group, or to the end of the group list when no other group is given. Available from Archicad 30."
+        );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
             "Retrieves information about the story structure of the currently loaded project: index, floor id, name, level, height and, from Archicad 28, the IFC GlobalId of each story."
