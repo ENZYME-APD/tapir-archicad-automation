@@ -321,15 +321,15 @@ GSErrCode Initialize (void)
             "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format."
         );
         err |= RegisterCommand<GetRenderingScenesCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Gets the names of the rendering scenes of the project (the Scene list of the PhotoRendering Settings palette), the most recently used first, and the name of the current scene."
         );
         err |= RegisterCommand<SetCurrentRenderingSceneCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does."
         );
         err |= RegisterCommand<PhotoRenderCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
