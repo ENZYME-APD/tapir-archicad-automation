@@ -1324,6 +1324,9 @@ GS::ObjectState RedrawCurrentDatabaseCommand::Execute (const GS::ObjectState& /*
         return CreateFailedExecutionResult (err, "Failed to redraw the current database.");
     }
     return CreateSuccessfulExecutionResult ();
+}
+
+// ---------------------------------------------------------------------------
 // GetProductVersionInfo
 // ---------------------------------------------------------------------------
 

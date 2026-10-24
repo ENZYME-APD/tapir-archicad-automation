@@ -273,6 +273,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RedrawCurrentDatabaseCommand> (
             applicationCommands, "1.7.3",
             "Redraws the current database, even when its window is in the background. Only the visible region of its window is updated."
+        );
         err |= RegisterCommand<GetProductVersionInfoCommand> (
             applicationCommands, "1.7.3",
             "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type and main/update/hotfix versions from Archicad 29. Requires Archicad 28 or later."
