@@ -774,6 +774,14 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
                     "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
+            },
+            "additionalFields": {
+                "type": "array",
+                "description": "Optional extra fields to return for each element, on top of the ones selected by fields. None of them is returned unless listed here, so callers that do not give this parameter get the same response as before.",
+                "items": {
+                    "$ref": "#/ElementDetailsAdditionalField"
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -830,6 +838,22 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                                     }
                                 }
                             }
+                        },
+                        "infoString": {
+                            "type": "string",
+                            "description": "The element ID (info string) as Archicad shows it. Present only when requested in additionalFields."
+                        },
+                        "compoundInfoString": {
+                            "type": "string",
+                            "description": "The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one."
+                        },
+                        "libraryPartUnId": {
+                            "type": "string",
+                            "description": "The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window)."
+                        },
+                        "creatorToolUnId": {
+                            "type": "string",
+                            "description": "The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element."
                         }
                     },
                     "additionalProperties": false,
@@ -1185,6 +1209,39 @@ static const API_CWFrameType* FindNextFrameOfPanel (std::vector<const API_CWFram
 
 using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 
+// The fields of GetDetailsOfElements requested through additionalFields. Each one is left out
+// when Archicad reports an error or nothing for the element (e.g. libraryPartUnId on a wall),
+// so a field the element type does not have never turns the whole entry into an error.
+static void AddAdditionalElementDetails (GS::ObjectState& os, const API_Elem_Head& header, const GS::Array<GS::UniString>& additionalFields)
+{
+    if (additionalFields.Contains (GS::UniString ("infoString"))) {
+        GS::UniString infoString;
+        if (ACAPI_Element_GetElementInfoString (&header.guid, &infoString) == NoError) {
+            os.Add ("infoString", infoString);
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("compoundInfoString"))) {
+        GS::UniString compoundInfoString;
+        if (ACAPI_Element_GetCompoundInfoString (&header.guid, &compoundInfoString) == NoError && !compoundInfoString.IsEmpty ()) {
+            os.Add ("compoundInfoString", compoundInfoString);
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("libraryPartUnId"))) {
+        API_Elem_Head elemHead = header;
+        char unId[256] = {};
+        if (ACAPI_LibraryPart_GetElemLibPartUnId (&elemHead, unId) == NoError && unId[0] != '\0') {
+            os.Add ("libraryPartUnId", GS::UniString (unId));
+        }
+    }
+    if (additionalFields.Contains (GS::UniString ("creatorToolUnId"))) {
+        API_Elem_Head elemHead = header;
+        char unId[256] = {};
+        if (ACAPI_Element_GetElemCreatorToolUnId (&elemHead, unId) == NoError && unId[0] != '\0') {
+            os.Add ("creatorToolUnId", GS::UniString (unId));
+        }
+    }
+}
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -1195,6 +1252,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     const auto isFieldRequested = [&] (const char* fieldName) {
         return !filterFields || fields.Contains (GS::UniString (fieldName));
     };
+
+    GS::Array<GS::UniString> additionalFields;
+    parameters.Get ("additionalFields", additionalFields);
 
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
@@ -1242,6 +1302,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
 
             detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+        }
+
+        if (!additionalFields.IsEmpty ()) {
+            AddAdditionalElementDetails (detailsOfElement, elem.header, additionalFields);
         }
 
         if (!isFieldRequested ("details")) {

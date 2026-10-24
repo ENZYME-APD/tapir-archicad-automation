@@ -9270,6 +9270,16 @@
             "hotlinkId"
         ]
     },
+    "ElementDetailsAdditionalField": {
+        "type": "string",
+        "description": "An extra field of the details of an element, returned only when requested.",
+        "enum": [
+            "infoString",
+            "compoundInfoString",
+            "libraryPartUnId",
+            "creatorToolUnId"
+        ]
+    },
     "RevisionIssueId": {
         "type": "object",
         "description": "The identifier of a revision issue.",
