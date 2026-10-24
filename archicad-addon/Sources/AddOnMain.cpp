@@ -472,6 +472,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLibPartTransformationsCommand> (
             elementCommands, "1.7.3",
             "Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
             "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27."

@@ -5961,6 +5961,8 @@ GS::ObjectState GetLibPartTransformationsCommand::Execute (const GS::ObjectState
     }
 
     return response;
+}
+
 ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
     CommandBase (CommonSchema::Used)
 {
