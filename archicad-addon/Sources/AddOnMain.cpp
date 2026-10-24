@@ -217,7 +217,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ChangeWindowCommand> (
             applicationCommands, "1.3.1",
-            "Changes the current (active) window to the given window. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
+            "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
         );
         err |= RegisterCommand<GetUserGSIDCommand> (
             applicationCommands, "1.5.6",

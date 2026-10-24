@@ -3037,7 +3037,7 @@
         ]
     },
     "NavigatorItemIdOrDatabaseIdAndWindowType": {
-        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId.",
+        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId, or a databaseId on its own (its window type is resolved automatically).",
         "oneOf": [
             {
                 "$ref": "#/NavigatorItemIdArrayItem"
@@ -6206,7 +6206,8 @@
                 "$ref": "#/WindowType"
             },
             "databaseId": {
-                "$ref": "#/DatabaseId"
+                "$ref": "#/DatabaseId",
+                "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
             },
             "storyIndex": {
                 "type": "integer",
@@ -6214,8 +6215,17 @@
             }
         },
         "additionalProperties": false,
-        "required": [
-            "windowType"
+        "anyOf": [
+            {
+                "required": [
+                    "windowType"
+                ]
+            },
+            {
+                "required": [
+                    "databaseId"
+                ]
+            }
         ]
     },
     "WallRelations": {
