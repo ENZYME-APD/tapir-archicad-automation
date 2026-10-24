@@ -1217,6 +1217,57 @@ static GSErrCode ActivateLayoutDatabase (const API_Guid& layoutDatabaseGuid)
     return ACAPI_Window_ChangeWindow (&windowInfo);
 }
 
+// The active window, captured so that a command which has to switch windows can switch back
+// afterwards. The active story is kept too: it is a project-wide setting, not a property of the
+// front window, so a view switch that lands on a story view changes it whatever window was in
+// front (the Floor Plan is one window for every story).
+struct ActiveWindowState {
+    bool            valid = false;
+    API_WindowInfo  window = {};
+    bool            hasStory = false;
+    short           actStory = 0;
+};
+
+static bool GetActiveStory (short& actStory)
+{
+    API_StoryInfo storyInfo = {};
+    const GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (err != NoError) {
+        return false;
+    }
+    actStory = storyInfo.actStory;
+    return true;
+}
+
+static ActiveWindowState GetActiveWindowState ()
+{
+    ActiveWindowState state;
+    state.valid = ACAPI_Window_GetCurrentWindow (&state.window) == NoError;
+    state.hasStory = GetActiveStory (state.actStory);
+    return state;
+}
+
+static void RestoreActiveWindow (const ActiveWindowState& state)
+{
+    if (state.valid) {
+        API_WindowInfo windowInfo = state.window;
+        ACAPI_Window_ChangeWindow (&windowInfo);
+    }
+    // Putting the story into API_WindowInfo::index does not move the active story (#748):
+    // the story is changed with the story settings command instead, the same way
+    // ChangeWindowCommand and CreateZonesCommand do it, and only when the switches left
+    // another story active. This does not depend on the window switch: the story is
+    // project-wide, so it is restored even when the window could not be.
+    short currentStory = 0;
+    if (state.hasStory && GetActiveStory (currentStory) && currentStory != state.actStory) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_GoTo;
+        storyCmd.index  = state.actStory;
+        ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+    }
+}
+
 GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -1349,6 +1400,8 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
 
     API_DatabaseInfo startingDatabase = {};
     const GSErrCode startingDatabaseErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    const ActiveWindowState startingWindow = GetActiveWindowState ();
+    bool windowSwitched = false;
 
     GS::Array<GS::ObjectState> results;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("ChangeDrawingLinkCommand", [&]() -> GSErrCode {
@@ -1387,7 +1440,32 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
                 oldClip.Get ("clipPolygon", oldClipCoords);
             }
 
+#if defined (ServerMainVers_2700)
+            // Make the new source view current before creating the Drawing from it. A Drawing
+            // created while its source view has never been made current inherits a stale 2D
+            // transform instead of the one saved via SetViewSettings - ACAPI_View_GoToView
+            // resyncs it, the same way ChangeWindowCommand does. The view is made current
+            // even when its window is already the active one: the stale transform is the
+            // view's, not the window's (two views of the same story with different settings
+            // is the case of #645), and GoToView switches no window then, it only applies
+            // the view's settings to the window in front. The window and story that were
+            // active when the command started are restored at the end. Best effort: GoToView
+            // only works on views, and some placeable sources (schedules, lists, viewpoints
+            // from the project map) may reject it - that must not fail the whole relink.
+            {
+                const API_Guid newSourceGuid = GetGuidFromObjectState (*navigatorItemIdState);
+                if (newSourceGuid != APINULLGuid) {
+                    const GS::UniString newSourceGuidStr = APIGuidToString (newSourceGuid);
+                    if (ACAPI_View_GoToView (newSourceGuidStr.ToCStr ().Get ()) == NoError) {
+                        windowSwitched = true;
+                    }
+                }
+            }
+#endif
+
             if (startingDatabaseErr == NoError) {
+                // ActivateLayoutDatabase also changes the active window to the layout.
+                windowSwitched = true;
                 err = ActivateLayoutDatabase (GetGuidFromObjectState (*layoutDatabaseIdState));
                 if (err != NoError) {
                     results.Push (CreateErrorResponse (err, "Failed to activate the layout database."));
@@ -1433,6 +1511,9 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
         return NoError;
     });
 
+    if (windowSwitched) {
+        RestoreActiveWindow (startingWindow);
+    }
     if (startingDatabaseErr == NoError) {
         ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
     }
