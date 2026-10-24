@@ -229,6 +229,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ScreenToModelCommand> (
             applicationCommands, "1.7.3",
             "Converts pixel positions local to the current Archicad view window to 2D model coordinates of the current database, using the current window's size, drawing scale and zoom. It is a 2D mapping: it does not reconstruct a 3D point, and several model coordinates can map to the same pixel."
+        );
         err |= RegisterCommand<GetElementFromUserCommand> (
             applicationCommands, "1.7.3",
             "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."

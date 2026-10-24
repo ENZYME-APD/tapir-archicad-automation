@@ -1654,6 +1654,9 @@ GS::ObjectState ScreenToModelCommand::Execute (const GS::ObjectState& parameters
     }
 
     return response;
+}
+
+// ---------------------------------------------------------------------------
 // GetElementFromUser
 // ---------------------------------------------------------------------------
 
