@@ -781,6 +781,11 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.2.2",
             "Returns a list of the names of all favorites with the given element type"
         );
+        err |= RegisterCommand<GetAllFavoritesCommand> (
+            favoritesCommands, "1.7.3",
+            "Returns every Favorite of the project, or only those of the given element type, with its name and element type. "
+            "Available from Archicad 29."
+        );
         err |= RegisterCommand<GetFavoritePreviewImageCommand> (
             favoritesCommands, "1.2.7",
             "Returns the preview image of the given favorite."
@@ -799,7 +804,8 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ExportFavoritesCommand> (
             favoritesCommands, "1.5.0",
-            "Export the project's Favorites to a .prefs file or folder."
+            "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be "
+            "exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format)."
         );
         err |= RegisterCommand<ApplyFavoritesToElementsCommand> (
             favoritesCommands, "1.5.4",

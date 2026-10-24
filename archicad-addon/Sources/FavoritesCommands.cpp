@@ -5,6 +5,12 @@
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
 
+#ifdef ServerMainVers_2900
+#include "ACAPI/Result.hpp"
+#include "ACAPI/Favorite.hpp"
+#include <vector>
+#endif
+
 
 GetFavoritesByTypeCommand::GetFavoritesByTypeCommand () :
     CommandBase (CommonSchema::Used)
@@ -67,6 +73,109 @@ GS::ObjectState GetFavoritesByTypeCommand::Execute (const GS::ObjectState& param
         favorites (favoriteName);
     }
     return response;
+}
+
+GetAllFavoritesCommand::GetAllFavoritesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAllFavoritesCommand::GetName () const
+{
+    return "GetAllFavorites";
+}
+
+GS::Optional<GS::UniString> GetAllFavoritesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Only the Favorites of this element type are returned. Omit it to get every Favorite."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetAllFavoritesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the Favorite."
+                        },
+                        "elementType": {
+                            "$ref": "#/ElementType",
+                            "description": "The element type of the Favorite. Missing when Archicad cannot read the Favorite's element settings."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState GetAllFavoritesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    API_ElemTypeID elemTypeId = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    const bool filterByType = parameters.Get ("elementType", elementTypeStr);
+    if (filterByType) {
+        elemTypeId = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elemTypeId == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+    }
+
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const std::vector<ACAPI::Favorite::Favorite> favorites = filterByType
+        ? manager.GetFavoritesByElementType (API_ElemType (elemTypeId))
+        : manager.GetAllFavorites ();
+
+    GS::ObjectState response;
+    const auto& favoritesList = response.AddList<GS::ObjectState> ("favorites");
+    for (const ACAPI::Favorite::Favorite& favorite : favorites) {
+        if (!favorite.IsValid ()) {
+            continue;
+        }
+
+        const auto favoriteName = favorite.GetName ();
+        if (favoriteName.IsErr ()) {
+            return CreateErrorResponse (favoriteName.UnwrapErr ().kind, "Failed to get the name of a Favorite.");
+        }
+
+        GS::ObjectState favoriteOs ("name", favoriteName.Unwrap ());
+        const auto element = favorite.GetOldElementDefault ();
+        if (element.IsOk ()) {
+            favoriteOs.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (element.Unwrap ().header)));
+        }
+        favoritesList (favoriteOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
 }
 
 GetFavoritePreviewImageCommand::GetFavoritePreviewImageCommand () :
@@ -628,12 +737,17 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
         "properties": {
             "path": {
                 "type": "string",
-                "description": "Absolute path on the AC host. If extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder."
+                "description": "Absolute path on the AC host. With the prefs format: if extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write."
             },
             "names": {
                 "type": "array",
                 "items": { "type": "string" },
                 "description": "Optional subset of Favorites to export. Default: export all."
+            },
+            "format": {
+                "type": "string",
+                "enum": ["prefs", "xml", "legacyPRF"],
+                "description": "The format to export to. prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
             }
         },
         "required": ["path"],
@@ -656,11 +770,53 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
         return CreateFailedExecutionResult (APIERR_BADPARS, "path is required");
     }
 
+    GS::UniString format = "prefs";
+    parameters.Get ("format", format);
+    if (format != "prefs" && format != "xml" && format != "legacyPRF") {
+        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("Invalid format '%T'.", format.ToPrintf ()));
+    }
+
     const IO::Location location = LocationFromPath (path);
 
     GSErrCode err = NoError;
     GS::Array<GS::UniString> names;
-    if (parameters.Get ("names", names)) {
+    const bool hasNames = parameters.Get ("names", names);
+    if (format != "prefs") {
+#ifdef ServerMainVers_2900
+        const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+        std::vector<ACAPI::Favorite::Favorite> favorites;
+        if (hasNames) {
+            for (const GS::UniString& name : names) {
+                const auto favorite = manager.GetFavoriteByName (name);
+                if (favorite.IsErr ()) {
+                    return CreateFailedExecutionResult (favorite.UnwrapErr ().kind, GS::UniString::Printf ("Favorite '%T' not found.", name.ToPrintf ()));
+                }
+                favorites.push_back (favorite.Unwrap ());
+            }
+        } else {
+            favorites = manager.GetAllFavorites ();
+        }
+
+        if (format == "xml") {
+            const auto exportResult = manager.ExportFavorites (favorites, location);
+            if (exportResult.IsErr ()) {
+                return CreateFailedExecutionResult (exportResult.UnwrapErr ().kind, "Failed to export favorites.");
+            }
+        } else {
+            // ExportFavoritesToLegacyPRF takes the target file by non-const reference.
+            IO::Location targetFile = location;
+            const auto exportResult = manager.ExportFavoritesToLegacyPRF (favorites, targetFile);
+            if (exportResult.IsErr ()) {
+                return CreateFailedExecutionResult (exportResult.UnwrapErr ().kind, "Failed to export favorites.");
+            }
+        }
+        return CreateSuccessfulExecutionResult ();
+#else
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, GS::UniString::Printf ("The %T format requires Archicad 29 or newer.", format.ToPrintf ()));
+#endif
+    }
+
+    if (hasNames) {
         err = ACAPI_Favorite_Export (location, &names);
     } else {
         err = ACAPI_Favorite_Export (location, nullptr);
