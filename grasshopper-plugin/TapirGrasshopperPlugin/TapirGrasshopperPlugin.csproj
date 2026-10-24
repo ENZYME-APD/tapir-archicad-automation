@@ -17,7 +17,7 @@
   
   <PropertyGroup>
     <!-- Specifies information for Assembly and Yak -->
-    <Version>1.7.2</Version>
+    <Version>1.7.3</Version>
     <Title>Tapir</Title>
     <Company>Enzyme APD</Company>
     <Description>Grasshopper components to access Archicad via JSON interface.</Description>
@@ -51,6 +51,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The Archicad tool settings tables the tool components are built from. -->
+    <EmbeddedResource Include="ToolSettings\*.json" LogicalName="ToolSettings.%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
