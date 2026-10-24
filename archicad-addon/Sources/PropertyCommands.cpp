@@ -875,6 +875,131 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
     return response;
 }
 
+GetPropertyDefinitionsOfAttributesCommand::GetPropertyDefinitionsOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyDefinitionsOfAttributesCommand::GetName () const
+{
+    return "GetPropertyDefinitionsOfAttributes";
+}
+
+GS::Optional<GS::UniString> GetPropertyDefinitionsOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "filter": {
+                "type": "string",
+                "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, or all of them. The default is UserDefined.",
+                "enum": [
+                    "UserDefined",
+                    "FundamentalBuiltIn",
+                    "All"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyDefinitionsOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyDefinitionsOfAttributes": {
+                "type": "array",
+                "description": "The property definitions of each attribute, in the order of the given attributes.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyIds": {
+                                    "$ref": "#/PropertyIds"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyIds"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitionsOfAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyDefinitionsOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::UniString filterStr = "UserDefined";
+    parameters.Get ("filter", filterStr);
+
+    API_PropertyDefinitionFilter filter = API_PropertyDefinitionFilter_UserDefined;
+    if (filterStr == "FundamentalBuiltIn") {
+#ifdef ServerMainVers_2800
+        filter = API_PropertyDefinitionFilter_BuiltIn;
+#else
+        filter = API_PropertyDefinitionFilter_FundamentalBuiltIn;
+#endif
+    } else if (filterStr == "All") {
+        filter = API_PropertyDefinitionFilter_All;
+    }
+
+    GS::ObjectState response;
+    const auto& propertyDefinitionsOfAttributes = response.AddList<GS::ObjectState> ("propertyDefinitionsOfAttributes");
+
+    for (const GS::ObjectState& attribute : attributeIds) {
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            propertyDefinitionsOfAttributes (CreateErrorResponse (APIERR_BADPARS, "attributeId is missing"));
+            continue;
+        }
+
+        const API_Attr_Head attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+        if (attrHead.typeID == API_ZombieAttrID) {
+            propertyDefinitionsOfAttributes (CreateErrorResponse (APIERR_BADID, "Attribute not found"));
+            continue;
+        }
+
+        GS::Array<API_PropertyDefinition> definitions;
+        const GSErrCode err = ACAPI_Attribute_GetPropertyDefinitions (attrHead, filter, definitions);
+        if (err != NoError) {
+            propertyDefinitionsOfAttributes (CreateErrorResponse (err, "Failed to get the property definitions of the attribute"));
+            continue;
+        }
+
+        GS::ObjectState propertyDefinitionsOfAttribute;
+        const auto& propertyIds = propertyDefinitionsOfAttribute.AddList<GS::ObjectState> ("propertyIds");
+        for (const API_PropertyDefinition& definition : definitions) {
+            propertyIds (GS::ObjectState ("propertyId", CreateGuidObjectState (definition.guid)));
+        }
+
+        propertyDefinitionsOfAttributes (propertyDefinitionsOfAttribute);
+    }
+
+    return response;
+}
+
 CreatePropertyGroupsCommand::CreatePropertyGroupsCommand () :
     CommandBase (CommonSchema::Used)
 {
