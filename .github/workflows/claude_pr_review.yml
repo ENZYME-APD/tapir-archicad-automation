@@ -73,7 +73,11 @@ name: Claude PR Review
 # Pull requests opened by the issue bot (claude_issue_triage.yml) are reviewed
 # too, through workflow_dispatch: the bot pushes with GITHUB_TOKEN, which starts
 # no pull_request_target run, so claude_bot_pr_steward.yml dispatches this
-# workflow for them. For those pull requests the review ends with a verdict for
+# workflow for them. The steward pushes a merge of main with its GitHub App
+# token, which does start one; that run is skipped (a bot's push to a bot pull
+# request), since the steward dispatches the review once the builds of the new
+# head are green. A person's push to such a pull request is still reviewed
+# here. For those pull requests the review ends with a verdict for
 # the reviewed commit, which the `verdict` job records as the commit status
 # `claude-review` (success = nothing blocking, failure = something to fix).
 # claude_bot_pr_steward.yml acts on a failure; claude_auto_merge.yml requires a
@@ -112,11 +116,16 @@ jobs:
     # cannot re-review itself in a loop. A person's comment on a bot pull
     # request does - that is how a tester's report reaches the verdict.
     # Pull requests of the Claude GitHub App (claude[bot]) stay excluded.
+    # A bot's push to the issue bot's pull request (the steward's merge of
+    # main, see the header) starts no review here: the steward starts it.
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.draft == false &&
-       github.event.pull_request.user.login != 'claude[bot]') ||
+       github.event.pull_request.user.login != 'claude[bot]' &&
+       !(github.event.sender.type == 'Bot' &&
+         github.event.pull_request.user.login == 'github-actions[bot]' &&
+         startsWith(github.event.pull_request.head.ref, 'claude/'))) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        github.event.issue.state == 'open' &&
@@ -401,7 +410,14 @@ jobs:
             - A thread is SETTLED when the current diff fixes what it
               raised, or when a reply shows convincingly, against the code,
               that it was not a problem. A reply merely saying "fixed" or
-              "not an issue" is a claim to check, not proof. List every
+              "not an issue" is a claim to check, not proof. On a pull
+              request of the issue bot, the comment of its steward's fix run
+              (it ends with a `steward-fix-outcome` marker; read the
+              conversation with `gh pr view <PR NUMBER> --comments`) counts
+              as a reply on each finding it answers - check its reasons
+              against the code and main's tools/package_info.json like any
+              reply; a dispatched review may follow one that disputed your
+              findings, so judge them afresh. List every
               settled thread that is not yet resolved in the marker below;
               it is resolved automatically after you finish.
             - Do not post an inline comment again for a finding whose thread
