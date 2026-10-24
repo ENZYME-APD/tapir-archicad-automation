@@ -83,6 +83,12 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// The default GDL parameters of a library part, read from the part itself, so they can be
+// inspected (array dimensions included) before the part is placed.
+class GetGDLParametersOfLibraryPartsCommand : public CommandBase
+{
+public:
+    GetGDLParametersOfLibraryPartsCommand ();
 class RunParameterScriptOfElementsCommand : public CommandBase
 {
 public:
