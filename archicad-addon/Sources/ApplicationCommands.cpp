@@ -1211,6 +1211,10 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
     return response;
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetEditModeState requires Archicad 27 or later.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
 // GetProductVersionInfo
 // ---------------------------------------------------------------------------
 

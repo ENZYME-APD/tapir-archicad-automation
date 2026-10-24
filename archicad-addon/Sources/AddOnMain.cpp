@@ -261,6 +261,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetEditModeStateCommand> (
             applicationCommands, "1.7.3",
             "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later."
+        );
         err |= RegisterCommand<GetProductVersionInfoCommand> (
             applicationCommands, "1.7.3",
             "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type and main/update/hotfix versions from Archicad 29. Requires Archicad 28 or later."
