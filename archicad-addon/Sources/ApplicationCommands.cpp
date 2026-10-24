@@ -52,6 +52,16 @@ static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocatio
 #define TAPIR_HAS_GSID
 #endif
 
+#if defined (ServerMainVers_2800) && __has_include ("ACAPI/LicenseInfo/LicenseInfoManager.hpp")
+#include "ACAPI/LicenseInfo/LicenseInfoManager.hpp"
+#define TAPIR_HAS_LICENSE_INFO
+#endif
+
+#if defined (ServerMainVers_2800) && __has_include ("ACAPI/CuttingPlane.hpp")
+#include "ACAPI/CuttingPlane.hpp"
+#define TAPIR_HAS_CUTTING_PLANE
+#endif
+
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -122,6 +132,137 @@ GS::ObjectState GetArchicadLocationCommand::Execute (const GS::ObjectState& /*pa
         return CreateErrorResponse (err, "Failed to get the location of the Archicad application!");
     }
     return GS::ObjectState ("archicadLocation", applicationFileLocation.ToDisplayText ());
+}
+
+GetArchicadReleaseInfoCommand::GetArchicadReleaseInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetArchicadReleaseInfoCommand::GetName () const
+{
+    return "GetArchicadReleaseInfo";
+}
+
+GS::Optional<GS::UniString> GetArchicadReleaseInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "mainVersion": {
+                "type": "integer",
+                "description": "The main version of the running Archicad, e.g. 29."
+            },
+            "releaseVersion": {
+                "type": "integer",
+                "description": "The release (update) version of the running Archicad."
+            },
+            "buildNumber": {
+                "type": "integer",
+                "description": "The build number of the running Archicad."
+            },
+            "caption": {
+                "type": "string",
+                "description": "The caption of the Archicad application window. Missing when Archicad does not report it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "mainVersion",
+            "releaseVersion",
+            "buildNumber"
+        ]
+    })";
+}
+
+GS::ObjectState GetArchicadReleaseInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ServerApplicationInfo serverApplicationInfo = {};
+    ACAPI_GetReleaseNumber (&serverApplicationInfo);
+
+    GS::ObjectState response;
+    response.Add ("mainVersion", static_cast<Int32> (serverApplicationInfo.mainVersion));
+    response.Add ("releaseVersion", static_cast<Int32> (serverApplicationInfo.releaseVersion));
+    response.Add ("buildNumber", static_cast<Int32> (serverApplicationInfo.buildNum));
+
+    // The window caption is an extra: the version numbers above are still worth
+    // returning when it cannot be read.
+    API_MiscAppInfo miscAppInfo = {};
+    if (ACAPI_ProjectOperation_GetMiscAppInfo (&miscAppInfo) == NoError) {
+        response.Add ("caption", GS::UniString (miscAppInfo.caption));
+    }
+
+    return response;
+}
+
+GetPrinterInfoCommand::GetPrinterInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetPrinterInfoCommand::GetName () const
+{
+    return "GetPrinterInfo";
+}
+
+GS::Optional<GS::UniString> GetPrinterInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "printArea": {
+                "type": "string",
+                "description": "The area Archicad prints, as set in the print settings. 'unknown' for a value this add-on does not name.",
+                "enum": ["currentView", "entireDrawing", "marquee", "unknown"]
+            },
+            "grid": {
+                "type": "boolean",
+                "description": "Whether the grid is printed."
+            },
+            "fixText": {
+                "type": "boolean",
+                "description": "Whether text is printed in fixed size."
+            },
+            "scale": {
+                "type": "integer",
+                "description": "The print scale."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "printArea",
+            "grid",
+            "fixText",
+            "scale"
+        ]
+    })";
+}
+
+static GS::UniString ConvertPrintAreaToString (const API_PrintPars& printPars)
+{
+    switch (printPars.printArea) {
+        case PrintArea_CurrentView: return "currentView";
+        case PrintArea_EntireDrawing: return "entireDrawing";
+        case PrintArea_Marquee: return "marquee";
+        default: return "unknown";
+    }
+}
+
+GS::ObjectState GetPrinterInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The same settings PrintView takes, read back from Archicad's print settings.
+    API_PrintPars printPars = {};
+    const GSErrCode err = ACAPI_ProjectOperation_GetPrinterPars (&printPars);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the print settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("printArea", ConvertPrintAreaToString (printPars));
+    response.Add ("grid", static_cast<bool> (printPars.grid));
+    response.Add ("fixText", static_cast<bool> (printPars.fixText));
+    response.Add ("scale", static_cast<Int32> (printPars.scale));
+    return response;
 }
 
 QuitArchicadCommand::QuitArchicadCommand () :
@@ -284,6 +425,120 @@ GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*p
     return GS::ObjectState ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
 }
 
+GetCurrentWindowDrawingScaleCommand::GetCurrentWindowDrawingScaleCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetCurrentWindowDrawingScaleCommand::GetName () const
+{
+    return "GetCurrentWindowDrawingScale";
+}
+
+GS::Optional<GS::UniString> GetCurrentWindowDrawingScaleCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "scale": {
+                "type": "number",
+                "description": "The denominator of the drawing scale of the current window: 100.0 for 1:100, 20.0 for 1:20. Always 1.0 for layouts."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "scale"
+        ]
+    })";
+}
+
+GS::ObjectState GetCurrentWindowDrawingScaleCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The scale belongs to the current database (every floor plan, section, elevation,
+    // detail, worksheet and 3D document window has its own), which is the database of the
+    // current window unless an earlier command switched it.
+    double scale = 0.0;
+    GSErrCode err = ACAPI_Drawing_GetDrawingScale (&scale);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the drawing scale of the current window!");
+    }
+    return GS::ObjectState ("scale", scale);
+}
+
+SetCurrentWindowDrawingScaleCommand::SetCurrentWindowDrawingScaleCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String SetCurrentWindowDrawingScaleCommand::GetName () const
+{
+    return "SetCurrentWindowDrawingScale";
+}
+
+GS::Optional<GS::UniString> SetCurrentWindowDrawingScaleCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "scale": {
+                "type": "number",
+                "description": "The denominator of the new drawing scale: 100 for 1:100, 20 for 1:20. Archicad accepts scales between 1 and 30000."
+            },
+            "rebuild": {
+                "type": "boolean",
+                "description": "Rebuild the window after the scale changed (the API's zoom flag). Default: false.",
+                "default": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "scale"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetCurrentWindowDrawingScaleCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetCurrentWindowDrawingScaleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    double scale = 0.0;
+    if (!parameters.Get ("scale", scale)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: scale.");
+    }
+    bool rebuild = false;
+    parameters.Get ("rebuild", rebuild);
+
+    // ACAPI_Drawing_ChangeDrawingScale documents the accepted scale as greater than 1 and
+    // smaller than 30000 and answers anything else with a bare APIERR_BADPARS. The negated
+    // comparison also rejects NaN.
+    if (!(scale >= 1.0 && scale <= 30000.0)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: scale must be the denominator of a scale between 1:1 and 1:30000 (100 for 1:100).");
+    }
+
+    API_WindowInfo windowInfo = {};
+    GSErrCode err = ACAPI_Window_GetCurrentWindow (&windowInfo);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current window!");
+    }
+    if (windowInfo.typeID == APIWind_LayoutID || windowInfo.typeID == APIWind_MasterLayoutID) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window is a layout: a layout is always 1:1 and its scale cannot be changed. Activate a floor plan, section, elevation, detail or worksheet window first (see ChangeWindow).");
+    }
+
+    err = ACAPI_CallUndoableCommand ("SetCurrentWindowDrawingScaleCommand", [&] () -> GSErrCode {
+        return ACAPI_Drawing_ChangeDrawingScale (&scale, rebuild);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the drawing scale of the current window. Archicad accepts scales between 1 and 30000 in a floor plan, section, elevation, detail, worksheet or 3D document window.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 ChangeWindowCommand::ChangeWindowCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -353,15 +608,21 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
 #endif
     }
 
+    // windowType may be omitted when a databaseId is given: the database identifies its
+    // window, and ACAPI_Window_GetDatabaseInfo fills in its typeID below (#1384).
+    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
     GS::UniString windowTypeStr;
-    if (!parameters.Get ("windowType", windowTypeStr)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType.");
+    const bool hasWindowType = parameters.Get ("windowType", windowTypeStr);
+    if (!hasWindowType && databaseId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType or databaseId.");
     }
 
     API_WindowInfo windowInfo = {};
-    windowInfo.typeID = ConvertStringToWindowType (windowTypeStr);
-    if (windowInfo.typeID == API_ZombieWindowID) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
+    if (hasWindowType) {
+        windowInfo.typeID = ConvertStringToWindowType (windowTypeStr);
+        if (windowInfo.typeID == API_ZombieWindowID) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
+        }
     }
 
     Int32 storyIndex = 0;
@@ -406,7 +667,6 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
             : CreateFailedExecutionResult (err, "Failed to change active story.");
     }
 
-    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
     if (databaseId != nullptr) {
         API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
         GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
@@ -414,7 +674,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
             return CreateErrorResponse (err, "Failed to resolve target database.");
         }
 
-        if (targetDatabase.typeID != windowInfo.typeID) {
+        if (hasWindowType && targetDatabase.typeID != windowInfo.typeID) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "databaseId does not belong to the requested windowType.");
         }
 
@@ -430,6 +690,116 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateErrorResponse (err, "Failed to change the window!");
+}
+
+GetContainingDatabasesCommand::GetContainingDatabasesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetContainingDatabasesCommand::GetName () const
+{
+    return "GetContainingDatabases";
+}
+
+GS::Optional<GS::UniString> GetContainingDatabasesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetContainingDatabasesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "type": "array",
+                "description": "The database of each element, in the order of the input elements. Pass windowType and databaseId to ChangeWindow to open it.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "databaseId": {
+                                    "$ref": "#/DatabaseId"
+                                },
+                                "windowType": {
+                                    "$ref": "#/WindowType"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the database (for example the name of the layout). Empty for databases without a name, like the floor plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "databaseId",
+                                "windowType",
+                                "name"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databases"
+        ]
+    })";
+}
+
+GS::ObjectState GetContainingDatabasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& databases = response.AddList<GS::ObjectState> ("databases");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+        if (elemGuid == APINULLGuid) {
+            databases (CreateErrorResponse (APIERR_BADPARS, "elementId is corrupt or missing."));
+            continue;
+        }
+
+        API_DatabaseInfo dbInfo = {};
+        GSErrCode err = ACAPI_Database_GetContainingDatabase (&elemGuid, &dbInfo);
+        if (err != NoError) {
+            databases (CreateErrorResponse (err, "Failed to get the containing database of the element."));
+            continue;
+        }
+
+        // Fills in the type and the name of the database from its id, the same
+        // way ChangeWindow resolves a databaseId.
+        API_DatabaseInfo fullDbInfo = dbInfo;
+        if (ACAPI_Window_GetDatabaseInfo (&fullDbInfo) == NoError) {
+            dbInfo = fullDbInfo;
+        }
+
+        GS::ObjectState database = CreateDatabaseIdObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (dbInfo));
+        database.Add ("windowType", ConvertWindowTypeToString (dbInfo.typeID));
+        database.Add ("name", GS::UniString (dbInfo.name));
+        databases (database);
+    }
+
+    return response;
 }
 
 
@@ -841,6 +1211,275 @@ GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*param
     return response;
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetEditModeState requires Archicad 27 or later.");
+// GetProductVersionInfo
+// ---------------------------------------------------------------------------
+
+GetProductVersionInfoCommand::GetProductVersionInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetProductVersionInfoCommand::GetName () const
+{
+    return "GetProductVersionInfo";
+}
+
+GS::Optional<GS::UniString> GetProductVersionInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "productName": {
+                "type": "string",
+                "description": "The name of the product. Archicad 29 or later."
+            },
+            "productType": {
+                "type": "string",
+                "description": "The Graphisoft product type. Archicad 29 or later."
+            },
+            "productFamilyId": {
+                "type": "string",
+                "description": "The identifier of the product family."
+            },
+            "languageCode": {
+                "type": "string",
+                "description": "The Graphisoft language code of the running Archicad (for example INT, GER)."
+            },
+            "buildNumber": {
+                "type": "integer",
+                "description": "The build number of the running Archicad."
+            },
+            "versionString": {
+                "type": "string",
+                "description": "The full version of the running Archicad as text."
+            },
+            "mainVersion": {
+                "type": "string",
+                "description": "The main version, as text. Archicad 29 or later."
+            },
+            "updateVersion": {
+                "type": "string",
+                "description": "The update version, as text. Archicad 29 or later."
+            },
+            "hotfixVersion": {
+                "type": "string",
+                "description": "The hotfix version, as text. Archicad 29 or later."
+            },
+            "versionNumbers": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                },
+                "description": "The three parts of the version number. Archicad 28 only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "productFamilyId",
+            "languageCode",
+            "buildNumber",
+            "versionString"
+        ]
+    })";
+}
+
+GS::ObjectState GetProductVersionInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_LICENSE_INFO
+    auto licenseInfoManager = ACAPI::LicenseInfo::GetLicenseInfoManager ();
+    if (licenseInfoManager.IsErr ()) {
+        return CreateErrorResponse (licenseInfoManager.UnwrapErr ().kind, "Failed to get the license info manager.");
+    }
+
+    const auto versionInfo = licenseInfoManager->GetProductVersionInfo ();
+
+    GS::ObjectState response;
+    response.Add ("productFamilyId", versionInfo.GetProductFamilyId ());
+    response.Add ("languageCode", versionInfo.GetGSLanguageCode ());
+    response.Add ("buildNumber", versionInfo.GetBuildNum ());
+#if defined (ServerMainVers_2900)
+    response.Add ("productName", versionInfo.GetProductName ());
+    response.Add ("productType", versionInfo.GetGSProductType ());
+    response.Add ("versionString", versionInfo.GetAppVersionString ());
+    response.Add ("mainVersion", versionInfo.GetMainVersionString ());
+    response.Add ("updateVersion", versionInfo.GetUpdateVersionString ());
+    response.Add ("hotfixVersion", versionInfo.GetHotfixVersionString ());
+#else
+    response.Add ("versionString", versionInfo.GetVersionString ());
+    GS::Array<Int32> versionNumbers;
+    versionNumbers.Push (versionInfo.GetVersionNum1 ());
+    versionNumbers.Push (versionInfo.GetVersionNum2 ());
+    versionNumbers.Push (versionInfo.GetVersionNum3 ());
+    response.Add ("versionNumbers", versionNumbers);
+#endif
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetProductVersionInfo requires Archicad 28 or later.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// Get3DCutawayStatus
+// ---------------------------------------------------------------------------
+
+Get3DCutawayStatusCommand::Get3DCutawayStatusCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String Get3DCutawayStatusCommand::GetName () const
+{
+    return "Get3DCutawayStatus";
+}
+
+GS::Optional<GS::UniString> Get3DCutawayStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cutawayEnabled": {
+                "type": "boolean",
+                "description": "Whether 3D Cutaway is on in the 3D window."
+            },
+            "cuttingPlanesVisible": {
+                "type": "boolean",
+                "description": "Whether the cutting planes are shown in the 3D window."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutawayEnabled",
+            "cuttingPlanesVisible"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DCutawayStatusCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_CUTTING_PLANE
+    auto cuttingPlane = ACAPI::Cutaway::GetCuttingPlane ();
+    if (cuttingPlane.IsErr ()) {
+        return CreateErrorResponse (cuttingPlane.UnwrapErr ().kind, "Failed to get the cutting plane.");
+    }
+
+    auto cutawayEnabled = cuttingPlane->Is3DCutawayEnabled ();
+    if (cutawayEnabled.IsErr ()) {
+        return CreateErrorResponse (cutawayEnabled.UnwrapErr ().kind, "Failed to get whether 3D Cutaway is on.");
+    }
+
+    auto cuttingPlanesVisible = cuttingPlane->AreCuttingPlanesVisible ();
+    if (cuttingPlanesVisible.IsErr ()) {
+        return CreateErrorResponse (cuttingPlanesVisible.UnwrapErr ().kind, "Failed to get whether the cutting planes are shown.");
+    }
+
+    return GS::ObjectState ("cutawayEnabled", *cutawayEnabled, "cuttingPlanesVisible", *cuttingPlanesVisible);
+#elif !defined (ServerMainVers_2800)
+    // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
+    bool cutawayEnabled = false;
+    GSErrCode err = ACAPI_CuttingPlane_Is3DCutawayEnabled (&cutawayEnabled);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get whether 3D Cutaway is on. Is the 3D window open?");
+    }
+
+    bool cuttingPlanesVisible = false;
+    err = ACAPI_CuttingPlane_IsCuttingPlanesVisible (&cuttingPlanesVisible);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get whether the cutting planes are shown. Is the 3D window open?");
+    }
+
+    return GS::ObjectState ("cutawayEnabled", cutawayEnabled, "cuttingPlanesVisible", cuttingPlanesVisible);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Get3DCutawayStatus is not available in this build.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// Set3DCutawayStatus
+// ---------------------------------------------------------------------------
+
+Set3DCutawayStatusCommand::Set3DCutawayStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Set3DCutawayStatusCommand::GetName () const
+{
+    return "Set3DCutawayStatus";
+}
+
+GS::Optional<GS::UniString> Set3DCutawayStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cutawayEnabled": {
+                "type": "boolean",
+                "description": "Turns 3D Cutaway on or off. Left unchanged when omitted."
+            },
+            "cuttingPlanesVisible": {
+                "type": "boolean",
+                "description": "Shows or hides the cutting planes. Left unchanged when omitted."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> Set3DCutawayStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_CUTTING_PLANE
+    auto cuttingPlane = ACAPI::Cutaway::GetCuttingPlane ();
+    if (cuttingPlane.IsErr ()) {
+        return CreateFailedExecutionResult (cuttingPlane.UnwrapErr ().kind, "Failed to get the cutting plane.");
+    }
+
+    bool cutawayEnabled = false;
+    if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
+        auto result = cuttingPlane->Set3DCutawayStatus (cutawayEnabled);
+        if (result.IsErr ()) {
+            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to turn 3D Cutaway on or off.");
+        }
+    }
+
+    bool cuttingPlanesVisible = false;
+    if (parameters.Get ("cuttingPlanesVisible", cuttingPlanesVisible)) {
+        auto result = cuttingPlane->SetCuttingPlanesVisibility (cuttingPlanesVisible);
+        if (result.IsErr ()) {
+            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to show or hide the cutting planes.");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#elif !defined (ServerMainVers_2800)
+    // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
+    bool cutawayEnabled = false;
+    if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
+        GSErrCode err = ACAPI_CuttingPlane_Set3DCutawayStatus (&cutawayEnabled);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off. Is the 3D window open?");
+        }
+    }
+
+    bool cuttingPlanesVisible = false;
+    if (parameters.Get ("cuttingPlanesVisible", cuttingPlanesVisible)) {
+        GSErrCode err = ACAPI_CuttingPlane_SetCuttingPlanesVisibility (&cuttingPlanesVisible);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to show or hide the cutting planes. Is the 3D window open?");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Set3DCutawayStatus is not available in this build.");
 #endif
 }
 
@@ -910,5 +1549,134 @@ GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& paramet
     GS::ObjectState response;
     response.Add ("position", Create3DCoordinateObjectState (pointInfo.pos));
     return response;
+}
+
+// ---------------------------------------------------------------------------
+// GetElementFromUser
+// ---------------------------------------------------------------------------
+
+GetElementFromUserCommand::GetElementFromUserCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementFromUserCommand::GetName () const
+{
+    return "GetElementFromUser";
+}
+
+GS::Optional<GS::UniString> GetElementFromUserCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+            },
+            "elementTypes": {
+                "type": "array",
+                "description": "Only an element of one of these types is accepted. A click on empty space or on an element of another type asks for the click again. Default: any element.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementFromUserCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The clicked element. In a section or elevation window it is the model element the section element was cut from."
+            },
+            "elementType": {
+                "type": "string",
+                "description": "The type of the clicked element (one of the ElementType values, or Unknown)."
+            },
+            "position": {
+                "$ref": "#/Coordinate3D",
+                "description": "The clicked point in the project's coordinates, as GetPointFromUser returns it."
+            },
+            "elementPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The coordinate of the clicked part of the element (e.g. its node or hotspot), when Archicad gives one for it."
+            },
+            "cancelled": {
+                "type": "boolean",
+                "description": "True when the input was cancelled with Escape; no other field is returned then."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Same input as GetPointFromUser, but the element under the click is returned too.
+    // A click that hits no element, or an element of a type not asked for, asks again.
+    GS::UniString prompt = "Click an element";
+    parameters.Get ("prompt", prompt);
+
+    GS::Array<GS::UniString> elementTypeNames;
+    parameters.Get ("elementTypes", elementTypeNames);
+    GS::Array<API_ElemTypeID> elementTypes;
+    for (const GS::UniString& elementTypeName : elementTypeNames) {
+        const API_ElemTypeID elementType = GetElementTypeFromNonLocalizedName (elementTypeName);
+        if (elementType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown element type: ") + elementTypeName);
+        }
+        elementTypes.Push (elementType);
+    }
+
+    for (;;) {
+        API_GetPointType pointInfo = {};
+        CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
+        pointInfo.enableQuickSelection = true;
+
+        const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+        if (err == APIERR_CANCEL) {
+            return GS::ObjectState ("cancelled", true);
+        }
+        if (err != NoError) {
+            return CreateErrorResponse (err, "No element was given - the input could not start (a modal dialog or a non-model window).");
+        }
+
+        API_Guid elemGuid = APINULLGuid;
+        if (ACAPI_Selection_GetSelectedElement (&pointInfo.neig, &elemGuid) != NoError || elemGuid == APINULLGuid) {
+            elemGuid = pointInfo.neig.guid;
+        }
+        if (elemGuid == APINULLGuid) {
+            continue;
+        }
+        elemGuid = GetParentElemOfSectElem (elemGuid);
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            continue;
+        }
+        const API_ElemTypeID elementType = GetElemTypeId (elemHead);
+        if (!elementTypes.IsEmpty () && !elementTypes.Contains (elementType)) {
+            continue;
+        }
+
+        GS::ObjectState response;
+        response.Add ("elementId", CreateGuidObjectState (elemGuid));
+        response.Add ("elementType", GetElementTypeNonLocalizedName (elementType));
+        response.Add ("position", Create3DCoordinateObjectState (pointInfo.pos));
+        API_Coord3D elementPosition = {};
+        if (ACAPI_Element_NeigToCoord (&pointInfo.neig, &elementPosition) == NoError) {
+            response.Add ("elementPosition", Create3DCoordinateObjectState (elementPosition));
+        }
+        return response;
+    }
 }
 

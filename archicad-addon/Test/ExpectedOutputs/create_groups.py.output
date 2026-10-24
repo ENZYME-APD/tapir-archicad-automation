@@ -147,3 +147,49 @@ Response:
         }
     ]
 }
+Command: UngroupElements
+Parameters:
+{
+    "groups": [
+        {
+            "groupId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: UngroupElements
+Parameters:
+{
+    "groups": [
+        {
+            "groupId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "groupId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
