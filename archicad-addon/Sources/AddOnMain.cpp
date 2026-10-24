@@ -1340,6 +1340,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLibraryPartOriginalLocationsCommand> (
             libraryCommands, "1.7.3",
             "Gets the original location of the given library parts, the file they came from, e.g. before they were embedded into the project. The library parts are given by the index GetAvailableLibraryParts returns. Available from Archicad 27."
+        );
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
             "Sets the master, parameter, 2D, 3D and properties scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."

@@ -1074,6 +1074,9 @@ GS::ObjectState GetLibraryPartOriginalLocationsCommand::Execute (const GS::Objec
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
