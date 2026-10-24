@@ -2261,6 +2261,126 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     return response;
 }
 
+GetPropertyValuesOfElementDefaultsCommand::GetPropertyValuesOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyValuesOfElementDefaultsCommand::GetName () const
+{
+    return "GetPropertyValuesOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> GetPropertyValuesOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type whose current tool default is read. This is the native tool default of the generic variation of the type, a Favorite counts only after it was applied."
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyValuesOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyValues": {
+                "$ref": "#/PropertyValues",
+                "description": "The order is that of the given properties. A property that is not available for the tool default is an error item."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValues"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString elementTypeStr;
+    parameters.Get ("elementType", elementTypeStr);
+    const API_ElemTypeID elemTypeId = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    if (elemTypeId == API_ZombieElemID) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+    }
+
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    GS::Array<API_Guid> propertyGuids;
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId != nullptr) {
+            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+            if (propertyGuid != APINULLGuid) {
+                propertyGuids.Push (propertyGuid);
+            }
+        }
+    }
+
+    GS::Array<API_Property> fetchedProperties;
+    GSErrCode err = TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get property values of the tool default");
+    }
+
+    GS::HashTable<API_Guid, const API_Property*> propertyMap;
+    for (const API_Property& prop : fetchedProperties) {
+        if (!propertyMap.ContainsKey (prop.definition.guid)) {
+            propertyMap.Add (prop.definition.guid, &prop);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& propertyValues = response.AddList<GS::ObjectState> ("propertyValues");
+
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyValues (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
+            continue;
+        }
+
+        const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+
+        if (!propertyMap.ContainsKey (propertyGuid)) {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+
+        const API_Property& propertyValue = *propertyMap[propertyGuid];
+        if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
+            continue;
+        }
+
+        GS::UniString propertyValueString;
+        err = GetPropertyValueString (propertyValue, propertyValueString);
+
+        if (err != NoError) {
+            propertyValues (CreateErrorResponse (err, "Failed to get property value as string"));
+            continue;
+        }
+
+        propertyValues (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
+    }
+
+    return response;
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
