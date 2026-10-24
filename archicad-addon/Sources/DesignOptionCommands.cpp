@@ -1118,6 +1118,99 @@ GS::ObjectState SetActiveDesignOptionsInCombinationsCommand::Execute (const GS::
 #endif
 }
 
+DuplicateDesignOptionCombinationsCommand::DuplicateDesignOptionCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DuplicateDesignOptionCombinationsCommand::GetName () const
+{
+    return "DuplicateDesignOptionCombinations";
+}
+
+GS::Optional<GS::UniString> DuplicateDesignOptionCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionCombinations": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DesignOptionCombinationIdArrayItem"
+                },
+                "description": "The design option combinations to duplicate."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DuplicateDesignOptionCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionCombinationIdsOrErrors": {
+                "$ref": "#/DesignOptionCombinationIdsOrErrors",
+                "description": "The identifiers of the new combinations, in the order of the input, or an error for each combination that could not be duplicated."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationIdsOrErrors"
+        ]
+    })";
+}
+
+GS::ObjectState DuplicateDesignOptionCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to duplicate design option combinations.");
+    }
+
+    GS::Array<GS::ObjectState> designOptionCombinations;
+    if (!parameters.Get ("designOptionCombinations", designOptionCombinations)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionCombinations' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to duplicate design option combinations.");
+    }
+
+    GS::ObjectState response;
+    const auto& designOptionCombinationIdsOrErrors = response.AddList<GS::ObjectState> ("designOptionCombinationIdsOrErrors");
+
+    ACAPI_CallUndoableCommand ("Duplicate Design Option Combinations", [&]() -> GSErrCode {
+        for (auto&& designOptionCombination : designOptionCombinations) {
+            GS::Guid combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", designOptionCombination));
+            if (combinationGuid.IsNull ()) {
+                designOptionCombinationIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            DesignOptionCombination* combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+            if (combinationPtr == nullptr) {
+                designOptionCombinationIdsOrErrors (CreateErrorResponse (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            auto result = manager->DuplicateDesignOptionCombination (*combinationPtr);
+            designOptionCombinationIdsOrErrors (result.IsOk () ? CreateIdObjectState ("designOptionCombinationId", GSGuid2APIGuid (result->GetGuid ())) : CreateErrorResponse (result.UnwrapErr ().kind, "Failed to duplicate design option combination."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 MoveElementsToDesignOptionsCommand::MoveElementsToDesignOptionsCommand () :
     CommandBase (CommonSchema::Used)
 {

@@ -1573,6 +1573,10 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.7.1",
             "Deletes the given design option combinations. Available from Archicad 29."
         );
+        err |= RegisterCommand<DuplicateDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.7.3",
+            "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29."
+        );
         AddCommandGroup (designOptionsCommands);
     }
 
