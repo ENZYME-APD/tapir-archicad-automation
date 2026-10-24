@@ -1367,7 +1367,9 @@ GS::ObjectState CreatePropertyDefinitionsCommand::Execute (const GS::ObjectState
 
             apiPropertyDefinition.defaultValue.hasExpression = false;
             apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.type = apiPropertyDefinition.valueType;
-            apiPropertyDefinition.defaultValue.basicValue.variantStatus = API_VariantStatusNull;
+            // Archicad refuses a definition whose default value has the Null status, so a
+            // missing defaultValue means an Undefined default, as in the Property Manager.
+            apiPropertyDefinition.defaultValue.basicValue.variantStatus = API_VariantStatusUserUndefined;
             const GS::ObjectState* defaultValue = propertyDefinition->Get ("defaultValue");
             if (defaultValue != nullptr) {
                 GS::UniString defaultError;
