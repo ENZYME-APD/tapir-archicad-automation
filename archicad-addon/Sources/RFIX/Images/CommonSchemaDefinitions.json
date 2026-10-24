@@ -7068,7 +7068,8 @@
                 "$ref": "#/WallZoneRelation"
             },
             "visibility": {
-                "$ref": "#/StoryVisibility"
+                "$ref": "#/StoryVisibility",
+                "description": "On Archicad 29 a wall knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), so a wall can read back a combination the dialog cannot show - a wall fresh from the Wall tool defaults may report showOnHome false with showRelAbove 1, which Wall Settings shows as an empty Show on Stories field (#852). See ModifyWalls for which combinations can be written."
             },
             "isAutoOnStoryVisibility": {
                 "type": "boolean",
