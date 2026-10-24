@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 06:27 UTC",
+ "generatedAt": "2026-10-24 11:37 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
@@ -9,8 +9,8 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 229,
-  "partial": 17,
+  "all": 228,
+  "partial": 18,
   "json": 45
  },
  "items": [
@@ -1253,7 +1253,7 @@
    "id": "GetQuantitiesOfElements",
    "group": "Element Commands",
    "version": "1.7.2",
-   "brief": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values.",
+   "brief": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate all the elements in one Archicad call.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1262,13 +1262,15 @@
      "path": "Components/ElementsComponents/GetQuantitiesOfElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "elements",
     "minOpeningSize"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "calculateInOneCall"
+   ],
    "pullRequests": [],
    "issues": [
     {

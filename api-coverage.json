@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 06:27 UTC",
+ "generatedAt": "2026-10-24 11:37 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 632,
+  "in progress": 631,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 50
+  "merged": 51
  },
  "items": [
   {
@@ -10292,14 +10292,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1375,
-     "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1328,
@@ -40816,10 +40811,6 @@
      "title": "Drawing details: read/write the printable border"
     },
     {
-     "number": 1375,
-     "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
-    },
-    {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
@@ -49251,10 +49242,6 @@
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
-     "number": 1375,
-     "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
     },
     {
      "number": 1359,
@@ -58194,10 +58181,6 @@
      "title": "Drawing details: read/write the printable border"
     },
     {
-     "number": 1375,
-     "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
-    },
-    {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
@@ -62418,10 +62401,6 @@
     {
      "number": 1397,
      "title": "Drawing details: read/write the printable border"
-    },
-    {
-     "number": 1375,
-     "title": "[4/4] GetQuantitiesOfElements: calculate all elements in one call with GetMoreQuantities"
     },
     {
      "number": 1373,

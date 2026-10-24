@@ -26,10 +26,10 @@
 <text x="24" y="187" font-size="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3">Parameters</text>
 <clipPath id="params"><rect x="180" y="176" width="400" height="12" rx="6"/></clipPath>
 <rect x="180" y="176" width="400" height="12" rx="6" fill="#33373d"/>
-<rect x="180.0" y="176" width="314.8" height="12" fill="#9ec5f4" clip-path="url(#params)"/>
-<rect x="494.8" y="176" width="61.9" height="12" fill="#5598e7" clip-path="url(#params)"/>
-<rect x="556.6" y="176" width="23.4" height="12" fill="#256abf" clip-path="url(#params)"/>
+<rect x="180.0" y="176" width="313.4" height="12" fill="#9ec5f4" clip-path="url(#params)"/>
+<rect x="493.4" y="176" width="61.9" height="12" fill="#5598e7" clip-path="url(#params)"/>
+<rect x="555.3" y="176" width="24.7" height="12" fill="#256abf" clip-path="url(#params)"/>
 <text x="736" y="187" font-size="13" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3"><tspan font-weight="600">78 %</tspan><tspan style="fill:#9198a1"> complete</tspan></text>
-<text x="180" y="208" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">229 with every parameter, 45 with the rest through a JSON input, 17 with some missing</text>
-<text x="24" y="238" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">Not applicable and skipped commands are left out. Updated 2026-10-24 06:27 UTC.</text>
+<text x="180" y="208" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">228 with every parameter, 45 with the rest through a JSON input, 18 with some missing</text>
+<text x="24" y="238" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#e6edf3" style="fill:#9198a1">Not applicable and skipped commands are left out. Updated 2026-10-24 11:37 UTC.</text>
 </svg>

@@ -4,13 +4,13 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **291 of 348** applicable Tapir commands have a Grasshopper component (83 %): ✅ 287 done, 🔀 4 merged, 🚧 5 in progress, 🙋 2 claimed, ⬜ 50 open, ➖ 1 not applicable.
 
-Parameters of the 291 used commands: 🟢 229 every parameter has an input, 🟡 45 the rest through a JSON input, 🟠 17 some parameters missing.
+Parameters of the 291 used commands: 🟢 228 every parameter has an input, 🟡 45 the rest through a JSON input, 🟠 18 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 9 | 9 |  |  |  |  |  |  | 9 |  |  |
 | Project Commands | 92 % | 28 | 26 |  | 2 |  |  |  |  | 26 |  |  |
-| Element Commands | 87 % | 86 | 73 | 2 |  |  | 11 |  |  | 37 | 34 | 4 |
+| Element Commands | 87 % | 86 | 73 | 2 |  |  | 11 |  |  | 36 | 34 | 5 |
 | Element grouping Commands | 71 % | 7 | 5 |  |  |  | 2 |  |  | 5 |  |  |
 | Favorites Commands | 90 % | 11 | 10 |  |  |  | 1 |  |  | 10 |  |  |
 | Property Commands | 85 % | 14 | 12 |  |  |  | 2 |  |  | 12 |  |  |
@@ -30,7 +30,7 @@ Parameters of the 291 used commands: 🟢 229 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-24 06:27 UTC.
+Updated 2026-10-24 11:37 UTC.
 
 | | Status |
 |---|---|
@@ -104,7 +104,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ⬜ `ConvertRevealOffsets`
 - ✅ `Get3DGeometryOfElements` 🟢 1/1 parameters – `Get3DGeometryOfElementsComponent`
 - 🔀 `GetElementAtCoordinate` 🟢 4/4 parameters – `GetElementAtCoordinateComponent`
-- ✅ `GetQuantitiesOfElements` 🟢 2/2 parameters – `GetQuantitiesOfElementsComponent` — [#945](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/945 "Add GetSurfaceQuantitiesOfElements: covered and exposed surface areas between elements")
+- ✅ `GetQuantitiesOfElements` 🟠 2/3 parameters – `GetQuantitiesOfElementsComponent` — [#945](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/945 "Add GetSurfaceQuantitiesOfElements: covered and exposed surface areas between elements")<br><sub>no input: `calculateInOneCall`</sub>
 - ✅ `GetSubelementsOfHierarchicalElements` 🟢 1/1 parameters – `GetSubelementsOfHierarchicalElementsComponent`
 - ⬜ `GetHierarchicalElementOwners`
 - ✅ `GetConnectedElements` 🟢 2/2 parameters – `GetConnectedElementsComponent`
