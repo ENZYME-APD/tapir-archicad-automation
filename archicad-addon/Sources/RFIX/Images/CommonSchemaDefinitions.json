@@ -10838,6 +10838,25 @@
             "projectInfoValue"
         ]
     },
+    "ProjectInfoFieldOrError": {
+        "type": "object",
+        "description": "A project info field or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ProjectInfoField"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ProjectInfoFieldsOrErrors": {
+        "type": "array",
+        "description": "A list of project info fields or errors.",
+        "items": {
+            "$ref": "#/ProjectInfoFieldOrError"
+        }
+    },
     "LibraryFileAdditions": {
         "type": "array",
         "description": "A list of library file additions to the embedded library",

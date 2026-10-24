@@ -5,6 +5,7 @@
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
 
+#include "HashSet.hpp"
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
 #include "ACAPI/IFCObjectID.hpp"
@@ -134,14 +135,21 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
         const GS::UniString& autoTextId = autoText[1];
         const GS::UniString& autoTextValue = autoText[2];
 
-        bool isValidPrefix = false;
-        for (const GS::UniString& validPrefix : validPrefixes) {
-            if (autoTextId.BeginsWith (validPrefix) || autoTextId.BeginsWith ("autotext-" + validPrefix)) {
-                isValidPrefix = true;
-                break;
+        // Custom fields always carry an "autotext-" prefixed id, but the part after the
+        // prefix is not always a known section name: fields added on the UI get ids like
+        // "autotext-CLIENT-1", while CreateProjectInfoFields mints "autotext-<GUID>" ids.
+        // The section prefixes are only needed to pick the built-in fields out of the
+        // full autotext list (which also contains e.g. LONGDATE or FILENAME).
+        bool isProjectInfoField = autoTextId.BeginsWith ("autotext-");
+        if (!isProjectInfoField) {
+            for (const GS::UniString& validPrefix : validPrefixes) {
+                if (autoTextId.BeginsWith (validPrefix)) {
+                    isProjectInfoField = true;
+                    break;
+                }
             }
         }
-        if (!isValidPrefix) {
+        if (!isProjectInfoField) {
             continue;
         }
 
@@ -417,6 +425,27 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+// Some autotext functions may report NoError even when they have no effect: the report
+// in #667 suggests that ACAPI_AutoText_CreateAnAutoText can return NoError without
+// creating anything, and that ACAPI_AutoText_DeleteAnAutoText returns NoError for an id
+// that matches nothing (neither is verified against the DevKit). The create/delete
+// commands therefore verify their effect against the actual autotext list instead of
+// trusting the returned error code alone.
+#ifndef ServerMainVers_3000
+static GSErrCode GetAutoTextIds (GS::HashSet<GS::UniString>& autoTextIds)
+{
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    GSErrCode err = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+    if (err != NoError) {
+        return err;
+    }
+    autoTextIds.Clear ();
+    for (const auto& autoText : autoTexts) {
+        autoTextIds.Add (autoText[1]);
+    }
+    return NoError;
+}
+#endif
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -557,7 +586,8 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetRawResponseSchema
         "type": "object",
         "properties": {
             "fields": {
-                "$ref": "#/ProjectInfoFields"
+                "$ref": "#/ProjectInfoFieldsOrErrors",
+                "description": "The created project info fields, one item per requested field: the field with its id, or an error if it could not be created."
             }
         },
         "additionalProperties": false,
@@ -578,6 +608,10 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
     const auto& fieldsAdder = response.AddList<GS::ObjectState> ("fields");
 
     ACAPI_CallUndoableCommand ("CreateProjectInfoFields", [&]() -> GSErrCode {
+#ifndef ServerMainVers_3000
+        GS::HashSet<GS::UniString> knownIds;
+        const GSErrCode knownIdsErr = GetAutoTextIds (knownIds);
+#endif
         for (const GS::ObjectState& projectInfoField : projectInfoFields) {
             GS::UniString projectInfoName;
             if (!projectInfoField.Get ("projectInfoName", projectInfoName) || projectInfoName.IsEmpty ()) {
@@ -591,6 +625,11 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
 #ifdef ServerMainVers_3000
             fieldsAdder (CreateErrorResponse (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to create project information field."));
 #else
+            if (knownIdsErr != NoError) {
+                fieldsAdder (CreateErrorResponse (knownIdsErr, "Failed to retrieve the autotexts."));
+                continue;
+            }
+
             GS::Guid guid;
             guid.Generate ();
             API_Guid dbKey = GSGuid2APIGuid (guid);
@@ -601,13 +640,52 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            GS::UniString projectInfoId ("autotext-");
-            projectInfoId.Append (guid.ToUniString ());
-
-            err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
+            // ACAPI_AutoText_CreateAnAutoText may report NoError without creating anything
+            // (#667), and the id of the created field is not guaranteed to be "autotext-"
+            // followed by the guid passed in, so the re-fetched autotext list is the only
+            // reliable source for both the success of the call and the new field's id.
+            GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTextsAfterCreate;
+            err = ACAPI_AutoText_GetAutoTexts (&autoTextsAfterCreate, APIAutoText_All);
             if (err != NoError) {
-                fieldsAdder (CreateErrorResponse (err, "Failed to set the initial value of the project information field."));
+                fieldsAdder (CreateErrorResponse (err, "Failed to retrieve the autotexts."));
                 continue;
+            }
+
+            // The new field is the one id that was not in the list before the call. The
+            // stored name is only used as a tie breaker, since Archicad is not guaranteed
+            // to keep it byte for byte (whitespace, case, length limits).
+            GS::UniString projectInfoId;
+            GS::UniString firstNewId;
+            for (const auto& autoText : autoTextsAfterCreate) {
+                if (knownIds.Contains (autoText[1])) {
+                    continue;
+                }
+                if (firstNewId.IsEmpty ()) {
+                    firstNewId = autoText[1];
+                }
+                if (autoText[0] == projectInfoName) {
+                    projectInfoId = autoText[1];
+                    break;
+                }
+            }
+            if (projectInfoId.IsEmpty ()) {
+                projectInfoId = firstNewId;
+            }
+            if (projectInfoId.IsEmpty ()) {
+                fieldsAdder (CreateErrorResponse (APIERR_GENERAL, "ACAPI_AutoText_CreateAnAutoText reported success, but the new field did not appear in the autotext list."));
+                continue;
+            }
+            knownIds.Add (projectInfoId);
+
+            // A freshly created field starts out empty, and setting an empty value would
+            // need a nullptr instead of an empty string (see SetProjectInfoField), so the
+            // call is simply skipped in that case.
+            if (!projectInfoValue.IsEmpty ()) {
+                err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
+                if (err != NoError) {
+                    fieldsAdder (CreateErrorResponse (err, "Failed to set the initial value of the project information field."));
+                    continue;
+                }
             }
 
             GS::ObjectState createdField;
@@ -681,6 +759,10 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", [&]() -> GSErrCode {
+#ifndef ServerMainVers_3000
+        GS::HashSet<GS::UniString> existingIds;
+        const GSErrCode existingIdsErr = GetAutoTextIds (existingIds);
+#endif
         for (const GS::UniString& projectInfoId : projectInfoIds) {
 #ifdef ServerMainVers_3000
             (void) projectInfoId; // suppress unused variable warning
@@ -692,12 +774,33 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
+            if (existingIdsErr != NoError) {
+                executionResults (CreateFailedExecutionResult (existingIdsErr, "Failed to retrieve the autotexts."));
+                continue;
+            }
+
+            // ACAPI_AutoText_DeleteAnAutoText returns NoError for an id that matches
+            // nothing (#667), so a missing field must be caught before the call.
+            if (!existingIds.Contains (projectInfoId)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "No project info field found with this id."));
+                continue;
+            }
+
             GSErrCode err = ACAPI_AutoText_DeleteAnAutoText (projectInfoId.ToCStr ());
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to delete project info field."));
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
             }
+
+            GS::HashSet<GS::UniString> idsAfterDelete;
+            if (GetAutoTextIds (idsAfterDelete) == NoError) {
+                if (idsAfterDelete.Contains (projectInfoId)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "ACAPI_AutoText_DeleteAnAutoText reported success, but the field is still present in the autotext list."));
+                    continue;
+                }
+                existingIds = idsAfterDelete;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
 #endif
         }
         return NoError;
