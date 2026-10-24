@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 19:24 UTC",
+ "generatedAt": "2026-10-24 19:39 UTC",
  "versions": [
   25,
   26,
@@ -7907,10 +7907,6 @@
    ],
    "issues": [
     {
-     "number": 1396,
-     "title": "Drawing details: read/write the printable border (`hasBorderLine`, `borderLineType`, `borderPen`, `borderSize`)"
-    },
-    {
      "number": 1393,
      "title": "Feature request: command to change the library part of placed elements"
     },
@@ -13073,7 +13069,12 @@
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1104,
+     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_GetHotLinkOwner",
@@ -13101,7 +13102,12 @@
      "title": "Add GetHotlinkOwnersOfElements (which hotlink an element comes from)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1104,
+     "title": "Expose ACAPI_Hotlink_GetContainingHotlinkGuid and ACAPI_Hotlink_GetHotLinkOwner (which hotlink an element comes from)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkInstances",
@@ -38209,10 +38215,6 @@
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
-     "number": 1397,
-     "title": "Drawing details: read/write the printable border"
-    },
-    {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
@@ -46330,10 +46332,6 @@
     {
      "number": 1398,
      "title": "Allow partial modify of Composites and Layer Combinations"
-    },
-    {
-     "number": 1397,
-     "title": "Drawing details: read/write the printable border"
     },
     {
      "number": 1395,
@@ -54873,10 +54871,6 @@
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
-     "number": 1397,
-     "title": "Drawing details: read/write the printable border"
-    },
-    {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
     },
@@ -58762,10 +58756,6 @@
     {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
-    },
-    {
-     "number": 1397,
-     "title": "Drawing details: read/write the printable border"
     },
     {
      "number": 1373,
