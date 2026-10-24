@@ -2261,6 +2261,106 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     return response;
 }
 
+ModifyPropertyValueOfElementsCommand::ModifyPropertyValueOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPropertyValueOfElementsCommand::GetName () const
+{
+    return "ModifyPropertyValueOfElements";
+}
+
+GS::Optional<GS::UniString> ModifyPropertyValueOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to set the value on. The property must be available for every one of them."
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "propertyId",
+            "propertyValue"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyPropertyValueOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::Array<API_Guid> elemGuids;
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+        if (elemGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing or invalid");
+        }
+        elemGuids.Push (elemGuid);
+    }
+    if (elemGuids.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elements is empty");
+    }
+
+    const GS::ObjectState* propertyId = parameters.Get ("propertyId");
+    if (propertyId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing");
+    }
+
+    const GS::ObjectState* propertyValue = parameters.Get ("propertyValue");
+    GS::UniString propertyValueDisplayString;
+    if (propertyValue == nullptr || !propertyValue->Get ("value", propertyValueDisplayString)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue");
+    }
+
+    API_PropertyDefinition definition;
+    definition.guid = GetGuidFromObjectState (*propertyId);
+    GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "property not found");
+    }
+
+    API_Property property;
+    property.definition = definition;
+    property.isDefault = false;
+    property.status = API_Property_HasValue;
+    property.value.variantStatus = API_VariantStatusNormal;
+
+    PropertyConversionUtils conversionUtils;
+    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
+    }
+
+    err = ACAPI_CallUndoableCommand ("ModifyPropertyValueOfElementsCommand", [&]() -> GSErrCode {
+        return ACAPI_Property_ModifyPropertyValue (property, elemGuids);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the property value, no element was changed. The property may not be available for every given element.");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
