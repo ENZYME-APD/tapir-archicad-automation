@@ -472,6 +472,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetHotspotsOfElementsCommand> (
             elementCommands, "1.7.3",
             "Gets the hotspots of the given elements: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
             "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27."

@@ -5959,6 +5959,8 @@ GS::ObjectState GetHotspotsOfElementsCommand::Execute (const GS::ObjectState& pa
     }
 
     return response;
+}
+
 ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
     CommandBase (CommonSchema::Used)
 {
