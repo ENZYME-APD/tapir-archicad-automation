@@ -1771,6 +1771,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetHotlinkDesignOptionTablesCommand> (
             designOptionsCommands, "1.7.3",
             "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29."
+        );
         err |= RegisterCommand<DuplicateDesignOptionCombinationsCommand> (
             designOptionsCommands, "1.7.3",
             "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29."
