@@ -13,8 +13,8 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         public DeleteProjectDataComponent()
             : base(
                 "DeleteProjectData",
-                "Delete the values SetProjectData stored under the given keys in the project. " +
-                "Deleting a key that does not exist fails for that key only.",
+                "Delete the project data stored by SetProjectData under the given names. " +
+                "Deleting a name that does not exist fails for that name only.",
                 GroupNames.CustomData)
         {
         }
@@ -22,14 +22,14 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         protected override void AddInputs()
         {
             InTexts(
-                "Keys",
-                "Keys to delete from the project.");
+                "Names",
+                "Names of the project data to delete.");
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each key (empty when it was deleted).");
+                "Error message of each name (empty when it was deleted).");
         }
 
         protected override void Solve(
@@ -37,20 +37,20 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         {
             if (!da.TryGetList(
                     0,
-                    out List<string> keys))
+                    out List<string> names))
             {
                 return;
             }
 
-            if (keys.Exists(string.IsNullOrEmpty))
+            if (names.Exists(string.IsNullOrEmpty))
             {
-                this.AddError("Every key must be a non-empty text.");
+                this.AddError("Every name must be a non-empty text.");
                 return;
             }
 
-            var input = new ProjectDataKeysParameters
+            var input = new ProjectDataNamesParameters
             {
-                Keys = keys
+                Names = names
             };
 
             SetCadValuesWithErrorMessages(

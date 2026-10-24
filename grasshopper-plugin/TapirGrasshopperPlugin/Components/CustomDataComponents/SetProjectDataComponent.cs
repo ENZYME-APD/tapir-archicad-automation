@@ -13,9 +13,9 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         public SetProjectDataComponent()
             : base(
                 "SetProjectData",
-                "Store text values under keys in the project, as data of the Tapir add-on: " +
+                "Store text (for example JSON) in the project under names: " +
                 "saved with the project, shown nowhere in the Archicad UI. " +
-                "A key that already exists gets the new value, other keys are left as they are.",
+                "A name that already exists gets the new content, other names are left as they are.",
                 GroupNames.CustomData)
         {
         }
@@ -23,19 +23,19 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         protected override void AddInputs()
         {
             InTexts(
-                "Keys",
-                "Keys to store the values under. Prefix them (for example 'myscript.lastSync') " +
-                "so that different scripts do not overwrite each other's data.");
+                "Names",
+                "Names to store the contents under. Prefix them with the name of your tool " +
+                "(for example 'my-tool/settings') so that different scripts do not overwrite each other's data.");
 
             InTexts(
-                "Values",
-                "Value to store under each key (input only 1 to use the same value for all keys).");
+                "Contents",
+                "Content to store under each name (input only 1 to use the same content for all names).");
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each key (empty when it was stored).");
+                "Error message of each name (empty when it was stored).");
         }
 
         protected override void Solve(
@@ -43,46 +43,46 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         {
             if (!da.TryGetList(
                     0,
-                    out List<string> keys))
+                    out List<string> names))
             {
                 return;
             }
 
             if (!da.TryGetList(
                     1,
-                    out List<string> values))
+                    out List<string> contents))
             {
                 return;
             }
 
-            if (values.Count != 1 &&
-                values.Count != keys.Count)
+            if (contents.Count != 1 &&
+                contents.Count != names.Count)
             {
                 this.AddError(
-                    "The count of Values must be 1 or the same as the count of Keys.");
+                    "The count of Contents must be 1 or the same as the count of Names.");
                 return;
             }
 
-            if (keys.Exists(string.IsNullOrEmpty))
+            if (names.Exists(string.IsNullOrEmpty))
             {
-                this.AddError("Every key must be a non-empty text.");
+                this.AddError("Every name must be a non-empty text.");
                 return;
             }
 
             var input = new SetProjectDataParameters
             {
-                ProjectData = new List<KeyValuePairObj>()
+                Values = new List<ProjectDataValue>()
             };
 
-            for (var i = 0; i < keys.Count; i++)
+            for (var i = 0; i < names.Count; i++)
             {
-                input.ProjectData.Add(
-                    new KeyValuePairObj
+                input.Values.Add(
+                    new ProjectDataValue
                     {
-                        Key = keys[i],
-                        Value = values.Count == 1
-                            ? values[0]
-                            : values[i]
+                        Name = names[i],
+                        Content = contents.Count == 1
+                            ? contents[0]
+                            : contents[i]
                     });
             }
 
