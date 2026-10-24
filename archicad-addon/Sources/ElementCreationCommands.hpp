@@ -219,6 +219,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ChangeTextContentCommand : public CommandBase
+{
+public:
+    ChangeTextContentCommand ();
 class MeasureTextsCommand : public CommandBase
 {
 public:
