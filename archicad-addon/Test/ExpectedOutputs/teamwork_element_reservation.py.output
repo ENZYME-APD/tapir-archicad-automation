@@ -1,0 +1,98 @@
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Wall"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetReservationStatusOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "error": {
+        "code": -2130313005,
+        "message": "The opened project is not a Teamwork project, so its elements have no reservation status."
+    }
+}
+Error:
+{
+    "code": -2130313005,
+    "message": "The opened project is not a Teamwork project, so its elements have no reservation status."
+}
+Command: GrantElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "userId": 2
+}
+Response:
+{
+    "error": {
+        "code": -2130313005,
+        "message": "Failed to grant the elements to user 2."
+    },
+    "success": false
+}
+Error:
+{
+    "code": -2130313005,
+    "message": "Failed to grant the elements to user 2."
+}
