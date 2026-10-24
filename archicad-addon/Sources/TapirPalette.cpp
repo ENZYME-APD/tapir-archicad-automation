@@ -29,12 +29,15 @@
 #pragma warning (push)
 #pragma warning (disable : 4995 4091)   // as in the DevKit's Win32ShellInterface.hpp
 #include <shellapi.h>
+#include <tlhelp32.h>
 #pragma warning (pop)
 #pragma comment (lib, "shell32.lib")
 #endif
 
 #if defined (macintosh)
 #include <sys/sysctl.h>
+#include <libproc.h>
+#include <signal.h>
 #include <unistd.h>
 #endif
 
@@ -611,7 +614,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &runScriptButton) {
         if (IsProcessRunning ()) {
-            process.Kill ();
+            KillRunningProcess ();
         } else {
             if (isUpdatingAddOn) {
                 return;
@@ -1031,6 +1034,247 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
                     GSGuid2APIGuid (paletteGuid));
 }
 
+// ---- Stopping a script ----
+//
+// GS::Process::Kill ends only the process the palette started. For a Python script that is uv, and the Python
+// process(es) uv started kept running without a parent (issue #769): a script waiting for something, such as a
+// ShowScriptUI page, went on in the background, and a second run of it competed with it for the same Archicad.
+// So Stop ends the started process together with all of its descendants. GS::Process gives no process id: the
+// started process is found among the child processes of this Archicad that did not run before it was started,
+// by the file name of its executable, which is unambiguous because the palette runs one script at a time and the
+// Add-On waits for its other uv runs. A script that is not Python may run as its interpreter (a shell script as
+// bash, a .bat as cmd.exe), so when no file name matches, the first started of those child processes is taken.
+// A process id can be reused, so a process is taken as the child of another only when it started after it.
+
+#if defined (WINDOWS)
+using ProcessId = DWORD;
+#else
+using ProcessId = pid_t;
+#endif
+
+struct ProcessInfo {
+    ProcessId     id = 0;
+    ProcessId     parentId = 0;
+    GS::UInt64    startTime = 0;     // in platform units, only compared with each other
+    GS::UniString executableName;    // the file name without the folder
+};
+
+#if defined (WINDOWS)
+
+static ProcessId GetThisProcessId ()
+{
+    return GetCurrentProcessId ();
+}
+
+static GS::Array<ProcessInfo> ListProcesses ()
+{
+    GS::Array<ProcessInfo> processes;
+    const HANDLE snapshot = CreateToolhelp32Snapshot (TH32CS_SNAPPROCESS, 0);
+    if (snapshot == INVALID_HANDLE_VALUE) {
+        return processes;
+    }
+    PROCESSENTRY32W entry = {};
+    entry.dwSize = static_cast<DWORD> (sizeof (entry));
+    for (BOOL hasEntry = Process32FirstW (snapshot, &entry); hasEntry; hasEntry = Process32NextW (snapshot, &entry)) {
+        ProcessInfo info;
+        info.id = entry.th32ProcessID;
+        info.parentId = entry.th32ParentProcessID;
+        info.executableName = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (entry.szExeFile), static_cast<USize> (wcslen (entry.szExeFile)));
+        const HANDLE processHandle = OpenProcess (PROCESS_QUERY_LIMITED_INFORMATION, FALSE, entry.th32ProcessID);
+        if (processHandle != nullptr) {
+            FILETIME creationTime = {}, exitTime = {}, kernelTime = {}, userTime = {};
+            if (GetProcessTimes (processHandle, &creationTime, &exitTime, &kernelTime, &userTime)) {
+                info.startTime = (static_cast<GS::UInt64> (creationTime.dwHighDateTime) << 32) | creationTime.dwLowDateTime;
+            }
+            CloseHandle (processHandle);
+        }
+        processes.Push (info);
+    }
+    CloseHandle (snapshot);
+    return processes;
+}
+
+static void KillProcess (ProcessId id)
+{
+    const HANDLE processHandle = OpenProcess (PROCESS_TERMINATE, FALSE, id);
+    if (processHandle != nullptr) {
+        TerminateProcess (processHandle, 1);
+        CloseHandle (processHandle);
+    }
+}
+
+// Windows file names are case-insensitive, and the command may name uv without its .exe extension
+static GS::UniString NormalizeExecutableName (const GS::UniString& name)
+{
+    constexpr USize extensionLength = 4;
+    if (name.GetLength () > extensionLength &&
+        GS::UniString (name.GetSubstring (name.GetLength () - extensionLength, extensionLength)).Compare (".exe", CaseInsensitive) == GS::UniString::Equal) {
+        return GS::UniString (name.GetSubstring (0, name.GetLength () - extensionLength));
+    }
+    return name;
+}
+
+static bool IsSameExecutableName (const GS::UniString& name1, const GS::UniString& name2)
+{
+    return NormalizeExecutableName (name1).Compare (NormalizeExecutableName (name2), CaseInsensitive) == GS::UniString::Equal;
+}
+
+#else
+
+static ProcessId GetThisProcessId ()
+{
+    return getpid ();
+}
+
+static GS::Array<ProcessInfo> ListProcesses ()
+{
+    GS::Array<ProcessInfo> processes;
+    int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
+    size_t size = 0;
+    if (sysctl (name, 4, nullptr, &size, nullptr, 0) != 0) {
+        return processes;
+    }
+    std::vector<kinfo_proc> entries (size / sizeof (kinfo_proc) + 32);   // room for processes started since the size was asked
+    size = entries.size () * sizeof (kinfo_proc);
+    if (sysctl (name, 4, entries.data (), &size, nullptr, 0) != 0) {
+        return processes;
+    }
+    entries.resize (size / sizeof (kinfo_proc));
+    for (const kinfo_proc& entry : entries) {
+        ProcessInfo info;
+        info.id = entry.kp_proc.p_pid;
+        info.parentId = entry.kp_eproc.e_ppid;
+        info.startTime = static_cast<GS::UInt64> (entry.kp_proc.p_starttime.tv_sec) * 1000000 + static_cast<GS::UInt64> (entry.kp_proc.p_starttime.tv_usec);
+        char path[PROC_PIDPATHINFO_MAXSIZE] = {};
+        const char* executableName = entry.kp_proc.p_comm;   // the name cut to 16 characters, for processes whose path cannot be read
+        if (proc_pidpath (entry.kp_proc.p_pid, path, sizeof (path)) > 0) {
+            const char* lastSlash = strrchr (path, '/');
+            executableName = lastSlash != nullptr ? lastSlash + 1 : path;
+        }
+        info.executableName = GS::UniString (executableName, static_cast<USize> (strlen (executableName)), CC_UTF8);
+        processes.Push (info);
+    }
+    return processes;
+}
+
+static void KillProcess (ProcessId id)
+{
+    kill (id, SIGKILL);
+}
+
+static bool IsSameExecutableName (const GS::UniString& name1, const GS::UniString& name2)
+{
+    return name1 == name2;
+}
+
+#endif
+
+// The file name of the command's executable: the command is an absolute path, or on Windows the bare "uv"
+static GS::UniString GetExecutableName (const GS::UniString& command)
+{
+    UIndex nameStart = 0;
+    for (UIndex i = 0; i < command.GetLength (); ++i) {
+        const GS::UniChar ch = command.GetChar (i);
+        if (ch == '/' || ch == '\\') {
+            nameStart = i + 1;
+        }
+    }
+    return GS::UniString (command.GetSubstring (nameStart, command.GetLength () - nameStart));
+}
+
+static bool IsChildOf (const ProcessInfo& process, const ProcessInfo& parent)
+{
+    return process.parentId == parent.id && process.id != parent.id && process.startTime >= parent.startTime;
+}
+
+static void CollectDescendants (const GS::Array<ProcessInfo>& processes, const ProcessInfo& parent, GS::Array<ProcessId>& descendants)
+{
+    for (const ProcessInfo& process : processes) {
+        if (IsChildOf (process, parent) && !descendants.Contains (process.id)) {
+            descendants.Push (process.id);
+            CollectDescendants (processes, process, descendants);
+        }
+    }
+}
+
+static const ProcessInfo* FindThisProcess (const GS::Array<ProcessInfo>& processes)
+{
+    for (const ProcessInfo& process : processes) {
+        if (process.id == GetThisProcessId ()) {
+            return &process;
+        }
+    }
+    return nullptr;
+}
+
+// The ids of the running processes this Archicad started
+static GS::Array<GS::UInt64> ListChildProcessIds ()
+{
+    GS::Array<GS::UInt64> childIds;
+    const GS::Array<ProcessInfo> processes = ListProcesses ();
+    const ProcessInfo* thisProcess = FindThisProcess (processes);
+    if (thisProcess == nullptr) {
+        return childIds;
+    }
+    for (const ProcessInfo& process : processes) {
+        if (IsChildOf (process, *thisProcess)) {
+            childIds.Push (static_cast<GS::UInt64> (process.id));
+        }
+    }
+    return childIds;
+}
+
+// The processes started by the process this Archicad started for the command, the processes those started, and
+// so on. Returns false when the started process is not found.
+static bool FindDescendantsOfStartedProcess (const GS::UniString& command, const GS::Array<GS::UInt64>& childIdsBeforeStart, GS::Array<ProcessId>& descendants)
+{
+    const GS::Array<ProcessInfo> processes = ListProcesses ();
+    const GS::UniString executableName = GetExecutableName (command);
+
+    const ProcessInfo* thisProcess = FindThisProcess (processes);
+    if (thisProcess == nullptr) {
+        return false;
+    }
+
+    const ProcessInfo* startedProcess = nullptr;   // the most recently started one, should there be more
+    const ProcessInfo* firstNewChild = nullptr;
+    for (const ProcessInfo& process : processes) {
+        if (!IsChildOf (process, *thisProcess) || childIdsBeforeStart.Contains (static_cast<GS::UInt64> (process.id))) {
+            continue;
+        }
+        if (IsSameExecutableName (process.executableName, executableName) &&
+            (startedProcess == nullptr || process.startTime > startedProcess->startTime)) {
+            startedProcess = &process;
+        }
+        if (firstNewChild == nullptr || process.startTime < firstNewChild->startTime) {
+            firstNewChild = &process;
+        }
+    }
+    if (startedProcess == nullptr) {
+        startedProcess = firstNewChild;
+    }
+    if (startedProcess == nullptr) {
+        return false;
+    }
+    CollectDescendants (processes, *startedProcess, descendants);
+    return true;
+}
+
+void TapirPalette::KillRunningProcess ()
+{
+    // Found before Kill: afterwards the descendants have no parent any more (macOS gives them to launchd), and
+    // the id of the ended process may be reused
+    GS::Array<ProcessId> descendants;
+    const bool found = FindDescendantsOfStartedProcess (runningCommand, childProcessIdsBeforeStart, descendants);
+    process.Kill ();
+    if (!found) {
+        WriteReport (DG_WARNING, "Could not find the processes the script started, they may keep running.");
+    }
+    for (const ProcessId descendant : descendants) {
+        KillProcess (descendant);
+    }
+}
+
 void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 {
     GS::UniString filePath;
@@ -1170,6 +1414,8 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         constexpr bool redirectStandardOutput = true;
         constexpr bool redirectStandardInput = false;
         constexpr bool redirectStandardError = true;
+        runningCommand = command;
+        childProcessIdsBeforeStart = ListChildProcessIds ();
         {
 #if defined (WINDOWS)
             // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese

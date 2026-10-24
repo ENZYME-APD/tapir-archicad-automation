@@ -7068,7 +7068,8 @@
                 "$ref": "#/WallZoneRelation"
             },
             "visibility": {
-                "$ref": "#/StoryVisibility"
+                "$ref": "#/StoryVisibility",
+                "description": "On Archicad 29 a wall knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), so a wall can read back a combination the dialog cannot show - a wall fresh from the Wall tool defaults may report showOnHome false with showRelAbove 1, which Wall Settings shows as an empty Show on Stories field (#852). See ModifyWalls for which combinations can be written."
             },
             "isAutoOnStoryVisibility": {
                 "type": "boolean",
@@ -7530,6 +7531,96 @@
             "bottomOffset"
         ]
     },
+    "ColumnSegmentDetails": {
+        "type": "object",
+        "description": "Details of a ColumnSegment subelement of a Column.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "The Column element the segment belongs to."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Profile" ]
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Cross section depth (height) of the segment."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "depth",
+            "isWidthAndHeightLinked",
+            "circleBased"
+        ]
+    },
+    "BeamSegmentDetails": {
+        "type": "object",
+        "description": "Details of a BeamSegment subelement of a Beam.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "The Beam element the segment belongs to."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Profile" ]
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment."
+            },
+            "height": {
+                "type": "number",
+                "description": "Cross section height of the segment."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "height",
+            "isWidthAndHeightLinked",
+            "circleBased"
+        ]
+    },
     "DetailWorksheetDetails": {
         "type": "object",
         "properties": {
@@ -7762,6 +7853,14 @@
             },
             "oSide": {
                 "type": "boolean"
+            },
+            "reveal": {
+                "type": "boolean",
+                "description": "Whether the reveal is turned on. The same value ModifyWindows and ModifyDoors take."
+            },
+            "revealDepthOffset": {
+                "type": "number",
+                "description": "Distance the frame plane is moved across the wall thickness, along the wall normal. The same value ModifyWindows and ModifyDoors take."
             }
         },
         "additionalProperties": false,
@@ -7773,7 +7872,9 @@
             "centerOffset",
             "reflected",
             "refSide",
-            "oSide"
+            "oSide",
+            "reveal",
+            "revealDepthOffset"
         ]
     },
     "PolylineDetails": {
@@ -8975,6 +9076,70 @@
             "paragraphCount"
         ]
     },
+    "StairDetails": {
+        "type": "object",
+        "description": "The settings of a Stair element, the ones CreateStairs takes. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "properties": {
+            "stepNum": {
+                "type": "integer",
+                "description": "Number of risers (steps)."
+            },
+            "riserHeight": {
+                "type": "number",
+                "description": "Height of each riser."
+            },
+            "treadDepth": {
+                "type": "number",
+                "description": "Depth (going) of each tread."
+            },
+            "flightWidth": {
+                "type": "number",
+                "description": "Width of the stair flight."
+            },
+            "totalHeight": {
+                "type": "number",
+                "description": "Total height of the stair."
+            },
+            "level": {
+                "type": "number",
+                "description": "Height of the stair base above the home story level."
+            },
+            "zCoordinate": {
+                "type": "number",
+                "description": "Absolute elevation of the stair base."
+            },
+            "finishVisible": {
+                "type": "boolean",
+                "description": "Whether the tread/riser finishes are modeled. If false only the stair structure (e.g. a monolith) is."
+            },
+            "baseLinePoints": {
+                "type": "array",
+                "description": "The baseline polyline the stair is placed along, as given to CreateStairs.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "baseLineArcs": {
+                "type": "array",
+                "description": "The curved segments of the baseline, present only when it has any.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "stepNum",
+            "riserHeight",
+            "treadDepth",
+            "flightWidth",
+            "totalHeight",
+            "level",
+            "zCoordinate",
+            "finishVisible",
+            "baseLinePoints"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -9008,6 +9173,12 @@
             },
             {
                 "$ref": "#/ColumnDetails"
+            },
+            {
+                "$ref": "#/ColumnSegmentDetails"
+            },
+            {
+                "$ref": "#/BeamSegmentDetails"
             },
             {
                 "$ref": "#/DetailWorksheetDetails"
@@ -9056,6 +9227,9 @@
             },
             {
                 "$ref": "#/LevelDimensionDetails"
+            },
+            {
+                "$ref": "#/StairDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"

@@ -4,8 +4,8 @@
     {
         public static string Attributes => nameof(Attributes);
         public static string Classifications => nameof(Classifications);
-        public static string CustomData => "Custom Data";
         public static string DesignOptions => nameof(DesignOptions);
+        public static string DesignTools => "Design Tools";
         public static string ElementCreation => "Element Creation";
         public static string ElementDetails => "Element Details";
         public static string ElementGrouping => "Element Grouping";

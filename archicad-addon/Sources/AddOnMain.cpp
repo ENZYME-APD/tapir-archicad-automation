@@ -22,7 +22,6 @@
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
-#include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementCategoryCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
@@ -427,23 +426,6 @@ GSErrCode Initialize (void)
         AddCommandGroup (projectCommands);
     }
 
-    { // Custom Data Commands
-        CommandGroup customDataCommands ("Custom Data Commands");
-        err |= RegisterCommand<SetProjectDataCommand> (
-            customDataCommands, "1.7.2",
-            "Stores string values under keys in the project, for scripts to keep their own state (external database ids, sync timestamps, markers). The data is saved with the project as the module data of the Tapir add-on and appears nowhere in the Archicad UI. A key that already exists gets the new value; other keys are left as they are. Prefix the keys with the script's name so that scripts do not overwrite each other's data."
-        );
-        err |= RegisterCommand<GetProjectDataCommand> (
-            customDataCommands, "1.7.2",
-            "Reads the values stored in the project by SetProjectData: the given keys, or every stored key when none is given."
-        );
-        err |= RegisterCommand<DeleteProjectDataCommand> (
-            customDataCommands, "1.7.2",
-            "Deletes the values stored in the project by SetProjectData under the given keys."
-        );
-        AddCommandGroup (customDataCommands);
-    }
-
     { // Element Commands
         CommandGroup elementCommands ("Element Commands");
         err |= RegisterCommand<GetSelectedElementsCommand> (
@@ -468,7 +450,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<FilterElementsCommand> (
             elementCommands, "1.0.7",
-            "Tests an elements by the given criterias."
+            "Keeps the elements that match all the given criteria: Archicad's flag filters (filters), layer (layerIndices), home story (floorIndices) and element type (elementTypes). Within one criterion any of the listed values matches; an omitted criterion does not filter."
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
@@ -586,9 +568,13 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.3",
             "Rotates elements around a reference point. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
+        err |= RegisterCommand<MirrorElementsCommand> (
+            elementCommands, "1.7.2",
+            "Mirrors elements across an axis given by two points on the floor plan, optionally as a copy. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
+        );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
-            "Deletes elements. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently."
+            "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently."
         );
         err |= RegisterCommand<DeleteSelectedElementsCommand> (
             elementCommands, "1.7.3",
@@ -608,7 +594,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Sets the given GDL parameters of the given elements."
+            "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter."
         );
         err |= RegisterCommand<GetMarkerParametersOfElementsCommand> (
             elementCommands, "1.7.1",
@@ -869,6 +855,10 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.4.0",
             "Creates groups of the passed elements"
         );
+        err |= RegisterCommand<UngroupElementsCommand> (
+            elementGroupingCommands, "1.7.2",
+            "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. A group nested in another group is reported as failed; ungroup the containing group first. Returns an execution result per group."
+        );
         err |= RegisterCommand<GetGroupsOfElementsCommand> (
             elementGroupingCommands, "1.5.6",
             "Gets the identifier of the group that directly contains each given element. Returns an error for elements that are not part of any group."
@@ -935,7 +925,10 @@ GSErrCode Initialize (void)
             "a Favorite never moves or resizes the target element. For the hierarchical types (Stair, "
             "Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are "
             "inseparable from the Favorite's own geometry. By default settings, classifications, "
-            "categories and properties are all applied; each can be opted out of individually."
+            "categories and properties are all applied; each can be opted out of individually. "
+            "keepFields lists fields of the target (its ID, layer, an opening's width, height and sill "
+            "height, a Wall's reference line location, height and top link) that are copied back after "
+            "the Favorite has been applied, so that e.g. only the library part or the wall type changes."
         );
         err |= RegisterCommand<UpdateFavoritesFromElementsCommand> (
             favoritesCommands, "1.5.4",
@@ -1444,7 +1437,9 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",
-            "Creates Layouts and their backing master layouts."
+            "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first "
+            "place of its subset, renumbering the sheets after it; previousNavigatorItemId or position "
+            "'last' places it after an existing sheet or at the end instead."
         );
         err |= RegisterCommand<CreateLayoutSubsetCommand> (
             navigatorCommands, "1.4.0",
@@ -1463,15 +1458,18 @@ GSErrCode Initialize (void)
             "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink "
             "API, so this recreates the Drawing against the new source and deletes the original - the "
             "returned elementId is a NEW guid, not the input one. The Drawing Title marker's own "
-            "position is not preserved (undocumented Archicad limitation)."
+            "position is not preserved (undocumented Archicad limitation). The new source view is "
+            "made current before the Drawing is created (Archicad 27 or later), and the window and "
+            "story that were active when the command started are restored afterwards; the view "
+            "settings (zoom, layers, scale) shown in that window are not restored."
         );
         err |= RegisterCommand<GetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
-            "Gets settings of layouts, including Layout Info Panel custom data fields."
+            "Gets settings of layouts, including their master layout and Layout Info Panel custom data fields."
         );
         err |= RegisterCommand<SetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
-            "Sets settings of layouts, including Layout Info Panel custom data fields."
+            "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields."
         );
         err |= RegisterCommand<GetLayoutCustomSchemeCommand> (
             navigatorCommands, "1.1.7",
