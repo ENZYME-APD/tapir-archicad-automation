@@ -238,6 +238,16 @@ static bool SetParamValueDouble (API_ChangeParamType& changeParam,
     return false;
 }
 
+// ACAPI_LibraryPart_ChangeAParameter takes the value of an Angle parameter in degrees, while
+// the parameter list (GetGDLParametersOfElements, the marker commands) holds it in radians,
+// like every other angle of the API. The commands take radians, so a value read can be
+// written back unchanged (issue #1401).
+static double ToChangeParamRealValue (API_AddParID typeID, double value)
+{
+    constexpr double DegreesPerRadian = 180.0 / 3.14159265358979323846;
+    return typeID == APIParT_Angle ? value * DegreesPerRadian : value;
+}
+
 static bool SetParamValueOnOff (API_ChangeParamType& changeParam,
                                 const GS::ObjectState& parameterDetails)
 {
@@ -1036,6 +1046,7 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
                 errMessage = GS::UniString::Printf ("Invalid input: the given value is not a real number for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
                 return APIERR_BADPARS;
             }
+            changeParam.realValue = ToChangeParamRealValue (gdlParametersTypeDictionary[changeParam.name], changeParam.realValue);
             break;
         case APIParT_LightSw:
             if (!SetParamValueOnOff (changeParam, parameter)) {
@@ -1201,7 +1212,7 @@ GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
                     GS::ucscpy (strValue, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
                     changeParam.uStrValue = strValue;
                 } else {
-                    changeParam.realValue = change.numberValues[itemIndex];
+                    changeParam.realValue = ToChangeParamRealValue (change.typeID, change.numberValues[itemIndex]);
                 }
 
                 GSErrCode err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
