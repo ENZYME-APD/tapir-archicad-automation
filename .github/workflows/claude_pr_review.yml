@@ -352,6 +352,18 @@ jobs:
                its response schema has to allow that - the *OrErrors unions in
                CommonSchemaDefinitions.json exist for this.
 
+            6. A check file. A command that is added, or whose behaviour
+               changes, needs a check in archicad-addon/Test/checks/ (JSON the
+               community test runner sends to an empty Archicad project on a
+               tester's machine; format in tools/community-test-runner/README.md,
+               "Writing checks"). Without one, nothing ever runs the change in
+               Archicad before it is merged. A missing check is a finding; on a
+               pull request opened by the issue bot it is blocking. Also flag a
+               check whose expectations could not catch the bug it is for, one
+               still holding the starter's "_todo" note or placeholder ids
+               (00000000-...), or one that uses a command the pull request does
+               not provide.
+
             Post inline comments on the specific lines, and exactly one summary
             comment, written once when the review is finished. Do not post a
             comment when you start, do not post progress updates, and do not

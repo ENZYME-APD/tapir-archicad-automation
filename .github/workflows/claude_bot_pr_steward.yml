@@ -202,7 +202,7 @@ jobs:
           # Archicad; a later green head updates the links in that comment.
           # What they report there, the review counts as blocking.
           testBuild() {
-            local pr=$1 head=$2 links="" wf prefix run issue author kind body comments existing
+            local pr=$1 head=$2 links="" wf prefix run issue author kind body comments existing files
             # A Markdown link per artifact of the successful run of each build
             # check on this head.
             for wf in archicad_addon_build_check.yml:Tapir_Add-On grasshopper_plugin_build_check.yml:Tapir_Grasshopper; do
@@ -217,6 +217,17 @@ jobs:
             links=$(grep -v '^$' <<<"$links" || true)
             if ! grep -q 'Tapir Add-On' <<<"$links"; then
               return 0
+            fi
+            # Built and with a check file of its own: hand it to the community
+            # test runner (tools/community-test-runner), which tests what is
+            # labelled needs-test on testers' Archicads and comments the result.
+            files=$(gh api --paginate "repos/$REPO/pulls/$pr/files?per_page=100" \
+              --jq '.[] | select(.status != "removed") | .filename' || true)
+            if grep -qE '^archicad-addon/Test/checks/[^/]+\.json$' <<<"$files"; then
+              gh label create needs-test --repo "$REPO" --color 0E8A16 \
+                --description "Built, with checks: the community test runner tests it in Archicad" 2>/dev/null || true
+              gh pr edit "$pr" --repo "$REPO" --add-label needs-test >/dev/null \
+                || echo "::warning::could not label #$pr needs-test"
             fi
             comments=$(gh api --paginate "repos/$REPO/issues/$pr/comments" \
               --jq '.[] | {id, login: .user.login, kind: .user.type, body}' | jq -s '.')
