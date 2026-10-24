@@ -806,6 +806,18 @@ GSErrCode Initialize (void)
             propertyCommands, "1.0.6",
             "Sets the property values of elements. It works for subelements of hierarchal elements also."
         );
+        err |= RegisterCommand<GetComponentsOfElementsCommand> (
+            propertyCommands, "1.7.2",
+            "Returns the components of the elements: the building material skins of composite walls, slabs, roofs and shells, and the parts of complex profile walls, beams and columns. The components have their own property values (building material, thickness, area, volume and the properties of the building material); read them with GetPropertyValuesOfElementComponents."
+        );
+        err |= RegisterCommand<GetPropertyDefinitionsOfElementComponentsCommand> (
+            propertyCommands, "1.7.2",
+            "Returns the property definitions available on the given element components, optionally filtered to user defined or built-in ones."
+        );
+        err |= RegisterCommand<GetPropertyValuesOfElementComponentsCommand> (
+            propertyCommands, "1.7.2",
+            "Returns the property values of the given element components for the given properties, in the shape of GetPropertyValuesOfElements. Use GetComponentsOfElements to list the components of an element."
+        );
         err |= RegisterCommand<GetPropertyValuesOfAttributesCommand> (
             propertyCommands, "1.1.8",
             "Returns the property values of the attributes for the given property."

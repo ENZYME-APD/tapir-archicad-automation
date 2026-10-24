@@ -728,6 +728,28 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
 #endif
 }
 
+// The property functions of element components (API_ElemComponentID) are overloads of
+// ACAPI_Element_GetPropertyDefinitions / ACAPI_Element_GetPropertyValuesByGuid since AC27;
+// in AC25 and AC26 they are ACAPI_ElemComponent_GetPropertyDefinitions /
+// ACAPI_ElemComponent_GetPropertyValuesByGuid with the same parameters.
+inline GSErrCode TAPIR_ElemComponent_GetPropertyDefinitions (const API_ElemComponentID& elemComponent, API_PropertyDefinitionFilter filter, GS::Array<API_PropertyDefinition>& propertyDefinitions)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Element_GetPropertyDefinitions (elemComponent, filter, propertyDefinitions);
+#else
+    return ACAPI_ElemComponent_GetPropertyDefinitions (elemComponent, filter, propertyDefinitions);
+#endif
+}
+
+inline GSErrCode TAPIR_ElemComponent_GetPropertyValuesByGuid (const API_ElemComponentID& elemComponent, const GS::Array<API_Guid>& propertyDefinitions, GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Element_GetPropertyValuesByGuid (elemComponent, propertyDefinitions, properties);
+#else
+    return ACAPI_ElemComponent_GetPropertyValuesByGuid (elemComponent, propertyDefinitions, properties);
+#endif
+}
+
 // API_OverriddenAttribute accepts an API_AttributeIndex directly since AC27;
 // before that it is a plain struct { attributeIndex, overridden }.
 inline void SetOverriddenAttribute (API_OverriddenAttribute& target, const API_AttributeIndex& index)
