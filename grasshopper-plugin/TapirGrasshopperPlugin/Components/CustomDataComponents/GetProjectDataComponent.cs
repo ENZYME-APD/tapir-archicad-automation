@@ -14,8 +14,8 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         public GetProjectDataComponent()
             : base(
                 "GetProjectData",
-                "Read the text values SetProjectData stored under keys in the project. " +
-                "With no Keys input every stored key is listed with its value.",
+                "Read the project data SetProjectData stored under names in the project. " +
+                "With no Names input every stored project data is listed with its content.",
                 GroupNames.CustomData)
         {
         }
@@ -23,9 +23,9 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         protected override void AddInputs()
         {
             InTexts(
-                "Keys",
-                "Keys to read, one output item per key in this order. " +
-                "Leave empty to list every key stored in the project.");
+                "Names",
+                "Names to read, one output item per name in this order. " +
+                "Leave empty to list every project data stored in the project.");
 
             SetOptionality(0);
         }
@@ -33,38 +33,63 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
         protected override void AddOutputs()
         {
             OutTexts(
-                "Keys",
-                "Key of each value.");
+                "Names",
+                "Name of each project data.");
 
             OutTexts(
-                "Values",
-                "Stored value of each key (null when nothing is stored under it).");
+                "Contents",
+                "Stored content of each name (null when nothing is stored under it).");
 
             OutErrorMessages(
-                "Error message of each key (empty when it was read).");
+                "Error message of each name (empty when it was read).");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            // An unconnected or empty Keys input lists every stored key: the
-            // command does that when the keys parameter is left out.
             da.TryGetList(
                 0,
-                out List<string> requestedKeys);
-            requestedKeys = requestedKeys ?? new List<string>();
+                out List<string> names);
+            names = names ?? new List<string>();
 
-            if (requestedKeys.Exists(string.IsNullOrEmpty))
+            if (names.Exists(string.IsNullOrEmpty))
             {
-                this.AddError("Every key must be a non-empty text.");
+                this.AddError("Every name must be a non-empty text.");
                 return;
             }
 
-            var input = new ProjectDataKeysParameters
+            // An unconnected or empty Names input lists every stored project
+            // data: GetProjectData needs the names, GetProjectDataKeys lists them.
+            if (names.Count == 0)
             {
-                Keys = requestedKeys.Count > 0
-                    ? requestedKeys
-                    : null
+                if (!TryGetCadResponse(
+                        "GetProjectDataKeys",
+                        null,
+                        ToAddOn,
+                        out JObject keysResponse))
+                {
+                    return;
+                }
+
+                foreach (var key in JsonOutputHelp.Items(
+                             keysResponse,
+                             "keys"))
+                {
+                    names.Add(key["name"]?.ToString());
+                }
+
+                if (names.Count == 0)
+                {
+                    da.SetDataList(0, new List<string>());
+                    da.SetDataList(1, new List<string>());
+                    da.SetDataList(2, new List<string>());
+                    return;
+                }
+            }
+
+            var input = new ProjectDataNamesParameters
+            {
+                Names = names
             };
 
             if (!TryGetCadResponse(
@@ -76,37 +101,30 @@ namespace TapirGrasshopperPlugin.Components.CustomDataComponents
                 return;
             }
 
-            var keys = new List<string>();
-            var values = new List<string>();
+            var contents = new List<string>();
             var errors = new List<string>();
 
-            // One item per requested key, in the input order, or one per
-            // stored key when nothing was requested. An error item carries no
-            // key, so the requested one is handed out in its place.
+            // One item per name, in the order of the names. An error item
+            // carries no name, so the requested one is handed out for it.
             var items = JsonOutputHelp.Items(
                 response,
-                "projectData");
+                "values");
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
                 if (JsonOutputHelp.IsError(item))
                 {
-                    keys.Add(
-                        i < requestedKeys.Count
-                            ? requestedKeys[i]
-                            : null);
-                    values.Add(null);
+                    contents.Add(null);
                     errors.Add(JsonOutputHelp.ErrorMessage(item));
                     continue;
                 }
 
-                keys.Add(item["key"]?.ToString());
-                values.Add(item["value"]?.ToString());
+                contents.Add(item["content"]?.ToString());
                 errors.Add("");
             }
 
-            da.SetDataList(0, keys);
-            da.SetDataList(1, values);
+            da.SetDataList(0, names);
+            da.SetDataList(1, contents);
             da.SetDataList(2, errors);
         }
 

@@ -4,8 +4,8 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Types.CustomData
 {
-    // A key-value pair as the custom data commands store it (SetProjectData,
-    // SetElementUserData) and answer it (GetProjectData, GetElementUserData).
+    // A key-value pair as the element user data commands store it
+    // (SetElementUserData) and answer it (GetElementUserData).
     public class KeyValuePairObj
     {
         [JsonProperty("key")]
@@ -15,20 +15,28 @@ namespace TapirGrasshopperPlugin.Types.CustomData
         public string Value;
     }
 
-    public class SetProjectDataParameters
+    // One project data of SetProjectData: text saved in the project under a
+    // name.
+    public class ProjectDataValue
     {
-        [JsonProperty("projectData")]
-        public List<KeyValuePairObj> ProjectData;
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("content")]
+        public string Content;
     }
 
-    // GetProjectData (every stored key when Keys is left out) and
-    // DeleteProjectData.
-    public class ProjectDataKeysParameters
+    public class SetProjectDataParameters
     {
-        [JsonProperty(
-            "keys",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public List<string> Keys;
+        [JsonProperty("values")]
+        public List<ProjectDataValue> Values;
+    }
+
+    // GetProjectData and DeleteProjectData.
+    public class ProjectDataNamesParameters
+    {
+        [JsonProperty("names")]
+        public List<string> Names;
     }
 
     // One element of SetElementUserData: the pairs to store on it and the keys
