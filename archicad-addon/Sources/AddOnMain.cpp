@@ -1363,11 +1363,11 @@ GSErrCode Initialize (void)
             "Deletes the given design option combinations. Available from Archicad 29."
         );
         err |= RegisterCommand<GetDesignOptionCombinationOfViewsCommand> (
-            designOptionsCommands, "1.7.2",
+            designOptionsCommands, "1.7.3",
             "Retrieves which design option combination the given views show: only the main model, a combination, a custom set of design options or a deleted combination. Available from Archicad 29."
         );
         err |= RegisterCommand<SetDesignOptionCombinationOfViewsCommand> (
-            designOptionsCommands, "1.7.2",
+            designOptionsCommands, "1.7.3",
             "Sets the design option combination the given views show, or makes them show only the main model. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
