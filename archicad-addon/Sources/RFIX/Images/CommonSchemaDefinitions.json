@@ -466,6 +466,34 @@
             "attributeId"
         ]
     },
+    "AttributeFolder": {
+        "type": "object",
+        "description": "An attribute folder, identified by the type of the attributes it holds and its path from the root folder of that type. Attribute folders exist from Archicad 26.",
+        "properties": {
+            "attributeType": {
+                "$ref": "#/AttributeType"
+            },
+            "path": {
+                "type": "array",
+                "description": "The names of the folders from the root folder down to this folder, the root folder itself not included. An empty array is the root folder.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType",
+            "path"
+        ]
+    },
+    "AttributeFolders": {
+        "type": "array",
+        "description": "A list of attribute folders.",
+        "items": {
+            "$ref": "#/AttributeFolder"
+        }
+    },
     "DatabaseIdOrError": {
         "type": "object",
         "description": "An Archicad database identifier or an error.",
