@@ -219,6 +219,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class MeasureTextsCommand : public CommandBase
+{
+public:
+    MeasureTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 // Shared helpers for Text/Label style, content and leader-line fields - declared here so
 // GetDetailsOfElementsCommand (ElementCommands.cpp) can read them back via AddXDetails.
 namespace TextLabelDetails {
