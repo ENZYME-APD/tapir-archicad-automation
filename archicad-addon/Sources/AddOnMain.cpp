@@ -641,8 +641,8 @@ GSErrCode Initialize (void)
             "Returns the room image of the given zone."
         );
         err |= RegisterCommand<GetModelExtentCommand> (
-            elementCommands, "1.7.2",
-            "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show. It follows the current view settings, e.g. hidden layers and the current story. Available from Archicad 29."
+            elementCommands, "1.7.3",
+            "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show. Available from Archicad 29."
         );
         err |= RegisterCommand<AddElementNotificationClientCommand> (
             elementCommands, "1.2.8",

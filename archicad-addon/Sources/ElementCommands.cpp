@@ -5163,7 +5163,6 @@ GS::ObjectState GetModelExtentCommand::Execute (const GS::ObjectState& /*paramet
 {
 #ifdef ServerMainVers_2900
     // The region Fit in Window would show in the current database, vertical range included.
-    // It follows the current view settings (hidden layers, current story, ...).
     API_Box3D extent3D = {};
     const GSErrCode err = ACAPI_Element_GetExtent3D (&extent3D);
     if (err != NoError) {
