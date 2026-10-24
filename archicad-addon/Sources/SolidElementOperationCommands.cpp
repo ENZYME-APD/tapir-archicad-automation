@@ -610,3 +610,227 @@ GS::ObjectState GetElementTrimsCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+// ---------------------------------------------------------------------------
+// Merges: construction elements joined at their junctions
+// ---------------------------------------------------------------------------
+
+MergeElementsCommand::MergeElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MergeElementsCommand::GetName () const
+{
+    return "MergeElements";
+}
+
+GS::Optional<GS::UniString> MergeElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The construction elements to merge together. At least two."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MergeElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::Array<API_Guid> guids = GuidsFromElements (parameters);
+    if (guids.GetSize () < 2) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "At least two elements are needed to merge.");
+    }
+
+    // The element types are not filtered here: the API reports the ones it cannot merge
+    // (APIERR_BADELEMENTTYPE), and which types it accepts is not documented.
+    GSErrCode err = NoError;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("MergeElements", [&] () -> GSErrCode {
+        err = ACAPI_Element_Merge_Elements (guids);
+        return err;
+    });
+    if (err == NoError && undoErr != NoError) {
+        // The undo scope did not open (nested undoable command, teamwork state): the lambda never ran.
+        err = undoErr;
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to merge the elements: every element must be an existing construction element of the current database.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+UnmergeElementsCommand::UnmergeElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UnmergeElementsCommand::GetName () const
+{
+    return "UnmergeElements";
+}
+
+GS::Optional<GS::UniString> UnmergeElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "The pairs of merged elements to separate. The order within a pair does not matter.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId1": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elementId2": {
+                            "$ref": "#/ElementId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId1",
+                        "elementId2"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UnmergeElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UnmergeElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pairs;
+    parameters.Get ("elementPairs", pairs);
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("UnmergeElements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& pair : pairs) {
+            GS::ObjectState element1Os, element2Os;
+            if (!pair.Get ("elementId1", element1Os) || !pair.Get ("elementId2", element2Os)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId1 or elementId2 is missing."));
+                continue;
+            }
+            const GSErrCode err = ACAPI_Element_Merge_Remove (GetGuidFromObjectState (element1Os), GetGuidFromObjectState (element2Os));
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to remove the merge between the elements."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        // The undo scope did not open, so no pair was tried: say so once per pair,
+        // keeping one result per input as the schema promises.
+        for (USize i = 0; i < pairs.GetSize (); ++i) {
+            executionResults (CreateFailedExecutionResult (undoErr, "Failed to open an undoable command; no merge was removed."));
+        }
+    }
+    return response;
+}
+
+GetMergedElementsCommand::GetMergedElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMergedElementsCommand::GetName () const
+{
+    return "GetMergedElements";
+}
+
+GS::Optional<GS::UniString> GetMergedElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMergedElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementMerges": {
+                "type": "array",
+                "description": "One item per queried element, in order: the elements it is merged with. An unknown or deleted element is an error item, so it cannot be mistaken for an element that is simply not merged.",
+                "items": {
+                    "$ref": "#/MergedElementsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementMerges"
+        ]
+    })";
+}
+
+GS::ObjectState GetMergedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::Array<API_Guid> guids = GuidsFromElements (parameters);
+    GS::ObjectState response;
+    const auto& items = response.AddList<GS::ObjectState> ("elementMerges");
+    for (const API_Guid& guid : guids) {
+        // A read that fails is reported as an error item, never as "not merged":
+        // an unknown or deleted guid must stay distinguishable from an element
+        // with no merges.
+        GS::Array<API_Guid> merged;
+        const GSErrCode err = ACAPI_Element_Merge_GetMergedElements (guid, &merged);
+        if (err != NoError) {
+            items (CreateErrorResponse (err, "Failed to read the elements merged with the element."));
+            continue;
+        }
+        GS::ObjectState item;
+        const auto& mergedElements = item.AddList<GS::ObjectState> ("mergedElements");
+        for (const API_Guid& m : merged) {
+            mergedElements (CreateElementIdObjectState (m));
+        }
+        items (item);
+    }
+    return response;
+}
+
