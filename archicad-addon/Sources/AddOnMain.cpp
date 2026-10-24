@@ -391,6 +391,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetLast3DDefaultLevelsCommand> (
             projectCommands, "1.7.3",
             "Sets the last 3D default levels of the given element types' defaults. Not available in Archicad 26."
+        );
         err |= RegisterCommand<GetProjectPreferencesCommand> (
             projectCommands, "1.7.2",
             "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions and the calculation units. Further pages may follow."

@@ -3002,6 +3002,8 @@ GS::ObjectState SetLast3DDefaultLevelsCommand::Execute (const GS::ObjectState& p
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
 GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_CalcUnitPrefs unitPrefs = {};
