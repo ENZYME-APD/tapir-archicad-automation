@@ -2418,6 +2418,14 @@ GS::ObjectState ChangeLibraryPartOfElementsCommand::Execute (const GS::ObjectSta
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
             }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
