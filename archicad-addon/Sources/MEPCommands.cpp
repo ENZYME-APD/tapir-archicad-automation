@@ -1103,6 +1103,41 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "$ref": "#/Guid",
                             "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
+                        "branchPreferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element."
+                        },
+                        "anchor": {
+                            "type": "string",
+                            "description": "New anchor point of the cross section, on a 3x3 grid, applied to all segments.",
+                            "enum": [
+                                "TopLeft",
+                                "TopCenter",
+                                "TopRight",
+                                "MiddleLeft",
+                                "Center",
+                                "MiddleRight",
+                                "BottomLeft",
+                                "BottomCenter",
+                                "BottomRight"
+                            ]
+                        },
+                        "referenceLineOffsetX": {
+                            "type": "number",
+                            "description": "New horizontal offset of the reference line from the anchor point, applied to all segments."
+                        },
+                        "referenceLineOffsetY": {
+                            "type": "number",
+                            "description": "New vertical offset of the reference line from the anchor point, applied to all segments."
+                        },
+                        "wallThickness": {
+                            "type": "number",
+                            "description": "New wall thickness applied to all segments."
+                        },
+                        "flangeSize": {
+                            "type": "number",
+                            "description": "New flange size applied to all segments."
+                        },
                         "nodePositions": {
                             "type": "array",
                             "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
@@ -1175,6 +1210,15 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             success &= result.IsOk ();
         }
 
+        GS::UniString branchPreferenceTableIdStr;
+        if (routingElementData.Get ("branchPreferenceTableId", branchPreferenceTableIdStr)) {
+            bool setterSucceeded = true;
+            ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+                setterSucceeded = modifier.SetBranchPreferenceTableId (Adapter::UniqueID (APIGuidFromString (branchPreferenceTableIdStr.ToCStr ()))).IsOk ();
+            }, "Modify Branch Preference Table of Routing Element");
+            success &= result.IsOk () && setterSucceeded;
+        }
+
         double width = 0.0;
         double height = 0.0;
         GS::UniString shapeStr;
@@ -1185,13 +1229,25 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
         const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
         const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
-        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
+        GS::UniString anchorStr;
+        double referenceLineOffsetX = 0.0;
+        double referenceLineOffsetY = 0.0;
+        double wallThickness = 0.0;
+        double flangeSize = 0.0;
+        const bool hasAnchor = routingElementData.Get ("anchor", anchorStr);
+        const bool hasReferenceLineOffsetX = routingElementData.Get ("referenceLineOffsetX", referenceLineOffsetX);
+        const bool hasReferenceLineOffsetY = routingElementData.Get ("referenceLineOffsetY", referenceLineOffsetY);
+        const bool hasWallThickness = routingElementData.Get ("wallThickness", wallThickness);
+        const bool hasFlangeSize = routingElementData.Get ("flangeSize", flangeSize);
+        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId ||
+            hasAnchor || hasReferenceLineOffsetX || hasReferenceLineOffsetY || hasWallThickness || hasFlangeSize) {
             for (const ACAPI::MEP::UniqueID& segmentId : routingElement->GetRoutingSegmentIds ()) {
                 ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
                 if (segment.IsErr ()) {
                     success = false;
                     continue;
                 }
+                bool settersSucceeded = true;
                 ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
                     // Same order as in CreateMEPRoutingElements: table first, then the reference id
                     // that is resolved against it.
@@ -1213,8 +1269,23 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     if (hasReferenceId && referenceId >= 0) {
                         modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId));
                     }
-                }, "Modify Cross Section of Routing Segment");
-                success &= result.IsOk ();
+                    if (hasAnchor) {
+                        modifier.SetAnchor (AnchorIdFromString (anchorStr));
+                    }
+                    if (hasReferenceLineOffsetX) {
+                        modifier.SetReferenceLineOffsetX (referenceLineOffsetX);
+                    }
+                    if (hasReferenceLineOffsetY) {
+                        modifier.SetReferenceLineOffsetY (referenceLineOffsetY);
+                    }
+                    if (hasWallThickness) {
+                        settersSucceeded &= modifier.SetWallThickness (wallThickness).IsOk ();
+                    }
+                    if (hasFlangeSize) {
+                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
+                    }
+                }, "Modify Routing Segment");
+                success &= result.IsOk () && settersSucceeded;
             }
         }
 
