@@ -796,6 +796,43 @@
             "items"
         ]
     },
+    "FavoriteFolderDetails": {
+        "type": "object",
+        "description": "A folder of the Favorites palette with its Favorites and subfolders recursively.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the folder. Empty for the root folder."
+            },
+            "path": {
+                "type": "array",
+                "description": "The names of the folders leading from the root to this folder, this folder's name last. Empty for the root folder.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "favorites": {
+                "type": "array",
+                "description": "The names of the Favorites directly in this folder.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "subFolders": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FavoriteFolderDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "path",
+            "favorites",
+            "subFolders"
+        ]
+    },
     "DesignOptionId": {
         "type": "object",
         "description": "The identifier of a design option.",

@@ -112,6 +112,11 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetFavoriteFoldersCommand : public CommandBase
+{
+public:
+    GetFavoriteFoldersCommand ();
+    virtual GS::String GetName () const override;
 class GetFavoriteSettingsCommand : public CommandBase
 {
 public:
