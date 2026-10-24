@@ -6000,6 +6000,189 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     return GS::ObjectState ("roomImage", str);
 }
 
+// TriangulatePolygonsOfElements
+
+// ACAPI_Polygon_TriangulatePoly is the Archicad 27+ name (ACAPI_Goodies.h); Archicad 25/26 reach the
+// same function through the untyped ACAPI_Goodies dispatcher with APIAny_TriangulatePolyID, the same
+// split the TAPIR_Polygon_* wrappers in ExtendedElementCommands.cpp make.
+static GSErrCode TAPIR_Polygon_TriangulatePoly (API_ElementMemo* memo, API_Coord*** coords)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Polygon_TriangulatePoly (memo, coords);
+#else
+    return ACAPI_Goodies (APIAny_TriangulatePolyID, memo, coords);
+#endif
+}
+
+// The element types whose memo coords hold one plan polygon with holes, as GetDetailsOfElements
+// reads it: the outline of a Slab, Zone, Hatch or Mesh, and the outline (single-plane) or contour
+// (multi-plane) of a Roof.
+static bool HasTriangulablePolygon (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_SlabID:
+        case API_ZoneID:
+        case API_HatchID:
+        case API_MeshID:
+        case API_RoofID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+TriangulatePolygonsOfElementsCommand::TriangulatePolygonsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String TriangulatePolygonsOfElementsCommand::GetName () const
+{
+    return "TriangulatePolygonsOfElements";
+}
+
+GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "triangulations": {
+                "type": "array",
+                "description": "The triangulation of the polygon of each element, aligned with the input: its triangles, or an error (for example for an element type that has no polygon).",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "triangles": {
+                                    "type": "array",
+                                    "description": "The triangles covering the polygon of the element, holes excluded, as Archicad triangulates it.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "vertices": {
+                                                "type": "array",
+                                                "description": "The 2D coordinates of the three vertices of the triangle.",
+                                                "items": {
+                                                    "$ref": "#/Coordinate2D"
+                                                },
+                                                "minItems": 3,
+                                                "maxItems": 3
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "vertices"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "triangles"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "triangulations"
+        ]
+    })";
+}
+
+GS::ObjectState TriangulatePolygonsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& triangulations = response.AddList<GS::ObjectState> ("triangulations");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            triangulations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            triangulations (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        if (!HasTriangulablePolygon (GetElemTypeId (elemHead))) {
+            triangulations (CreateErrorResponse (APIERR_BADPARS, "The element has no polygon to triangulate. Supported types: Slab, Zone, Hatch, Mesh, Roof."));
+            continue;
+        }
+
+        API_ElementMemo memo = {};
+        const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        err = ACAPI_Element_GetMemo (elemHead.guid, &memo, APIMemoMask_Polygon);
+        if (err != NoError || memo.coords == nullptr) {
+            triangulations (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to get the polygon of the element."));
+            continue;
+        }
+
+        // The triangles come back in a new handle owned by the caller, three coordinates per
+        // triangle; it is disposed with BMKillHandle like the other handles Archicad allocates.
+        API_Coord** triangleCoords = nullptr;
+        err = TAPIR_Polygon_TriangulatePoly (&memo, &triangleCoords);
+        const GS::OnExit coordsGuard ([&triangleCoords] () {
+            if (triangleCoords != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&triangleCoords));
+            }
+        });
+        if (err != NoError) {
+            triangulations (CreateErrorResponse (err, "Failed to triangulate the polygon of the element."));
+            continue;
+        }
+
+        GS::ObjectState triangulation;
+        const auto& triangles = triangulation.AddList<GS::ObjectState> ("triangles");
+        if (triangleCoords != nullptr) {
+            const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (triangleCoords)) / sizeof (API_Coord);
+            // Memo coordinate handles leave their item 0 unused; should this one do the same,
+            // its size is one more than a multiple of three and the triangles start at item 1.
+            const GSSize firstIndex = nCoords % 3 == 1 ? 1 : 0;
+            for (GSSize i = firstIndex; i + 2 < nCoords; i += 3) {
+                GS::ObjectState triangle;
+                const auto& vertices = triangle.AddList<GS::ObjectState> ("vertices");
+                for (GSSize j = 0; j < 3; ++j) {
+                    vertices (Create2DCoordinateObjectState ((*triangleCoords)[i + j]));
+                }
+                triangles (triangle);
+            }
+        }
+        triangulations (triangulation);
+    }
+
+    return response;
+}
+
 
 // GetQuantitiesOfElements
 
