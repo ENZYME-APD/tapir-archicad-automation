@@ -1024,6 +1024,8 @@ GS::ObjectState IsUsableGDLStringCommand::Execute (const GS::ObjectState& parame
     }
 
     return response;
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
