@@ -3460,6 +3460,8 @@ GS::ObjectState FinishHierarchicalEditingCommand::Execute (const GS::ObjectState
     UNUSED_PARAMETER (parameters);
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "FinishHierarchicalEditing requires Archicad 27 or later.");
 #endif
+}
+
 GetHierarchicalElementOwnersCommand::GetHierarchicalElementOwnersCommand () :
     CommandBase (CommonSchema::Used)
 {
