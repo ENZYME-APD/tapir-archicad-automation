@@ -23,6 +23,9 @@
 #include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctRectangularSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeElbowPreferenceTable.hpp"
 #include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeBranchPreferenceTable.hpp"
@@ -46,6 +49,7 @@
 
 #include <optional>
 #include <type_traits>
+#include <utility>
 
 using namespace ACAPI::MEP;
 #endif
@@ -1516,7 +1520,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
             },
             "includeFittingTables": {
                 "type": "boolean",
-                "description": "Also return the elbow, branch and transition preference tables. Defaults to false."
+                "description": "Also return the elbow, branch and transition preference tables. Defaults to false. Ignored for the CableCarrier domain."
             }
         },
         "additionalProperties": false,
@@ -1531,13 +1535,28 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
         "properties": {
             "tables": {
                 "type": "array",
-                "description": "The circular segment preference tables of the domain.",
+                "description": "The circular segment preference tables of the domain. Empty for the CableCarrier domain.",
                 "items": {
                     "$ref": "#/MEPPreferenceTable"
                 }
             },
+            "rectangularTables": {
+                "type": "array",
+                "description": "The rectangular segment preference tables of the Ventilation domain.",
+                "items": {
+                    "$ref": "#/MEPValuePreferenceTable"
+                }
+            },
+            "cableCarrierTables": {
+                "type": "array",
+                "description": "The segment preference tables of the CableCarrier domain.",
+                "items": {
+                    "$ref": "#/MEPValuePreferenceTable"
+                }
+            },
             "referenceSet": {
-                "$ref": "#/MEPReferenceSet"
+                "$ref": "#/MEPReferenceSet",
+                "description": "The reference set of the Piping or Ventilation domain. Not returned for the CableCarrier domain."
             },
             "angleSet": {
                 "$ref": "#/MEPAngleSet",
@@ -1566,16 +1585,92 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
             }
         },
         "additionalProperties": false,
-        "required": ["tables", "referenceSet"]
+        "required": ["tables"]
     })";
 }
 
 #ifdef ServerMainVers_2800
+// The preference table getters return either a plain value, a std::optional or an ACAPI::Result.
+// PreferenceTableValueToOptional turns all of them into a std::optional, so a value that cannot
+// be read is left out of the response instead of failing the whole table.
+// IsEditable returns an ACAPI::Result<void> that is Ok when the table is editable; PreferenceTableIsEditable
+// also handles a Result<bool> or a bool, so a read-only table is never reported as editable.
+template <typename T, typename = void>
+struct IsPreferenceTableResult : std::false_type {};
+
+template <typename T>
+struct IsPreferenceTableResult<T, std::void_t<decltype (std::declval<T&> ().IsOk ())>> : std::true_type {};
+
+template <typename T>
+struct IsPreferenceTableOptional : std::false_type {};
+
+template <typename T>
+struct IsPreferenceTableOptional<std::optional<T>> : std::true_type {};
+
+template <typename T>
+static auto PreferenceTableValueToOptional (T&& value)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (IsPreferenceTableResult<ValueT>::value) {
+        using ResultValueT = std::decay_t<decltype (*value)>;
+        return value.IsOk () ? std::optional<ResultValueT> (*value) : std::optional<ResultValueT> ();
+    } else if constexpr (IsPreferenceTableOptional<ValueT>::value) {
+        return ValueT (std::forward<T> (value));
+    } else {
+        return std::optional<ValueT> (std::forward<T> (value));
+    }
+}
+
+template <typename T, typename = void>
+struct HasPreferenceTableResultValue : std::false_type {};
+
+template <typename T>
+struct HasPreferenceTableResultValue<T, std::enable_if_t<!std::is_void_v<decltype (*std::declval<T&> ())>>> : std::true_type {};
+
+template <typename T>
+static bool PreferenceTableIsEditable (T&& isEditable)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (std::is_same_v<ValueT, bool>) {
+        return isEditable;
+    } else if constexpr (HasPreferenceTableResultValue<ValueT>::value) {
+        return isEditable.IsOk () && static_cast<bool> (*isEditable);
+    } else {
+        return isEditable.IsOk ();
+    }
+}
+
+template <typename T>
+static void AddPreferenceTableValue (GS::ObjectState& os, const char* name, T&& value)
+{
+    const auto optionalValue = PreferenceTableValueToOptional (std::forward<T> (value));
+    if (optionalValue.has_value ()) {
+        os.Add (name, *optionalValue);
+    }
+}
+
+// The segmentation lengths of a segment preference table, available from Archicad 29.
+template <typename TableT>
+static void AddSegmentationLengths (GS::ObjectState& tableOS, const TableT& table)
+{
+#ifdef ServerMainVers_2900
+    AddPreferenceTableValue (tableOS, "useIndividualSegmentLengths", table.GetUseIndividualSegmentLengths ());
+    AddPreferenceTableValue (tableOS, "minimumSegmentationLength", table.GetMinimumSegmentationLength ());
+    AddPreferenceTableValue (tableOS, "maximumSegmentationLength", table.GetMaximumSegmentationLength ());
+#else
+    UNUSED_PARAMETER (tableOS);
+    UNUSED_PARAMETER (table);
+#endif
+}
+
 template <typename TableT>
 static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
 {
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
+    AddPreferenceTableValue (tableOS, "name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
+    AddSegmentationLengths (tableOS, table);
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     const uint32_t size = table.GetSize ();
     for (uint32_t i = 0; i < size; ++i) {
@@ -1587,10 +1682,35 @@ static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid&
         GS::ObjectState rowOS;
         rowOS.Add ("referenceId", static_cast<Int32> (*rowReferenceId));
         rowOS.Add ("diameter", *rowDiameter);
+        AddPreferenceTableValue (rowOS, "wallThickness", table.GetWallThickness (i));
         auto rowDescription = table.GetDescription (i);
         if (rowDescription.IsOk ()) {
             rowOS.Add ("description", *rowDescription);
         }
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+// Rectangular duct and cable carrier segment preference tables are a list of sizes (values) with a description.
+template <typename TableT>
+static GS::ObjectState DumpValuePreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    AddPreferenceTableValue (tableOS, "name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
+    AddSegmentationLengths (tableOS, table);
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    const uint32_t size = static_cast<uint32_t> (PreferenceTableValueToOptional (table.GetSize ()).value_or (0));
+    for (uint32_t i = 0; i < size; ++i) {
+        const auto value = PreferenceTableValueToOptional (table.GetValue (i));
+        if (!value.has_value ()) {
+            continue;
+        }
+        GS::ObjectState rowOS;
+        rowOS.Add ("value", *value);
+        AddPreferenceTableValue (rowOS, "description", table.GetDescription (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1609,6 +1729,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto referenceId = table.GetReferenceId (i);
@@ -1639,6 +1760,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto mainAxisReferenceId = table.GetMainAxisReferenceId (i);
@@ -1679,6 +1801,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto beginReferenceId = table.GetBeginReferenceId (i);
@@ -1715,6 +1838,7 @@ static GS::ObjectState DumpAngleSet (const AngleSetBase& angleSet)
 {
     GS::ObjectState angleSetOS;
     angleSetOS.Add ("name", angleSet.GetName ());
+    angleSetOS.Add ("isEditable", PreferenceTableIsEditable (angleSet.IsEditable ()));
     const auto& angles = angleSetOS.AddList<double> ("angles");
     for (uint32_t i = 0; i < angleSet.GetSize (); ++i) {
         auto angle = angleSet.GetAngle (i);
@@ -1730,6 +1854,7 @@ static GS::ObjectState DumpReferenceSet (const ReferenceSetBase& referenceSet)
 {
     GS::ObjectState referenceSetOS;
     referenceSetOS.Add ("name", referenceSet.GetName ());
+    referenceSetOS.Add ("isEditable", PreferenceTableIsEditable (referenceSet.IsEditable ()));
     const auto& referenceIds = referenceSetOS.AddList<Int32> ("referenceIds");
     for (uint32_t i = 0; i < referenceSet.GetSize (); ++i) {
         auto referenceId = referenceSet.GetReferenceId (i);
@@ -1761,7 +1886,7 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
     GS::UniString domainStr;
     parameters.Get ("domain", domainStr);
     const std::optional<Domain> domain = DomainFromString (domainStr);
-    if (!domain.has_value () || *domain == Domain::CableCarrier) {
+    if (!domain.has_value ()) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
     }
     bool includeFittingTables = false;
@@ -1769,6 +1894,17 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
 
     GS::ObjectState response;
     const auto& tables = response.AddList<GS::ObjectState> ("tables");
+    const auto dumpValueTable = [] (const auto& table, const GS::Guid& guid) { return DumpValuePreferenceTable (table, guid); };
+
+    // Cable carriers have no circular tables, reference set or fitting tables, only their own segment tables.
+    if (*domain == Domain::CableCarrier) {
+        auto container = GetCableCarrierSegmentPreferenceTableContainer ();
+        if (container.IsErr ()) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the cable carrier segment preference table container: ") + container.UnwrapErr ().text.c_str ());
+        }
+        AddPreferenceTables<CableCarrierSegmentPreferenceTable> (response, "cableCarrierTables", container, dumpValueTable);
+        return response;
+    }
 
     const auto dumpElbow = [] (const auto& table, const GS::Guid& guid) { return DumpElbowPreferenceTable (table, guid); };
     const auto dumpBranch = [] (const auto& table, const GS::Guid& guid) { return DumpBranchPreferenceTable (table, guid); };
@@ -1814,6 +1950,8 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
             }
         }
+        // The rectangular tables are in the same container; DuctRectangularSegmentPreferenceTable::Get picks them.
+        AddPreferenceTables<DuctRectangularSegmentPreferenceTable> (response, "rectangularTables", container, dumpValueTable);
 
         auto referenceSet = GetDuctReferenceSet ();
         response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
