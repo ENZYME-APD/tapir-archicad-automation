@@ -366,6 +366,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.2.9",
             "Sets the project location details."
         );
+        err |= RegisterCommand<GetProjectNotesCommand> (
+            projectCommands, "1.7.3",
+            "Gets the Project Notes of the project (File > Info > Project Notes): client, project name, company, address, architect, draftsmen, project status, date of issue, keywords and notes."
+        );
+        err |= RegisterCommand<SetProjectNotesCommand> (
+            projectCommands, "1.7.3",
+            "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated."
+        );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",
             "Prints from the current view."
