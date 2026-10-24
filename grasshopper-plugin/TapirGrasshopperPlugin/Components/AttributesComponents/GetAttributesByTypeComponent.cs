@@ -39,6 +39,26 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "ModificationTimes",
                 "Last modification time of each attribute, in local time.",
                 GH_ParamAccess.list);
+            // Archicad 30 reports how, from where, by whom and when an attribute was created, but only for
+            // an attribute it keeps a creation record of; the outputs below are null for the others and on
+            // older versions, so the lists stay aligned with the Guids.
+            OutTexts(
+                "CreationMethods",
+                "Creation method of each attribute (AddOn, Merge, Paste, New, Import, Explode, Duplicate, Hotlink, XRef, Library, LibraryMaster or Unspecified). Archicad 30 or later; null when unknown.");
+            OutTexts(
+                "CreationMethodDescriptions",
+                "Description of the creation method of each attribute. Archicad 30 or later; null when unknown.");
+            OutTexts(
+                "CreationSources",
+                "Origin of each attribute, e.g. the file or Add-On it came from. Archicad 30 or later; null when unknown.");
+            OutTexts(
+                "CreatorUserNames",
+                "Teamwork user name, or OS login name in a solo project, that created each attribute. Archicad 30 or later; null when unknown.");
+            outManager.AddTimeParameter(
+                "CreationTimes",
+                "CreationTimes",
+                "Creation time of each attribute, in local time. Archicad 30 or later; null when unknown.",
+                GH_ParamAccess.list);
         }
 
         public override void AddedToDocument(
@@ -85,6 +105,29 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 3,
                 response.Attributes.Select(
                     x => DateTimeOffset.FromUnixTimeSeconds(x.ModificationTime).LocalDateTime));
+
+            da.SetDataList(
+                4,
+                response.Attributes.Select(x => x.CreationInfo?.Method));
+
+            da.SetDataList(
+                5,
+                response.Attributes.Select(x => x.CreationInfo?.MethodDescription));
+
+            da.SetDataList(
+                6,
+                response.Attributes.Select(x => x.CreationInfo?.Source));
+
+            da.SetDataList(
+                7,
+                response.Attributes.Select(x => x.CreationInfo?.CreatorUserName));
+
+            da.SetDataList(
+                8,
+                response.Attributes.Select(
+                    x => x.CreationInfo == null
+                        ? (DateTime?)null
+                        : DateTimeOffset.FromUnixTimeSeconds(x.CreationInfo.CreationTime).LocalDateTime));
         }
 
         protected override System.Drawing.Bitmap Icon =>

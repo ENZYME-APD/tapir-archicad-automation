@@ -44,6 +44,9 @@
 #define ACAPI_Teamwork_GetLockableStatus ACAPI_TeamworkControl_GetLockableStatus
 #define ACAPI_Teamwork_ReserveHotlinkCacheManagement ACAPI_TeamworkControl_ReserveHotlinkCacheManagement
 #define ACAPI_Teamwork_ReleaseHotlinkCacheManagement ACAPI_TeamworkControl_ReleaseHotlinkCacheManagement
+#define ACAPI_Teamwork_GetHotlinkCacheManagementOwner ACAPI_TeamworkControl_GetHotlinkCacheManagementOwner
+#define ACAPI_Teamwork_HasConnection ACAPI_TeamworkControl_HasConnection
+#define ACAPI_Teamwork_ProjectSharing(par1) ACAPI_Environment (APIEnv_ProjectSharingID, par1)
 
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
@@ -51,13 +54,27 @@
 #define ACAPI_Selection_Select ACAPI_Element_Select
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
+#define ACAPI_ElementLink_Link ACAPI_Element_Link
+#define ACAPI_ElementLink_Unlink ACAPI_Element_Unlink
+#define ACAPI_ElementLink_GetLinks ACAPI_Element_GetLinks
+#define ACAPI_ElementLink_GetLinkFlags ACAPI_Element_GetLinkFlags
+
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
 #define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
+#define ACAPI_SurveyPoint_IsSurveyPointVisible(par1) ACAPI_Environment (APIEnv_IsSurveyPointVisibleID, par1)
+#define ACAPI_SurveyPoint_SetSurveyPointVisibility(par1) ACAPI_Environment (APIEnv_SetSurveyPointVisibilityID, par1)
+#ifdef ServerMainVers_2600
+#define ACAPI_SurveyPoint_IsSurveyPointLocked(par1) ACAPI_Environment (APIEnv_IsSurveyPointLockedID, par1)
+#define ACAPI_SurveyPoint_SetSurveyPointLocked(par1) ACAPI_Environment (APIEnv_SetSurveyPointLockedID, par1)
+#endif
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
+#define ACAPI_ProjectSetting_ChangeProjectNotes(par1) ACAPI_Environment (APIEnv_ChangeProjectNotesID, par1)
 #define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
+#define ACAPI_Attribute_GetCurrPenSet(par1) ACAPI_Environment (APIEnv_GetCurrPenSetID, par1)
 
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
+#define ACAPI_Element_RoomReductions(par1, par2) ACAPI_Database (APIDb_RoomReductionsID, (void*) par1, (void*) par2)
 
 #define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
 #define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
@@ -68,6 +85,7 @@
 #define ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMLayoutCurrentRevisionChangesID, (void*)par1, par2)
 #define ACAPI_Revision_GetRVMElemChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMElemChangeIdsID, (void*)par1, par2)
 #define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMChangeCustomScheme(par1) ACAPI_Database (APIDb_GetRVMChangeCustomSchemeID, par1)
 
 #define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
 #define ACAPI_LibraryPart_GetNum(par1) ACAPI_LibPart_GetNum(par1)
@@ -77,6 +95,12 @@
 #define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
 #define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
 #define ACAPI_Element_GetRoomImage(par1) ACAPI_Goodies(APIAny_GetRoomImageID,par1)
+#define ACAPI_Element_SearchElementByCoord(par1, par2) ACAPI_Goodies (APIAny_SearchElementByCoordID, (void*) par1, par2)
+
+inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const API_Guid* elemApiGuid, const API_HierarchicalOwnerType* hierarchicalOwnerType, API_HierarchicalElemType* hierarchicalElemType, API_Guid* ownerElemApiGuid)
+{
+    return ACAPI_Goodies (APIAny_GetHierarchicalElementOwnerID, const_cast<API_Guid*> (elemApiGuid), const_cast<API_HierarchicalOwnerType*> (hierarchicalOwnerType), hierarchicalElemType, ownerElemApiGuid);
+}
 
 #define ACAPI_AddOnAddOnCommunication_Call ACAPI_Command_Call
 
@@ -93,6 +117,8 @@
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
 #define ACAPI_View_Get3DProjectionSets(par1) ACAPI_Environment (APIEnv_Get3DProjectionSetsID, par1)
 #define ACAPI_View_Change3DProjectionSets(par1, par2) ACAPI_Environment (APIEnv_Change3DProjectionSetsID, (void*) par1, (void*) par2)
+#define ACAPI_View_Get3DWindowSets(par1) ACAPI_Environment (APIEnv_Get3DWindowSetsID, par1)
+#define ACAPI_View_Change3DWindowSets(par1) ACAPI_Environment (APIEnv_Change3DWindowSetsID, par1)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 // APIDo_ChangeWindowID brings the window to the front; APIDb_ChangeCurrentDatabaseID only
 // switches the database the API works on and leaves the front window as it is, which is
@@ -100,8 +126,21 @@
 #define ACAPI_Window_ChangeWindow(par1) ACAPI_Automate (APIDo_ChangeWindowID, (void*) par1)
 #define ACAPI_Database_GetLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetLayoutDatabasesID, par1, par2)
 #define ACAPI_Database_GetMasterLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetMasterLayoutDatabasesID, par1, par2)
+#define ACAPI_Database_GetSectionDatabases(par1, par2) ACAPI_Database (APIDb_GetSectionDatabasesID, par1, par2)
+#define ACAPI_Database_GetElevationDatabases(par1, par2) ACAPI_Database (APIDb_GetElevationDatabasesID, par1, par2)
+#define ACAPI_Database_GetInteriorElevationDatabases(par1, par2) ACAPI_Database (APIDb_GetInteriorElevationDatabasesID, par1, par2)
+#define ACAPI_Database_GetDetailDatabases(par1, par2) ACAPI_Database (APIDb_GetDetailDatabasesID, par1, par2)
+#define ACAPI_Database_GetWorksheetDatabases(par1, par2) ACAPI_Database (APIDb_GetWorksheetDatabasesID, par1, par2)
+#define ACAPI_Database_GetDocumentFrom3DDatabases(par1, par2) ACAPI_Database (APIDb_GetDocumentFrom3DDatabasesID, par1, par2)
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
+#define ACAPI_Navigator_GetCurrLayerComb(par1) ACAPI_Environment (APIEnv_GetCurrLayerCombID, par1)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
+#define ACAPI_Database_ModifyDatabase(par1) ACAPI_Database (APIDb_ModifyDatabaseID, par1)
+
+inline GSErrCode ACAPI_DrawOrder_DrawOrderGetNext (API_ElemFilterFlags filterBits, API_Elem_Head* elemHead)
+{
+    return ACAPI_Database (APIDb_DrawOrderGetNextID, &filterBits, elemHead);
+}
 
 inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutInfo, API_DatabaseUnId* databaseUnId)
 {
@@ -110,6 +149,7 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Navigator_CreateLayout(par1, par2) ACAPI_Environment (APIEnv_CreateLayoutID, par1, par2)
 #define ACAPI_Navigator_GetSubSetDefault(par1) ACAPI_Database (APIDb_GetSubSetDefaultID, par1)
 #define ACAPI_Navigator_CreateSubSet(par1, par2) ACAPI_Database (APIDb_CreateSubSetID, par1, (void*)par2)
+#define ACAPI_Navigator_GetSubSet(par1, par2) ACAPI_Database (APIDb_GetSubSetID, (void*)par1, par2)
 
 #define ACAPI_View_IsSuspendGroupOn(par1)   ACAPI_Environment (APIEnv_IsSuspendGroupOnID, par1)
 #define ACAPI_Grouping_CreateGroup          ACAPI_ElementGroup_Create
@@ -117,10 +157,24 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Grouping_GetRootGroup         ACAPI_ElementGroup_GetRootGroup
 #define ACAPI_Grouping_GetGroupedElems      ACAPI_ElementGroup_GetGroupedElems
 #define ACAPI_Grouping_GetAllGroupedElems   ACAPI_ElementGroup_GetAllGroupedElems
+#define ACAPI_Grouping_GetUserData          ACAPI_ElementGroup_GetUserData
 #define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
 #define ACAPI_View_Rebuild(par1) ACAPI_Automate (APIDo_RebuildID, (void*) par1)
+
+// The drawing scale of the current database (APIdefs_Database.h: APIDb_GetDrawingScaleID 'GSCL',
+// APIDb_ChangeDrawingScaleID 'CDRS'). AC25/26 take the rebuild flag of the change as par2 (bool*),
+// AC27+ take it as a bool with a false default.
+inline GSErrCode ACAPI_Drawing_GetDrawingScale (double* scale)
+{
+    return ACAPI_Database (APIDb_GetDrawingScaleID, (void*) scale);
+}
+
+inline GSErrCode ACAPI_Drawing_ChangeDrawingScale (double* scale, bool zoom = false)
+{
+    return ACAPI_Database (APIDb_ChangeDrawingScaleID, (void*) scale, (void*) &zoom);
+}
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
@@ -151,6 +205,11 @@ inline GSErrCode ACAPI_ProjectOperation_Publish (const API_PublishPars* publishP
 inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars* fileOpenPars)
 {
     return ACAPI_Automate (APIDo_OpenID, (void*) fileOpenPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_NewProject (const API_NewProjectPars* newProjectPars)
+{
+    return ACAPI_Automate (APIDo_NewProjectID, (void*) newProjectPars);
 }
 
 inline GSErrCode ACAPI_ProjectOperation_Close ()
@@ -189,6 +248,16 @@ inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_GetPrinterPars (API_PrintPars* printPars)
+{
+    return ACAPI_Environment (APIEnv_GetPrinterParsID, printPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_GetMiscAppInfo (API_MiscAppInfo* miscAppInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMiscAppInfoID, miscAppInfo);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);
@@ -197,6 +266,16 @@ inline GSErrCode ACAPI_View_Zoom ()
 inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
 {
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
+}
+
+inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
+{
+    return ACAPI_Database (APIDb_SetZoomID, (void*) zoomBox, (void*) tranmat);
+}
+
+inline GSErrCode ACAPI_View_ResetZoom (short* numOfStepsBack)
+{
+    return ACAPI_Database (APIDb_ReSetZoomID, (void*) numOfStepsBack);
 }
 
 inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniString, 3>>* autotexts, API_AutotextType autotextType)
@@ -217,6 +296,17 @@ inline GSErrCode ACAPI_AutoText_CreateAnAutoText (const API_Guid* autotextDbKey,
 inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
 {
     return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
+}
+
+// Before Archicad 27 the text measuring functions are Goodies: par1 the input, par2 the result.
+inline GSErrCode ACAPI_Element_GetTextLineLength (API_TextLinePars* textLinePars, double* length)
+{
+    return ACAPI_Goodies (APIAny_GetTextLineLengthID, textLinePars, length);
+}
+
+inline GSErrCode ACAPI_Element_GetTextSizeFactor (short* fontIndex, double* textSizeFactor)
+{
+    return ACAPI_Goodies (APIAny_GetTextSizeFactorID, fontIndex, textSizeFactor);
 }
 
 // APIAny_GetPropertyAutoTextKeyTableID exists in APIdefs_Goodies.h from AC25 on: par1 is the
@@ -250,6 +340,13 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
 }
 
+// APIDb_GetHotlinkProxyElementTableID: par1 the instance guid, par2 the
+// proxy -> source element table, as AC27's ACAPI_Hotlink_GetHotlinkProxyElementTable.
+inline GSErrCode ACAPI_Hotlink_GetHotlinkProxyElementTable (const API_Guid* hotlinkGuid, GS::HashTable<API_Guid, API_Guid>* proxyElementTable)
+{
+    return ACAPI_Database (APIDb_GetHotlinkProxyElementTableID, (void*) hotlinkGuid, (void*) proxyElementTable);
+}
+
 inline GSErrCode ACAPI_Hotlink_CreateHotlinkNode (API_HotlinkNode* hotlinkNode)
 {
     return ACAPI_Database (APIDb_CreateHotlinkNodeID, hotlinkNode);
@@ -277,6 +374,13 @@ inline GSErrCode ACAPI_Hotlink_ModifyHotlinkNode (API_HotlinkNode* hotlinkNode)
 inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGuid)
 {
     return ACAPI_Database (APIDb_UpdateHotlinkCacheID, (void*) hotlinkNodeGuid);
+}
+
+// APIDb_GetHotlinkInstancesID (APIdefs_Database.h): par1 is the node guid,
+// par2 receives the API_HotlinkType elements placed from that node.
+inline GSErrCode ACAPI_Hotlink_GetHotlinkInstances (const API_Guid* hotlinkNodeGuid, GS::Array<API_Guid>* elementRefList)
+{
+    return ACAPI_Database (APIDb_GetHotlinkInstancesID, (void*) hotlinkNodeGuid, (void*) elementRefList);
 }
 
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
@@ -309,6 +413,16 @@ inline GSErrCode ACAPI_Navigator_GetNavigatorChildrenItems (API_NavigatorItem* i
     return ACAPI_Navigator (APINavigator_GetNavigatorChildrenItemsID, item, nullptr, items);
 }
 
+inline GSErrCode ACAPI_Navigator_GetNavigatorParentItem (const API_Guid* guid, API_NavigatorItem* parent)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorParentItemID, (void*) guid, parent);
+}
+
+inline GSErrCode ACAPI_Navigator_GetNavigatorChildNum (API_NavigatorItem* parent, Int32* num)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorChildNumID, parent, num);
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);
@@ -324,6 +438,11 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
     return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
 }
 
+inline GSErrCode ACAPI_CurtainWall_GetCWHeight (const API_Guid* guid, double* height)
+{
+    return ACAPI_Goodies (APIAny_GetCWHeightID, (void*) guid, height);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo>* activeLibs, Int32* embeddedLibraryIndex = nullptr)
 {
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);
@@ -332,6 +451,16 @@ inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo
 inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_LibraryInfo>* activeLibs)
 {
     return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_CreateFolderInLibrary (const IO::Location* newFolderLocationInLibrary)
+{
+    return ACAPI_Environment (APIEnv_CreateFolderInLibraryID, (void*) newFolderLocationInLibrary);
+}
+
+inline GSErrCode ACAPI_LibraryManagement_CopyFilesIntoLibrary (const IO::Location* targetFolderLocationInLibrary, const GS::Array<IO::Location>* filesToCopy, const bool* overwriteIfExists)
+{
+    return ACAPI_Environment (APIEnv_CopyFilesIntoLibraryID, (void*) targetFolderLocationInLibrary, (void*) filesToCopy, (void*) overwriteIfExists);
 }
 
 inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* location, GS::Array<API_Elem_Head>* elemHead = nullptr)
@@ -347,6 +476,16 @@ inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* lo
 inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr, Get3DComponentProc* get3DComponentProc = nullptr)
 {
     return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
+}
+
+inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)
+{
+    return ACAPI_Goodies (APIAny_GetSelectedElementID, (void*) apiNeig, apiGuid);
+}
+
+inline GSErrCode ACAPI_Element_NeigToCoord (API_Neig* neig, API_Coord3D* coord3D, API_Coord3D* coord3DDocument = nullptr)
+{
+    return ACAPI_Goodies (APIAny_NeigToCoordID, neig, coord3D, coord3DDocument);
 }
 
 // APIIo_InitProcessWindowID takes the phase count as short*, AC27+ take an Int32*.
@@ -374,6 +513,27 @@ inline GSErrCode ACAPI_ProcessWindow_SetProcessValue (Int32* newval)
 inline GSErrCode ACAPI_ProcessWindow_IsProcessCanceled ()
 {
     return ACAPI_Interface (APIIo_IsProcessCanceledID);
+}
+
+// The AC25/26 forms of the AC27 ACAPI_CuttingPlane_* functions: par1 is the bool* (APIdefs_Interface.h).
+inline GSErrCode ACAPI_CuttingPlane_Is3DCutawayEnabled (bool* param)
+{
+    return ACAPI_Interface (APIIo_Is3DCutawayEnabledID, param);
+}
+
+inline GSErrCode ACAPI_CuttingPlane_Set3DCutawayStatus (bool* param)
+{
+    return ACAPI_Interface (APIIo_Set3DCutawayStatusID, param);
+}
+
+inline GSErrCode ACAPI_CuttingPlane_IsCuttingPlanesVisible (bool* param)
+{
+    return ACAPI_Interface (APIIo_IsCuttingPlanesVisibleID, param);
+}
+
+inline GSErrCode ACAPI_CuttingPlane_SetCuttingPlanesVisibility (bool* param)
+{
+    return ACAPI_Interface (APIIo_SetCuttingPlanesVisibilityID, param);
 }
 
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
@@ -421,6 +581,11 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
+{
+    return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
@@ -447,6 +612,11 @@ inline GSErrCode ACAPI_Database_GetCurrentDatabase (API_DatabaseInfo* par1)
 inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
 {
     return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
+}
+
+inline GSErrCode ACAPI_Database_GetContainingDatabase (const API_Guid* elemGuid, API_DatabaseInfo* dbInfo)
+{
+    return ACAPI_Database (APIDb_GetContainingDatabaseID, const_cast<API_Guid*> (elemGuid), dbInfo);
 }
 
 inline GSErrCode ACAPI_Navigator_SearchNavigatorItem (API_NavigatorItem* item, GS::Array<API_NavigatorItem>* items)
@@ -489,6 +659,16 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bool* isDegenerate)
+{
+    return ACAPI_Database (APIDb_IsCWPanelDegenerateID, const_cast<API_Guid*> (guid), isDegenerate);
+}
+
+#endif
+
+#if defined(ServerMainVers_2600) && !defined(ServerMainVers_2700)
+// Named ACAPI_Element_GetNoteKeywordForAutotextID in AC26; AC25 does not have it.
+#define ACAPI_AutoText_GetNoteKeywordForAutotextID ACAPI_Element_GetNoteKeywordForAutotextID
 #endif
 
 #ifndef ServerMainVers_2600
@@ -617,6 +797,33 @@ inline bool TAPIR_Element_IsClassificationItemVisibleDefault (const API_Elem_Hea
     return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.type, itemGuid);
 #else
     return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.typeID, elemHead.variationID, itemGuid);
+// The classification of the tool defaults of a plain element type (generic variation):
+// since AC26 the API takes an API_ElemType, which an API_ElemTypeID converts to; before
+// that the typeID and the variationID are separate arguments.
+inline GSErrCode TAPIR_Element_GetClassificationInSystemDefault (API_ElemTypeID typeID, const API_Guid& systemGuid, API_ClassificationItem& item)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_GetClassificationInSystemDefault (typeID, systemGuid, item);
+#else
+    return ACAPI_Element_GetClassificationInSystemDefault (typeID, APIVarId_Generic, systemGuid, item);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_AddClassificationItemDefault (API_ElemTypeID typeID, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_AddClassificationItemDefault (typeID, itemGuid);
+#else
+    return ACAPI_Element_AddClassificationItemDefault (typeID, APIVarId_Generic, itemGuid);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_RemoveClassificationItemDefault (API_ElemTypeID typeID, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_RemoveClassificationItemDefault (typeID, itemGuid);
+#else
+    return ACAPI_Element_RemoveClassificationItemDefault (typeID, APIVarId_Generic, itemGuid);
 #endif
 }
 
@@ -639,6 +846,37 @@ inline GSErrCode TAPIR_Element_SetCategoryValue (const API_Guid& elemGuid, const
     return ACAPI_Category_SetCategoryValue (elemGuid, categoryValue.category, categoryValue);
 #else
     return ACAPI_Element_SetCategoryValue (elemGuid, categoryValue.category, categoryValue);
+#endif
+}
+
+// The category of an element (Structural Function, Position, Renovation Status ...) and its
+// current value. The category is identified by its guid or its categoryID.
+inline GSErrCode TAPIR_Element_GetCategoryValue (const API_Guid& elemGuid, const API_ElemCategory& category, API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetCategoryValue (elemGuid, category, &categoryValue);
+#else
+    return ACAPI_Element_GetCategoryValue (elemGuid, category, &categoryValue);
+#endif
+}
+
+// All element categories of the project, with their localized names.
+inline GSErrCode TAPIR_GetElementCategories (GS::Array<API_ElemCategory>& categories)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetElementCategories (&categories);
+#else
+    return ACAPI_Database (APIDb_GetElementCategoriesID, &categories);
+#endif
+}
+
+// The possible values of one element category, with their localized names.
+inline GSErrCode TAPIR_GetElementCategoryValues (const API_ElemCategory& category, GS::Array<API_ElemCategoryValue>& categoryValues)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetElementCategoryValues (&category, &categoryValues);
+#else
+    return ACAPI_Database (APIDb_GetElementCategoryValuesID, (void*) &category, &categoryValues);
 #endif
 }
 
