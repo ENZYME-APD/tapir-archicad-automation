@@ -564,6 +564,9 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
         if (err == NoError) {
             err = ACAPI_LibraryPart_GetActParameters (&getParams);
+            if (err != NoError) {
+                ACAPI_LibraryPart_CloseParameters ();
+            }
         }
 
         if (err != NoError) {
@@ -684,10 +687,50 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             parameterListAdder (gdlParameterDetails);
         }
         elemGdlParameterListAdder (gdlParameters);
+        // The parameter session opened above stayed open before (only SetGDLParametersOfElements
+        // closed its own); the API pairs every ACAPI_LibraryPart_OpenParameters with a close.
+        ACAPI_LibraryPart_CloseParameters ();
         ACAPI_DisposeAddParHdl (&getParams.params);
     }
 
     return response;
+}
+
+// The parameter list is read again after every write, because the Parameter Script may have
+// changed other parameters with it. The read used to go unchecked: when it fails, getParams.params
+// stays empty and the element would be changed with no parameters at all, so it is an error.
+static GSErrCode ReadParametersAgain (API_GetParamsType& getParams, const API_Guid& elemGuid, GS::UniString& errMessage)
+{
+    ACAPI_DisposeAddParHdl (&getParams.params);
+    const GSErrCode err = ACAPI_LibraryPart_GetActParameters (&getParams);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Failed to read back the GDL parameters of element with guid %T after a write (ACAPI_LibraryPart_GetActParameters)", APIGuidToString (elemGuid).ToPrintf ());
+    }
+    return err;
+}
+
+// Every parameter write ends in one ACAPI_Element_Change, which refuses an element Archicad does
+// not let the user edit either - on a locked layer, locked with Edit > Locking, or in Teamwork not
+// reserved by the user - with a bare error code, whatever the parameter (the one non-editable
+// element of TestProject.pla answers every change with -2130312912, in SetDetailsOfElements too).
+// The reason is reported next to the code, the way DeleteElements does, so the caller does not
+// take the refusal for an invalid parameter or value.
+static GS::UniString GetElementChangeFailureMessage (const API_Elem_Head& elemHead)
+{
+    const GS::UniString guidString = APIGuidToString (elemHead.guid);
+
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = elemHead.layer;
+    if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
+        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because its layer is locked", guidString.ToPrintf ());
+    }
+
+    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
+        return GS::UniString::Printf ("The parameters of element with guid %T were not changed, because the element is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)", guidString.ToPrintf ());
+    }
+
+    return GS::UniString::Printf ("The parameters of element with guid %T were set, but Archicad refused to change the element with them (ACAPI_Element_Change failed)", guidString.ToPrintf ());
 }
 
 SetGDLParametersOfElementsCommand::SetGDLParametersOfElementsCommand () :
@@ -800,7 +843,9 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             if (err == NoError) {
                 API_GetParamsType getParams = {};
                 err = ACAPI_LibraryPart_GetActParameters (&getParams);
-                if (err == NoError) {
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to read the GDL parameters of element with guid %T (ACAPI_LibraryPart_GetActParameters)", APIGuidToString (elemGuid).ToPrintf ());
+                } else {
                     const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
                     GS::HashTable<GS::String, API_AddParID> gdlParametersTypeDictionary;
                     GS::HashTable<short, GS::String> gdlParametersIndexNameDictionary;
@@ -826,16 +871,10 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
                                 err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
-                                if (err != NoError) {
-                                    break;
+                                if (err == NoError) {
+                                    err = ReadParametersAgain (getParams, elemGuid, errMessage);
                                 }
-
-                                // An unchecked failure here left getParams.params null, and the
-                                // ACAPI_Element_Change below then committed an empty AddPars memo.
-                                ACAPI_DisposeAddParHdl (&getParams.params);
-                                err = ACAPI_LibraryPart_GetActParameters (&getParams);
                                 if (err != NoError) {
-                                    errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
                                     break;
                                 }
                             }
@@ -844,14 +883,10 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             }
                         } else {
                             err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
-                            if (err != NoError) {
-                                break;
+                            if (err == NoError) {
+                                err = ReadParametersAgain (getParams, elemGuid, errMessage);
                             }
-
-                            ACAPI_DisposeAddParHdl (&getParams.params);
-                            err = ACAPI_LibraryPart_GetActParameters (&getParams);
                             if (err != NoError) {
-                                errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
                                 break;
                             }
                         }
@@ -901,6 +936,9 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
                         memo.params = getParams.params;
                         err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+                        if (err != NoError) {
+                            errMessage = GetElementChangeFailureMessage (element.header);
+                        }
                     }
                 }
                 ACAPI_LibraryPart_CloseParameters ();
@@ -1321,6 +1359,34 @@ static GS::HashTable<GS::String, GS::UniString> GetParameterDisplayNames (Int32 
     return displayNames;
 }
 
+void AddLibPartAndGDLParameters (GS::ObjectState& os, Int32 libInd, API_AddParType** params)
+{
+    GS::HashTable<GS::String, GS::UniString> displayNames;
+    if (libInd > 0) {
+        AddMarkerLibPartDetails (os, libInd);
+        displayNames = GetParameterDisplayNames (libInd);
+    }
+
+    const GSSize nParams = params != nullptr ? BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType) : 0;
+    const auto& parameterListAdder = os.AddList<GS::ObjectState> ("parameters");
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& actParam = (*params)[ii];
+        if (actParam.typeID == APIParT_Separator) {
+            continue;
+        }
+
+        GS::ObjectState parameterDetails;
+        parameterDetails.Add ("name", actParam.name);
+        const GS::UniString* displayName = displayNames.GetPtr (GS::String (actParam.name));
+        parameterDetails.Add ("displayName", displayName != nullptr ? *displayName : GS::UniString (actParam.uDescname));
+        parameterDetails.Add ("index", actParam.index);
+        parameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+        AddValueAndDescriptions (parameterDetails, actParam);
+        AddParameterFlags (parameterDetails, actParam);
+        parameterListAdder (parameterDetails);
+    }
+}
+
 // Changes one parameter of the marker's parameter list in place. There is no parameter
 // interface (ACAPI_LibraryPart_OpenParameters) for a sub-element, so unlike
 // SetGDLParametersOfElements this writes the API_AddParType the marker was read with.
@@ -1489,73 +1555,7 @@ GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetRawResponse
                                 "type": "array",
                                 "description": "The GDL parameters of the marker.",
                                 "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the parameter."
-                                        },
-                                        "displayName": {
-                                            "type": "string",
-                                            "description": "The display name of the parameter."
-                                        },
-                                        "index": {
-                                            "type": "integer",
-                                            "description": "The index of the parameter."
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "description": "The type of the parameter."
-                                        },
-                                        "dimension1": {
-                                            "type": "integer",
-                                            "description": "The 1st dimension of array (in case of array value)."
-                                        },
-                                        "dimension2": {
-                                            "type": "integer",
-                                            "description": "The 2nd dimension of array (in case of array value)."
-                                        },
-                                        "value": {
-                                            "description": "The value of the parameter."
-                                        },
-                                        "valueDescription": {
-                                            "type": "string",
-                                            "description": "The value description for numeric parameter."
-                                        },
-                                        "itemDescriptions": {
-                                            "type": "array",
-                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "flags": {
-                                            "type": "array",
-                                            "description": "The flags of the parameter.",
-                                            "items": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "Hidden",
-                                                    "HiddenFromScript",
-                                                    "Disabled",
-                                                    "Child",
-                                                    "Unique",
-                                                    "Fixed",
-                                                    "BoldName",
-                                                    "Open"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "displayName",
-                                        "index",
-                                        "type",
-                                        "value",
-                                        "flags"
-                                    ]
+                                    "$ref": "#/StoredGDLParameter"
                                 }
                             }
                         },
@@ -1609,30 +1609,8 @@ GS::ObjectState GetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
             continue;
         }
 
-        const Int32 libInd = marker.subElem.object.libInd;
         GS::ObjectState markerParameters;
-        AddMarkerLibPartDetails (markerParameters, libInd);
-        const GS::HashTable<GS::String, GS::UniString> displayNames = GetParameterDisplayNames (libInd);
-
-        const GSSize nParams = BMGetHandleSize ((GSHandle) marker.memo.params) / sizeof (API_AddParType);
-        const auto& parameterListAdder = markerParameters.AddList<GS::ObjectState> ("parameters");
-        for (GSIndex ii = 0; ii < nParams; ++ii) {
-            const API_AddParType& actParam = (*marker.memo.params)[ii];
-            if (actParam.typeID == APIParT_Separator) {
-                continue;
-            }
-
-            GS::ObjectState parameterDetails;
-            parameterDetails.Add ("name", actParam.name);
-            const GS::UniString* displayName = displayNames.GetPtr (GS::String (actParam.name));
-            parameterDetails.Add ("displayName", displayName != nullptr ? *displayName : GS::UniString (actParam.uDescname));
-            parameterDetails.Add ("index", actParam.index);
-            parameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
-            AddValueAndDescriptions (parameterDetails, actParam);
-            AddParameterFlags (parameterDetails, actParam);
-            parameterListAdder (parameterDetails);
-        }
-
+        AddLibPartAndGDLParameters (markerParameters, marker.subElem.object.libInd, marker.memo.params);
         markerParametersListAdder (markerParameters);
     }
 
@@ -2440,6 +2418,82 @@ GS::ObjectState ChangeLibraryPartOfElementsCommand::Execute (const GS::ObjectSta
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
             }
+RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RunParameterScriptOfElementsCommand::GetName () const
+{
+    return "RunParameterScriptOfElements";
+}
+
+GS::Optional<GS::UniString> RunParameterScriptOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> RunParameterScriptOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RunParameterScriptOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // Running the parameter script can change the element's parameters, so it runs in an
+    // undoable command like SetGDLParametersOfElements. The mask is left at its default (0).
+    ACAPI_CallUndoableCommand ("Run Parameter Script of Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            API_Element apiElement = {};
+            apiElement.header.guid = elemGuid;
+            GSErrCode err = ACAPI_Element_Get (&apiElement);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to find element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            err = ACAPI_LibraryManagement_RunGDLParScript (&apiElement.header);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to run the parameter script of element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
