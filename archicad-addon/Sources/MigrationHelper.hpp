@@ -130,6 +130,8 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
+#define ACAPI_ProjectSetting_GetOffset(par1) ACAPI_Database (APIDb_GetOffsetID, par1)
+#define ACAPI_Database_GetLocOrigo(par1) ACAPI_Database (APIDb_GetLocOrigoID, par1)
 #define ACAPI_View_Rebuild(par1) ACAPI_Automate (APIDo_RebuildID, (void*) par1)
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)

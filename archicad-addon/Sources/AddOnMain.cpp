@@ -341,6 +341,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.2.9",
             "Sets the project location details."
         );
+        err |= RegisterCommand<GetCoordinateOriginsCommand> (
+            projectCommands, "1.7.2",
+            "Gets the offset of the virtual coordinate system origin from the world origin, and the user origin of the current database. Use it to tell which origin the coordinates of different sources (elements, views, survey point) are relative to."
+        );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",
             "Prints from the current view."
