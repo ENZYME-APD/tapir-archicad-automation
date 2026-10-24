@@ -581,6 +581,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.2",
             "Unlocks the given elements. Manual lock, not teamwork!"
         );
+        err |= RegisterCommand<RefreshElementsCommand> (
+            elementCommands, "1.7.3",
+            "Refreshes (rebuilds) the given elements, for example placed Objects, Windows and Doors that still show the old geometry after their library part's script or embedded file changed. Set force to true to run the parameter script of GDL-based elements too. The elements are looked up in the current database (floor plan, section or detail window). Returns an execution result for each input element. The refresh cannot be undone."
+        );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",
             "Gets all the GDL parameters (name, type, value) of the given elements."
