@@ -662,6 +662,134 @@ GS::ObjectState SetSuspendGroupsModeCommand::Execute(const GS::ObjectState& para
         : CreateFailedExecutionResult(err, "Failed to set the Suspend Groups mode."));
 }
 
+CreateElementSetsCommand::CreateElementSetsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String CreateElementSetsCommand::GetName() const
+{
+    return "CreateElementSets";
+}
+
+GS::Optional<GS::UniString> CreateElementSetsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to create.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements",
+                            "description": "The elements to put into the element set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateElementSetsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The identifier of each created element set, or an error, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementSetId": {
+                                    "type": "object",
+                                    "description": "The identifier of an element set.",
+                                    "properties": {
+                                        "guid": {
+                                            "$ref": "#/Guid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "guid"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementSetId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::ObjectState CreateElementSetsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetIds = response.AddList<GS::ObjectState>("elementSets");
+
+    ACAPI_CallUndoableCommand("Create Element Sets", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementSet : elementSets) {
+            GS::Array<GS::ObjectState> elements;
+            if (!elementSet.Get("elements", elements) || elements.IsEmpty()) {
+                elementSetIds(CreateErrorResponse(APIERR_BADPARS, "Elements array is missing or empty."));
+                continue;
+            }
+
+            GS::Array<API_Guid> elemGuids;
+            for (const GS::ObjectState& item : elements) {
+                elemGuids.Push(GetGuidFromElementsArrayItem(item));
+            }
+
+            // No user data is stored with the set; an empty handle is passed
+            // rather than a null one, as the API copies the handle's content.
+            API_UserData userData = {};
+            userData.dataHdl = BMAllocateHandle(0, ALLOCATE_CLEAR, 0);
+
+            API_Guid setGuid = APINULLGuid;
+            const GSErrCode err = ACAPI_ElementSet_Create(&elemGuids, &userData, &setGuid);
+            BMKillHandle(&userData.dataHdl);
+
+            if (err != NoError) {
+                elementSetIds(CreateErrorResponse(err, "Failed to create the element set."));
+                continue;
+            }
+
+            elementSetIds(CreateIdObjectState("elementSetId", setGuid));
+        }
+        return NoError;
+    });
 GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
     CommandBase(CommonSchema::Used)
 {
