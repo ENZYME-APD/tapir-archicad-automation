@@ -154,6 +154,28 @@ aclib.RunTapirCommand ('CreateZones', {
     ]
 })
 
+# A zone whose area overlaps a zone already on the same story is refused with an
+# error naming that zone: Archicad would otherwise open a modal overlap warning
+# that blocks the API until someone clicks it. Zones that only share an edge are
+# fine. Pass 'allowOverlap': True in the item to create it regardless (and accept
+# the dialog). This one overlaps the office above, so its result is the error.
+aclib.RunTapirCommand ('CreateZones', {
+    'zonesData': [
+        {
+            'name': 'Overlapping',
+            'numberStr': '002',
+            'geometry': {
+                'polygonCoordinates': [
+                    { 'x': 83.0, 'y': 2.0 },
+                    { 'x': 90.0, 'y': 2.0 },
+                    { 'x': 90.0, 'y': 8.0 },
+                    { 'x': 83.0, 'y': 8.0 }
+                ]
+            }
+        }
+    ]
+})
+
 # --- library part based elements ---------------------------------------------
 #
 # These two need a library part that is loaded in the project. If yours are

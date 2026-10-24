@@ -5,6 +5,8 @@
 #include "NotificationCommands.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <utility>
 #include <vector>
 
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
@@ -593,6 +595,315 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+// --- Zone overlap pre-check (#822) -------------------------------------------------
+//
+// Archicad answers ACAPI_Element_Create of a Zone whose area overlaps another Zone on
+// the same story with a modal "overlapping zone areas" warning. A JSON command runs on
+// the main thread, so the command does not return until someone clicks that dialog and
+// every other API call is blocked meanwhile. The overlap is therefore looked for here,
+// before the element is created, and the item fails with an error naming the other
+// Zone instead; the per-item "allowOverlap" flag skips the check for callers who
+// accept the dialog.
+//
+// The check uses the polygons as stored in the memo, so a curved edge is taken as its
+// chord. Two Zones overlap when they share area: an edge of one properly crosses an
+// edge of the other, or a point just inside an edge of one lies strictly inside the
+// other. Zones that only touch (a shared edge or corner, the normal case for the rooms
+// of a floor plan) do not overlap. For an automatic Zone only its reference point is
+// known before creation, so it counts as overlapping when that point is inside an
+// existing Zone.
+
+namespace {
+
+struct ZoneArea {
+    std::vector<API_Coord>              outline;
+    std::vector<std::vector<API_Coord>> holes;
+};
+
+// 1 mm, the same as IsSame2DCoordinate: closer than this to an edge is "on" it.
+constexpr double ZoneBoundaryTolerance = 0.001;
+// How far inside an edge its probe point is taken; above the tolerance so that the
+// probe of a shared edge lands clearly outside the neighbouring Zone. Together the two
+// mean that a sliver overlap narrower than about 3 mm (with no crossing edges) is
+// taken as touching, not overlapping.
+constexpr double ZoneProbeOffset = 0.002;
+
+enum class RingPosition {
+    Outside,
+    OnBoundary,
+    Inside
+};
+
+static double SquaredDistance (const API_Coord& a, const API_Coord& b)
+{
+    const double dx = a.x - b.x;
+    const double dy = a.y - b.y;
+    return dx * dx + dy * dy;
+}
+
+static bool IsPointOnSegment (const API_Coord& p, const API_Coord& a, const API_Coord& b)
+{
+    const double abx = b.x - a.x;
+    const double aby = b.y - a.y;
+    const double lengthSquared = abx * abx + aby * aby;
+    double t = 0.0;
+    if (lengthSquared > 0.0) {
+        t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / lengthSquared;
+        t = std::max (0.0, std::min (1.0, t));
+    }
+    const API_Coord closest = { a.x + t * abx, a.y + t * aby };
+    return SquaredDistance (p, closest) <= ZoneBoundaryTolerance * ZoneBoundaryTolerance;
+}
+
+static RingPosition GetRingPosition (const std::vector<API_Coord>& ring, const API_Coord& p)
+{
+    const size_t n = ring.size ();
+    if (n < 3) {
+        return RingPosition::Outside;
+    }
+    bool inside = false;
+    for (size_t i = 0, j = n - 1; i < n; j = i++) {
+        const API_Coord& a = ring[j];
+        const API_Coord& b = ring[i];
+        if (IsPointOnSegment (p, a, b)) {
+            return RingPosition::OnBoundary;
+        }
+        // Even-odd rule: count the edges crossed by the ray from p towards +x.
+        if ((a.y > p.y) != (b.y > p.y)) {
+            const double xAtP = a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y);
+            if (xAtP > p.x) {
+                inside = !inside;
+            }
+        }
+    }
+    return inside ? RingPosition::Inside : RingPosition::Outside;
+}
+
+// Strictly inside the Zone's area: inside its outline and neither in nor on a hole.
+static bool IsStrictlyInsideZone (const ZoneArea& zone, const API_Coord& p)
+{
+    if (GetRingPosition (zone.outline, p) != RingPosition::Inside) {
+        return false;
+    }
+    for (const std::vector<API_Coord>& hole : zone.holes) {
+        if (GetRingPosition (hole, p) != RingPosition::Outside) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Signed distance of p from the line through a and b, positive on the left of a->b.
+static double SignedDistanceFromLine (const API_Coord& a, const API_Coord& b, const API_Coord& p)
+{
+    const double length = std::sqrt (SquaredDistance (a, b));
+    if (length <= 0.0) {
+        return 0.0;
+    }
+    return ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)) / length;
+}
+
+static bool SegmentsProperlyCross (const API_Coord& p1, const API_Coord& p2, const API_Coord& q1, const API_Coord& q2)
+{
+    // Only a proper crossing counts: an endpoint on the other segment (a shared corner
+    // or a T-junction) is how neighbouring Zones touch, and that is not an overlap.
+    const auto onOppositeSides = [] (double d1, double d2) {
+        return (d1 > ZoneBoundaryTolerance && d2 < -ZoneBoundaryTolerance) ||
+               (d1 < -ZoneBoundaryTolerance && d2 > ZoneBoundaryTolerance);
+    };
+    return onOppositeSides (SignedDistanceFromLine (q1, q2, p1), SignedDistanceFromLine (q1, q2, p2)) &&
+           onOppositeSides (SignedDistanceFromLine (p1, p2, q1), SignedDistanceFromLine (p1, p2, q2));
+}
+
+static bool RingsProperlyCross (const std::vector<API_Coord>& ringA, const std::vector<API_Coord>& ringB)
+{
+    const size_t nA = ringA.size ();
+    const size_t nB = ringB.size ();
+    if (nA < 2 || nB < 2) {
+        return false;
+    }
+    for (size_t i = 0, j = nA - 1; i < nA; j = i++) {
+        for (size_t k = 0, l = nB - 1; k < nB; l = k++) {
+            if (SegmentsProperlyCross (ringA[j], ringA[i], ringB[l], ringB[k])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static double SignedArea (const std::vector<API_Coord>& ring)
+{
+    double area = 0.0;
+    const size_t n = ring.size ();
+    for (size_t i = 0, j = n - 1; i < n; j = i++) {
+        area += ring[j].x * ring[i].y - ring[i].x * ring[j].y;
+    }
+    return area / 2.0;
+}
+
+// Takes a point ZoneProbeOffset inside the midpoint of each edge of the ring - on the
+// ring's interior side for an outline, on its exterior side for a hole, so that the
+// probe is always within the Zone's own area - and tells whether any of them lies
+// strictly inside the other Zone. Catches identical and nested Zones, which have no
+// properly crossing edges.
+static bool HasProbePointInside (const std::vector<API_Coord>& ring, bool probeTowardsRingInterior, const ZoneArea& other)
+{
+    const size_t n = ring.size ();
+    if (n < 3) {
+        return false;
+    }
+    const bool leftIsInterior = SignedArea (ring) >= 0.0;
+    const double sign = (leftIsInterior == probeTowardsRingInterior) ? 1.0 : -1.0;
+    for (size_t i = 0, j = n - 1; i < n; j = i++) {
+        const API_Coord& a = ring[j];
+        const API_Coord& b = ring[i];
+        const double length = std::sqrt (SquaredDistance (a, b));
+        if (length <= ZoneBoundaryTolerance) {
+            continue;
+        }
+        // The left normal of a->b is (-(b.y - a.y), b.x - a.x).
+        const API_Coord probe = {
+            (a.x + b.x) / 2.0 - sign * (b.y - a.y) / length * ZoneProbeOffset,
+            (a.y + b.y) / 2.0 + sign * (b.x - a.x) / length * ZoneProbeOffset
+        };
+        if (IsStrictlyInsideZone (other, probe)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool DoZonesOverlap (const ZoneArea& a, const ZoneArea& b)
+{
+    std::vector<const std::vector<API_Coord>*> ringsA { &a.outline };
+    for (const std::vector<API_Coord>& hole : a.holes) {
+        ringsA.push_back (&hole);
+    }
+    std::vector<const std::vector<API_Coord>*> ringsB { &b.outline };
+    for (const std::vector<API_Coord>& hole : b.holes) {
+        ringsB.push_back (&hole);
+    }
+    for (const std::vector<API_Coord>* ringA : ringsA) {
+        for (const std::vector<API_Coord>* ringB : ringsB) {
+            if (RingsProperlyCross (*ringA, *ringB)) {
+                return true;
+            }
+        }
+    }
+    if (HasProbePointInside (a.outline, true, b) || HasProbePointInside (b.outline, true, a)) {
+        return true;
+    }
+    for (const std::vector<API_Coord>& hole : a.holes) {
+        if (HasProbePointInside (hole, false, b)) {
+            return true;
+        }
+    }
+    for (const std::vector<API_Coord>& hole : b.holes) {
+        if (HasProbePointInside (hole, false, a)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static std::vector<API_Coord> GetRingFromObjectStates (const GS::Array<GS::ObjectState>& coords)
+{
+    std::vector<API_Coord> ring;
+    ring.reserve (coords.GetSize ());
+    for (const GS::ObjectState& coord : coords) {
+        ring.push_back (Get2DCoordinateFromObjectState (coord));
+    }
+    return ring;
+}
+
+struct ExistingZone {
+    API_Guid      guid;
+    short         floorInd;
+    GS::UniString name;
+    GS::UniString numberStr;
+    ZoneArea      area;
+};
+
+// The project's Zones, read once per CreateZones call rather than once per item: a
+// batch of hundreds of Zones into a project with hundreds of Zones would otherwise
+// read every Zone's memo for every item. Refresh picks up the Zones the earlier items
+// of the same call created, which the later items must not overlap either. Commands
+// run one at a time on the main thread, so a file-scope cache that CreateZones::Execute
+// sets up and tears down is safe; it never outlives the call, so it cannot go stale.
+struct ZoneOverlapCache {
+    GS::HashSet<API_Guid>     knownGuids;
+    std::vector<ExistingZone> zones;
+};
+
+ZoneOverlapCache zoneOverlapCache;
+
+// Adds every Zone of the project not seen before, with its polygons as stored in the
+// memo (the first sub-polygon is the outline, the others are holes; arcs as chords).
+static void RefreshZoneOverlapCache ()
+{
+    GS::Array<API_Guid> zoneGuids;
+    if (ACAPI_Element_GetElemList (API_ZoneID, &zoneGuids) != NoError) {
+        return;
+    }
+    for (const API_Guid& guid : zoneGuids) {
+        if (zoneOverlapCache.knownGuids.Contains (guid)) {
+            continue;
+        }
+        zoneOverlapCache.knownGuids.Add (guid);
+        API_Element zone = {};
+        zone.header.guid = guid;
+        if (ACAPI_Element_Get (&zone) != NoError) {
+            continue;
+        }
+        std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (guid);
+        if (polygons.empty () || polygons[0].coords.size () < 3) {
+            continue;
+        }
+        ExistingZone existing;
+        existing.guid = guid;
+        existing.floorInd = zone.header.floorInd;
+        existing.name = GS::UniString (zone.zone.roomName);
+        existing.numberStr = GS::UniString (zone.zone.roomNoStr);
+        existing.area.outline = std::move (polygons[0].coords);
+        for (size_t i = 1; i < polygons.size (); ++i) {
+            existing.area.holes.push_back (std::move (polygons[i].coords));
+        }
+        zoneOverlapCache.zones.push_back (std::move (existing));
+    }
+}
+
+// The first existing Zone of the new Zone's story that it would share area with.
+// For a manual Zone the polygon is compared; for an automatic one only its reference
+// point is known before creation, so it counts when that point is inside a Zone.
+static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, short floorInd, const ZoneArea& newZoneArea)
+{
+    RefreshZoneOverlapCache ();
+    for (const ExistingZone& existing : zoneOverlapCache.zones) {
+        if (existing.floorInd != floorInd) {
+            continue;
+        }
+        const bool overlaps = newZone.manual
+            ? DoZonesOverlap (newZoneArea, existing.area)
+            : IsStrictlyInsideZone (existing.area, newZone.refPos);
+        if (overlaps) {
+            return &existing;
+        }
+    }
+    return nullptr;
+}
+
+static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& existing)
+{
+    return CreateErrorResponse (APIERR_BADPARS,
+        "The new zone would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
+        ") on the same story, which Archicad answers with a modal warning dialog that blocks the API. "
+        "Move or delete that zone first, or set allowOverlap to true to create the new zone anyway. "
+        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap creates it too.");
+}
+
+} // namespace
+
 CreateZonesCommand::CreateZonesCommand () :
     CreateElementsCommandBase ("CreateZones", API_ZoneID, "zonesData")
 {
@@ -613,6 +924,12 @@ CreateZonesCommand::CreateZonesCommand () :
 // back in the order of the request. A call with no such item runs exactly as before.
 GS::ObjectState CreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
 {
+    // The overlap pre-check (see SetTypeSpecificParameters) caches the project's Zones
+    // for the duration of this call only, across all the story groups below: the Zones
+    // created by an earlier group are picked up by the next refresh.
+    zoneOverlapCache = ZoneOverlapCache {};
+    const GS::OnExit cacheGuard ([] () { zoneOverlapCache = ZoneOverlapCache {}; });
+
     GS::Array<GS::ObjectState> zonesData;
     parameters.Get (arrayFieldName, zonesData);
 
@@ -756,6 +1073,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "boolean",
                         "description" : "If true, the zone stamp angle remains fixed when the element is rotated."
                     },
+                    "allowOverlap": {
+                        "type": "boolean",
+                        "description" : "Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -806,6 +1127,10 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     parameters.Get ("fixedStampAngle", fixedAngle);
     element.zone.fixedAngle = fixedAngle;
 
+    // Filled for a manual zone; the overlap pre-check at the end compares it with the
+    // zones already on the story (see the comment above the ZoneArea helpers).
+    ZoneArea newZoneArea;
+
     GS::ObjectState referencePosition;
     if (geometry.Get ("referencePosition", referencePosition)) {
         element.zone.manual = false;
@@ -838,6 +1163,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         element.zone.poly.nCoords	= polygonCoordinates.GetSize() + 1;
         element.zone.poly.nSubPolys	= 1;
         element.zone.poly.nArcs		= polygonArcs.GetSize ();
+        newZoneArea.outline = GetRingFromObjectStates (polygonCoordinates);
 
         for (const GS::ObjectState& hole : holes) {
             GS::Array<GS::ObjectState> holePolygonOutline;
@@ -846,6 +1172,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
                 element.zone.poly.nCoords += holePolygonOutline.GetSize () + 1;
                 ++element.zone.poly.nSubPolys;
                 element.zone.poly.nArcs += holePolygonArcs.GetSize ();
+                newZoneArea.holes.push_back (GetRingFromObjectStates (holePolygonOutline));
             }
         }
 
@@ -877,6 +1204,19 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         }
 
         element.zone.pos = stampPosition.IsEmpty() ? (*memo.coords)[1] : Get2DCoordinateFromObjectState (stampPosition);
+    }
+
+    // Fail an item that would overlap a zone of the same story before ACAPI_Element_Create
+    // opens Archicad's modal overlap warning, which blocks the API until someone clicks it
+    // (#822). The zones created by the earlier items of the same call are already in the
+    // project, so they are compared too.
+    bool allowOverlap = false;
+    parameters.Get ("allowOverlap", allowOverlap);
+    if (!allowOverlap) {
+        const ExistingZone* overlapped = FindOverlappingZone (element.zone, element.header.floorInd, newZoneArea);
+        if (overlapped != nullptr) {
+            return CreateZoneOverlapErrorResponse (*overlapped);
+        }
     }
 
     return {};
