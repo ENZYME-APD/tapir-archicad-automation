@@ -4347,3 +4347,148 @@ GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& param
 
     return response;
 }
+
+// The elements inside a placed instance are proxies: copies made in this
+// project with guids of their own. Archicad keeps, per instance, which element
+// of the source file each proxy was made from.
+
+GetHotlinkProxyElementTableCommand::GetHotlinkProxyElementTableCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkProxyElementTableCommand::GetName () const
+{
+    return "GetHotlinkProxyElementTable";
+}
+
+GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances: elements of type Hotlink, for example the hotlinkId of an element inside one. Not the nodes GetHotlinks returns.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "proxyElementTables": {
+                "type": "array",
+                "description": "One item per requested instance, in order: its proxy elements with the source elements they were made from, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "proxyElements": {
+                                    "type": "array",
+                                    "description": "The proxy elements of the instance, in no particular order.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "proxyElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The proxy element in the current project."
+                                            },
+                                            "sourceElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The element in the hotlink's source file the proxy was made from."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "proxyElementId",
+                                            "sourceElementId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "proxyElements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "proxyElementTables"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkProxyElementTableCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& proxyElementTables = response.AddList<GS::ObjectState> ("proxyElementTables");
+
+    for (const GS::ObjectState& instanceData : hotlinkInstances) {
+        const GS::ObjectState* elementId = instanceData.Get ("elementId");
+        if (elementId == nullptr) {
+            proxyElementTables (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        // Checked here so a node id or another element gets a clear message
+        // rather than a bare error code from the table call.
+        API_Elem_Head header = {};
+        header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&header);
+        if (err != NoError) {
+            proxyElementTables (CreateErrorResponse (err, "Failed to get the element"));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_HotlinkID) {
+            proxyElementTables (CreateErrorResponse (APIERR_BADELEMENTTYPE, "The element is not a hotlink instance"));
+            continue;
+        }
+
+        GS::HashTable<API_Guid, API_Guid> proxyElementTable;
+        err = ACAPI_Hotlink_GetHotlinkProxyElementTable (&header.guid, &proxyElementTable);
+        if (err != NoError) {
+            proxyElementTables (CreateErrorResponse (err, "Failed to get the proxy element table of the hotlink instance"));
+            continue;
+        }
+
+        GS::ObjectState item;
+        const auto& proxyElements = item.AddList<GS::ObjectState> ("proxyElements");
+        for (const auto& kv : proxyElementTable) {
+            GS::ObjectState proxyElement;
+#ifdef ServerMainVers_2800
+            proxyElement.Add ("proxyElementId", CreateGuidObjectState (kv.key));
+            proxyElement.Add ("sourceElementId", CreateGuidObjectState (kv.value));
+#else
+            proxyElement.Add ("proxyElementId", CreateGuidObjectState (*kv.key));
+            proxyElement.Add ("sourceElementId", CreateGuidObjectState (*kv.value));
+#endif
+            proxyElements (proxyElement);
+        }
+        proxyElementTables (item);
+    }
+
+    return response;
+}
