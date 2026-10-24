@@ -1274,7 +1274,7 @@ GSErrCode Initialize (void)
             "Retrieves all issues."
         );
         err |= RegisterCommand<ModifyRevisionIssuesCommand> (
-            issueCommands, "1.7.2",
+            issueCommands, "1.7.3",
             "Modifies the ID, the short description and the custom scheme data of the given revision issues. Only the given fields are changed. Issued revision issues may refuse the change."
         );
         err |= RegisterCommand<GetRevisionChangesCommand> (
