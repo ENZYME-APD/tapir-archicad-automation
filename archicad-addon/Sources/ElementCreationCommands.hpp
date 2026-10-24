@@ -223,6 +223,10 @@ class ChangeTextContentCommand : public CommandBase
 {
 public:
     ChangeTextContentCommand ();
+class MeasureTextsCommand : public CommandBase
+{
+public:
+    MeasureTextsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
