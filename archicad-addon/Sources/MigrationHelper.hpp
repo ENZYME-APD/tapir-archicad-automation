@@ -883,6 +883,46 @@ inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& 
 #endif
 }
 
+// Runs one check of the Action Center: ACAPI_Window_Check from AC27,
+// ACAPI_ActionCenter_Check before. Both only return an error code.
+inline GSErrCode TAPIR_Window_ActionCenterCheck (API_ActionCenterItemID item)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Window_Check (item);
+#else
+    return ACAPI_ActionCenter_Check (item);
+#endif
+}
+
+inline GSErrCode TAPIR_Database_RedrawCurrentDatabase ()
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Database_RedrawCurrentDatabase ();
+#else
+    return ACAPI_Database (APIDb_RedrawCurrentDatabaseID);
+#endif
+}
+
+// The visibility of the Archicad application; supported on Windows only.
+inline GSErrCode TAPIR_View_GetShowHideState (bool* isShown)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_View_GetShowHideState (isShown);
+#else
+    return ACAPI_Environment (APIEnv_GetShowHideStateID, isShown);
+#endif
+}
+
+// Takes bool* (not bool) on every version.
+inline GSErrCode TAPIR_View_ChangeShowHideState (bool* toShow)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_View_ChangeShowHideState (toShow);
+#else
+    return ACAPI_Environment (APIEnv_ChangeShowHideStateID, toShow);
+#endif
+}
+
 // API_OverriddenAttribute accepts an API_AttributeIndex directly since AC27;
 // before that it is a plain struct { attributeIndex, overridden }.
 inline void SetOverriddenAttribute (API_OverriddenAttribute& target, const API_AttributeIndex& index)
