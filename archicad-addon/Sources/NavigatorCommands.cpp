@@ -1637,6 +1637,11 @@ GS::ObjectState ZoomToElementsCommand::Execute (const GS::ObjectState& parameter
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Zoomed to the elements, but failed to restore the previous selection.");
         }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 SetZoomCommand::SetZoomCommand () :
     CommandBase (CommonSchema::Used)
 {

@@ -272,6 +272,8 @@ inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
 inline GSErrCode ACAPI_View_ZoomToSelected ()
 {
     return ACAPI_Automate (APIDo_ZoomToSelectedID);
+}
+
 inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
 {
     return ACAPI_Database (APIDb_SetZoomID, (void*) zoomBox, (void*) tranmat);
