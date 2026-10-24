@@ -13,6 +13,9 @@
 #ifdef ServerMainVers_2900
 #include	"ACAPI/Element/Opening/OpeningDefault.hpp"
 #include	"ACAPI/Element/Opening/Opening.hpp"
+#include	"ACAPI/Element/Opening/OpeningGeometry.hpp"
+#include	"ACAPI/Element/Opening/OpeningExtrusionParameters.hpp"
+#include	"ACAPI/Element/Opening/OpeningFloorPlanParameters.hpp"
 #include "Polygon2D.hpp"
 #endif
 
@@ -20,6 +23,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <optional>
 #include <utility>
 
 namespace {
@@ -43,6 +47,8 @@ struct StructureSelection {
 struct AssociativeDimensionPoint {
     API_Guid elementGuid = APINULLGuid;
     API_ElemTypeID elementType = API_ZombieElemID;
+    bool isStatic = false;              // not associated with any element
+    API_Coord coordinate = {0.0, 0.0};  // position of a static point
     bool line = false;
     Int32 inIndex = 0;
     char special = 0;
@@ -536,8 +542,21 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
 GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectState& pointData, AssociativeDimensionPoint& point)
 {
     const GS::ObjectState* elementId = pointData.Get ("elementId");
+    const GS::ObjectState* coordinate = pointData.Get ("coordinate");
+    if (elementId != nullptr && coordinate != nullptr) {
+        return "A witness point takes either 'elementId' or 'coordinate', not both.";
+    }
     if (elementId == nullptr) {
-        return "Missing required field 'elementId'.";
+        if (coordinate == nullptr) {
+            return "Each witness point needs either 'elementId' or 'coordinate'.";
+        }
+        // Static witness point: not associated with any element, placed at the given
+        // coordinate, as a point added by hand on empty space (zombie base, position in loc).
+        point.isStatic = true;
+        point.elementGuid = APINULLGuid;
+        point.elementType = API_ZombieElemID;
+        point.coordinate = Get2DCoordinateFromObjectState (*coordinate);
+        return {};
     }
 
     point.elementGuid = GetGuidFromObjectState (*elementId);
@@ -607,6 +626,9 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
         dimElem.base.base.node_typ = point.nodeType;
         dimElem.base.base.node_status = point.nodeStatus;
         dimElem.base.base.node_id = point.nodeId;
+        if (point.isStatic) {
+            dimElem.base.loc = point.coordinate;
+        }
         dimElem.note = element.dimension.defNote;
         dimElem.witnessVal = element.dimension.defWitnessVal;
         dimElem.witnessForm = element.dimension.defWitnessForm;
@@ -626,6 +648,9 @@ void TryApplyDimensionFloorIndex (
     }
 
     for (const AssociativeDimensionPoint& point : points) {
+        if (point.isStatic) {
+            continue;
+        }
         API_Elem_Head elementHeader = {};
         if (LoadElementHeaderByGuid (point.elementGuid, elementHeader)) {
             element.header.floorInd = elementHeader.floorInd;
@@ -2041,13 +2066,19 @@ bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::Object
     }
 
     auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    short floorIndex = 0;
+    const bool hasFloorIndex = details.Get ("floorIndex", floorIndex);
 
     if (zCoordinate.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", zCoordinate.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.slab.level = floorIndexAndOffset.second;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
+        changed = true;
+    } else if (hasFloorIndex) {
+        element.header.floorInd = floorIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
     }
 
@@ -2109,7 +2140,9 @@ bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::Object
         floorFillOs.Get ("use3DHatching", element.slab.use3DHatching);
         GS::ObjectState orientationOs;
         if (floorFillOs.Get ("orientation", orientationOs)) {
-            element.slab.hatchOrientation = GetHatchOrientationFromObjectState (orientationOs);
+            // Merge into the element's current orientation - omitted fields must keep their
+            // values instead of resetting to zero/Global (issue #662).
+            element.slab.hatchOrientation = GetHatchOrientationFromObjectState (orientationOs, element.slab.hatchOrientation);
         }
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, useFloorFill);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillPen);
@@ -2177,12 +2210,18 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
         changed = true;
     }
     auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    short floorIndex = 0;
+    const bool hasFloorIndex = details.Get ("floorIndex", floorIndex);
     if (zCoordinate.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", zCoordinate.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.column.bottomOffset = floorIndexAndOffset.second;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, bottomOffset);
+        changed = true;
+    } else if (hasFloorIndex) {
+        element.header.floorInd = floorIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
     }
     auto height = GetOptionalDouble (details, "height");
@@ -3587,6 +3626,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "type": "string",
                             "description": "Optional name of a Wall favorite to base the new element on. Its settings (structure, reference line location, top link, offsets, ...) are applied first, then the explicitly given fields override them. With a favorite only begCoordinate and endCoordinate are needed."
                         },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
@@ -3796,6 +3839,10 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "type": "string",
                             "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                         },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
@@ -3974,6 +4021,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "string",
                             "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                         },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
                         "baseLinePoints": {
                             "type": "array",
                             "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
@@ -4115,6 +4166,236 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     memo.stairBaseLine.polygon.nArcs = 0;
 
     return {};
+}
+
+SolveStairBaselineCommand::SolveStairBaselineCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SolveStairBaselineCommand::GetName () const
+{
+    return "SolveStairBaseline";
+}
+
+GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairsData": {
+                "type": "array",
+                "description": "Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the Stair to check. Fields that are not given come from the current Stair tool defaults, as in CreateStairs.",
+                    "properties": {
+                        "baseLinePoints": {
+                            "type": "array",
+                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "zCoordinate": {
+                            "type": "number",
+                            "description": "The Z coordinate (absolute elevation) of the stair base."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from zCoordinate."
+                        },
+                        "totalHeight": {
+                            "type": "number",
+                            "description": "Total height of the stair.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flightWidth": {
+                            "type": "number",
+                            "description": "Width of the stair flight.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "stepNum": {
+                            "type": "integer",
+                            "description": "Number of risers (steps).",
+                            "minimum": 1
+                        },
+                        "riserHeight": {
+                            "type": "number",
+                            "description": "Height of each riser.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "treadDepth": {
+                            "type": "number",
+                            "description": "Depth (going) of each tread.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["baseLinePoints", "zCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "solutions": {
+                "type": "array",
+                "description": "The results of the stair solver, aligned with the input stairsData.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "solution": {
+                                    "type": "string",
+                                    "enum": ["Correct", "Solved", "NotSolved"],
+                                    "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
+                                },
+                                "baseLinePoints": {
+                                    "type": "array",
+                                    "description": "The baseline polyline after the solver ran.",
+                                    "items": { "$ref": "#/Coordinate2D" }
+                                },
+                                "baseLineArcs": {
+                                    "type": "array",
+                                    "description": "The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.",
+                                    "items": { "$ref": "#/PolyArc" }
+                                },
+                                "totalHeight": {
+                                    "type": "number",
+                                    "description": "Total height of the stair after the solver ran."
+                                },
+                                "flightWidth": {
+                                    "type": "number",
+                                    "description": "Width of the stair flight after the solver ran."
+                                },
+                                "stepNum": {
+                                    "type": "integer",
+                                    "description": "Number of risers after the solver ran."
+                                },
+                                "riserHeight": {
+                                    "type": "number",
+                                    "description": "Height of each riser after the solver ran."
+                                },
+                                "treadDepth": {
+                                    "type": "number",
+                                    "description": "Depth (going) of each tread after the solver ran."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["solution", "baseLinePoints", "totalHeight", "flightWidth", "stepNum", "riserHeight", "treadDepth"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["solutions"]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static GS::UniString StairSolutionToString (API_StairSolutionID solution)
+{
+    switch (solution) {
+        case APISS_Correct:     return "Correct";
+        case APISS_Solved:      return "Solved";
+        case APISS_NotSolved:   return "NotSolved";
+        default:                return "NotSolved";
+    }
+}
+#endif
+
+GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> stairsData;
+    parameters.Get ("stairsData", stairsData);
+
+    GS::ObjectState response;
+    const auto& solutions = response.AddList<GS::ObjectState> ("solutions");
+
+    const Stories stories = GetStories ();
+    // The stair and its baseline memo are set up exactly as CreateStairs sets them up before
+    // ACAPI_Element_Create, so the solver sees the same input that CreateStairs would create from.
+    const CreateStairsCommand createStairsCommand;
+
+    for (const GS::ObjectState& data : stairsData) {
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+
+        element.header.type = API_StairID;
+        GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+        if (err != NoError) {
+            solutions (CreateErrorResponse (err, "Failed to read the Stair defaults."));
+            continue;
+        }
+
+        const auto os = createStairsCommand.SetTypeSpecificParameters (element, memo, stories, data);
+        if (os.HasValue ()) {
+            solutions (*os);
+            continue;
+        }
+
+        API_StairSolutionID solution = APISS_NotSolved;
+        err = ACAPI_HierarchicalEditing_SolveStair (&element.stair, &memo, &solution);
+        if (err != NoError) {
+            solutions (CreateErrorResponse (err, "Failed to solve the stair baseline."));
+            continue;
+        }
+
+        GS::ObjectState result;
+        result.Add ("solution", StairSolutionToString (solution));
+
+        const auto& baseLinePoints = result.AddList<GS::ObjectState> ("baseLinePoints");
+        const Int32 nCoords = memo.stairBaseLine.polygon.nCoords;
+        if (memo.stairBaseLine.coords != nullptr &&
+            BMGetHandleSize (reinterpret_cast<GSHandle> (memo.stairBaseLine.coords)) >= static_cast<GSSize> ((nCoords + 1) * sizeof (API_Coord))) {
+            // Coords are 1-based, index 0 is unused
+            for (Int32 i = 1; i <= nCoords; ++i) {
+                baseLinePoints (Create2DCoordinateObjectState ((*memo.stairBaseLine.coords)[i]));
+            }
+        }
+
+        const Int32 nArcs = memo.stairBaseLine.polygon.nArcs;
+        if (nArcs > 0 && memo.stairBaseLine.parcs != nullptr &&
+            BMGetHandleSize (reinterpret_cast<GSHandle> (memo.stairBaseLine.parcs)) >= static_cast<GSSize> (nArcs * sizeof (API_PolyArc))) {
+            const auto& baseLineArcs = result.AddList<GS::ObjectState> ("baseLineArcs");
+            for (Int32 i = 0; i < nArcs; ++i) {
+                baseLineArcs (CreatePolyArcObjectState ((*memo.stairBaseLine.parcs)[i]));
+            }
+        }
+
+        result.Add ("totalHeight", element.stair.totalHeight);
+        result.Add ("flightWidth", element.stair.flightWidth);
+        result.Add ("stepNum", static_cast<Int32> (element.stair.stepNum));
+        result.Add ("riserHeight", element.stair.riserHeight);
+        result.Add ("treadDepth", element.stair.treadDepth);
+
+        solutions (result);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 CreateWindowsCommand::CreateWindowsCommand () :
@@ -4720,6 +5001,547 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
 #endif
         }
     });
+}
+
+GetOpeningDetailsCommand::GetOpeningDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningDetailsCommand::GetName () const
+{
+    return "GetOpeningDetails";
+}
+
+GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The Opening elements (made with the Opening tool) to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+// Also the extrusion parameters of the Opening tool defaults in GetOpeningDefault.
+static const char* OpeningExtrusionParametersResponseSchema = R"({
+    "type": "object",
+    "description": "The size and extrusion settings. A size Archicad does not give for the opening's shape is left out.",
+    "properties": {
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "anchor": {
+            "type": "string",
+            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
+            "description": "The anchor point of the opening's polygon."
+        },
+        "anchorAltitude": { "type": "number" },
+        "extrusionStartOffset": { "type": "number" },
+        "finiteBodyLength": { "type": "number" },
+        "isExtrusionSurfaceOverridden": { "type": "boolean" },
+        "extrusionSurfaceId": {
+            "$ref": "#/AttributeId",
+            "description": "The surface of the extrusion faces. Only given when it is overridden."
+        },
+        "isEndSurfaceOverridden": { "type": "boolean" },
+        "endSurfaceId": {
+            "$ref": "#/AttributeId",
+            "description": "The surface of the end faces. Only given when it is overridden."
+        },
+        "areOverriddenSurfacesLinked": { "type": "boolean" }
+    },
+    "additionalProperties": false,
+    "required": ["anchor", "isExtrusionSurfaceOverridden", "isEndSurfaceOverridden", "areOverriddenSurfacesLinked"]
+})";
+
+GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "openings": {
+                "type": "array",
+                "description": "The details of the openings, in the order of the given elements.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": { "$ref": "#/ElementId" },
+                                "parentElementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The element the opening was placed in. Left out when the opening has none."
+                                },
+                                "cutElements": {
+                                    "type": "array",
+                                    "description": "The elements the opening cuts.",
+                                    "items": { "$ref": "#/ElementIdArrayItem" }
+                                },
+                                "connectedOpenings": {
+                                    "type": "array",
+                                    "description": "The openings Archicad reports as connected to this one. Left out when they cannot be read.",
+                                    "items": { "$ref": "#/ElementIdArrayItem" }
+                                },
+                                "geometry": {
+                                    "type": "object",
+                                    "properties": {
+                                        "anchorPoint": { "$ref": "#/Coordinate3D", "description": "The anchor point of the opening in world coordinates." },
+                                        "extrusionDirection": { "$ref": "#/Coordinate3D", "description": "The direction the opening is extruded in." },
+                                        "xAxis": { "$ref": "#/Coordinate3D", "description": "The X axis of the plane of the opening's polygon." },
+                                        "yAxis": { "$ref": "#/Coordinate3D", "description": "The Y axis of the plane of the opening's polygon." },
+                                        "polygon": {
+                                            "type": "array",
+                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis. Left out when the opening has no polygon.",
+                                            "items": { "$ref": "#/Coordinate2D" }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["anchorPoint", "extrusionDirection", "xAxis", "yAxis"]
+                                },
+                                "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(
+                            },
+                            "additionalProperties": false,
+                            "required": ["elementId", "cutElements", "geometry", "extrusionParameters"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openings"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+static GS::ObjectState CreateVector3DObjectState (const API_Vector3D& v)
+{
+    return Create3DCoordinateObjectState (API_Coord3D { v.x, v.y, v.z });
+}
+
+static GS::ObjectState CreateUniqueIDArrayItem (const ACAPI::UniqueID& id)
+{
+    return CreateElementIdObjectState (GSGuid2APIGuid (id.GetGuid ()));
+}
+
+static void AddOptionalNumber (GS::ObjectState& os, const char* name, const std::optional<double>& value)
+{
+    if (value.has_value ()) {
+        os.Add (name, *value);
+    }
+}
+
+static GS::ObjectState CreateOpeningExtrusionParametersObjectState (const ACAPI::Element::OpeningExtrusionParameters& extrusionParameters)
+{
+    GS::ObjectState extrusionOs;
+    AddOptionalNumber (extrusionOs, "width", extrusionParameters.GetWidth ());
+    AddOptionalNumber (extrusionOs, "height", extrusionParameters.GetHeight ());
+    extrusionOs.Add ("anchor", AnchorIdToString (extrusionParameters.GetAnchor ()));
+    AddOptionalNumber (extrusionOs, "anchorAltitude", extrusionParameters.GetAnchorAltitude ());
+    AddOptionalNumber (extrusionOs, "extrusionStartOffset", extrusionParameters.GetExtrusionStartOffset ());
+    AddOptionalNumber (extrusionOs, "finiteBodyLength", extrusionParameters.GetFiniteBodyLength ());
+    const bool isExtrusionSurfaceOverridden = extrusionParameters.IsExtrusionSurfaceAttributeOverridden ();
+    extrusionOs.Add ("isExtrusionSurfaceOverridden", isExtrusionSurfaceOverridden);
+    if (isExtrusionSurfaceOverridden) {
+        extrusionOs.Add ("extrusionSurfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, extrusionParameters.GetOverriddenExtrusionSurfaceAttributeIndex ())));
+    }
+    const bool isEndSurfaceOverridden = extrusionParameters.IsEndSurfaceAttributeOverridden ();
+    extrusionOs.Add ("isEndSurfaceOverridden", isEndSurfaceOverridden);
+    if (isEndSurfaceOverridden) {
+        extrusionOs.Add ("endSurfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, extrusionParameters.GetOverriddenEndSurfaceAttributeIndex ())));
+    }
+    extrusionOs.Add ("areOverriddenSurfacesLinked", extrusionParameters.AreOverriddenSurfaceAttributesLinked ());
+    return extrusionOs;
+}
+
+static GS::ObjectState GetOpeningDetails (const API_Guid& openingGuid)
+{
+    using ACAPI::Element::Opening;
+
+    const ACAPI::UniqueID openingId (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ());
+    ACAPI::Result<Opening> opening = Opening::Get (openingId);
+    if (opening.IsErr ()) {
+        return CreateErrorResponse (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    GS::ObjectState details;
+    details.Add ("elementId", CreateGuidObjectState (openingGuid));
+
+    ACAPI::Result<ACAPI::UniqueID> parent = opening->GetParentElement ();
+    if (parent.IsOk ()) {
+        details.Add ("parentElementId", CreateGuidObjectState (GSGuid2APIGuid (parent->GetGuid ())));
+    }
+
+    const auto& cutElements = details.AddList<GS::ObjectState> ("cutElements");
+    for (const ACAPI::UniqueID& cutElementId : opening->GetCutElements ()) {
+        cutElements (CreateUniqueIDArrayItem (cutElementId));
+    }
+
+    ACAPI::Result<std::vector<ACAPI::UniqueID>> connectedOpenings = Opening::GetConnectedOpenings (openingId, ACAPI_GetToken ());
+    if (connectedOpenings.IsOk ()) {
+        const auto& connectedList = details.AddList<GS::ObjectState> ("connectedOpenings");
+        for (const ACAPI::UniqueID& connectedId : connectedOpenings.Unwrap ()) {
+            connectedList (CreateUniqueIDArrayItem (connectedId));
+        }
+    }
+
+    const auto geometry = opening->GetOpeningGeometry ();
+    GS::ObjectState geometryOs;
+    geometryOs.Add ("anchorPoint", Create3DCoordinateObjectState (geometry.GetAnchorPoint ()));
+    geometryOs.Add ("extrusionDirection", CreateVector3DObjectState (geometry.GetExtrusionDirection ()));
+    geometryOs.Add ("xAxis", CreateVector3DObjectState (geometry.GetVectorX ()));
+    geometryOs.Add ("yAxis", CreateVector3DObjectState (geometry.GetVectorY ()));
+    const std::optional<Geometry::Polygon2D> polygon = geometry.GetPolygon ();
+    if (polygon.has_value ()) {
+        const auto& vertices = geometryOs.AddList<GS::ObjectState> ("polygon");
+        for (auto it = polygon->BeginVertex (); it != polygon->EndVertex (); ++it) {
+            const Point2D& coord = it->GetCoord ();
+            vertices (Create2DCoordinateObjectState (API_Coord { coord.x, coord.y }));
+        }
+    }
+    details.Add ("geometry", geometryOs);
+
+    details.Add ("extrusionParameters", CreateOpeningExtrusionParametersObjectState (opening->GetExtrusionParameters ()));
+
+    return details;
+}
+#endif
+
+GS::ObjectState GetOpeningDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& openings = response.AddList<GS::ObjectState> ("openings");
+    for (const GS::ObjectState& element : elements) {
+        openings (GetOpeningDetails (GetGuidFromElementsArrayItem (element)));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetOpeningDetailsCommand::SetOpeningDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetOpeningDetailsCommand::GetName () const
+{
+    return "SetOpeningDetails";
+}
+
+GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openingsWithDetails": {
+                "type": "array",
+                "description": "The Opening elements (made with the Opening tool) to change, each with the details to set. A detail that is left out stays as it is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "parentElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The new element the opening belongs to."
+                        },
+                        "addCutElements": {
+                            "type": "array",
+                            "description": "Elements the opening should cut as well.",
+                            "items": { "$ref": "#/ElementIdArrayItem" }
+                        },
+                        "removeCutElements": {
+                            "type": "array",
+                            "description": "Elements the opening should no longer cut.",
+                            "items": { "$ref": "#/ElementIdArrayItem" }
+                        },
+                        "polygon": {
+                            "type": "array",
+                            "description": "The new polygon of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "transformation": {
+                            "type": "array",
+                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] moves the opening by 1 along X.",
+                            "items": { "type": "number" },
+                            "minItems": 12,
+                            "maxItems": 12
+                        },
+                        "extrusionParameters": {
+                            "type": "object",
+                            "description": "The size and extrusion settings to change, with the same names GetOpeningDetails returns.",
+                            "properties": {
+                                "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                                "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                                "anchor": {
+                                    "type": "string",
+                                    "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
+                                    "description": "The anchor point of the opening's polygon."
+                                },
+                                "anchorAltitude": { "type": "number" },
+                                "extrusionStartOffset": { "type": "number" },
+                                "finiteBodyLength": { "type": "number" },
+                                "isExtrusionSurfaceOverridden": { "type": "boolean" },
+                                "extrusionSurfaceId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The surface of the extrusion faces. Only used when the surface is overridden."
+                                },
+                                "isEndSurfaceOverridden": { "type": "boolean" },
+                                "endSurfaceId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The surface of the end faces. Only used when the surface is overridden."
+                                },
+                                "areOverriddenSurfacesLinked": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+static ACAPI::UniqueID CreateUniqueIDFromGuid (const API_Guid& guid)
+{
+    return ACAPI::UniqueID (APIGuid2GSGuid (guid), ACAPI_GetToken ());
+}
+
+static std::vector<ACAPI::UniqueID> GetUniqueIDsFromElementsArray (const GS::ObjectState& os, const char* name)
+{
+    std::vector<ACAPI::UniqueID> ids;
+    GS::Array<GS::ObjectState> elements;
+    os.Get (name, elements);
+    for (const GS::ObjectState& element : elements) {
+        ids.push_back (CreateUniqueIDFromGuid (GetGuidFromElementsArrayItem (element)));
+    }
+    return ids;
+}
+
+// Returns the index of the surface with the given attributeId, or an error message if there is no such surface.
+static GS::Optional<GS::UniString> GetSurfaceIndex (const GS::ObjectState& os, const char* name, std::optional<API_AttributeIndex>& index)
+{
+    const GS::ObjectState* surfaceId = os.Get (name);
+    if (surfaceId == nullptr) {
+        return GS::NoValue;
+    }
+    const API_Guid surfaceGuid = GetGuidFromObjectState (*surfaceId);
+    const API_AttributeIndex surfaceIndex = GetAttributeIndexFromGuid (API_MaterialID, surfaceGuid);
+    if (surfaceGuid == APINULLGuid || GetAttributeGuidFromIndex (API_MaterialID, surfaceIndex) != surfaceGuid) {
+        return GS::UniString::Printf ("The '%s' is not a surface of the project.", name);
+    }
+    index = surfaceIndex;
+    return GS::NoValue;
+}
+
+static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
+{
+    using ACAPI::Element::Opening;
+
+    const GS::ObjectState* elementId = data.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter.");
+    }
+
+    ACAPI::Result<Opening> opening = Opening::Get (CreateUniqueIDFromGuid (GetGuidFromObjectState (*elementId)));
+    if (opening.IsErr ()) {
+        return CreateFailedExecutionResult (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    // Everything that can be checked is read and checked before the opening is touched, so a
+    // bad input changes nothing.
+    std::optional<ACAPI::UniqueID> parentElementId;
+    const GS::ObjectState* parentElementIdOs = data.Get ("parentElementId");
+    if (parentElementIdOs != nullptr) {
+        parentElementId = CreateUniqueIDFromGuid (GetGuidFromObjectState (*parentElementIdOs));
+    }
+
+    const std::vector<ACAPI::UniqueID> addCutElements = GetUniqueIDsFromElementsArray (data, "addCutElements");
+    const std::vector<ACAPI::UniqueID> removeCutElements = GetUniqueIDsFromElementsArray (data, "removeCutElements");
+
+    std::optional<Geometry::Polygon2D> polygon;
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    if (data.Get ("polygon", polygonCoordinates)) {
+        if (polygonCoordinates.GetSize () < 3) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'polygon' must have at least 3 vertices.");
+        }
+        GS::Array<Point2D> polygonCorners;
+        for (const GS::ObjectState& coordinate : polygonCoordinates) {
+            const API_Coord coord = Get2DCoordinateFromObjectState (coordinate);
+            polygonCorners.Push (Point2D (coord.x, coord.y));
+        }
+        auto polygons = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/);
+        if (polygons.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'polygon' is not a valid polygon.");
+        }
+        polygon = polygons.PopLargest ();
+    }
+
+    std::optional<API_Tranmat> transformation;
+    GS::Array<double> transformationValues;
+    if (data.Get ("transformation", transformationValues)) {
+        if (transformationValues.GetSize () != 12) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'transformation' must have 12 numbers.");
+        }
+        API_Tranmat tranmat = {};
+        for (UIndex i = 0; i < 12; ++i) {
+            tranmat.tmx[i] = transformationValues[i];
+        }
+        transformation = tranmat;
+    }
+
+    GS::ObjectState extrusionData;
+    const bool hasExtrusionData = data.Get ("extrusionParameters", extrusionData);
+    std::optional<API_AttributeIndex> extrusionSurfaceIndex;
+    std::optional<API_AttributeIndex> endSurfaceIndex;
+    if (hasExtrusionData) {
+        GS::Optional<GS::UniString> surfaceError = GetSurfaceIndex (extrusionData, "extrusionSurfaceId", extrusionSurfaceIndex);
+        if (!surfaceError.HasValue ()) {
+            surfaceError = GetSurfaceIndex (extrusionData, "endSurfaceId", endSurfaceIndex);
+        }
+        if (surfaceError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ());
+        }
+    }
+
+    // The first change that Archicad refuses stops the rest; the ones made before it stay.
+    GSErrCode failedError = NoError;
+    GS::UniString failedMessage;
+    const auto check = [&] (ACAPI::Result<void> result, const char* what) -> bool {
+        if (result.IsErr ()) {
+            failedError = result.UnwrapErr ().kind;
+            failedMessage = GS::UniString::Printf ("Failed to set %s of the opening: ", what) + GS::UniString (result.UnwrapErr ().text.c_str ());
+            return false;
+        }
+        return true;
+    };
+
+    ACAPI::Result<void> modifyResult = opening->Modify ([&] (Opening::Modifier& modifier) {
+        if (parentElementId.has_value () && !check (modifier.ChangeParentElement (*parentElementId), "the parent element")) {
+            return;
+        }
+        for (const ACAPI::UniqueID& cutElementId : removeCutElements) {
+            if (!check (modifier.RemoveCutElement (cutElementId), "the cut elements")) {
+                return;
+            }
+        }
+        for (const ACAPI::UniqueID& cutElementId : addCutElements) {
+            if (!check (modifier.AddCutElement (cutElementId), "the cut elements")) {
+                return;
+            }
+        }
+
+        if (hasExtrusionData) {
+            auto&& extrusionParameters = modifier.GetExtrusionParameters ();
+            double value = 0.0;
+            if (extrusionData.Get ("width", value) && !check (extrusionParameters.SetWidth (value), "the width")) {
+                return;
+            }
+            if (extrusionData.Get ("height", value) && !check (extrusionParameters.SetHeight (value), "the height")) {
+                return;
+            }
+            GS::UniString anchor;
+            if (extrusionData.Get ("anchor", anchor)) {
+                extrusionParameters.SetAnchor (AnchorIdFromString (anchor));
+            }
+            if (extrusionData.Get ("anchorAltitude", value) && !check (extrusionParameters.SetAnchorAltitude (value), "the anchor altitude")) {
+                return;
+            }
+            if (extrusionData.Get ("extrusionStartOffset", value) && !check (extrusionParameters.SetExtrusionStartOffset (value), "the extrusion start offset")) {
+                return;
+            }
+            if (extrusionData.Get ("finiteBodyLength", value) && !check (extrusionParameters.SetFiniteBodyLength (value), "the finite body length")) {
+                return;
+            }
+            bool flag = false;
+            if (extrusionData.Get ("isExtrusionSurfaceOverridden", flag)) {
+                extrusionParameters.SetExtrusionSurfaceAttributeOverridden (flag);
+            }
+            if (extrusionSurfaceIndex.has_value ()) {
+                extrusionParameters.SetOverriddenExtrusionSurfaceAttributeIndex (*extrusionSurfaceIndex);
+            }
+            if (extrusionData.Get ("isEndSurfaceOverridden", flag)) {
+                extrusionParameters.SetEndSurfaceAttributeOverridden (flag);
+            }
+            if (endSurfaceIndex.has_value ()) {
+                extrusionParameters.SetOverriddenEndSurfaceAttributeIndex (*endSurfaceIndex);
+            }
+            if (extrusionData.Get ("areOverriddenSurfacesLinked", flag)) {
+                extrusionParameters.SetOverriddenSurfaceAttributesLinked (flag);
+            }
+        }
+
+        if (polygon.has_value () || transformation.has_value ()) {
+            auto&& geometry = modifier.GetOpeningGeometry ();
+            if (polygon.has_value ()) {
+                geometry.SetPolygon (*polygon);
+            }
+            if (transformation.has_value () && !check (geometry.Transform (*transformation), "the transformation")) {
+                return;
+            }
+        }
+    }, "Set Opening Details");
+
+    if (failedError != NoError) {
+        return CreateFailedExecutionResult (failedError, failedMessage);
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the opening: " + GS::UniString (modifyResult.UnwrapErr ().text.c_str ()));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+#endif
+
+GS::ObjectState SetOpeningDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> openingsWithDetails;
+    parameters.Get ("openingsWithDetails", openingsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& data : openingsWithDetails) {
+        executionResults (SetOpeningDetails (data));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
 }
 
 CreateMorphsCommand::CreateMorphsCommand () :
@@ -5681,8 +6503,8 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "zoneRel": {
                             "$ref": "#/WallZoneRelation"
                         },
-                        "visibility": { "$ref": "#/StoryVisibility" },
-                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically." },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "Confirmed live on Archicad 29 (#852): a wall there knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), and Archicad silently drops every other combination written here although the command reports success - showAllAbove, showAllBelow, showRelAbove and showRelBelow (any value, 0 included) and showOnHome true -> false all read back unchanged. 'All relevant stories' is isAutoOnStoryVisibility true. 'Home story only' takes two calls: first isAutoOnStoryVisibility true (Archicad resets the custom fields to 0), then isAutoOnStoryVisibility false with visibility { showOnHome: true }. Archicad 30 adds a Custom option for walls; whether the other fields become writable there is untested." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically. See the note on 'visibility' for which combinations a wall accepts." },
                         "referenceMaterial": { "$ref": "#/OverriddenMaterial" },
                         "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial" },
@@ -5982,7 +6804,8 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "zCoordinate": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the slab's reference level. The home story is derived from it unless floorIndex is given; a Z below the lowest story stays on the lowest story with a negative level." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story." },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -6428,6 +7251,208 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
+// ============================================================================
+// GetOpeningTransformations
+// ============================================================================
+
+GetOpeningTransformationsCommand::GetOpeningTransformationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningTransformationsCommand::GetName () const
+{
+    return "GetOpeningTransformations";
+}
+
+GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openingTransformations": {
+                "type": "array",
+                "description": "The transformation of each given Opening, or an error, in the order of the input elements.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "globalToLocal": {
+                                    "type": "array",
+                                    "description": "The matrix as Archicad returns it (API_Tranmat, global to local): the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
+                                    "items": { "type": "number" },
+                                    "minItems": 12,
+                                    "maxItems": 12
+                                },
+                                "localToGlobal": {
+                                    "type": "array",
+                                    "description": "The inverse of globalToLocal, in the same layout. Missing when globalToLocal cannot be inverted.",
+                                    "items": { "type": "number" },
+                                    "minItems": 12,
+                                    "maxItems": 12
+                                },
+                                "origin": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "xAxis": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The local X axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "yAxis": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The local Y axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "zAxis": {
+                                    "$ref": "#/Coordinate3D",
+                                    "description": "The local Z axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
+                                },
+                                "determinant": {
+                                    "type": "number",
+                                    "description": "The determinant of the 3x3 part of globalToLocal. Zero (or nearly) when it cannot be inverted."
+                                },
+                                "isMirrored": {
+                                    "type": "boolean",
+                                    "description": "True when the matrix is left-handed (negative determinant), which Archicad returns for a mirrored opening."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["elementId", "globalToLocal", "determinant", "isMirrored"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingTransformations"]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static void AddTranmat (GS::ObjectState& os, const char* name, const API_Tranmat& tranmat)
+{
+    const auto& values = os.AddList<double> (name);
+    for (UIndex i = 0; i < 12; ++i) {
+        values (tranmat.tmx[i]);
+    }
+}
+
+static double GetTranmatDeterminant (const API_Tranmat& m)
+{
+    const double* t = m.tmx;
+    return t[0] * (t[5] * t[10] - t[6] * t[9])
+         - t[1] * (t[4] * t[10] - t[6] * t[8])
+         + t[2] * (t[4] * t[9]  - t[5] * t[8]);
+}
+
+// The inverse of the affine map x' = A * x + b is x = A^-1 * x' - A^-1 * b.
+static API_Tranmat InvertTranmat (const API_Tranmat& m, double det)
+{
+    const double* t = m.tmx;
+    API_Tranmat inverse = {};
+    double* r = inverse.tmx;
+
+    r[0]  = (t[5] * t[10] - t[6] * t[9]) / det;
+    r[1]  = (t[2] * t[9]  - t[1] * t[10]) / det;
+    r[2]  = (t[1] * t[6]  - t[2] * t[5]) / det;
+    r[4]  = (t[6] * t[8]  - t[4] * t[10]) / det;
+    r[5]  = (t[0] * t[10] - t[2] * t[8]) / det;
+    r[6]  = (t[2] * t[4]  - t[0] * t[6]) / det;
+    r[8]  = (t[4] * t[9]  - t[5] * t[8]) / det;
+    r[9]  = (t[1] * t[8]  - t[0] * t[9]) / det;
+    r[10] = (t[0] * t[5]  - t[1] * t[4]) / det;
+
+    r[3]  = -(r[0] * t[3] + r[1] * t[7] + r[2]  * t[11]);
+    r[7]  = -(r[4] * t[3] + r[5] * t[7] + r[6]  * t[11]);
+    r[11] = -(r[8] * t[3] + r[9] * t[7] + r[10] * t[11]);
+
+    return inverse;
+}
+#endif
+
+GS::ObjectState GetOpeningTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& openingTransformations = response.AddList<GS::ObjectState> ("openingTransformations");
+
+    for (const GS::ObjectState& elementObj : elements) {
+        const GS::ObjectState* elementId = elementObj.Get ("elementId");
+        if (elementId == nullptr) {
+            openingTransformations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2700
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head header = {};
+        if (!LoadElementHeaderByGuid (elemGuid, header)) {
+            openingTransformations (CreateErrorResponse (APIERR_BADID, "Element not found"));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_OpeningID) {
+            openingTransformations (CreateErrorResponse (APIERR_BADID, "Element is not an Opening"));
+            continue;
+        }
+
+        API_Tranmat globalToLocal = {};
+        const GSErrCode err = ACAPI_Element_GetOpeningTransformation (&elemGuid, &globalToLocal);
+        if (err != NoError) {
+            openingTransformations (CreateErrorResponse (err, "Failed to get the transformation of the opening"));
+            continue;
+        }
+
+        const double det = GetTranmatDeterminant (globalToLocal);
+
+        GS::ObjectState transformation;
+        transformation.Add ("elementId", CreateGuidObjectState (elemGuid));
+        AddTranmat (transformation, "globalToLocal", globalToLocal);
+        if (std::abs (det) > 1e-12) {
+            const API_Tranmat localToGlobal = InvertTranmat (globalToLocal, det);
+            const double* l = localToGlobal.tmx;
+            AddTranmat (transformation, "localToGlobal", localToGlobal);
+            // The images of the local origin and of the local unit axes: the translation and the columns of the 3x3 part.
+            transformation.Add ("origin", Create3DCoordinateObjectState ({l[3], l[7], l[11]}));
+            transformation.Add ("xAxis", Create3DCoordinateObjectState ({l[0], l[4], l[8]}));
+            transformation.Add ("yAxis", Create3DCoordinateObjectState ({l[1], l[5], l[9]}));
+            transformation.Add ("zAxis", Create3DCoordinateObjectState ({l[2], l[6], l[10]}));
+        }
+        transformation.Add ("determinant", det);
+        transformation.Add ("isMirrored", det < 0.0);
+
+        openingTransformations (transformation);
+#else
+        openingTransformations (CreateErrorResponse (APIERR_NOTSUPPORTED, "GetOpeningTransformations requires Archicad 27 or later."));
+#endif
+    }
+
+    return response;
+}
+
 ModifyColumnsCommand::ModifyColumnsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6450,7 +7475,8 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "origin": { "$ref": "#/Coordinate2D" },
-                        "zCoordinate": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the column's bottom. The home story is derived from it unless floorIndex is given; a Z below the lowest story stays on the lowest story with a negative bottomOffset." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story (combine with bottomOffset to set the offset relative to it)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
                         "axisRotationAngle": { "type": "number" },
@@ -6857,7 +7883,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "translation": { "$ref": "#/Coordinate3D" },
-                        "rotationDegreesZ": { "type": "number" },
+                        "rotationDegreesZ": { "type": "number", "description": "Turns the Morph about the vertical axis through its origin, counterclockwise seen from above, in degrees. Added to the current rotation." },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "body": {
                             "$ref": "#/MorphBody",
@@ -6968,9 +7994,11 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 const double cosAngle = std::cos (radians);
                 const double sinAngle = std::sin (radians);
                 const API_Tranmat originalTransform = element.morph.tranmat;
-                for (Int32 column = 0; column < 4; ++column) {
-                    element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] + sinAngle * originalTransform.tmx[8 + column];
-                    element.morph.tranmat.tmx[8 + column] = -sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[8 + column];
+                // Turn about the vertical axis through the morph's origin: recombine rows 0 (x') and 1 (y')
+                // of the 3x3 part only, so the translation (tmx[3], tmx[7], tmx[11]) is kept.
+                for (Int32 column = 0; column < 3; ++column) {
+                    element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] - sinAngle * originalTransform.tmx[4 + column];
+                    element.morph.tranmat.tmx[4 + column] = sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[4 + column];
                 }
                 ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
                 changed = true;
@@ -7811,4 +8839,586 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
     TAPIR_Element_SetPropertiesOfDefaultElem (favorite.element.header, *favorite.properties);
 
     return NoError;
+}
+
+// The floor plan parameters of an opening, read by GetOpeningFloorPlanParameters and
+// GetOpeningDefault and changed by SetOpeningFloorPlanParameters with the same names.
+static const char* OpeningFloorPlanParametersSchemaProperties = R"(
+    "showReferenceAxis": { "type": "boolean", "description": "Whether the reference axis of the opening is shown on the floor plan." },
+    "referenceAxisPen": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "referenceAxisLineTypeId": { "$ref": "#/AttributeId", "description": "The line type of the reference axis." },
+    "referenceAxisOverhang": { "type": "number", "description": "How far the reference axis reaches beyond the opening." },
+    "cutSurfacesUseLineOfCutElements": { "type": "boolean", "description": "Whether the cut surfaces use the line of the cut elements instead of cutSurfacesLinePen and cutSurfacesLineTypeId." },
+    "cutSurfacesLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "cutSurfacesLineTypeId": { "$ref": "#/AttributeId" },
+    "outlinesUseLineOfCutElements": { "type": "boolean", "description": "Whether the outlines use the line of the cut elements instead of the uncut and overhead lines below." },
+    "outlinesUncutLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "outlinesUncutLineTypeId": { "$ref": "#/AttributeId" },
+    "outlinesOverheadLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "outlinesOverheadLineTypeId": { "$ref": "#/AttributeId" },
+    "useCoverFills": { "type": "boolean" },
+    "coverFillsUseFillsOfCutElements": { "type": "boolean", "description": "Whether the cover fills are the fills of the cut elements instead of coverFillId." },
+    "coverFillId": { "$ref": "#/AttributeId", "description": "The fill of the cover fills." },
+    "coverFillPen": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "coverFillBackgroundPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+    "coverFillOrientation": { "$ref": "#/HatchOrientationType" },
+    "coverFillTransformation": {
+        "$ref": "#/CoverFillTransformation",
+        "description": "The orientation and distortion of the cover fill. Left out when Archicad gives none."
+    },
+    "cutSymbolLibPartId": {
+        "$ref": "#/Guid",
+        "description": "The id of the library part drawn as the symbol of the cut opening. Left out when the opening has no cut symbol."
+    },
+    "unCutSymbolLibPartId": {
+        "$ref": "#/Guid",
+        "description": "The id of the library part drawn as the symbol of the uncut opening. Left out when the opening has no uncut symbol."
+    })";
+
+#ifdef ServerMainVers_2900
+static GS::ObjectState CreateOpeningFloorPlanParametersObjectState (const ACAPI::Element::OpeningFloorPlanParameters& floorPlanParameters)
+{
+    GS::ObjectState os;
+    os.Add ("showReferenceAxis", floorPlanParameters.IsShowReferenceAxis ());
+    os.Add ("referenceAxisPen", floorPlanParameters.GetReferenceAxisPenIndex ());
+    os.Add ("referenceAxisLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, floorPlanParameters.GetReferenceAxisLineTypeIndex ())));
+    os.Add ("referenceAxisOverhang", floorPlanParameters.GetReferenceAxisOverhang ());
+
+    os.Add ("cutSurfacesUseLineOfCutElements", floorPlanParameters.IsCutSurfacesUseLineOfCutElements ());
+    os.Add ("cutSurfacesLinePen", floorPlanParameters.GetCutSurfacesLinePenIndex ());
+    os.Add ("cutSurfacesLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, floorPlanParameters.GetCutSurfacesLineIndex ())));
+
+    os.Add ("outlinesUseLineOfCutElements", floorPlanParameters.IsOutlinesUseLineOfCutElements ());
+    os.Add ("outlinesUncutLinePen", floorPlanParameters.GetOutlinesUncutLinePenIndex ());
+    os.Add ("outlinesUncutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, floorPlanParameters.GetOutlinesUncutLineIndex ())));
+    os.Add ("outlinesOverheadLinePen", floorPlanParameters.GetOutlinesOverheadLinePenIndex ());
+    os.Add ("outlinesOverheadLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, floorPlanParameters.GetOutlinesOverheadLineIndex ())));
+
+    os.Add ("useCoverFills", floorPlanParameters.GetUseCoverFills ());
+    os.Add ("coverFillsUseFillsOfCutElements", floorPlanParameters.IsCoverFillsUseFillsOfCutElements ());
+    os.Add ("coverFillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, floorPlanParameters.GetCoverFillsIndex ())));
+    os.Add ("coverFillPen", floorPlanParameters.GetCoverFillsPenIndex ());
+    os.Add ("coverFillBackgroundPen", floorPlanParameters.GetCoverFillsBackgroundPenIndex ());
+    os.Add ("coverFillOrientation", HatchOrientationTypeToString (floorPlanParameters.GetCoverFillOrientation ()));
+    const std::optional<API_CoverFillTransformation> coverFillTransformation = floorPlanParameters.GetCoverFillTransformation ();
+    if (coverFillTransformation.has_value ()) {
+        os.Add ("coverFillTransformation", CreateCoverFillTransformationObjectState (*coverFillTransformation));
+    }
+
+    const std::optional<API_Guid> cutSymbolLibPartId = floorPlanParameters.GetCutSymbolLibpartId ();
+    if (floorPlanParameters.HasCutSymbol () && cutSymbolLibPartId.has_value ()) {
+        os.Add ("cutSymbolLibPartId", APIGuidToString (*cutSymbolLibPartId));
+    }
+    const std::optional<API_Guid> unCutSymbolLibPartId = floorPlanParameters.GetUnCutSymbolLibpartId ();
+    if (floorPlanParameters.HasUnCutSymbol () && unCutSymbolLibPartId.has_value ()) {
+        os.Add ("unCutSymbolLibPartId", APIGuidToString (*unCutSymbolLibPartId));
+    }
+    return os;
+}
+
+// The floor plan parameters to change. They are read and checked before the opening is
+// touched, so an input checked here changes nothing. A value only Archicad can refuse (such as
+// a library part that is not a symbol) is found while applying, after the earlier changes.
+struct OpeningFloorPlanParametersChange {
+    std::optional<bool>                         showReferenceAxis;
+    std::optional<short>                        referenceAxisPen;
+    std::optional<API_AttributeIndex>           referenceAxisLineType;
+    std::optional<double>                       referenceAxisOverhang;
+    std::optional<bool>                         cutSurfacesUseLineOfCutElements;
+    std::optional<short>                        cutSurfacesLinePen;
+    std::optional<API_AttributeIndex>           cutSurfacesLineType;
+    std::optional<bool>                         outlinesUseLineOfCutElements;
+    std::optional<short>                        outlinesUncutLinePen;
+    std::optional<API_AttributeIndex>           outlinesUncutLineType;
+    std::optional<short>                        outlinesOverheadLinePen;
+    std::optional<API_AttributeIndex>           outlinesOverheadLineType;
+    std::optional<bool>                         useCoverFills;
+    std::optional<bool>                         coverFillsUseFillsOfCutElements;
+    std::optional<API_AttributeIndex>           coverFill;
+    std::optional<short>                        coverFillPen;
+    std::optional<short>                        coverFillBackgroundPen;
+    std::optional<API_HatchOrientationTypeID>   coverFillOrientation;
+    std::optional<API_CoverFillTransformation>  coverFillTransformation;
+    std::optional<API_Guid>                     cutSymbolLibPartId;
+    bool                                        clearCutSymbol = false;
+    std::optional<API_Guid>                     unCutSymbolLibPartId;
+    bool                                        clearUnCutSymbol = false;
+};
+
+static void GetOptionalBool (const GS::ObjectState& os, const char* name, std::optional<bool>& value)
+{
+    bool v = false;
+    if (os.Get (name, v)) {
+        value = v;
+    }
+}
+
+static void GetOptionalPen (const GS::ObjectState& os, const char* name, std::optional<short>& value)
+{
+    Int32 pen = 0;
+    if (os.Get (name, pen)) {
+        value = static_cast<short> (pen);
+    }
+}
+
+// Returns an error message when the given attribute is not an attribute of the given type in the project.
+static GS::Optional<GS::UniString> GetOptionalAttributeIndex (const GS::ObjectState& os, const char* name, API_AttrTypeID typeID, std::optional<API_AttributeIndex>& index)
+{
+    const GS::ObjectState* attributeId = os.Get (name);
+    if (attributeId == nullptr) {
+        return GS::NoValue;
+    }
+    const API_Guid attributeGuid = GetGuidFromObjectState (*attributeId);
+    const API_AttributeIndex attributeIndex = GetAttributeIndexFromGuid (typeID, attributeGuid);
+    if (attributeGuid == APINULLGuid || GetAttributeGuidFromIndex (typeID, attributeIndex) != attributeGuid) {
+        return GS::UniString::Printf ("The '%s' is not an attribute of the right type in the project.", name);
+    }
+    index = attributeIndex;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> GetOpeningFloorPlanParametersChange (const GS::ObjectState& os, OpeningFloorPlanParametersChange& change)
+{
+    GetOptionalBool (os, "showReferenceAxis", change.showReferenceAxis);
+    GetOptionalPen (os, "referenceAxisPen", change.referenceAxisPen);
+    double overhang = 0.0;
+    if (os.Get ("referenceAxisOverhang", overhang)) {
+        change.referenceAxisOverhang = overhang;
+    }
+    GetOptionalBool (os, "cutSurfacesUseLineOfCutElements", change.cutSurfacesUseLineOfCutElements);
+    GetOptionalPen (os, "cutSurfacesLinePen", change.cutSurfacesLinePen);
+    GetOptionalBool (os, "outlinesUseLineOfCutElements", change.outlinesUseLineOfCutElements);
+    GetOptionalPen (os, "outlinesUncutLinePen", change.outlinesUncutLinePen);
+    GetOptionalPen (os, "outlinesOverheadLinePen", change.outlinesOverheadLinePen);
+    GetOptionalBool (os, "useCoverFills", change.useCoverFills);
+    GetOptionalBool (os, "coverFillsUseFillsOfCutElements", change.coverFillsUseFillsOfCutElements);
+    GetOptionalPen (os, "coverFillPen", change.coverFillPen);
+    GetOptionalPen (os, "coverFillBackgroundPen", change.coverFillBackgroundPen);
+
+    const std::pair<const char*, std::optional<API_AttributeIndex>*> lineTypes[] = {
+        { "referenceAxisLineTypeId", &change.referenceAxisLineType },
+        { "cutSurfacesLineTypeId", &change.cutSurfacesLineType },
+        { "outlinesUncutLineTypeId", &change.outlinesUncutLineType },
+        { "outlinesOverheadLineTypeId", &change.outlinesOverheadLineType }
+    };
+    for (const auto& lineType : lineTypes) {
+        const GS::Optional<GS::UniString> error = GetOptionalAttributeIndex (os, lineType.first, API_LinetypeID, *lineType.second);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    const GS::Optional<GS::UniString> fillError = GetOptionalAttributeIndex (os, "coverFillId", API_FilltypeID, change.coverFill);
+    if (fillError.HasValue ()) {
+        return fillError;
+    }
+
+    GS::UniString orientation;
+    if (os.Get ("coverFillOrientation", orientation)) {
+        if (orientation != "Global" && orientation != "Rotated" && orientation != "Distorted" && orientation != "Centered") {
+            return GS::UniString ("The 'coverFillOrientation' must be Global, Rotated, Distorted or Centered.");
+        }
+        change.coverFillOrientation = HatchOrientationTypeFromString (orientation);
+    }
+    GS::ObjectState transformation;
+    if (os.Get ("coverFillTransformation", transformation)) {
+        change.coverFillTransformation = GetCoverFillTransformationFromObjectState (transformation);
+    }
+
+    GS::UniString libPartId;
+    if (os.Get ("cutSymbolLibPartId", libPartId)) {
+        change.cutSymbolLibPartId = APIGuidFromString (libPartId.ToCStr ());
+        if (*change.cutSymbolLibPartId == APINULLGuid) {
+            return GS::UniString ("The 'cutSymbolLibPartId' is not a valid guid.");
+        }
+    }
+    os.Get ("clearCutSymbol", change.clearCutSymbol);
+    if (os.Get ("unCutSymbolLibPartId", libPartId)) {
+        change.unCutSymbolLibPartId = APIGuidFromString (libPartId.ToCStr ());
+        if (*change.unCutSymbolLibPartId == APINULLGuid) {
+            return GS::UniString ("The 'unCutSymbolLibPartId' is not a valid guid.");
+        }
+    }
+    os.Get ("clearUnCutSymbol", change.clearUnCutSymbol);
+    if ((change.cutSymbolLibPartId.has_value () && change.clearCutSymbol) || (change.unCutSymbolLibPartId.has_value () && change.clearUnCutSymbol)) {
+        return GS::UniString ("A symbol cannot be set and cleared at the same time.");
+    }
+    return GS::NoValue;
+}
+
+// Applies the switches before the values they enable. Returns the first error Archicad gives;
+// the changes made before it stay, and the error text says so.
+static GS::Optional<GS::UniString> ApplyOpeningFloorPlanParametersChange (ACAPI::Element::ModifiableOpeningFloorPlanParameters& floorPlanParameters, const OpeningFloorPlanParametersChange& change, GSErrCode& error)
+{
+    const auto check = [&] (ACAPI::Result<void> result, const char* what) -> GS::Optional<GS::UniString> {
+        if (result.IsErr ()) {
+            error = result.UnwrapErr ().kind;
+            return GS::UniString::Printf ("Failed to set %s of the opening (the changes before it were applied): ", what) + GS::UniString (result.UnwrapErr ().text.c_str ());
+        }
+        return GS::NoValue;
+    };
+
+    if (change.showReferenceAxis.has_value ()) {
+        if (*change.showReferenceAxis) {
+            floorPlanParameters.ShowReferenceAxisOn ();
+        } else {
+            floorPlanParameters.ShowReferenceAxisOff ();
+        }
+    }
+    if (change.referenceAxisPen.has_value ()) {
+        floorPlanParameters.SetReferenceAxisPenIndex (*change.referenceAxisPen);
+    }
+    if (change.referenceAxisLineType.has_value ()) {
+        floorPlanParameters.SetReferenceAxisLineTypeIndex (*change.referenceAxisLineType);
+    }
+    if (change.referenceAxisOverhang.has_value ()) {
+        floorPlanParameters.SetReferenceAxisOverhang (*change.referenceAxisOverhang);
+    }
+
+    if (change.cutSurfacesUseLineOfCutElements.has_value ()) {
+        if (*change.cutSurfacesUseLineOfCutElements) {
+            floorPlanParameters.UseCutSurfacesLineOfCutElementsOn ();
+        } else {
+            floorPlanParameters.UseCutSurfacesLineOfCutElementsOff ();
+        }
+    }
+    if (change.cutSurfacesLinePen.has_value ()) {
+        floorPlanParameters.SetCutSurfacesLinePenIndex (*change.cutSurfacesLinePen);
+    }
+    if (change.cutSurfacesLineType.has_value ()) {
+        floorPlanParameters.SetCutSurfacesLineIndex (*change.cutSurfacesLineType);
+    }
+
+    if (change.outlinesUseLineOfCutElements.has_value ()) {
+        if (*change.outlinesUseLineOfCutElements) {
+            floorPlanParameters.UseOutlinesLineOfCutElementsOn ();
+        } else {
+            floorPlanParameters.UseOutlinesLineOfCutElementsOff ();
+        }
+    }
+    if (change.outlinesUncutLinePen.has_value ()) {
+        floorPlanParameters.SetOutlinesUncutLinePenIndex (*change.outlinesUncutLinePen);
+    }
+    if (change.outlinesUncutLineType.has_value ()) {
+        floorPlanParameters.SetOutlinesUncutLineIndex (*change.outlinesUncutLineType);
+    }
+    if (change.outlinesOverheadLinePen.has_value ()) {
+        floorPlanParameters.SetOutlinesOverheadLinePenIndex (*change.outlinesOverheadLinePen);
+    }
+    if (change.outlinesOverheadLineType.has_value ()) {
+        floorPlanParameters.SetOutlinesOverheadLineIndex (*change.outlinesOverheadLineType);
+    }
+
+    if (change.useCoverFills.has_value ()) {
+        if (*change.useCoverFills) {
+            floorPlanParameters.UseCoverFillsOn ();
+        } else {
+            floorPlanParameters.UseCoverFillsOff ();
+        }
+    }
+    if (change.coverFillsUseFillsOfCutElements.has_value ()) {
+        if (*change.coverFillsUseFillsOfCutElements) {
+            floorPlanParameters.UseCoverFillsOfCutElementsOn ();
+        } else {
+            floorPlanParameters.UseCoverFillsOfCutElementsOff ();
+        }
+    }
+    if (change.coverFill.has_value ()) {
+        floorPlanParameters.SetCoverFillsIndex (*change.coverFill);
+    }
+    if (change.coverFillPen.has_value ()) {
+        floorPlanParameters.SetCoverFillsPenIndex (*change.coverFillPen);
+    }
+    if (change.coverFillBackgroundPen.has_value ()) {
+        floorPlanParameters.SetCoverFillsBackgroundPenIndex (*change.coverFillBackgroundPen);
+    }
+    GS::Optional<GS::UniString> failure;
+    if (change.coverFillOrientation.has_value ()) {
+        failure = check (floorPlanParameters.SetCoverFillOrientation (*change.coverFillOrientation), "the cover fill orientation");
+        if (failure.HasValue ()) {
+            return failure;
+        }
+    }
+    if (change.coverFillTransformation.has_value ()) {
+        failure = check (floorPlanParameters.SetCoverFillTransformation (*change.coverFillTransformation), "the cover fill transformation");
+        if (failure.HasValue ()) {
+            return failure;
+        }
+    }
+
+    if (change.clearCutSymbol) {
+        failure = check (floorPlanParameters.ClearCutSymbol (), "the cut symbol");
+    } else if (change.cutSymbolLibPartId.has_value ()) {
+        failure = check (floorPlanParameters.SetCutSymbol (*change.cutSymbolLibPartId), "the cut symbol");
+    }
+    if (failure.HasValue ()) {
+        return failure;
+    }
+    if (change.clearUnCutSymbol) {
+        failure = check (floorPlanParameters.ClearUnCutSymbol (), "the uncut symbol");
+    } else if (change.unCutSymbolLibPartId.has_value ()) {
+        failure = check (floorPlanParameters.SetUnCutSymbol (*change.unCutSymbolLibPartId), "the uncut symbol");
+    }
+    return failure;
+}
+#endif
+
+GetOpeningFloorPlanParametersCommand::GetOpeningFloorPlanParametersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningFloorPlanParametersCommand::GetName () const
+{
+    return "GetOpeningFloorPlanParameters";
+}
+
+GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The Opening elements (made with the Opening tool) to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "openings": {
+                "type": "array",
+                "description": "The floor plan parameters of the openings, in the order of the given elements.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": { "$ref": "#/ElementId" },
+                                "floorPlanParameters": {
+                                    "type": "object",
+                                    "properties": {)") + OpeningFloorPlanParametersSchemaProperties + R"(
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "showReferenceAxis", "referenceAxisPen", "referenceAxisLineTypeId", "referenceAxisOverhang",
+                                        "cutSurfacesUseLineOfCutElements", "cutSurfacesLinePen", "cutSurfacesLineTypeId",
+                                        "outlinesUseLineOfCutElements", "outlinesUncutLinePen", "outlinesUncutLineTypeId", "outlinesOverheadLinePen", "outlinesOverheadLineTypeId",
+                                        "useCoverFills", "coverFillsUseFillsOfCutElements", "coverFillId", "coverFillPen", "coverFillBackgroundPen", "coverFillOrientation"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["elementId", "floorPlanParameters"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openings"]
+    })";
+}
+
+GS::ObjectState GetOpeningFloorPlanParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& openings = response.AddList<GS::ObjectState> ("openings");
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid openingGuid = GetGuidFromElementsArrayItem (element);
+        ACAPI::Result<ACAPI::Element::Opening> opening = ACAPI::Element::Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (openingGuid), ACAPI_GetToken ()));
+        if (opening.IsErr ()) {
+            openings (CreateErrorResponse (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening."));
+            continue;
+        }
+        GS::ObjectState details;
+        details.Add ("elementId", CreateGuidObjectState (openingGuid));
+        details.Add ("floorPlanParameters", CreateOpeningFloorPlanParametersObjectState (opening->GetFloorPlanParameters ()));
+        openings (details);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+SetOpeningFloorPlanParametersCommand::SetOpeningFloorPlanParametersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetOpeningFloorPlanParametersCommand::GetName () const
+{
+    return "SetOpeningFloorPlanParameters";
+}
+
+GS::Optional<GS::UniString> SetOpeningFloorPlanParametersCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "openingsWithFloorPlanParameters": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "floorPlanParameters": {
+                            "type": "object",
+                            "description": "The floor plan parameters to change, with the names GetOpeningFloorPlanParameters returns. The ones left out are not changed.",
+                            "properties": {)") + OpeningFloorPlanParametersSchemaProperties + R"(,
+                                "clearCutSymbol": { "type": "boolean", "description": "Removes the cut symbol of the opening. Cannot be given together with cutSymbolLibPartId." },
+                                "clearUnCutSymbol": { "type": "boolean", "description": "Removes the uncut symbol of the opening. Cannot be given together with unCutSymbolLibPartId." }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "floorPlanParameters"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsWithFloorPlanParameters"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetOpeningFloorPlanParametersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+static GS::ObjectState SetOpeningFloorPlanParameters (const GS::ObjectState& data)
+{
+    using ACAPI::Element::Opening;
+
+    const GS::ObjectState* elementId = data.Get ("elementId");
+    GS::ObjectState floorPlanData;
+    if (elementId == nullptr || !data.Get ("floorPlanParameters", floorPlanData)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' or 'floorPlanParameters' parameter.");
+    }
+
+    ACAPI::Result<Opening> opening = Opening::Get (ACAPI::UniqueID (APIGuid2GSGuid (GetGuidFromObjectState (*elementId)), ACAPI_GetToken ()));
+    if (opening.IsErr ()) {
+        return CreateFailedExecutionResult (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    OpeningFloorPlanParametersChange change;
+    const GS::Optional<GS::UniString> inputError = GetOpeningFloorPlanParametersChange (floorPlanData, change);
+    if (inputError.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, inputError.Get ());
+    }
+
+    GSErrCode failedError = NoError;
+    GS::Optional<GS::UniString> failedMessage;
+    ACAPI::Result<void> modifyResult = opening->Modify ([&] (Opening::Modifier& modifier) {
+        auto floorPlanParameters = modifier.GetFloorPlanParameters ();
+        failedMessage = ApplyOpeningFloorPlanParametersChange (floorPlanParameters, change, failedError);
+    }, "Set Opening Floor Plan Parameters");
+
+    if (failedMessage.HasValue ()) {
+        return CreateFailedExecutionResult (failedError, failedMessage.Get ());
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the opening: " + GS::UniString (modifyResult.UnwrapErr ().text.c_str ()));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+#endif
+
+GS::ObjectState SetOpeningFloorPlanParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> openingsWithFloorPlanParameters;
+    parameters.Get ("openingsWithFloorPlanParameters", openingsWithFloorPlanParameters);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& data : openingsWithFloorPlanParameters) {
+        executionResults (SetOpeningFloorPlanParameters (data));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+GetOpeningDefaultCommand::GetOpeningDefaultCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetOpeningDefaultCommand::GetName () const
+{
+    return "GetOpeningDefault";
+}
+
+GS::Optional<GS::UniString> GetOpeningDefaultCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetOpeningDefaultCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(,
+            "floorPlanParameters": {
+                "type": "object",
+                "properties": {)" + OpeningFloorPlanParametersSchemaProperties + R"(
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false,
+        "required": ["extrusionParameters", "floorPlanParameters"]
+    })";
+}
+
+GS::ObjectState GetOpeningDefaultCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<ACAPI::Element::OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
+    if (openingDefault.IsErr ()) {
+        return CreateErrorResponse (openingDefault.UnwrapErr ().kind, GS::UniString (openingDefault.UnwrapErr ().text.c_str ()));
+    }
+
+    GS::ObjectState response;
+    response.Add ("extrusionParameters", CreateOpeningExtrusionParametersObjectState (openingDefault->GetExtrusionParameters ()));
+    response.Add ("floorPlanParameters", CreateOpeningFloorPlanParametersObjectState (openingDefault->GetFloorPlanParameters ()));
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
 }
