@@ -206,6 +206,11 @@ inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars* fileOpenPa
     return ACAPI_Automate (APIDo_OpenID, (void*) fileOpenPars);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_NewProject (const API_NewProjectPars* newProjectPars)
+{
+    return ACAPI_Automate (APIDo_NewProjectID, (void*) newProjectPars);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_Close ()
 {
     return ACAPI_Automate (APIDo_CloseID);

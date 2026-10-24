@@ -1444,6 +1444,59 @@ GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+NewProjectCommand::NewProjectCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String NewProjectCommand::GetName () const
+{
+    return "NewProject";
+}
+
+GS::Optional<GS::UniString> NewProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "newAndReset": {
+                "type": "boolean",
+                "description": "Optional. Also reset the working environment to the template's, as File > New > New and Reset All does, instead of keeping the current one as File > New does. Defaults to false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> NewProjectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+// Like OpenProject, this runs outside an undoable command: the new project replaces the
+// open one, whose unsaved changes are discarded without a save alert. The API takes no
+// template: the new project uses the template set in Archicad's New Project settings.
+GS::ObjectState NewProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool newAndReset = false;
+    parameters.Get ("newAndReset", newAndReset);
+
+    API_NewProjectPars newProjectPars = {};
+    newProjectPars.newAndReset = newAndReset;
+#ifndef ServerMainVers_2900
+    newProjectPars.enableSaveAlert = false;
+#endif
+
+    const GSErrCode err = ACAPI_ProjectOperation_NewProject (&newProjectPars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to start a new project. Archicad might have refused the command, for example while a dialog is open or in a Teamwork project.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CloseProjectCommand::CloseProjectCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
