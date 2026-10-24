@@ -4891,6 +4891,8 @@ GS::ObjectState GetHotlinkOwnersOfElementsCommand::Execute (const GS::ObjectStat
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetHotlinkOwnersOfElements requires Archicad 27 or newer.");
 #endif
+}
+
 // The elements inside a placed instance are proxies: copies made in this
 // project with guids of their own. Archicad keeps, per instance, which element
 // of the source file each proxy was made from.
