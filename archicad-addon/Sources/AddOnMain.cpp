@@ -814,6 +814,18 @@ GSErrCode Initialize (void)
             propertyCommands, "1.1.8",
             "Sets the property values of attributes."
         );
+        err |= RegisterCommand<GetPropertyDefinitionsOfAttributesCommand> (
+            propertyCommands, "1.7.3",
+            "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them."
+        );
+        err |= RegisterCommand<AddPropertyToAttributesCommand> (
+            propertyCommands, "1.7.3",
+            "Makes an existing custom property available for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only."
+        );
+        err |= RegisterCommand<RemovePropertyFromAttributesCommand> (
+            propertyCommands, "1.7.3",
+            "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only."
+        );
         err |= RegisterCommand<CreatePropertyGroupsCommand> (
             propertyCommands, "1.0.7",
             "Creates Property Groups based on the given parameters."
