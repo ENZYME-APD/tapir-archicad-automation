@@ -13,7 +13,11 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("classificationSystemId")]
         public ClassificationGuid ClassificationSystemId;
 
-        [JsonProperty("classificationItemId")]
+        // Left out of the JSON when null: no item means unclassified in the
+        // system, and the schema does not accept a null item.
+        [JsonProperty(
+            "classificationItemId",
+            NullValueHandling = NullValueHandling.Ignore)]
         public ClassificationGuid ClassificationItemId;
 
         public override string ToString()
