@@ -1067,6 +1067,8 @@ GS::ObjectState GetMissingLibPartNamesCommand::Execute (const GS::ObjectState& p
     }
 
     return response;
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
