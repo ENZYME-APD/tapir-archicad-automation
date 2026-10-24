@@ -599,6 +599,8 @@ inline GSErrCode ACAPI_Element_GetElementInfoString (const API_Guid* elementGuid
 inline GSErrCode ACAPI_Element_GetCompoundInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
 {
     return ACAPI_Database (APIDb_GetCompoundInfoStringID, (void*) elementGuid, infoString);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
 {
     return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);
