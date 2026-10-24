@@ -1037,9 +1037,17 @@ GSErrCode Initialize (void)
             attributeCommands, "1.7.2",
             "Creates graphic override combinations from existing rules. Available from Archicad 27."
         );
+        err |= RegisterCommand<ModifyGraphicOverrideCombinationsCommand> (
+            attributeCommands, "1.7.3",
+            "Modifies the name and/or the rules of graphic override combinations. Omitted fields are kept. Available from Archicad 27."
+        );
         err |= RegisterCommand<DeleteGraphicOverrideCombinationsCommand> (
             attributeCommands, "1.7.2",
             "Deletes graphic override combinations. Their rules are kept. Available from Archicad 27."
+        );
+        err |= RegisterCommand<CreateGraphicOverrideRuleGroupsCommand> (
+            attributeCommands, "1.7.3",
+            "Creates empty graphic override rule groups. Available from Archicad 27."
         );
         err |= RegisterCommand<GetGraphicOverrideRuleGroupsCommand> (
             attributeCommands, "1.7.2",
