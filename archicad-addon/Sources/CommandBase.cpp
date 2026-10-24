@@ -512,16 +512,17 @@ GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& o
     return os;
 }
 
-API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os)
+API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation)
 {
-    API_HatchOrientation orientation = {};
+    API_HatchOrientation orientation = currentOrientation;
     GS::UniString typeStr;
     if (os.Get ("type", typeStr)) {
-        orientation.type = HatchOrientationTypeFromString (typeStr);
+        orientation.type = HatchOrientationTypeFromString (typeStr, orientation.type);
     }
     GS::ObjectState originOs;
     if (os.Get ("origin", originOs)) {
-        orientation.origo = Get2DCoordinateFromObjectState (originOs);
+        originOs.Get ("x", orientation.origo.x);
+        originOs.Get ("y", orientation.origo.y);
     }
     os.Get ("matrix00", orientation.matrix00);
     os.Get ("matrix10", orientation.matrix10);
@@ -799,7 +800,12 @@ GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories
     }
 
     if (storyPtr == nullptr) {
-        return { 0, zPos };
+        if (stories.empty ()) {
+            return { 0, zPos };
+        }
+        // zPos is below the level of every story: keep the element on the lowest one with a
+        // negative offset instead of jumping to story 0 (which may be several stories higher).
+        storyPtr = &stories.begin ()->second;
     }
 
     return { storyPtr->index, zPos - storyPtr->level };
@@ -983,6 +989,18 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     if (typeStr == "ColumnSegment") return API_ColumnSegmentID;
     if (typeStr == "Opening") return API_OpeningID;
     return API_ZombieElemID;
+}
+
+API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&element.header) != NoError ||
+        GetElemTypeId (element.header) != API_SectElemID ||
+        ACAPI_Element_Get (&element) != NoError) {
+        return elemGuid;
+    }
+    return element.sectElem.parentGuid;
 }
 
 short ParseAnchorPointString (const GS::UniString& anchorPoint)
@@ -1214,4 +1232,18 @@ void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coor
     rotationAngle = std::atan2 (-transformation.tmx[1], transformation.tmx[5]);
     const double det = transformation.tmx[0] * transformation.tmx[5] - transformation.tmx[1] * transformation.tmx[4];
     mirrored = det < 0.0;
+}
+
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+{
+    // Only the info string part of the memo is filled and masked, so nothing else of the
+    // element is touched. ACAPI_DisposeElemMemoHdls deletes elemInfoString, the same way
+    // it frees the one ACAPI_Element_GetMemo allocates in GetDetailsOfElements.
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    memo.elemInfoString = new GS::UniString (id);
+
+    // ACAPI_Element_ChangeMemo takes the guid by non-const reference.
+    API_Guid guid = elementGuid;
+    return ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
 }
