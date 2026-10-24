@@ -8011,7 +8011,7 @@
             },
             "polygonCoordinates": {
                 "type": "array",
-                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
@@ -8019,13 +8019,17 @@
             },
             "polygonArcs": {
                 "type": "array",
-                "description": "Polygon outline arcs of the mesh.",
+                "description": "Polygon outline arcs of the mesh. Replaces the existing outline arcs; when given without polygonCoordinates, they apply to the existing outline.",
                 "items": {
                     "$ref": "#/PolyArc"
                 }
             },
             "holes": {
-                "$ref": "#/Holes3D"
+                "type": "array",
+                "description": "The 3D holes of the mesh. Replaces all existing holes; an empty array removes them. When given without polygonCoordinates, the existing outline is kept.",
+                "items": {
+                    "$ref": "#/Hole3D"
+                }
             },
             "sublines": {
                 "type": "array",
