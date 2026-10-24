@@ -342,6 +342,155 @@ GS::ObjectState GetSectionElementsCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+// Walks the current database with ACAPI_DrawOrder_DrawOrderGetNext, starting from an empty
+// header (null guid, zombie type) and feeding back the header it returned each time. The walk
+// ends at the first call that fails, which is how the function reports that no element is left.
+// The visited set stops it should a database ever hand back an element twice.
+template <typename ListProxyType>
+static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
+{
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    bool includeSubElemObjects = false;
+    API_ElemFilterFlags filterFlags = APIFilt_None;
+    GS::Array<GS::UniString> filters;
+    if (parameters.Get ("filters", filters)) {
+        for (const GS::UniString& filter : filters) {
+            if (filter == "IncludeSubElemObjects") {
+                includeSubElemObjects = true;
+            } else {
+                filterFlags |= ConvertFilterStringToFlag (filter);
+            }
+        }
+    }
+
+    GS::HashSet<API_Guid> visitedGuids;
+    GS::HashSet<API_Guid> reportedGuids;
+    API_Elem_Head elemHead = {};
+    while (ACAPI_DrawOrder_DrawOrderGetNext (filterFlags, &elemHead) == NoError) {
+        if (elemHead.guid == APINULLGuid || visitedGuids.Contains (elemHead.guid)) {
+            break;
+        }
+        visitedGuids.Add (elemHead.guid);
+
+        const API_Guid elemGuid = GetParentElemOfSectElem (elemHead.guid);
+        API_Elem_Head reportedHead = {};
+        reportedHead.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&reportedHead) != NoError) {
+            reportedHead = elemHead;
+        }
+        const API_ElemTypeID reportedType = GetElemTypeId (reportedHead);
+        if (elemType != API_ZombieElemID && reportedType != elemType) {
+            continue;
+        }
+        if (elemType == API_ObjectID && !includeSubElemObjects) {
+            API_Element elem = {};
+            elem.header.guid = elemGuid;
+            if (ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid) {
+                continue;
+            }
+        }
+        if (reportedGuids.Contains (elemGuid)) {
+            continue;
+        }
+        reportedGuids.Add (elemGuid);
+        elementsListProxy (CreateElementIdObjectState (elemGuid));
+    }
+
+    return NoError;
+}
+
+GetElementsInDrawOrderCommand::GetElementsInDrawOrderCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsInDrawOrderCommand::GetName () const
+{
+    return "GetElementsInDrawOrder";
+}
+
+GS::Optional<GS::UniString> GetElementsInDrawOrderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Optional. Only elements of this type are returned, still in drawing order. If omitted, every element is returned."
+            },
+            "filters": {
+                "type": "array",
+                "description": "Optional. The filters an element must pass to be returned, the same as for GetElementsByType.",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            },
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "The databases to list the elements of, each in its own drawing order. If omitted, the current database is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsInDrawOrderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ElementsWithExecutionResultsOrError"
+    })";
+}
+
+GS::ObjectState GetElementsInDrawOrderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        if (GetElementTypeFromNonLocalizedName (elementTypeStr) == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    GS::Array<GS::ObjectState> databases;
+    if (!parameters.Get ("databases", databases) || databases.IsEmpty ()) {
+        const GSErrCode err = GetElementsInDrawOrderFromCurrentDatabase (parameters, elements);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to list the elements of the current database in drawing order.");
+        }
+        return response;
+    }
+
+    const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+    const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+    auto action = [&]() -> GSErrCode {
+        return GetElementsInDrawOrderFromCurrentDatabase (parameters, elements);
+    };
+    auto actionSuccess = [&]() -> void {
+        executionResultForDatabases (CreateSuccessfulExecutionResult ());
+    };
+    auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
+        executionResultForDatabases (CreateFailedExecutionResult (err, errMsg));
+    };
+
+    const GSErrCode err = ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
+    }
+
+    return response;
+}
+
 GetElementsByTypeCommand::GetElementsByTypeCommand () :
     CommandBase (CommonSchema::Used)
 {

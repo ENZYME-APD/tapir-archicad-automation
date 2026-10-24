@@ -118,6 +118,11 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
 
+inline GSErrCode ACAPI_DrawOrder_DrawOrderGetNext (API_ElemFilterFlags filterBits, API_Elem_Head* elemHead)
+{
+    return ACAPI_Database (APIDb_DrawOrderGetNextID, &filterBits, elemHead);
+}
+
 inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutInfo, API_DatabaseUnId* databaseUnId)
 {
     return ACAPI_Environment (APIEnv_ChangeLayoutSetsID, const_cast<API_LayoutInfo*> (layoutInfo), databaseUnId);
