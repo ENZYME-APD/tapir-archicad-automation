@@ -40,11 +40,11 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     ACAPI_DisposeElemMemoHdls (&memo);
 }
 
+static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
+
 // The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
 // of a decomposed multi-plane roof, which has no memo of its own), else from the
 // memo of the element with this guid.
-static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
-
 static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, short floorInd, const API_ElementMemo* partMemo, const Stories& stories, GS::ObjectState& os)
 {
     const API_ShellBaseType& base = roof.shellBase;
@@ -114,6 +114,7 @@ private:
     const short     floorInd;
     const Stories&  stories;
 };
+
 // The baseline of a Stair is a polyline, not a polygon: it lives in the memo's stairBaseLine
 // (the very handle CreateStairsCommand::SetTypeSpecificParameters fills in to place one),
 // 1-based like the other memo polygons, with no closing vertex. Read with APIMemoMask_All,
@@ -6473,6 +6474,9 @@ GS::ObjectState GetRoofPlanesCommand::Execute (const GS::ObjectState& parameters
         }
         roofPlanesOfElements (roofPlanes);
     }
+
+    return response;
+}
 
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
