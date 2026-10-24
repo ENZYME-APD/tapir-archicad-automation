@@ -3366,7 +3366,7 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
-                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
                     },
                     "text": {
                         "type": "string",
@@ -3391,15 +3391,15 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
+                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided. Unless midCoordinate and endCoordinate are both given too, the label is created at its default position relative to the parent element (Archicad's 'createAtDefaultPosition'), so the label may not end up at begCoordinate - read it back with GetDetailsOfElements after creation."
                     },
                     "midCoordinate": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The mid coordinate of leader line. Optional parameter."
+                        "description": "The mid coordinate of leader line. Optional parameter; give it together with endCoordinate to place the label exactly where the coordinates say."
                     },
                     "endCoordinate": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The end coordinate of leader line. Optional parameter."
+                        "description": "The end coordinate of leader line. Optional parameter; give it together with midCoordinate to place the label exactly where the coordinates say."
                     },
 
                     "floorInd": {
@@ -4386,6 +4386,45 @@ static void CalcLabelParentBounds (const API_Elem_Head& parentElemHead, API_Box3
     }
 }
 
+// API_AddParType cannot carry Dictionary parameter values ("Dictionary parameters are currently
+// inaccessible with this structure", APIdefs_LibraryParts.h): the Label tool defaults list them, but
+// with an empty value. Passed on to ACAPI_Element_Create, the label is placed with an empty
+// dictionary, and a library part that reads one (Flexi_Zone_Label's hidden "dict_words") fails -
+// it is drawn as its hotspot only, and ACAPI_LibraryPart_OpenParameters on it answers
+// APIERR_GENERAL, so Get/SetGDLParametersOfElements refuse it (#742, found and tested on AC29 by
+// the reporter). Left out of memo.params, Archicad fills them in from the library part.
+static void RemoveDictionaryParameters (API_AddParType**& params)
+{
+    if (params == nullptr) {
+        return;
+    }
+    const GSSize count = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
+    GSSize kept = 0;
+    for (GSSize ii = 0; ii < count; ++ii) {
+        if ((*params)[ii].typeID != APIParT_Dictionary) {
+            ++kept;
+        }
+    }
+    if (kept == count) {
+        return;
+    }
+    // A fresh handle instead of resizing in place: a handle from the API is not safe to hand to
+    // BMReallocHandle (#452). The kept entries move over as they are, with the handles of their
+    // array values, so only the outer block is freed here.
+    API_AddParType** filtered = reinterpret_cast<API_AddParType**> (BMAllocateHandle (kept * sizeof (API_AddParType), ALLOCATE_CLEAR, 0));
+    if (filtered == nullptr) {
+        return;
+    }
+    GSSize target = 0;
+    for (GSSize ii = 0; ii < count; ++ii) {
+        if ((*params)[ii].typeID != APIParT_Dictionary) {
+            (*filtered)[target++] = (*params)[ii];
+        }
+    }
+    BMKillHandle (reinterpret_cast<GSHandle*> (&params));
+    params = filtered;
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -4431,6 +4470,9 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         element.label.createAtDefaultPosition = true;
     }
 
+    // The class the Label tool defaults (or the favorite applied to them) came with: only a Symbol
+    // default names a symbol library part in u.symbol, see the Symbol branch below.
+    const API_LblClassID defaultLabelClass = element.label.labelClass;
     GS::UniString labelClassStr;
     if (parameters.Get ("labelClass", labelClassStr)) {
         element.label.labelClass = (labelClassStr == "Symbol") ? APILblClass_Symbol : APILblClass_Text;
@@ -4468,6 +4510,45 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
                 return symbolStyleErr;
             }
         }
+
+        // u.symbol shares its storage with u.text: when the defaults are a Text label, u.symbol.libInd
+        // holds bytes of the text settings, which may by chance be a valid library part index of
+        // some unrelated library part. There is no input to name a symbol library part, so refuse
+        // instead of placing whatever that index points at (or nothing, as it did before).
+        if (defaultLabelClass != APILblClass_Symbol) {
+            GS::UniString favoriteName;
+            const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("labelClass 'Symbol' needs a symbol library part, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+        }
+
+        // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library
+        // part's parameter list in memo.params. The Label tool defaults (or the favorite applied
+        // to them) normally carry it - for Flexi_Zone_Label all 140 parameters, checked on AC29
+        // (#742) - and those values are kept. Only defaults that carry none get the library
+        // part's own list, the way Window/Door markers (PrepareWindowOrDoorDefaults) and
+        // interior elevation markers get theirs.
+        const GSSize paramNum = memo.params != nullptr ? BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType) : 0;
+        if (paramNum == 0) {
+            double a = 0.0;
+            double b = 0.0;
+            Int32 addParNum = 0;
+            API_AddParType** libPartPars = nullptr;
+            const GSErrCode paramsErr = ACAPI_LibraryPart_GetParams (element.label.u.symbol.libInd, &a, &b, &addParNum, &libPartPars);
+            if (paramsErr != NoError || libPartPars == nullptr) {
+                if (libPartPars != nullptr) {
+                    ACAPI_DisposeAddParHdl (&libPartPars);
+                }
+                return CreateErrorResponse (paramsErr != NoError ? paramsErr : APIERR_BADINDEX, "Failed to read the parameters of the symbol label's library part. The Label tool defaults do not name a valid symbol library part - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+            }
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = libPartPars;
+        }
+
+        // Whichever list it is, it holds the Dictionary parameters with no value: see
+        // RemoveDictionaryParameters for why the label is broken when they are passed on.
+        RemoveDictionaryParameters (memo.params);
     }
 
     return {};
