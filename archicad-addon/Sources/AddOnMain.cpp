@@ -1011,6 +1011,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CheckPropertyValuesCommand> (
             propertyCommands, "1.7.3",
             "Checks whether the given values are acceptable for the given property definitions, without changing anything."
+        );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."

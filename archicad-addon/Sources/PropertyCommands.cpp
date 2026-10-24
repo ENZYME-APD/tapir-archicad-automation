@@ -2394,6 +2394,8 @@ GS::ObjectState CheckPropertyValuesCommand::Execute (const GS::ObjectState& para
     }
 
     return response;
+}
+
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
