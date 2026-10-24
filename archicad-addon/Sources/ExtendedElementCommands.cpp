@@ -7729,6 +7729,138 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
     });
 }
 
+ModifyOpeningsCommand::ModifyOpeningsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyOpeningsCommand::GetName () const
+{
+    return "ModifyOpenings";
+}
+
+GS::Optional<GS::UniString> ModifyOpeningsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openingsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "basePoint": { "$ref": "#/Coordinate3D", "description": "New base point of the opening: its bottom left corner in world space, the same point CreateOpenings takes." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "New width of the opening." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "New height of the opening. The bottom edge stays where it is, the opening grows or shrinks upwards." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyOpeningsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifyOpeningsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "openingsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+#ifndef ServerMainVers_2900
+    const Stories stories = GetStories ();
+#endif
+
+    return ExecuteModifyWithResults ("Modify Openings", [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+
+#ifndef ServerMainVers_2900
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load opening."));
+                continue;
+            }
+            // The fields below live in the Opening member of the element union, so writing
+            // them into a Window or a Wall would change unrelated bytes of that element.
+            if (GetElemTypeId (element.header) != API_OpeningID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "Element is not an Opening."));
+                continue;
+            }
+
+            const auto width = GetOptionalDouble (item, "width");
+            const auto height = GetOptionalDouble (item, "height");
+            if ((width.HasValue () && width.Get () <= 0.0) || (height.HasValue () && height.Get () <= 0.0)) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'width' and 'height' must be greater than zero."));
+                continue;
+            }
+            const bool hasBasePoint = item.Get ("basePoint") != nullptr;
+            if (!width.HasValue () && !height.HasValue () && !hasBasePoint) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No opening fields to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            API_OpeningExtrusionParameters& extrusionParameters = element.opening.extrusionGeometryData.parameters;
+
+            // With a horizontal or aligned constraint the vertical position of the opening is
+            // anchorAltitude (home story up to the anchor point), not the frame's base point -
+            // see CreateOpenings. The bottom edge is therefore remembered before anything
+            // changes, so that a new height keeps it in place and a new basePoint puts it on
+            // the requested Z, the way CreateOpenings places it.
+            const bool isConstrained = extrusionParameters.constraint == API_OpeningForcedHorizontal ||
+                                       extrusionParameters.constraint == API_OpeningAligned;
+            double bottomAboveStory = extrusionParameters.anchorAltitude - GetAnchorHeightOffset (extrusionParameters.anchor, extrusionParameters.height);
+
+            if (width.HasValue ()) {
+                extrusionParameters.width = width.Get ();
+                ACAPI_ELEMENT_MASK_SET (mask, API_OpeningType, extrusionGeometryData.parameters.width);
+            }
+            if (height.HasValue ()) {
+                extrusionParameters.height = height.Get ();
+                ACAPI_ELEMENT_MASK_SET (mask, API_OpeningType, extrusionGeometryData.parameters.height);
+            }
+            if (hasBasePoint) {
+                const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*item.Get ("basePoint"));
+                element.opening.extrusionGeometryData.frame.basePoint = basePoint;
+                ACAPI_ELEMENT_MASK_SET (mask, API_OpeningType, extrusionGeometryData.frame.basePoint);
+                bottomAboveStory = basePoint.z - GetZPos (element.header.floorInd, 0.0, stories);
+            }
+            if (isConstrained && (height.HasValue () || hasBasePoint)) {
+                extrusionParameters.anchorAltitude =
+                    bottomAboveStory + GetAnchorHeightOffset (extrusionParameters.anchor, extrusionParameters.height);
+                ACAPI_ELEMENT_MASK_SET (mask, API_OpeningType, extrusionGeometryData.parameters.anchorAltitude);
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify opening."));
+#else
+            // Archicad 29 replaced the API_OpeningType struct, which the branch above and the
+            // pre-29 CreateOpenings write, with the ACAPI::Element::Opening interface that
+            // CreateOpenings uses there to place a new opening. Changing an existing opening
+            // through that interface is not implemented yet.
+            results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "ModifyOpenings is not supported in Archicad 29 and later yet; it needs Archicad 28 or earlier."));
+#endif
+        }
+    });
+}
+
 ModifyMorphsCommand::ModifyMorphsCommand () :
     CommandBase (CommonSchema::Used)
 {
