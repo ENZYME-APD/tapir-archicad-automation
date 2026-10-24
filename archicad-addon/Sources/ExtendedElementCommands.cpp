@@ -4970,6 +4970,317 @@ GS::ObjectState GetOpeningDetailsCommand::Execute (const GS::ObjectState& parame
 #endif
 }
 
+SetOpeningDetailsCommand::SetOpeningDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetOpeningDetailsCommand::GetName () const
+{
+    return "SetOpeningDetails";
+}
+
+GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "openingsWithDetails": {
+                "type": "array",
+                "description": "The Opening elements (made with the Opening tool) to change, each with the details to set. A detail that is left out stays as it is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "parentElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The new element the opening belongs to."
+                        },
+                        "addCutElements": {
+                            "type": "array",
+                            "description": "Elements the opening should cut as well.",
+                            "items": { "$ref": "#/ElementIdArrayItem" }
+                        },
+                        "removeCutElements": {
+                            "type": "array",
+                            "description": "Elements the opening should no longer cut.",
+                            "items": { "$ref": "#/ElementIdArrayItem" }
+                        },
+                        "polygon": {
+                            "type": "array",
+                            "description": "The new polygon of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "transformation": {
+                            "type": "array",
+                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] moves the opening by 1 along X.",
+                            "items": { "type": "number" },
+                            "minItems": 12,
+                            "maxItems": 12
+                        },
+                        "extrusionParameters": {
+                            "type": "object",
+                            "description": "The size and extrusion settings to change, with the same names GetOpeningDetails returns.",
+                            "properties": {
+                                "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                                "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                                "anchor": {
+                                    "type": "string",
+                                    "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
+                                    "description": "The anchor point of the opening's polygon."
+                                },
+                                "anchorAltitude": { "type": "number" },
+                                "extrusionStartOffset": { "type": "number" },
+                                "finiteBodyLength": { "type": "number" },
+                                "isExtrusionSurfaceOverridden": { "type": "boolean" },
+                                "extrusionSurfaceId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The surface of the extrusion faces. Only used when the surface is overridden."
+                                },
+                                "isEndSurfaceOverridden": { "type": "boolean" },
+                                "endSurfaceId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The surface of the end faces. Only used when the surface is overridden."
+                                },
+                                "areOverriddenSurfacesLinked": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+static ACAPI::UniqueID CreateUniqueIDFromGuid (const API_Guid& guid)
+{
+    return ACAPI::UniqueID (APIGuid2GSGuid (guid), ACAPI_GetToken ());
+}
+
+static std::vector<ACAPI::UniqueID> GetUniqueIDsFromElementsArray (const GS::ObjectState& os, const char* name)
+{
+    std::vector<ACAPI::UniqueID> ids;
+    GS::Array<GS::ObjectState> elements;
+    os.Get (name, elements);
+    for (const GS::ObjectState& element : elements) {
+        ids.push_back (CreateUniqueIDFromGuid (GetGuidFromElementsArrayItem (element)));
+    }
+    return ids;
+}
+
+// Returns the index of the surface with the given attributeId, or an error message if there is no such surface.
+static GS::Optional<GS::UniString> GetSurfaceIndex (const GS::ObjectState& os, const char* name, std::optional<API_AttributeIndex>& index)
+{
+    const GS::ObjectState* surfaceId = os.Get (name);
+    if (surfaceId == nullptr) {
+        return GS::NoValue;
+    }
+    const API_Guid surfaceGuid = GetGuidFromObjectState (*surfaceId);
+    const API_AttributeIndex surfaceIndex = GetAttributeIndexFromGuid (API_MaterialID, surfaceGuid);
+    if (surfaceGuid == APINULLGuid || GetAttributeGuidFromIndex (API_MaterialID, surfaceIndex) != surfaceGuid) {
+        return GS::UniString::Printf ("The '%s' is not a surface of the project.", name);
+    }
+    index = surfaceIndex;
+    return GS::NoValue;
+}
+
+static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
+{
+    using ACAPI::Element::Opening;
+
+    const GS::ObjectState* elementId = data.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'elementId' parameter.");
+    }
+
+    ACAPI::Result<Opening> opening = Opening::Get (CreateUniqueIDFromGuid (GetGuidFromObjectState (*elementId)));
+    if (opening.IsErr ()) {
+        return CreateFailedExecutionResult (opening.UnwrapErr ().kind, "Failed to load opening: the element is missing or is not an Opening.");
+    }
+
+    // Everything that can be checked is read and checked before the opening is touched, so a
+    // bad input changes nothing.
+    std::optional<ACAPI::UniqueID> parentElementId;
+    const GS::ObjectState* parentElementIdOs = data.Get ("parentElementId");
+    if (parentElementIdOs != nullptr) {
+        parentElementId = CreateUniqueIDFromGuid (GetGuidFromObjectState (*parentElementIdOs));
+    }
+
+    const std::vector<ACAPI::UniqueID> addCutElements = GetUniqueIDsFromElementsArray (data, "addCutElements");
+    const std::vector<ACAPI::UniqueID> removeCutElements = GetUniqueIDsFromElementsArray (data, "removeCutElements");
+
+    std::optional<Geometry::Polygon2D> polygon;
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    if (data.Get ("polygon", polygonCoordinates)) {
+        if (polygonCoordinates.GetSize () < 3) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'polygon' must have at least 3 vertices.");
+        }
+        GS::Array<Point2D> polygonCorners;
+        for (const GS::ObjectState& coordinate : polygonCoordinates) {
+            const API_Coord coord = Get2DCoordinateFromObjectState (coordinate);
+            polygonCorners.Push (Point2D (coord.x, coord.y));
+        }
+        auto polygons = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/);
+        if (polygons.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'polygon' is not a valid polygon.");
+        }
+        polygon = polygons.PopLargest ();
+    }
+
+    std::optional<API_Tranmat> transformation;
+    GS::Array<double> transformationValues;
+    if (data.Get ("transformation", transformationValues)) {
+        if (transformationValues.GetSize () != 12) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The 'transformation' must have 12 numbers.");
+        }
+        API_Tranmat tranmat = {};
+        for (UIndex i = 0; i < 12; ++i) {
+            tranmat.tmx[i] = transformationValues[i];
+        }
+        transformation = tranmat;
+    }
+
+    GS::ObjectState extrusionData;
+    const bool hasExtrusionData = data.Get ("extrusionParameters", extrusionData);
+    std::optional<API_AttributeIndex> extrusionSurfaceIndex;
+    std::optional<API_AttributeIndex> endSurfaceIndex;
+    if (hasExtrusionData) {
+        GS::Optional<GS::UniString> surfaceError = GetSurfaceIndex (extrusionData, "extrusionSurfaceId", extrusionSurfaceIndex);
+        if (!surfaceError.HasValue ()) {
+            surfaceError = GetSurfaceIndex (extrusionData, "endSurfaceId", endSurfaceIndex);
+        }
+        if (surfaceError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ());
+        }
+    }
+
+    // The first change that Archicad refuses stops the rest; the ones made before it stay.
+    GSErrCode failedError = NoError;
+    GS::UniString failedMessage;
+    const auto check = [&] (ACAPI::Result<void> result, const char* what) -> bool {
+        if (result.IsErr ()) {
+            failedError = result.UnwrapErr ().kind;
+            failedMessage = GS::UniString::Printf ("Failed to set %s of the opening: ", what) + GS::UniString (result.UnwrapErr ().text.c_str ());
+            return false;
+        }
+        return true;
+    };
+
+    ACAPI::Result<void> modifyResult = opening->Modify ([&] (Opening::Modifier& modifier) {
+        if (parentElementId.has_value () && !check (modifier.ChangeParentElement (*parentElementId), "the parent element")) {
+            return;
+        }
+        for (const ACAPI::UniqueID& cutElementId : removeCutElements) {
+            if (!check (modifier.RemoveCutElement (cutElementId), "the cut elements")) {
+                return;
+            }
+        }
+        for (const ACAPI::UniqueID& cutElementId : addCutElements) {
+            if (!check (modifier.AddCutElement (cutElementId), "the cut elements")) {
+                return;
+            }
+        }
+
+        if (hasExtrusionData) {
+            auto&& extrusionParameters = modifier.GetExtrusionParameters ();
+            double value = 0.0;
+            if (extrusionData.Get ("width", value) && !check (extrusionParameters.SetWidth (value), "the width")) {
+                return;
+            }
+            if (extrusionData.Get ("height", value) && !check (extrusionParameters.SetHeight (value), "the height")) {
+                return;
+            }
+            GS::UniString anchor;
+            if (extrusionData.Get ("anchor", anchor)) {
+                extrusionParameters.SetAnchor (AnchorIdFromString (anchor));
+            }
+            if (extrusionData.Get ("anchorAltitude", value) && !check (extrusionParameters.SetAnchorAltitude (value), "the anchor altitude")) {
+                return;
+            }
+            if (extrusionData.Get ("extrusionStartOffset", value) && !check (extrusionParameters.SetExtrusionStartOffset (value), "the extrusion start offset")) {
+                return;
+            }
+            if (extrusionData.Get ("finiteBodyLength", value) && !check (extrusionParameters.SetFiniteBodyLength (value), "the finite body length")) {
+                return;
+            }
+            bool flag = false;
+            if (extrusionData.Get ("isExtrusionSurfaceOverridden", flag)) {
+                extrusionParameters.SetExtrusionSurfaceAttributeOverridden (flag);
+            }
+            if (extrusionSurfaceIndex.has_value ()) {
+                extrusionParameters.SetOverriddenExtrusionSurfaceAttributeIndex (*extrusionSurfaceIndex);
+            }
+            if (extrusionData.Get ("isEndSurfaceOverridden", flag)) {
+                extrusionParameters.SetEndSurfaceAttributeOverridden (flag);
+            }
+            if (endSurfaceIndex.has_value ()) {
+                extrusionParameters.SetOverriddenEndSurfaceAttributeIndex (*endSurfaceIndex);
+            }
+            if (extrusionData.Get ("areOverriddenSurfacesLinked", flag)) {
+                extrusionParameters.SetOverriddenSurfaceAttributesLinked (flag);
+            }
+        }
+
+        if (polygon.has_value () || transformation.has_value ()) {
+            auto&& geometry = modifier.GetOpeningGeometry ();
+            if (polygon.has_value ()) {
+                geometry.SetPolygon (*polygon);
+            }
+            if (transformation.has_value () && !check (geometry.Transform (*transformation), "the transformation")) {
+                return;
+            }
+        }
+    }, "Set Opening Details");
+
+    if (failedError != NoError) {
+        return CreateFailedExecutionResult (failedError, failedMessage);
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the opening: " + GS::UniString (modifyResult.UnwrapErr ().text.c_str ()));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+#endif
+
+GS::ObjectState SetOpeningDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> openingsWithDetails;
+    parameters.Get ("openingsWithDetails", openingsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& data : openingsWithDetails) {
+        executionResults (SetOpeningDetails (data));
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 CreateMorphsCommand::CreateMorphsCommand () :
     CommandBase (CommonSchema::Used)
 {
