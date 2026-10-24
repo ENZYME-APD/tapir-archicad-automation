@@ -233,6 +233,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.3.1",
             "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan."
         );
+        err |= RegisterCommand<GetContainingDatabasesCommand> (
+            applicationCommands, "1.7.2",
+            "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout."
+        );
         err |= RegisterCommand<GetUserGSIDCommand> (
             applicationCommands, "1.5.6",
             "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later."
