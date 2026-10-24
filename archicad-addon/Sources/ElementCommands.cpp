@@ -6455,6 +6455,12 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
+    // A guid that is not in the project must not reach ACAPI_Element_Delete:
+    // listed after an existing element it makes the whole call fail, the
+    // undoable command rolls back and that existing element stays in the
+    // project (#749). Such guids are left out of the calls and reported as
+    // APIERR_BADID below.
+    //
     // The zones of the call are deleted before everything else (#901). An automatic
     // zone is recomputed from its bounding elements when one of them is deleted, and
     // when the room is no longer closed Archicad opens its modal "No closed polygon
@@ -6462,13 +6468,18 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // later one, until someone clicks it in Archicad. One ACAPI_Element_Delete call
     // with the walls listed before their zone opened that dialog, while deleting the
     // zone first in a call of its own did not; so the zones get a call of their own,
-    // before the rest, within the same undoable command. Guids that are not in the
-    // project stay in the second call, which deletes the rest of the batch regardless.
+    // before the rest, within the same undoable command.
+    GS::Array<bool> existedBeforeDelete;
     GS::Array<API_Guid> zoneGuids;
     GS::Array<API_Guid> otherGuids;
     for (const API_Guid& elemGuid : elemGuids) {
         API_Elem_Head elemHead = {};
-        if (LoadElementHeaderByGuid (elemGuid, elemHead) && GetElemTypeId (elemHead) == API_ZoneID) {
+        const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
+        existedBeforeDelete.Push (exists);
+        if (!exists) {
+            continue;
+        }
+        if (GetElemTypeId (elemHead) == API_ZoneID) {
             zoneGuids.Push (elemGuid);
         } else {
             otherGuids.Push (elemGuid);
@@ -6476,7 +6487,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode deleteErr = NoError;
-    if (!elemGuids.IsEmpty ()) {
+    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
@@ -6498,10 +6509,15 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // ACAPI_Element_Delete reports NoError even when it skips elements it is
     // not allowed to delete (locked layer, locked element, teamwork access),
     // so success is decided per element by whether the element is really gone
-    // afterwards. An element that is gone is the asked-for outcome however it
-    // got there: deleted by this call, deleted with its owner, or never in the
-    // project to begin with.
-    for (const API_Guid& elemGuid : elemGuids) {
+    // afterwards. An element that existed and is gone is the asked-for outcome
+    // however it got there: deleted by this call or deleted with its owner.
+    for (UIndex i = 0; i < elemGuids.GetSize (); ++i) {
+        if (!existedBeforeDelete[i]) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not deleted, because it does not exist."));
+            continue;
+        }
+
+        const API_Guid& elemGuid = elemGuids[i];
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
