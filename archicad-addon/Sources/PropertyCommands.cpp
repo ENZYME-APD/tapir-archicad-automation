@@ -2377,6 +2377,9 @@ GS::ObjectState GetPropertyAvailabilityOfDefaultsCommand::Execute (const GS::Obj
     return response;
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "Property availability of tool defaults is available from Archicad 26.");
+#endif
+}
+
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
