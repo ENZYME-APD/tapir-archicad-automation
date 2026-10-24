@@ -12,6 +12,8 @@
 #include "ACAPI/Library/LibPart.hpp"
 #include "ACAPI/Library/Library.hpp"
 #include "ACAPI/Library/LibraryTreePath.hpp"
+#endif
+
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Library/LibraryManager.hpp"
@@ -1176,6 +1178,9 @@ GS::ObjectState GetLibrariesOfLibPartsCommand::Execute (const GS::ObjectState& p
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
