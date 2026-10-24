@@ -3,6 +3,7 @@
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
 #include "VectorImageIterator.hpp"
+#include "FileSystem.hpp"
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
@@ -184,6 +185,157 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
     }
 
     return response;
+}
+
+GetAttributesFromProjectCommand::GetAttributesFromProjectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAttributesFromProjectCommand::GetName () const
+{
+    return "GetAttributesFromProject";
+}
+
+GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectFilePath": {
+                "type": "string",
+                "description": "The absolute path of the project or template file (for example .pln or .tpl) to read the attributes from.",
+                "minLength": 1
+            },
+            "attributeTypes": {
+                "type": "array",
+                "description": "The attribute types to read.",
+                "items": {
+                    "$ref": "#/AttributeType"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectFilePath",
+            "attributeTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAttributesFromProjectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "attributesByType": {
+                        "type": "array",
+                        "description": "One item per requested attribute type, in the order of attributeTypes.",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attributeType": {
+                                            "$ref": "#/AttributeType"
+                                        },
+                                        "attributes": {
+                                            "$ref": "#/AttributeHeaders"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "attributeType",
+                                        "attributes"
+                                    ]
+                                },
+                                {
+                                    "$ref": "#/ErrorItem"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attributesByType"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    })";
+}
+
+GS::ObjectState GetAttributesFromProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString projectFilePath;
+    if (!parameters.Get ("projectFilePath", projectFilePath) || projectFilePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectFilePath is missing.");
+    }
+    const IO::Location location (projectFilePath);
+    bool exists = false;
+    if (IO::fileSystem.Contains (location, &exists) != NoError || !exists) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("The file '%T' does not exist.", projectFilePath.ToPrintf ()));
+    }
+
+    GS::Array<GS::UniString> attributeTypes;
+    parameters.Get ("attributeTypes", attributeTypes);
+
+    GS::ObjectState response;
+    const auto& attributesByType = response.AddList<GS::ObjectState> ("attributesByType");
+
+    for (const GS::UniString& typeStr : attributeTypes) {
+        const API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (typeID == API_ZombieAttrID) {
+            attributesByType (CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ())));
+            continue;
+        }
+
+        // Only reads the attributes of the other file; nothing is created in the open project.
+        GS::Array<GS::Pair<API_Attribute, API_AttributeDefExt>> loaded;
+        const GSErrCode err = ACAPI_Attribute_GetAttributesFromProject (location, typeID, &loaded);
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("attributeType", typeStr);
+        const auto& attributes = typeResult.AddList<GS::ObjectState> ("attributes");
+        for (GS::Pair<API_Attribute, API_AttributeDefExt>& item : loaded) {
+            const API_Attr_Head& header = item.first.header;
+            GS::ObjectState attributeDetails;
+            attributeDetails.Add ("attributeId", CreateGuidObjectState (header.guid));
+            attributeDetails.Add ("index", GetAttributeIndex (header.index));
+            // These attributes are not in the open project, so the Unicode name cannot be read back
+            // through ACAPI_Attribute_Get as GetAttributeName does: only the legacy 8-bit name is available.
+            attributeDetails.Add ("name", GS::UniString (header.name));
+            attributeDetails.Add ("modificationTime", static_cast<Int64> (header.modiTime));
+            attributes (attributeDetails);
+
+            ACAPI_DisposeAttrDefsHdlsExt (&item.second);
+            DisposeAttribute (item.first);
+        }
+
+        if (err != NoError) {
+            attributesByType (CreateErrorResponse (err,
+                GS::UniString::Printf ("Failed to read the %T attributes of the project file.", typeStr.ToPrintf ())));
+        } else {
+            attributesByType (typeResult);
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_GENERAL, "GetAttributesFromProject needs Archicad 27 or later.");
+#endif
 }
 
 GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :
