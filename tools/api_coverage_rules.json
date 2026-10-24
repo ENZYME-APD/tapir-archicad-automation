@@ -31,7 +31,19 @@
             "ACAPI_RegisterModelessWindow": "user interface",
             "ACAPI_UnregisterModelessWindow": "user interface",
             "ACAPI_Markup_PDFImportOptions": "user interface",
-            "ACAPI_WriteReport": "report window of the add-on"
+            "ACAPI_WriteReport": "report window of the add-on",
+            "ACAPI::CreateInputHandler": "interactive input from the user",
+            "ACAPI::MEP::FromAttributeEnum": "C++ API infrastructure",
+            "ACAPI::MEP::GetMEPModelCheckTypeId": "registering add-on model checks, not commands",
+            "ACAPI::UniqueID::GetToken": "add-on infrastructure",
+            "APIEnv_GetMainWindowHWNDID": "user interface",
+            "APIEnv_CheckDongleID": "add-on licensing",
+            "APIEnv_ProtectionDataID": "add-on licensing",
+            "APIIo_NewSettingsDialogID": "user interface",
+            "ACAPI_LibraryManagement_NewLibDial": "user interface",
+            "ACAPI_Attribute_CreateAttributeFolderPicker": "user interface",
+            "ACAPI_Navigator_RegisterCallbackInterface": "event handlers, not commands",
+            "ACAPI_ActivatePropertyObjectHandler": "event handlers, not commands"
         },
         "patterns": {
             "^ACAPI_(Dispose|Free)": "memory management",
@@ -41,7 +53,17 @@
             "_Catch[A-Za-z]*$": "event handlers, not commands",
             "^ACAPI::(.*::)?(Object|Result|Impl[A-Za-z]*|AbstractFactory|Error)::": "C++ API infrastructure",
             "::(Notification|Observer|Callback|InputHandler|AddonNotification|EditNotification)[A-Za-z]*::": "event handlers, not commands",
-            "^APIEnv_(Get|Set)(Prefs|Preferences)ID$": "add-on preferences"
+            "^APIEnv_(Get|Set)(Prefs|Preferences)ID$": "add-on preferences",
+            "^ACAPI::(Call[A-Za-z]*(Modifier|Command)|Execute[A-Za-z]*Scope|Err)$": "add-on infrastructure (undo scopes, results)",
+            "UIManager(::|$)": "tool settings dialog data (user interface)",
+            "^ACAPI::(.*::)?(ModelCheckMethodCallback|SystemBrowserCalculationCallbackInterface|ICalculationResultColumn|GraphCalculationInterface|AttributeManagerImportCallback|AddonServiceInterface|API_IKeynote[A-Za-z]*)::": "interfaces an add-on implements or registers, not commands",
+            "^ACAPI::MEP::(CreateCalculationInterface|RegisterCalculationCallback)$": "interfaces an add-on implements or registers, not commands",
+            "^ACAPI::(ModelCheckManager::|ModelCheckResult::|GetModelCheckManager$)": "registering add-on model checks, not commands",
+            "^ACAPI::Tracking::": "user interface (the tracker)",
+            "^ACAPI::Library::Select[A-Za-z]*$": "filter helpers passed to the LibraryManager",
+            "^IFCAPI::(HookManager::|HookAssignments::|PropertyBuilder::|Get(HookManager|PropertyBuilder)$)": "IFC export hooks, called by Archicad during the export",
+            "Invoke[A-Za-z]*(Dlg|DlgID)$": "user interface",
+            "^ACAPI_(Set)?Preferences_": "add-on preferences"
         }
     },
     "skip": {
