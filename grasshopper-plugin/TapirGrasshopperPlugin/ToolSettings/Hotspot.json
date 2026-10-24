@@ -1,0 +1,64 @@
+{
+  "tool": "Hotspot",
+  "elementType": "Hotspot",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "HotspotDetails",
+    "create": "CreateHotspotsCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-40.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-25.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "position",
+      "set": "position",
+      "apiMember": "API_HotspotType::pos",
+      "apiDescription": "2D position of the hotspot.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_HotspotType::height",
+      "apiDescription": "Z coordinate of the hotpsot (this can come from a GDL script).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "penIndex",
+      "set": "penIndex",
+      "apiMember": "API_HotspotType::pen",
+      "apiDescription": "Pen attribute index.",
+      "label": "Color",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-40.htm (heading \"Hotspot Color Panel\"; text \"Click the Color drop-down menu to either type a Pencolor number (1-255) for the Hotspot\")",
+      "group": "Color",
+      "subgroup": null
+    }
+  ]
+}
