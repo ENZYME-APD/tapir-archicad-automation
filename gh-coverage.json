@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-24 18:21 UTC",
+ "generatedAt": "2026-10-24 18:32 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 53,
+  "open": 54,
   "merged": 4,
   "claimed": 2,
   "not applicable": 1
@@ -5575,6 +5575,21 @@
    "components": [],
    "parameters": null,
    "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MoveGraphicOverrideRules",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Moves graphic override rules to another rule group, or to another place in their own group. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],

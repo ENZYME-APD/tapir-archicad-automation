@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 18:21 UTC",
+ "generatedAt": "2026-10-24 18:32 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 626,
+  "in progress": 625,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 56
+  "merged": 57
  },
  "items": [
   {
@@ -5007,10 +5007,6 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
-    {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
     {
      "number": 1439,
      "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
@@ -12807,10 +12803,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
-    {
      "number": 1399,
      "title": "Add ModifyGraphicOverrideCombinations and CreateGraphicOverrideRuleGroups"
     },
@@ -12899,10 +12891,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -13070,10 +13058,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -13117,10 +13101,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
-    {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
@@ -13156,10 +13136,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
     {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
@@ -13248,10 +13224,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -13327,13 +13299,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1441,
-     "title": "Add MoveGraphicOverrideRules"
-    },
     {
      "number": 1075,
      "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"

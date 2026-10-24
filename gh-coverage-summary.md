@@ -1,4 +1,4 @@
-**291 of 351** applicable Tapir commands have a Grasshopper component (82 %): ✅ 287 done, 🔀 4 merged, 🚧 5 in progress, 🙋 2 claimed, ⬜ 53 open, ➖ 1 not applicable.
+**291 of 352** applicable Tapir commands have a Grasshopper component (82 %): ✅ 287 done, 🔀 4 merged, 🚧 5 in progress, 🙋 2 claimed, ⬜ 54 open, ➖ 1 not applicable.
 
 Parameters of the 291 used commands: 🟢 228 every parameter has an input, 🟡 45 the rest through a JSON input, 🟠 18 some parameters missing.
 
@@ -11,7 +11,7 @@ Parameters of the 291 used commands: 🟢 228 every parameter has an input, 🟡
 | Favorites Commands | 90 % | 11 | 10 |  |  |  | 1 |  |  | 10 |  |  |
 | Property Commands | 70 % | 17 | 12 |  |  |  | 5 |  |  | 12 |  |  |
 | Classification Commands | 100 % | 11 | 9 | 2 |  |  |  |  |  | 11 |  |  |
-| Attribute Commands | 69 % | 36 | 25 |  |  |  | 11 |  |  | 4 | 9 | 12 |
+| Attribute Commands | 67 % | 37 | 25 |  |  |  | 12 |  |  | 4 | 9 | 12 |
 | IFC Commands | 87 % | 8 | 7 |  |  |  | 1 |  |  | 7 |  |  |
 | Library Commands | 70 % | 10 | 7 |  |  |  | 3 |  |  | 7 |  |  |
 | Teamwork Commands | 100 % | 9 | 9 |  |  |  |  |  |  | 9 |  |  |
@@ -26,4 +26,4 @@ Parameters of the 291 used commands: 🟢 228 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-24 18:21 UTC.
+Updated 2026-10-24 18:32 UTC.
