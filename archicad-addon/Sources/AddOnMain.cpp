@@ -1303,6 +1303,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RemoveIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.7.3",
             "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now."
+        );
         err |= RegisterCommand<RemoveIFCPropertiesOfElementsCommand> (
             ifcCommands, "1.7.3",
             "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now."
