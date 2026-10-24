@@ -10,6 +10,7 @@
 
 #include "3DCutPlaneCommands.hpp"
 #include "3DProjectionCommands.hpp"
+#include "DocumentFrom3DDefaultsCommands.hpp"
 #include "3DStyleCommands.hpp"
 
 
@@ -1544,6 +1545,13 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.1",
             "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
         );
+        err |= RegisterCommand<GetDocumentFrom3DDefaultsCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the defaults a newly created 3D Document starts with: name, reference ID, vectorial hatching and sun shadows, transparency, connection to the model, surfaces, boundary contours and the uniform cut, uncut, shadow and hidden edge attributes."
+        );
+        err |= RegisterCommand<SetDocumentFrom3DDefaultsCommand> (
+            navigatorCommands, "1.7.3",
+            "Sets the defaults a newly created 3D Document starts with. Only the given fields are changed; existing 3D Documents are not affected. The fields are the ones returned by GetDocumentFrom3DDefaults."
         err |= RegisterCommand<Get3DWindowSettingsCommand> (
             navigatorCommands, "1.7.3",
             "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection."
