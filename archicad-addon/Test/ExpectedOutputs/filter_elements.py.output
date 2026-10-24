@@ -183,3 +183,9 @@ IsOverriddenByRenovation|IsIndependent = 0
 IsOverriddenByRenovation|InCroppedView = 0
 IsOverriddenByRenovation|HasAccessRight = 0
 ------------------------------
+floorIndices matches client-side filtering
+layerIndices matches client-side filtering
+elementTypes matches client-side filtering
+floorIndices+layerIndices+elementTypes matches client-side filtering
+filters+elementTypes matches client-side filtering
+------------------------------
