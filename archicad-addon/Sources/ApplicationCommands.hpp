@@ -144,6 +144,11 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetEditModeStateCommand : public CommandBase
+{
+public:
+    GetEditModeStateCommand ();
+    virtual GS::String GetName () const override;
 class GetProductVersionInfoCommand : public CommandBase
 {
 public:
