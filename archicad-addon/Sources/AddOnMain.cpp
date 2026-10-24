@@ -1622,6 +1622,10 @@ GSErrCode Initialize (void)
             issueCommands, "1.0.6",
             "Imports issues from the specified BCF file."
         );
+        err |= RegisterCommand<ImportMarkupsFromPDFCommand> (
+            issueCommands, "1.7.2",
+            "Imports the markups of the specified PDF file as issues, like Issue Manager > Import PDF markups, without any dialog and without opening the Issue Manager palette, and reports the issues it created. Available from Archicad 29."
+        );
         AddCommandGroup (issueCommands);
     }
 
