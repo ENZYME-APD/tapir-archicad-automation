@@ -203,6 +203,14 @@ GSErrCode Initialize (void)
             applicationCommands, "0.1.0",
             "Retrieves the location of the currently running Archicad executable."
         );
+        err |= RegisterCommand<GetArchicadReleaseInfoCommand> (
+            applicationCommands, "1.7.3",
+            "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window."
+        );
+        err |= RegisterCommand<GetPrinterInfoCommand> (
+            applicationCommands, "1.7.3",
+            "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes)."
+        );
         err |= RegisterCommand<QuitArchicadCommand> (
             applicationCommands, "0.1.0",
             "Performs a quit operation on the currently running Archicad instance."

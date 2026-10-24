@@ -199,6 +199,16 @@ inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_GetPrinterPars (API_PrintPars* printPars)
+{
+    return ACAPI_Environment (APIEnv_GetPrinterParsID, printPars);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_GetMiscAppInfo (API_MiscAppInfo* miscAppInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMiscAppInfoID, miscAppInfo);
+}
+
 inline GSErrCode ACAPI_View_Zoom ()
 {
     return ACAPI_Automate (APIDo_ZoomID);
