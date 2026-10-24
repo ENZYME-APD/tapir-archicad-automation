@@ -743,6 +743,138 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
     return response;
 }
 
+GetIFCAttributesOfElementsCommand::GetIFCAttributesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCAttributesOfElementsCommand::GetName () const
+{
+    return "GetIFCAttributesOfElements";
+}
+
+GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "storedOnly": {
+                "type": "boolean",
+                "description": "Return only the attributes stored on the elements, not the ones Archicad would generate on IFC export. Used only in Archicad 25, 26 and 27. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCAttributes": {
+                "$ref": "#/ElementIFCAttributesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+#ifndef ServerMainVers_2800
+    bool storedOnly = false;
+    parameters.Get ("storedOnly", storedOnly);
+#endif
+
+    GS::ObjectState response;
+    const auto& elementIFCAttributes = response.AddList<GS::ObjectState> ("elementIFCAttributes");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            elementIFCAttributes (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            elementIFCAttributes (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
+        if (objectID.IsErr ()) {
+            elementIFCAttributes (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+            continue;
+        }
+        IFCAPI::PropertyAccessor propertyAccessor = IFCAPI::PropertyAccessor (*objectID);
+        auto attributes = propertyAccessor.GetAttributes ();
+        if (attributes.IsErr ()) {
+            elementIFCAttributes (CreateErrorResponse (attributes.UnwrapErr ().kind, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCAttributes = CreateElementIdObjectState (elemGuid);
+        const auto& ifcAttributes = elemIFCAttributes.AddList<GS::ObjectState> ("ifcAttributes");
+        for (const auto& attribute : attributes.Unwrap ()) {
+            GS::ObjectState ifcAttribute (
+                "name", attribute.GetName (),
+                "valueType", GS::UniString (attribute.GetValueType ())
+            );
+            // Optional IFC attributes can have no value, then value is left out
+            const auto value = attribute.GetValue ();
+            if (value.has_value ()) {
+                ifcAttribute.Add ("value", *value);
+            }
+            ifcAttributes (ifcAttribute);
+        }
+
+        elementIFCAttributes (elemIFCAttributes);
+#else
+        GS::Array<API_IFCAttribute> attributes;
+        const GSErrCode err = ACAPI_Element_GetIFCAttributes (elemGuid, storedOnly, &attributes);
+        if (err != NoError) {
+            elementIFCAttributes (CreateErrorResponse (err, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCAttributes = CreateElementIdObjectState (elemGuid);
+        const auto& ifcAttributes = elemIFCAttributes.AddList<GS::ObjectState> ("ifcAttributes");
+        for (const API_IFCAttribute& attribute : attributes) {
+            GS::ObjectState ifcAttribute (
+                "name", attribute.attributeName,
+                "valueType", attribute.attributeType
+            );
+            // Optional IFC attributes can have no value, then value is left out.
+            // API_IFCAttribute has no isValueSet member, so an empty attributeValue counts as no value.
+            if (!attribute.attributeValue.IsEmpty ()) {
+                ifcAttribute.Add ("value", attribute.attributeValue);
+            }
+            ifcAttributes (ifcAttribute);
+        }
+
+        elementIFCAttributes (elemIFCAttributes);
+#endif
+    }
+
+    return response;
+}
+
 SetIFCPropertiesOfElementsCommand::SetIFCPropertiesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
