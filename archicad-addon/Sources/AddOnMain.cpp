@@ -23,6 +23,7 @@
 #include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementCategoryCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
@@ -435,6 +436,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
             "Sets the details of the given elements (floor, layer, order, Element ID etc)."
+        );
+        err |= RegisterCommand<GetElementCategoriesCommand> (
+            elementCommands, "1.7.2",
+            "Lists the element categories of the project (Structural Function, Position, Renovation Status, Renovation Filter and, in the German version, BRI) with their possible values. The names of the categories and values are localized: identify a category by its type and a value by its categoryValueId, never by name."
+        );
+        err |= RegisterCommand<GetCategoryValuesOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Gets the category values (Structural Function, Position, Renovation Status ...) of the given elements, optionally only for the given category types. An element that has none of the requested categories (an annotation, for example) gets an error item. The names are localized: use the type and the categoryValueId in scripts."
+        );
+        err |= RegisterCommand<SetCategoryValuesOfElementsCommand> (
+            elementCommands, "1.7.2",
+            "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts."
         );
         err |= RegisterCommand<Get3DBoundingBoxesCommand> (
             elementCommands, "1.1.2",

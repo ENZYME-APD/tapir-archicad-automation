@@ -806,6 +806,37 @@ inline GSErrCode TAPIR_Element_SetCategoryValue (const API_Guid& elemGuid, const
 #endif
 }
 
+// The category of an element (Structural Function, Position, Renovation Status ...) and its
+// current value. The category is identified by its guid or its categoryID.
+inline GSErrCode TAPIR_Element_GetCategoryValue (const API_Guid& elemGuid, const API_ElemCategory& category, API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetCategoryValue (elemGuid, category, &categoryValue);
+#else
+    return ACAPI_Element_GetCategoryValue (elemGuid, category, &categoryValue);
+#endif
+}
+
+// All element categories of the project, with their localized names.
+inline GSErrCode TAPIR_GetElementCategories (GS::Array<API_ElemCategory>& categories)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetElementCategories (&categories);
+#else
+    return ACAPI_Database (APIDb_GetElementCategoriesID, &categories);
+#endif
+}
+
+// The possible values of one element category, with their localized names.
+inline GSErrCode TAPIR_GetElementCategoryValues (const API_ElemCategory& category, GS::Array<API_ElemCategoryValue>& categoryValues)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_GetElementCategoryValues (&category, &categoryValues);
+#else
+    return ACAPI_Database (APIDb_GetElementCategoryValuesID, (void*) &category, &categoryValues);
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& elemHead, const GS::Array<API_Property>& properties)
 {
 #ifdef ServerMainVers_2600
