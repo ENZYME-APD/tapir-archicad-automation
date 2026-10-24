@@ -43,6 +43,7 @@
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
+#include "AnalyticalCommands.hpp"
 #include "KeynoteCommands.hpp"
 #include "ProjectDataCommands.hpp"
 #include "GraphicOverrideCommands.hpp"
@@ -1837,6 +1838,27 @@ GSErrCode Initialize (void)
             "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30."
         );
         AddCommandGroup (mepCommands);
+    }
+
+    { // Analytical Commands
+        CommandGroup analyticalCommands ("Analytical Commands");
+        err |= RegisterCommand<GetCurrentAnalyticalModelCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the Structural Analytical Model created for the current view. Available from Archicad 27."
+        );
+        err |= RegisterCommand<UpdateAnalyticalModelCommand> (
+            analyticalCommands, "1.7.3",
+            "Triggers an update of the given Structural Analytical Model, or of the model of the current view when no model is given. Available from Archicad 27."
+        );
+        err |= RegisterCommand<SetAnalyticalGenerationSettingsToNoRuleCommand> (
+            analyticalCommands, "1.7.3",
+            "Sets the generation settings of the current Structural Analytical Model to no rules. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetAnalyticalModelCheckTypeIdCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the type identifier of the Structural Analytical Model check. Available from Archicad 29."
+        );
+        AddCommandGroup (analyticalCommands);
     }
 
     { // Solid Element Operation Commands
