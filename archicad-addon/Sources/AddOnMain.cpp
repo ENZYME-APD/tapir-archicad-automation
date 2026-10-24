@@ -1083,6 +1083,17 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Deletes the given attributes."
         );
+        err |= RegisterCommand<GetUsedAttributesCommand> (
+            attributeCommands, "1.7.3",
+            "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ConsolidateLinesCommand> (
+            attributeCommands, "1.7.3",
+            "Runs the Line Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ConsolidateFillsCommand> (
+            attributeCommands, "1.7.3",
+            "Runs the Fill Consolidation menu command of Archicad on the current window, as the menu does, and reports whether it ran together with what Archicad answered. Available from Archicad 27."
         err |= RegisterCommand<CreateAttributeFoldersCommand> (
             attributeCommands, "1.7.2",
             "Creates attribute folders, each given by attribute type and path (the folder names from the root folder down). Missing parent folders are created too; a folder that already exists is kept and reported as success. Available from Archicad 26."
