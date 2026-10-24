@@ -1098,6 +1098,141 @@ GS::ObjectState GetGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectSt
 #endif
 }
 
+RenameGraphicOverrideRuleGroupsCommand::RenameGraphicOverrideRuleGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameGraphicOverrideRuleGroupsCommand::GetName () const
+{
+    return "RenameGraphicOverrideRuleGroups";
+}
+
+GS::Optional<GS::UniString> RenameGraphicOverrideRuleGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ruleGroups": {
+                "type": "array",
+                "description": "The rule groups to rename. Their rules and the combinations that contain them are kept.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The current name of the rule group."
+                        },
+                        "newName": {
+                            "type": "string",
+                            "description": "The new name of the rule group. It must not be empty or used by another rule group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "newName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ruleGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameGraphicOverrideRuleGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RenameGraphicOverrideRuleGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> ruleGroups;
+    if (!parameters.Get ("ruleGroups", ruleGroups)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'ruleGroups' parameter.");
+    }
+
+    // Looked up again for each item, so a group renamed by an earlier item is found by its new name.
+    const auto findRuleGroup = [] (const GS::UniString& name, API_OverrideRuleGroup& foundRuleGroup) -> bool {
+        GS::Array<API_Guid> ruleGroupIds;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleGroupList (ruleGroupIds) != NoError) {
+            return false;
+        }
+        for (const API_Guid& ruleGroupId : ruleGroupIds) {
+            API_OverrideRuleGroup ruleGroup = {};
+            ruleGroup.guid = ruleGroupId;
+            if (ACAPI_GraphicalOverride_GetOverrideRuleGroup (ruleGroup) == NoError && ruleGroup.name == name) {
+                foundRuleGroup = ruleGroup;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("Rename Graphic Override Rule Groups", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : ruleGroups) {
+            GS::UniString name;
+            GS::UniString newName;
+            if (!item.Get ("name", name) || !item.Get ("newName", newName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid or missing 'name' or 'newName'."));
+                continue;
+            }
+            if (newName.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The new name of the rule group '" + name + "' is empty."));
+                continue;
+            }
+
+            API_OverrideRuleGroup ruleGroup = {};
+            if (!findRuleGroup (name, ruleGroup)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + name + "'."));
+                continue;
+            }
+            if (newName == name) {
+                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+            API_OverrideRuleGroup otherRuleGroup = {};
+            if (findRuleGroup (newName, otherRuleGroup)) {
+                executionResults (CreateFailedExecutionResult (APIERR_NAMEALREADYUSED, "Another rule group is already named '" + newName + "'."));
+                continue;
+            }
+
+            // The group is read whole and only its name is changed, so nothing else of it is reset.
+            ruleGroup.name = newName;
+            const GSErrCode err = ACAPI_GraphicalOverride_ChangeOverrideRuleGroup (ruleGroup);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to rename the rule group '" + name + "'."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 DeleteGraphicOverrideRuleGroupsCommand::DeleteGraphicOverrideRuleGroupsCommand () :
     CommandBase (CommonSchema::Used)
 {
