@@ -5739,6 +5739,68 @@
             "ifcProperties"
         ]
     },
+    "ElementIFCAttribute": {
+        "type": "object",
+        "description": "An IFC attribute of an element, for example Name, Description, ObjectType, Tag, PredefinedType or LongName.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the IFC attribute."
+            },
+            "valueType": {
+                "type": "string",
+                "description": "The IFC type of the value, for example IfcLabel, IfcText or IfcIdentifier."
+            },
+            "value": {
+                "type": "string",
+                "description": "The value of the IFC attribute. Missing when the attribute has no value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "valueType"
+        ]
+    },
+    "ElementIFCAttributes": {
+        "type": "object",
+        "description": "The IFC attributes of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcAttributes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIFCAttribute"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcAttributes"
+        ]
+    },
+    "ElementIFCAttributesOrError": {
+        "type": "object",
+        "description": "Element IFC attributes or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCAttributes"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCAttributesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC attributes of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCAttributesOrError"
+        }
+    },
     "ElementIFCType": {
         "type": "object",
         "description": "The IFC type of an element.",

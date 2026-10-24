@@ -1103,6 +1103,14 @@ GSErrCode Initialize (void)
             ifcCommands, "1.5.1",
             "Retrieves the IFC properties of the given elements."
         );
+        err |= RegisterCommand<GetIFCAttributesOfElementsCommand> (
+            ifcCommands, "1.7.3",
+            "Retrieves the IFC attributes (Name, Description, ObjectType, Tag, PredefinedType, LongName, ...) of the given elements, subelements included: the name, the IFC value type and the value of each attribute. On Archicad 25, 26 and 27 storedOnly returns only the attributes stored on the elements."
+        );
+        err |= RegisterCommand<SetIFCAttributesOfElementsCommand> (
+            ifcCommands, "1.7.3",
+            "Sets the values of IFC attributes (Name, Description, ObjectType, Tag, ...) of elements. The attribute must be one GetIFCAttributesOfElements returns for the element; its IFC value type is kept. Available only in Archicad 25, 26 and 27 for now."
+        );
         err |= RegisterCommand<SetIFCPropertiesOfElementsCommand> (
             ifcCommands, "1.7.0",
             "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now."
