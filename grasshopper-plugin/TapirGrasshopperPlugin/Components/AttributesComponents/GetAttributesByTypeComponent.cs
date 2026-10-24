@@ -39,6 +39,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "ModificationTimes",
                 "Last modification time of each attribute, in local time.",
                 GH_ParamAccess.list);
+            OutTexts(
+                "FolderPaths",
+                "Attribute folder of each attribute, the folder names joined with '/'; empty for the root folder (and always before Archicad 26).");
         }
 
         public override void AddedToDocument(
@@ -85,6 +88,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 3,
                 response.Attributes.Select(
                     x => DateTimeOffset.FromUnixTimeSeconds(x.ModificationTime).LocalDateTime));
+
+            // An add-on older than this output sends no folderPath; such an attribute reads as root.
+            da.SetDataList(
+                4,
+                response.Attributes.Select(
+                    x => x.FolderPath == null ? string.Empty : string.Join("/", x.FolderPath)));
         }
 
         protected override System.Drawing.Bitmap Icon =>

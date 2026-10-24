@@ -919,7 +919,7 @@ GSErrCode Initialize (void)
         CommandGroup attributeCommands ("Attribute Commands");
         err |= RegisterCommand<GetAttributesByTypeCommand> (
             attributeCommands, "1.1.3",
-            "Returns the details of every attribute of the given type."
+            "Returns the details of every attribute of the given type, including the path of the attribute folder holding it (Archicad 26 and newer)."
         );
         err |= RegisterCommand<DeleteAttributesCommand> (
             attributeCommands, "1.5.4",

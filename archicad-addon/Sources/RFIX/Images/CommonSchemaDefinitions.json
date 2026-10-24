@@ -10474,6 +10474,13 @@
                     "type": "string",
                     "description": "Name of the attribute."
                 },
+                "folderPath": {
+                    "type": "array",
+                    "description": "The names of the attribute folders from the root folder of the attribute type down to the folder holding the attribute, the root folder itself not included. An empty array is the root folder. Attribute folders exist from Archicad 26, so before that the array is always empty.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "modificationTime": {
                     "type": "integer",
                     "description": "The last modification time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same stamp the Attribute Manager writes as ModiTime into its XML export."
@@ -10484,6 +10491,7 @@
                 "attributeId",
                 "index",
                 "name",
+                "folderPath",
                 "modificationTime"
             ]
 
