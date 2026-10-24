@@ -1011,6 +1011,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyPropertyValueOfElementsCommand> (
             propertyCommands, "1.7.3",
             "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27."
+        );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."

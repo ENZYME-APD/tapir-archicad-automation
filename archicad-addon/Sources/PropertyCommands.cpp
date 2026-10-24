@@ -2361,6 +2361,9 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
 #else
     UNUSED_PARAMETER (parameters);
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
