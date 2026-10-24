@@ -1929,6 +1929,18 @@ GS::ObjectState SetMarkerLibraryPartOfElementsCommand::Execute (const GS::Object
             err = ACAPI_Element_ChangeExt (&element, &mask, &memo, 0, 1UL, &marker, true, 0);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to change the marker of element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
