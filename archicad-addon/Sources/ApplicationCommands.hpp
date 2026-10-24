@@ -171,3 +171,17 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class SetDialogAutoCloseCommand : public CommandBase
+{
+public:
+    SetDialogAutoCloseCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Turns the dialog auto close on when the TAPIR_DIALOG_AUTOCLOSE environment variable is true,
+// so that the dialogs Archicad shows while it opens the first project are closed too.
+void ApplyDialogAutoCloseFromEnvironment ();
