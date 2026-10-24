@@ -136,6 +136,10 @@ GS::Optional<GS::UniString> GetDesignOptionSetsCommand::GetRawResponseSchema () 
                         "designOptions"
                     ]
                 }
+            },
+            "teamworkId": {
+                "$ref": "#/GuidId",
+                "description": "The Teamwork identifier of the project's design options. Present only in Teamwork projects."
             }
         },
         "additionalProperties": false,
@@ -173,6 +177,14 @@ GS::ObjectState GetDesignOptionSetsCommand::Execute (const GS::ObjectState& /*pa
             }
         }
         designOptionSets (designOptionSet);
+    }
+
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && projectInfo.teamwork) {
+        const auto teamworkId = manager->GetTWID ();
+        if (teamworkId.IsOk () && teamworkId.Unwrap () != APINULLGuid) {
+            response.Add ("teamworkId", CreateGuidObjectState (teamworkId.Unwrap ()));
+        }
     }
 
     return response;

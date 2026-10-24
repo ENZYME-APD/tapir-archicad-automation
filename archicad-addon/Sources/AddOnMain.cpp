@@ -1462,7 +1462,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetDesignOptionSetsCommand> (
             designOptionsCommands, "1.2.9",
-            "Retrieves information about existing design option sets. Available from Archicad 29."
+            "Retrieves information about existing design option sets, and in Teamwork projects the Teamwork identifier of the design options. Available from Archicad 29."
         );
         err |= RegisterCommand<GetDesignOptionCombinationsCommand> (
             designOptionsCommands, "1.2.9",
