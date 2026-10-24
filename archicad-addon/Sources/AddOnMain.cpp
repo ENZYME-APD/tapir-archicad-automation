@@ -296,11 +296,11 @@ GSErrCode Initialize (void)
             "Repoints hotlink module nodes at other source files, as the Hotlink Manager's Relink button does. Follow it with UpdateHotlinks to re-read the content."
         );
         err |= RegisterCommand<BreakHotlinkNodesCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file."
         );
         err |= RegisterCommand<DeleteHotlinkNodesCommand> (
-            projectCommands, "1.7.2",
+            projectCommands, "1.7.3",
             "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
         );
         err |= RegisterCommand<OpenProjectCommand> (
