@@ -88,6 +88,10 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+class GetLibrariesOfLibPartsCommand : public CommandBase
+{
+public:
+    GetLibrariesOfLibPartsCommand ();
 
 class SetLibraryPartScriptsCommand : public CommandBase
 {
