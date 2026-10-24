@@ -1,42 +1,11 @@
 import aclib
 
-# Scripts can keep their own state in the project, invisible in the Archicad UI: string values
-# under keys, saved with the project as the module data of the Tapir add-on. Prefix the keys
-# with the script's name so that different scripts do not overwrite each other's data.
-
-aclib.RunTapirCommand ('SetProjectData', {
-    'projectData': [
-        { 'key': 'example.database.id', 'value': '4711' },
-        { 'key': 'example.lastSync', 'value': '2026-10-17T12:00:00Z' },
-        { 'key': 'example.settings', 'value': '{"generatedBy": "custom_data.py", "walls": [1, 2, 3]}' }
-    ]
-})
-
-# Without keys every stored key is returned with its value.
-aclib.RunTapirCommand ('GetProjectData')
-
-# With keys one item per key: the value, or an error for a key that is not stored.
-aclib.RunTapirCommand ('GetProjectData', {
-    'keys': ['example.database.id', 'example.missing']
-})
-
-# Setting a key again replaces its value and leaves the other keys alone.
-aclib.RunTapirCommand ('SetProjectData', {
-    'projectData': [
-        { 'key': 'example.lastSync', 'value': '2026-10-17T13:00:00Z' }
-    ]
-})
-
-aclib.RunTapirCommand ('DeleteProjectData', {
-    'keys': ['example.database.id', 'example.lastSync', 'example.settings']
-})
-
-aclib.RunTapirCommand ('GetProjectData')
-
-# The same kind of key-value pairs can be stored on elements, as the user data of the Tapir add-on
-# on the element: saved with the project, gone with the element, invisible in the UI. Setting merges
-# the given keys into what the element already holds, so scripts with different keys do not disturb
-# each other. In a Teamwork project the element has to be reserved. The data lives in the element,
+# Scripts can keep their own state on elements, invisible in the Archicad UI: string values under
+# keys, stored as the user data of the Tapir add-on on the element (project-wide state is kept by
+# the project data commands, see project_data_store.py). The data is saved with the project and
+# goes away with the element. Setting merges the given keys into what the element already holds,
+# so scripts with different keys do not disturb each other. Prefix the keys with the script's
+# name. In a Teamwork project the element has to be reserved. The data lives in the element,
 # so expect a copy of the element to carry the same pairs: a script that stores an external id
 # should treat a repeated id as a copy.
 

@@ -422,18 +422,6 @@ GSErrCode Initialize (void)
 
     { // Custom Data Commands
         CommandGroup customDataCommands ("Custom Data Commands");
-        err |= RegisterCommand<SetProjectDataCommand> (
-            customDataCommands, "1.7.3",
-            "Stores string values under keys in the project, for scripts to keep their own state (external database ids, sync timestamps, markers). The data is saved with the project as the module data of the Tapir add-on and appears nowhere in the Archicad UI. A key that already exists gets the new value; other keys are left as they are. Prefix the keys with the script's name so that scripts do not overwrite each other's data."
-        );
-        err |= RegisterCommand<GetProjectDataCommand> (
-            customDataCommands, "1.7.3",
-            "Reads the values stored in the project by SetProjectData: the given keys, or every stored key when none is given."
-        );
-        err |= RegisterCommand<DeleteProjectDataCommand> (
-            customDataCommands, "1.7.3",
-            "Deletes the values stored in the project by SetProjectData under the given keys."
-        );
         err |= RegisterCommand<SetElementUserDataCommand> (
             customDataCommands, "1.7.3",
             "Stores string values under keys on elements, for scripts to keep their own state per element (external database ids, sync timestamps, markers). The data is saved with the project as the user data of the Tapir add-on on the element and appears nowhere in the Archicad UI. The given keys are merged into what the element already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. One undo step per call; in a Teamwork project the element has to be reserved."
