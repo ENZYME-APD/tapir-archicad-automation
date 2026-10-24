@@ -2992,7 +2992,7 @@
     },
     "ElementFilter": {
         "type": "string",
-        "description": "A filter type for an element.",
+        "description": "A filter type for an element. Note: elements hidden by the design option combination of the current view (Archicad 29 or newer) fail IsVisibleByRenovation and pass IsOverriddenByRenovation even when the project has no renovation filter; use GetDesignOptionForElements and GetDesignOptionCombinationOfViews to tell them apart.",
         "enum": [
             "IsEditable",
             "IsVisibleByLayer",
