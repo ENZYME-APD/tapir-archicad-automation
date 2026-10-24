@@ -1,6 +1,9 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "Location.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -414,6 +417,110 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetNoteAutoTextKeywordsCommand::GetName () const
+{
+    return "GetNoteAutoTextKeywords";
+}
+
+GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextIds": {
+                "type": "array",
+                "description": "Numeric values of the API_NoteAutotextID enumeration of the Archicad API (the autotexts of dimension, label and other element notes).",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keywords": {
+                "type": "array",
+                "description": "One result per input id, in the same order.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "keyword": {
+                                    "type": "string",
+                                    "description": "The keyword of the note autotext."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "keyword"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keywords"
+        ]
+    })";
+}
+
+GS::ObjectState GetNoteAutoTextKeywordsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<Int32> autoTextIds;
+    if (!parameters.Get ("autoTextIds", autoTextIds) || autoTextIds.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'autoTextIds' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("keywords");
+    for (Int32 autoTextId : autoTextIds) {
+        if (autoTextId < 0) {
+            listAdder (CreateErrorResponse (APIERR_BADPARS, "Invalid autotext id."));
+            continue;
+        }
+
+        // The id is passed through as it is; an id the enumeration does not have is
+        // expected to be refused by Archicad with an error code.
+        GS::UniString keyword;
+        GSErrCode err = ACAPI_AutoText_GetNoteKeywordForAutotextID (static_cast<API_NoteAutotextID> (autoTextId), keyword);
+        if (err != NoError) {
+            listAdder (CreateErrorResponse (err, "Failed to get the keyword of this note autotext id."));
+        } else {
+            listAdder (GS::ObjectState ("keyword", keyword));
+        }
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutoTextKeywords requires Archicad 26 or later.");
+#endif
+}
+
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -656,6 +763,18 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
     if (ACAPI_Hotlink_GetHotlinkNode (&hotlinkNode) == NoError) {
         hotlinkNodeOS.Add ("name", GS::UniString (hotlinkNode.name));
         hotlinkNodeOS.Add ("type", hotlinkNode.type == APIHotlink_XRef ? "XRef" : "Module");
+    }
+
+    // The instances are the API_HotlinkType elements placed from the node - what
+    // ChangeHotlinkInstances and DeleteElements take; the node itself is not an
+    // element. Listed in the order Archicad returns them, and left out when the
+    // node's instances cannot be read, so an empty list means none are placed.
+    GS::Array<API_Guid> instanceGuids;
+    if (ACAPI_Hotlink_GetHotlinkInstances (&hotlinkGuid, &instanceGuids) == NoError) {
+        const auto& instanceAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("instances");
+        for (const API_Guid& instanceGuid : instanceGuids) {
+            instanceAdder (CreateElementIdObjectState (instanceGuid));
+        }
     }
 
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
@@ -1325,6 +1444,59 @@ GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+NewProjectCommand::NewProjectCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String NewProjectCommand::GetName () const
+{
+    return "NewProject";
+}
+
+GS::Optional<GS::UniString> NewProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "newAndReset": {
+                "type": "boolean",
+                "description": "Optional. Also reset the working environment to the template's, as File > New > New and Reset All does, instead of keeping the current one as File > New does. Defaults to false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> NewProjectCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+// Like OpenProject, this runs outside an undoable command: the new project replaces the
+// open one, whose unsaved changes are discarded without a save alert. The API takes no
+// template: the new project uses the template set in Archicad's New Project settings.
+GS::ObjectState NewProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool newAndReset = false;
+    parameters.Get ("newAndReset", newAndReset);
+
+    API_NewProjectPars newProjectPars = {};
+    newProjectPars.newAndReset = newAndReset;
+#ifndef ServerMainVers_2900
+    newProjectPars.enableSaveAlert = false;
+#endif
+
+    const GSErrCode err = ACAPI_ProjectOperation_NewProject (&newProjectPars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to start a new project. Archicad might have refused the command, for example while a dialog is open or in a Teamwork project.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 CloseProjectCommand::CloseProjectCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -1815,6 +1987,122 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
     return response;
 }
 
+GetCurrentViewImageCommand::GetCurrentViewImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurrentViewImageCommand::GetName () const
+{
+    return "GetCurrentViewImage";
+}
+
+GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "source": {
+                "type": "string",
+                "description": "Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.",
+                "enum": ["3DWindow", "RenderingWindow"]
+            },
+            "format": {
+                "type": "string",
+                "description": "Optional, png by default. The image format.",
+                "enum": ["png", "jpg"]
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "image": {
+                "type": "string",
+                "description": "The base64 encoded image, in the requested format."
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the image in pixels."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the image in pixels."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "image",
+            "width",
+            "height"
+        ]
+    })";
+}
+
+GS::ObjectState GetCurrentViewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    // ACAPI_View_GetCurrentImage is new in the Archicad 30 API: it gets the image of the
+    // 3D window or of the PhotoRendering window, whichever API_ImageSource selects.
+    API_ImageSource imageSource = API_ImageSource::From3DWindow;
+    GS::UniString windowName = "3D";
+    GS::UniString sourceStr;
+    if (parameters.Get ("source", sourceStr)) {
+        if (sourceStr == "3DWindow") {
+            imageSource = API_ImageSource::From3DWindow;
+            windowName = "3D";
+        } else if (sourceStr == "RenderingWindow") {
+            imageSource = API_ImageSource::FromRenderingWindow;
+            windowName = "PhotoRendering";
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "source must be 3DWindow or RenderingWindow.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "format must be png or jpg.");
+        }
+    }
+
+    NewDisplay::NativeImage nativeImage;
+    const GSErrCode err = ACAPI_View_GetCurrentImage (nativeImage, imageSource);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString ("Failed to get the image of the ") + windowName + " window: the window is not open, or it has no image yet.");
+    }
+    if (nativeImage.GetWidth () == 0 || nativeImage.GetHeight () == 0) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("The ") + windowName + " window has no image: the window is not open, or it has not been rendered yet.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to encode the image of the ") + windowName + " window.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar (char ('\n')));
+    return GS::ObjectState (
+        "image", str,
+        "width", static_cast<Int32> (nativeImage.GetWidth ()),
+        "height", static_cast<Int32> (nativeImage.GetHeight ()));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
+}
+
 GetGeoLocationCommand::GetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1850,28 +2138,142 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
     API_GeoLocation apiGeoLocation = {};
     ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
 
+    GS::ObjectState surveyPoint (
+        "position", GS::ObjectState (
+            "eastings", apiGeoLocation.geoReferenceData.eastings,
+            "northings", apiGeoLocation.geoReferenceData.northings,
+            "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
+        "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
+        "geoReferencingParameters", GS::ObjectState (
+            "crsName", apiGeoLocation.geoReferenceData.name,
+            "description", apiGeoLocation.geoReferenceData.description,
+            "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
+            "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
+            "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
+            "mapZone", apiGeoLocation.geoReferenceData.mapZone,
+            "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
+            "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
+            "scale", apiGeoLocation.geoReferenceData.scale));
+
+    bool isVisible = false;
+    if (ACAPI_SurveyPoint_IsSurveyPointVisible (&isVisible) == NoError) {
+        surveyPoint.Add ("isVisible", isVisible);
+    }
+#ifdef ServerMainVers_2600
+    // The survey point lock exists from Archicad 26; older versions leave isLocked out.
+    bool isLocked = false;
+    if (ACAPI_SurveyPoint_IsSurveyPointLocked (&isLocked) == NoError) {
+        surveyPoint.Add ("isLocked", isLocked);
+    }
+#endif
+
     return GS::ObjectState (
         "projectLocation", GS::ObjectState (
             "longitude", apiGeoLocation.placeInfo.longitude,
             "latitude", apiGeoLocation.placeInfo.latitude,
             "altitude", apiGeoLocation.placeInfo.altitude,
             "north", apiGeoLocation.placeInfo.north),
-        "surveyPoint", GS::ObjectState (
-            "position", GS::ObjectState (
-                "eastings", apiGeoLocation.geoReferenceData.eastings,
-                "northings", apiGeoLocation.geoReferenceData.northings,
-                "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
-            "positionInProject", Create3DCoordinateObjectState (apiGeoLocation.surveyPointPosition),
-            "geoReferencingParameters", GS::ObjectState (
-                "crsName", apiGeoLocation.geoReferenceData.name,
-                "description", apiGeoLocation.geoReferenceData.description,
-                "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
-                "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
-                "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
-                "mapZone", apiGeoLocation.geoReferenceData.mapZone,
-                "xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa,
-                "xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate,
-                "scale", apiGeoLocation.geoReferenceData.scale)));
+        "surveyPoint", surveyPoint);
+}
+
+GetSurveyPointTransformationCommand::GetSurveyPointTransformationCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetSurveyPointTransformationCommand::GetName () const
+{
+    return "GetSurveyPointTransformation";
+}
+
+GS::Optional<GS::UniString> GetSurveyPointTransformationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectToSurvey": {
+                "type": "array",
+                "description": "The 3x4 matrix that transforms a point given in the Project Origin coordinate system into the Survey Point coordinate system, row by row (12 numbers): x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + m[5]*y + m[6]*z + m[7], z' = m[8]*x + m[9]*y + m[10]*z + m[11].",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "surveyToProject": {
+                "type": "array",
+                "description": "The inverse of projectToSurvey in the same row by row layout: it transforms a point given in the Survey Point coordinate system into the Project Origin coordinate system. Missing when projectToSurvey is not invertible.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectToSurvey"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+static bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
+{
+    const double* m = tranmat.tmx;
+    const double c00 = m[5] * m[10] - m[6] * m[9];
+    const double c01 = m[6] * m[8] - m[4] * m[10];
+    const double c02 = m[4] * m[9] - m[5] * m[8];
+    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
+    if (std::fabs (det) < 1e-12) {
+        return false;
+    }
+
+    double* r = inverse.tmx;
+    r[0]  = c00 / det;
+    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
+    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
+    r[4]  = c01 / det;
+    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
+    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
+    r[8]  = c02 / det;
+    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
+    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
+
+    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
+    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
+    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
+    return true;
+}
+#endif
+
+GS::ObjectState GetSurveyPointTransformationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    API_Tranmat projectToSurvey = {};
+    const GSErrCode err = ACAPI_SurveyPoint_GetSurveyPointTransformation (&projectToSurvey);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the survey point transformation.");
+    }
+
+    GS::ObjectState response;
+    const auto& projectToSurveyList = response.AddList<double> ("projectToSurvey");
+    for (double value : projectToSurvey.tmx) {
+        projectToSurveyList (value);
+    }
+
+    API_Tranmat surveyToProject = {};
+    if (InvertTranmat (projectToSurvey, surveyToProject)) {
+        const auto& surveyToProjectList = response.AddList<double> ("surveyToProject");
+        for (double value : surveyToProject.tmx) {
+            surveyToProjectList (value);
+        }
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 SetGeoLocationCommand::SetGeoLocationCommand () :
@@ -1914,51 +2316,280 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     API_GeoLocation apiGeoLocation = {};
     ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
 
-    bool hasAnyInput = false;
+    bool hasGeoLocationInput = false;
+    bool isVisible = false;
+    bool setVisibility = false;
+    bool isLocked = false;
+    bool setLocked = false;
 
     GS::ObjectState projectLocation;
     if (parameters.Get ("projectLocation", projectLocation)) {
-        hasAnyInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
-        hasAnyInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
-        hasAnyInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
-        hasAnyInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
+        hasGeoLocationInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
+        hasGeoLocationInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
+        hasGeoLocationInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
+        hasGeoLocationInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
     }
     GS::ObjectState surveyPoint;
     if (parameters.Get ("surveyPoint", surveyPoint)) {
         GS::ObjectState position;
         if (surveyPoint.Get ("position", position)) {
-            hasAnyInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
-            hasAnyInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
-            hasAnyInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
+            hasGeoLocationInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
+            hasGeoLocationInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
+            hasGeoLocationInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
         }
         GS::ObjectState positionInProject;
         if (surveyPoint.Get ("positionInProject", positionInProject)) {
             apiGeoLocation.surveyPointPosition = Get3DCoordinateFromObjectState (positionInProject);
-            hasAnyInput = true;
+            hasGeoLocationInput = true;
         }
         GS::ObjectState geoReferencingParameters;
         if (surveyPoint.Get ("geoReferencingParameters", geoReferencingParameters)) {
-            hasAnyInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
-            hasAnyInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
-            hasAnyInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
-            hasAnyInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
-            hasAnyInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
-            hasAnyInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
-            hasAnyInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
-            hasAnyInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
-            hasAnyInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("xAxisAbscissa", apiGeoLocation.geoReferenceData.xAxisAbscissa);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("xAxisOrdinate", apiGeoLocation.geoReferenceData.xAxisOrdinate);
+            hasGeoLocationInput |= geoReferencingParameters.Get ("scale", apiGeoLocation.geoReferenceData.scale);
         }
+        setVisibility = surveyPoint.Get ("isVisible", isVisible);
+        setLocked = surveyPoint.Get ("isLocked", isLocked);
     }
 
-    if (!hasAnyInput) {
+#ifndef ServerMainVers_2600
+    if (setLocked) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The survey point lock (surveyPoint.isLocked) needs Archicad 26 or later.");
+    }
+#endif
+
+    if (!hasGeoLocationInput && !setVisibility && !setLocked) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "No valid input parameters provided to update geolocation.");
     }
 
-	GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
-        return ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+    GS::UniString errorMessage;
+    GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
+        GSErrCode stepErr = NoError;
+#ifdef ServerMainVers_2600
+        // Unlock before the position changes and lock after them, so one call can both
+        // move a locked survey point and lock a moved one.
+        if (setLocked && !isLocked) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointLocked (&isLocked);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to unlock the survey point.";
+                return stepErr;
+            }
+        }
+#endif
+        if (hasGeoLocationInput) {
+            stepErr = ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to set geolocation.";
+                return stepErr;
+            }
+        }
+        if (setVisibility) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointVisibility (&isVisible);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to set the survey point visibility.";
+                return stepErr;
+            }
+        }
+#ifdef ServerMainVers_2600
+        if (setLocked && isLocked) {
+            stepErr = ACAPI_SurveyPoint_SetSurveyPointLocked (&isLocked);
+            if (stepErr != NoError) {
+                errorMessage = "Failed to lock the survey point.";
+                return stepErr;
+            }
+        }
+#endif
+        return NoError;
     });
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to set geolocation.");
+        return CreateFailedExecutionResult (err, errorMessage.IsEmpty () ? GS::UniString ("Failed to set geolocation.") : errorMessage);
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The fields of File > Info > Project Notes, in the order of API_ProjectNoteInfo.
+static const char* ProjectNotesPropertiesSchema = R"(
+            "client": {
+                "type": "string",
+                "description": "Client."
+            },
+            "projectName": {
+                "type": "string",
+                "description": "Project name."
+            },
+            "company": {
+                "type": "string",
+                "description": "Company."
+            },
+            "street": {
+                "type": "string",
+                "description": "Street."
+            },
+            "city": {
+                "type": "string",
+                "description": "City."
+            },
+            "country": {
+                "type": "string",
+                "description": "Country."
+            },
+            "postalCode": {
+                "type": "string",
+                "description": "Postal code."
+            },
+            "architect": {
+                "type": "string",
+                "description": "Architect."
+            },
+            "draftsmen": {
+                "type": "string",
+                "description": "Draftsmen."
+            },
+            "projectStatus": {
+                "type": "string",
+                "description": "Project status."
+            },
+            "dateOfIssue": {
+                "type": "string",
+                "description": "Date of issue (free text, as typed in Project Notes)."
+            },
+            "keywords": {
+                "type": "string",
+                "description": "Keywords."
+            },
+            "notes": {
+                "type": "string",
+                "description": "Notes."
+            })";
+
+GetProjectNotesCommand::GetProjectNotesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetProjectNotesCommand::GetName () const
+{
+    return "GetProjectNotes";
+}
+
+GS::Optional<GS::UniString> GetProjectNotesCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + ProjectNotesPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+            "client",
+            "projectName",
+            "company",
+            "street",
+            "city",
+            "country",
+            "postalCode",
+            "architect",
+            "draftsmen",
+            "projectStatus",
+            "dateOfIssue",
+            "keywords",
+            "notes"
+        ]
+    })";
+}
+
+GS::ObjectState GetProjectNotesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectNoteInfo projectNotes = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetProjectNotes (&projectNotes);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the project notes.");
+    }
+
+    return GS::ObjectState (
+        "client", GS::UniString (projectNotes.client),
+        "projectName", GS::UniString (projectNotes.projectName),
+        "company", GS::UniString (projectNotes.company),
+        "street", GS::UniString (projectNotes.street),
+        "city", GS::UniString (projectNotes.city),
+        "country", GS::UniString (projectNotes.country),
+        "postalCode", GS::UniString (projectNotes.code),
+        "architect", GS::UniString (projectNotes.architect),
+        "draftsmen", GS::UniString (projectNotes.draftsmen),
+        "projectStatus", GS::UniString (projectNotes.projectStatus),
+        "dateOfIssue", GS::UniString (projectNotes.dateOfIssue),
+        "keywords", GS::UniString (projectNotes.keywords),
+        "notes", GS::UniString (projectNotes.notes));
+}
+
+SetProjectNotesCommand::SetProjectNotesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetProjectNotesCommand::GetName () const
+{
+    return "SetProjectNotes";
+}
+
+GS::Optional<GS::UniString> SetProjectNotesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + ProjectNotesPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetProjectNotesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetProjectNotesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectNoteInfo projectNotes = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetProjectNotes (&projectNotes);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the project notes.");
+    }
+
+    // Fields that are not given keep their current value. Longer texts are truncated to the field's length.
+    bool hasAnyInput = false;
+    hasAnyInput |= SetCharProperty (&parameters, "client", projectNotes.client);
+    hasAnyInput |= SetCharProperty (&parameters, "projectName", projectNotes.projectName);
+    hasAnyInput |= SetCharProperty (&parameters, "company", projectNotes.company);
+    hasAnyInput |= SetCharProperty (&parameters, "street", projectNotes.street);
+    hasAnyInput |= SetCharProperty (&parameters, "city", projectNotes.city);
+    hasAnyInput |= SetCharProperty (&parameters, "country", projectNotes.country);
+    hasAnyInput |= SetCharProperty (&parameters, "postalCode", projectNotes.code);
+    hasAnyInput |= SetCharProperty (&parameters, "architect", projectNotes.architect);
+    hasAnyInput |= SetCharProperty (&parameters, "draftsmen", projectNotes.draftsmen);
+    hasAnyInput |= SetCharProperty (&parameters, "projectStatus", projectNotes.projectStatus);
+    hasAnyInput |= SetCharProperty (&parameters, "dateOfIssue", projectNotes.dateOfIssue);
+    hasAnyInput |= SetCharProperty (&parameters, "keywords", projectNotes.keywords);
+    hasAnyInput |= SetCharProperty (&parameters, "notes", projectNotes.notes);
+
+    if (!hasAnyInput) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No project notes field was given to change.");
+    }
+
+    err = ACAPI_CallUndoableCommand ("Change Project Notes", [&] () -> GSErrCode {
+        return ACAPI_ProjectSetting_ChangeProjectNotes (&projectNotes);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the project notes.");
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -4162,6 +4793,151 @@ GS::ObjectState ChangeHotlinkNodesCommand::Execute (const GS::ObjectState& param
             continue;
         }
         executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
+
+// The elements inside a placed instance are proxies: copies made in this
+// project with guids of their own. Archicad keeps, per instance, which element
+// of the source file each proxy was made from.
+
+GetHotlinkProxyElementTableCommand::GetHotlinkProxyElementTableCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkProxyElementTableCommand::GetName () const
+{
+    return "GetHotlinkProxyElementTable";
+}
+
+GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances: elements of type Hotlink, for example the hotlinkId of an element inside one. Not the nodes GetHotlinks returns.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "proxyElementTables": {
+                "type": "array",
+                "description": "One item per requested instance, in order: its proxy elements with the source elements they were made from, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "proxyElements": {
+                                    "type": "array",
+                                    "description": "The proxy elements of the instance, in no particular order.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "proxyElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The proxy element in the current project."
+                                            },
+                                            "sourceElementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The element in the hotlink's source file the proxy was made from."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "proxyElementId",
+                                            "sourceElementId"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "proxyElements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "proxyElementTables"
+        ]
+    })";
+}
+
+GS::ObjectState GetHotlinkProxyElementTableCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& proxyElementTables = response.AddList<GS::ObjectState> ("proxyElementTables");
+
+    for (const GS::ObjectState& instanceData : hotlinkInstances) {
+        const GS::ObjectState* elementId = instanceData.Get ("elementId");
+        if (elementId == nullptr) {
+            proxyElementTables (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        // Checked here so a node id or another element gets a clear message
+        // rather than a bare error code from the table call.
+        API_Elem_Head header = {};
+        header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&header);
+        if (err != NoError) {
+            proxyElementTables (CreateErrorResponse (err, "Failed to get the element"));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_HotlinkID) {
+            proxyElementTables (CreateErrorResponse (APIERR_BADELEMENTTYPE, "The element is not a hotlink instance"));
+            continue;
+        }
+
+        GS::HashTable<API_Guid, API_Guid> proxyElementTable;
+        err = ACAPI_Hotlink_GetHotlinkProxyElementTable (&header.guid, &proxyElementTable);
+        if (err != NoError) {
+            proxyElementTables (CreateErrorResponse (err, "Failed to get the proxy element table of the hotlink instance"));
+            continue;
+        }
+
+        GS::ObjectState item;
+        const auto& proxyElements = item.AddList<GS::ObjectState> ("proxyElements");
+        for (const auto& kv : proxyElementTable) {
+            GS::ObjectState proxyElement;
+#ifdef ServerMainVers_2800
+            proxyElement.Add ("proxyElementId", CreateGuidObjectState (kv.key));
+            proxyElement.Add ("sourceElementId", CreateGuidObjectState (kv.value));
+#else
+            proxyElement.Add ("proxyElementId", CreateGuidObjectState (*kv.key));
+            proxyElement.Add ("sourceElementId", CreateGuidObjectState (*kv.value));
+#endif
+            proxyElements (proxyElement);
+        }
+        proxyElementTables (item);
     }
 
     return response;

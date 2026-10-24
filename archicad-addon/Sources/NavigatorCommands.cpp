@@ -348,6 +348,174 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
     return response;
 }
 
+struct DatabaseTypeData {
+    const char*      name;
+    API_WindowTypeID typeID;
+};
+
+static const DatabaseTypeData databaseTypes[] = {
+    { "Section",           APIWind_SectionID },
+    { "Elevation",         APIWind_ElevationID },
+    { "InteriorElevation", APIWind_InteriorElevationID },
+    { "Detail",            APIWind_DetailID },
+    { "Worksheet",         APIWind_WorksheetID },
+    { "DocumentFrom3D",    APIWind_DocumentFrom3DID },
+    { "Layout",            APIWind_LayoutID },
+    { "MasterLayout",      APIWind_MasterLayoutID }
+};
+
+static GSErrCode GetDatabaseUnIdsOfType (API_WindowTypeID typeID, GS::Array<API_DatabaseUnId>& databaseUnIds)
+{
+    switch (typeID) {
+        case APIWind_SectionID:           return ACAPI_Database_GetSectionDatabases (nullptr, &databaseUnIds);
+        case APIWind_ElevationID:         return ACAPI_Database_GetElevationDatabases (nullptr, &databaseUnIds);
+        case APIWind_InteriorElevationID: return ACAPI_Database_GetInteriorElevationDatabases (nullptr, &databaseUnIds);
+        case APIWind_DetailID:            return ACAPI_Database_GetDetailDatabases (nullptr, &databaseUnIds);
+        case APIWind_WorksheetID:         return ACAPI_Database_GetWorksheetDatabases (nullptr, &databaseUnIds);
+        case APIWind_DocumentFrom3DID:    return ACAPI_Database_GetDocumentFrom3DDatabases (nullptr, &databaseUnIds);
+        case APIWind_LayoutID:            return ACAPI_Database_GetLayoutDatabases (nullptr, &databaseUnIds);
+        case APIWind_MasterLayoutID:      return ACAPI_Database_GetMasterLayoutDatabases (nullptr, &databaseUnIds);
+        default:                          return APIERR_BADPARS;
+    }
+}
+
+GetDatabasesCommand::GetDatabasesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetDatabasesCommand::GetName () const
+{
+    return "GetDatabases";
+}
+
+GS::Optional<GS::UniString> GetDatabasesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "types": {
+            "type": "array",
+            "description": "The types of the databases to list. Optional, by default the databases of every type are listed.",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "Section",
+                    "Elevation",
+                    "InteriorElevation",
+                    "Detail",
+                    "Worksheet",
+                    "DocumentFrom3D",
+                    "Layout",
+                    "MasterLayout"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": []
+})";
+}
+
+GS::Optional<GS::UniString> GetDatabasesCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "databases": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "The type of the database."
+                    },
+                    "databaseId": {
+                        "$ref": "#/DatabaseId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the database. Missing when the database info cannot be read."
+                    },
+                    "referenceId": {
+                        "type": "string",
+                        "description": "The reference id of the database. Missing when the database info cannot be read."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "databaseId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "databases"
+    ]
+})";
+}
+
+GS::ObjectState GetDatabasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<const DatabaseTypeData*> requestedTypes;
+    GS::Array<GS::UniString> typeNames;
+    if (parameters.Get ("types", typeNames)) {
+        for (const GS::UniString& typeName : typeNames) {
+            const DatabaseTypeData* found = nullptr;
+            for (const DatabaseTypeData& databaseType : databaseTypes) {
+                if (typeName == databaseType.name) {
+                    found = &databaseType;
+                    break;
+                }
+            }
+            if (found == nullptr) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown database type: " + typeName);
+            }
+            if (!requestedTypes.Contains (found)) {
+                requestedTypes.Push (found);
+            }
+        }
+    } else {
+        for (const DatabaseTypeData& databaseType : databaseTypes) {
+            requestedTypes.Push (&databaseType);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& databases = response.AddList<GS::ObjectState> ("databases");
+
+    for (const DatabaseTypeData* databaseType : requestedTypes) {
+        GS::Array<API_DatabaseUnId> databaseUnIds;
+        // As with the layout lookups in DocumentCreationCommands, a type whose list
+        // cannot be read is treated as having no databases, so one failing type does
+        // not hide the others.
+        if (GetDatabaseUnIdsOfType (databaseType->typeID, databaseUnIds) != NoError) {
+            continue;
+        }
+
+        for (const API_DatabaseUnId& databaseUnId : databaseUnIds) {
+            API_DatabaseInfo databaseInfo = {};
+            databaseInfo.typeID = databaseType->typeID;
+            databaseInfo.databaseUnId = databaseUnId;
+
+            GS::ObjectState database (
+                "type", GS::UniString (databaseType->name),
+                "databaseId", CreateGuidObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (databaseInfo)));
+
+            if (ACAPI_Window_GetDatabaseInfo (&databaseInfo) == NoError) {
+                database.Add ("name", GS::UniString (databaseInfo.name));
+                database.Add ("referenceId", GS::UniString (databaseInfo.ref));
+            }
+
+            databases (database);
+        }
+    }
+
+    return response;
+}
+
 GetModelViewOptionsCommand::GetModelViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -2068,6 +2236,35 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetRawResponseSchema ()
     return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
 }
 
+// A worksheet or detail of the Project Map is a database, like a layout, and
+// ACAPI_Navigator_DeleteNavigatorView deletes View Map views only. The item is
+// looked up in the Project Map by its database instead of trusting the mapId
+// returned with it, so a View Map view of the same worksheet - another item on
+// the same database - is not matched and still deletes only the view.
+static bool IsProjectMapWorksheetOrDetail (const API_Guid& guid, const API_NavigatorItem& navItem)
+{
+    if (navItem.db.typeID != APIWind_WorksheetID && navItem.db.typeID != APIWind_DetailID) {
+        return false;
+    }
+
+    API_NavigatorItem filterItem = {};
+    filterItem.mapId           = API_ProjectMap;
+    filterItem.itemType        = navItem.itemType;
+    filterItem.db.databaseUnId = navItem.db.databaseUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return false;
+    }
+
+    for (const API_NavigatorItem& result : results) {
+        if (result.guid == guid) {
+            return true;
+        }
+    }
+    return false;
+}
+
 GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> navigatorItemIds;
@@ -2091,9 +2288,17 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         }
 
         GSErrCode err = NoError;
+        GS::UniString failureMessage = "Failed to delete navigator item.";
         if (navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem) {
             API_DatabaseInfo dbInfo = navItem.db;
             err = ACAPI_Database_DeleteDatabase (&dbInfo);
+        } else if (IsProjectMapWorksheetOrDetail (guid, navItem)) {
+            // Only independent worksheets and details are databases of their
+            // own; one placed by a marker belongs to its marker and cannot be
+            // deleted this way.
+            API_DatabaseInfo dbInfo = navItem.db;
+            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+            failureMessage = "Failed to delete the worksheet or detail. Only independent worksheets and details can be deleted; delete a marker-linked one by deleting its marker.";
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
         } else {
@@ -2104,7 +2309,7 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         if (err == APIERR_NOTSUPPORTED) {
             executionResults (CreateFailedExecutionResult (err, "Deleting layout subsets is not supported by the ArchiCAD API."));
         } else if (err != NoError) {
-            executionResults (CreateFailedExecutionResult (err, "Failed to delete navigator item."));
+            executionResults (CreateFailedExecutionResult (err, failureMessage));
         } else {
             executionResults (CreateSuccessfulExecutionResult ());
         }
@@ -2148,7 +2353,7 @@ static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t)
     }
 }
 
-static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_NavigatorMapID mapId)
+static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_NavigatorMapID mapId, bool includeChildCount)
 {
     GS::ObjectState itemOS;
     itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
@@ -2180,12 +2385,22 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     }
 
     item.mapId = mapId;
+
+    // The number of direct children as Archicad counts them, without fetching
+    // the children themselves. Missing when Archicad cannot count them.
+    if (includeChildCount) {
+        Int32 childCount = 0;
+        if (ACAPI_Navigator_GetNavigatorChildNum (&item, &childCount) == NoError) {
+            itemOS.Add ("childCount", childCount);
+        }
+    }
+
     GS::Array<API_NavigatorItem> children;
     if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {
         const auto& childList = itemOS.AddList<GS::ObjectState> ("children");
         for (const API_NavigatorItem& child : children) {
             GS::ObjectState wrapper;
-            wrapper.Add ("navigatorItem", NavigatorItemToObjectState (child, mapId));
+            wrapper.Add ("navigatorItem", NavigatorItemToObjectState (child, mapId, includeChildCount));
             childList (wrapper);
         }
     }
@@ -2216,6 +2431,10 @@ GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchem
                 "type": "string",
                 "minLength": 1,
                 "description": "The name of the publisher set to retrieve. Used only when navigatorMapId is PublisherSets. Without it the first publisher set is returned."
+            },
+            "includeChildCount": {
+                "type": "boolean",
+                "description": "Set to true to add childCount, the number of direct children Archicad reports, to every item. Defaults to false."
             }
         },
         "additionalProperties": false,
@@ -2281,7 +2500,105 @@ GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& par
         return CreateErrorResponse (err, "Failed to get root navigator item.");
     }
 
+    bool includeChildCount = false;
+    parameters.Get ("includeChildCount", includeChildCount);
+
     GS::ObjectState response;
-    response.Add ("navigatorItemTree", NavigatorItemToObjectState (rootItem, mapId));
+    response.Add ("navigatorItemTree", NavigatorItemToObjectState (rootItem, mapId, includeChildCount));
+    return response;
+}
+
+// ─── GetNavigatorParentItems ──────────────────────────────────────────────────
+
+GetNavigatorParentItemsCommand::GetNavigatorParentItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetNavigatorParentItemsCommand::GetName () const
+{
+    return "GetNavigatorParentItems";
+}
+
+GS::Optional<GS::UniString> GetNavigatorParentItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetNavigatorParentItemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "parentItems": {
+                "type": "array",
+                "description": "The parent of each requested navigator item, in the order of the input, or an error for an item whose parent cannot be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "navigatorItemId": { "$ref": "#/NavigatorItemId" },
+                                "type":            { "$ref": "#/NavigatorItemType" },
+                                "name":            { "type": "string", "description": "The name of the parent navigator item." }
+                            },
+                            "additionalProperties": false,
+                            "required": ["navigatorItemId", "type", "name"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["parentItems"]
+    })";
+}
+
+GS::ObjectState GetNavigatorParentItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    parameters.Get ("navigatorItemIds", navigatorItemIds);
+
+    GS::ObjectState response;
+    const auto& parentItems = response.AddList<GS::ObjectState> ("parentItems");
+
+    for (const GS::ObjectState& navItemIdOS : navigatorItemIds) {
+        const API_Guid guid = GetGuidFromNavigatorItemIdArrayItem (navItemIdOS);
+        if (guid == APINULLGuid) {
+            parentItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        API_NavigatorItem parent = {};
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorParentItem (&guid, &parent);
+        if (err != NoError) {
+            parentItems (CreateErrorResponse (err, "Failed to get the parent of the navigator item."));
+            continue;
+        }
+
+        // The root of a map has no parent. Report it as an error rather than
+        // an item with a null id, whichever way Archicad signals it.
+        if (parent.guid == APINULLGuid) {
+            parentItems (CreateErrorResponse (APIERR_BADPARS, "The navigator item has no parent."));
+            continue;
+        }
+
+        GS::ObjectState parentOS;
+        parentOS.Add ("navigatorItemId", CreateGuidObjectState (parent.guid));
+        parentOS.Add ("type",            NavigatorItemTypeToString (parent.itemType));
+        parentOS.Add ("name",            GS::UniString (parent.uName));
+        parentItems (parentOS);
+    }
+
     return response;
 }

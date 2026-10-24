@@ -648,6 +648,135 @@ GS::ObjectState CreateLayoutSubsetCommand::Execute (const GS::ObjectState& param
     return CreateNavigatorItemsResponse (navigatorItems);
 }
 
+// The inverse of the numberingStyle mapping in CreateLayoutSubsetCommand::Execute
+static GS::UniString SubSetNumberingStyleToString (const API_SubSet& subSet)
+{
+    switch (subSet.numberingStyle) {
+        case API_NS_abc:  return "abc";
+        case API_NS_ABC:  return "ABC";
+        case API_NS_1:    return "1";
+        case API_NS_01:   return "01";
+        case API_NS_001:  return "001";
+        case API_NS_0001: return "0001";
+        case API_NS_noID: return "noID";
+        default:          return "Undefined";
+    }
+}
+
+GetLayoutSubsetSettingsCommand::GetLayoutSubsetSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLayoutSubsetSettingsCommand::GetName () const
+{
+    return "GetLayoutSubsetSettings";
+}
+
+GS::Optional<GS::UniString> GetLayoutSubsetSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLayoutSubsetSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "subsetSettings": {
+                "type": "array",
+                "description": "One item per input navigator item, in the same order: the subset's settings with the field names of CreateLayoutSubset, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name":                { "type": "string" },
+                                "ownPrefix":           { "type": "string" },
+                                "customNumber":        { "type": "string" },
+                                "numberingStyle":      { "type": "string", "enum": ["Undefined", "abc", "ABC", "1", "01", "001", "0001", "noID"] },
+                                "startAt":             { "type": "integer" },
+                                "continueNumbering":   { "type": "boolean" },
+                                "useUpperPrefix":      { "type": "boolean" },
+                                "includeToIDSequence": { "type": "boolean" },
+                                "customNumbering":     { "type": "boolean" },
+                                "addOwnPrefix":        { "type": "boolean" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["name", "ownPrefix", "customNumber", "numberingStyle", "startAt", "continueNumbering", "useUpperPrefix", "includeToIDSequence", "customNumbering", "addOwnPrefix"]
+                        },
+                        { "$ref": "#/ErrorItem" }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["subsetSettings"]
+    })";
+}
+
+GS::ObjectState GetLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "navigatorItemIds", navigatorItemIds, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::ObjectState response;
+    const auto& subsetSettings = response.AddList<GS::ObjectState> ("subsetSettings");
+
+    for (const auto& navigatorItemId : navigatorItemIds) {
+        const API_Guid guid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemId);
+        if (guid == APINULLGuid) {
+            subsetSettings (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        // Checked first so that any other navigator item gets a clear error
+        // instead of whatever ACAPI_Navigator_GetSubSet returns for it
+        API_NavigatorItem navItem = {};
+        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+        if (err != NoError) {
+            subsetSettings (CreateErrorResponse (err, "Failed to get navigator item."));
+            continue;
+        }
+        if (navItem.itemType != API_SubSetNavItem) {
+            subsetSettings (CreateErrorResponse (APIERR_BADID, "The navigator item is not a Layout Book subset."));
+            continue;
+        }
+
+        API_SubSet subSet = {};
+        err = ACAPI_Navigator_GetSubSet (&guid, &subSet);
+        if (err != NoError) {
+            subsetSettings (CreateErrorResponse (err, "Failed to get subset settings."));
+            continue;
+        }
+
+        subsetSettings (GS::ObjectState (
+            "name",                GS::UniString (subSet.name),
+            "ownPrefix",           GS::UniString (subSet.ownPrefix),
+            "customNumber",        GS::UniString (subSet.customNumber),
+            "numberingStyle",      SubSetNumberingStyleToString (subSet),
+            "startAt",             subSet.startAt,
+            "continueNumbering",   subSet.continueNumbering,
+            "useUpperPrefix",      subSet.useUpperPrefix,
+            // API_SubSet stores the dialog's "Do not include this Subset in ID sequence" negated
+            "includeToIDSequence", !subSet.doNotInclude,
+            "customNumbering",     subSet.customNumbering,
+            "addOwnPrefix",        subSet.addOwnPrefix));
+    }
+
+    return response;
+}
+
 CreateDrawingsCommand::CreateDrawingsCommand () :
     CommandBase (CommonSchema::Used)
 {
