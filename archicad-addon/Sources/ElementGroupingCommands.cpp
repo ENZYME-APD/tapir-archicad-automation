@@ -662,6 +662,160 @@ GS::ObjectState SetSuspendGroupsModeCommand::Execute(const GS::ObjectState& para
         : CreateFailedExecutionResult(err, "Failed to set the Suspend Groups mode."));
 }
 
+GetElementSetDataCommand::GetElementSetDataCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementSetDataCommand::GetName() const
+{
+    return "GetElementSetData";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to get the data of. Element sets are created by Add-Ons to link elements together.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementSetId": {
+                            "type": "object",
+                            "description": "The identifier of an element set.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementSetId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSetData": {
+                "type": "array",
+                "description": "The data of each given element set, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements linked by the element set."
+                                },
+                                "userData": {
+                                    "type": "object",
+                                    "description": "The custom data the creator Add-On stored with the element set. Present only when the set has such data.",
+                                    "properties": {
+                                        "dataVersion": {
+                                            "type": "integer",
+                                            "description": "The version of the data, set by the creator Add-On."
+                                        },
+                                        "platformSign": {
+                                            "type": "integer",
+                                            "description": "The platform sign of the data (the byte order it was written with)."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "description": "The raw data, Base64 encoded."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "dataVersion",
+                                        "platformSign",
+                                        "data"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSetData"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementSetDataCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetData = response.AddList<GS::ObjectState>("elementSetData");
+
+    for (const GS::ObjectState& elementSet : elementSets) {
+        const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
+        if (elementSetId == nullptr) {
+            elementSetData(CreateErrorResponse(APIERR_BADPARS, "elementSetId is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> elemGuids;
+        API_UserData userData = {};
+        const GSErrCode err = ACAPI_ElementSet_GetData(GetGuidFromObjectState(*elementSetId), &elemGuids, &userData);
+        if (err != NoError) {
+            BMKillHandle(&userData.dataHdl);
+            elementSetData(CreateErrorResponse(err, "Failed to get the data of the element set."));
+            continue;
+        }
+
+        GS::ObjectState dataItem;
+        const auto& elements = dataItem.AddList<GS::ObjectState>("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements(CreateElementIdObjectState(elemGuid));
+        }
+
+        if (userData.dataHdl != nullptr) {
+            GS::UniString data = Base64Converter::Encode(*userData.dataHdl, static_cast<UInt32>(BMGetHandleSize(userData.dataHdl)));
+            data.DeleteAll(GS::UniChar(char('\n')));
+            dataItem.Add("userData", GS::ObjectState(
+                "dataVersion", userData.dataVersion,
+                "platformSign", static_cast<Int32>(userData.platformSign),
+                "data", data));
+        }
+        BMKillHandle(&userData.dataHdl);
+
+        elementSetData(dataItem);
 GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
     CommandBase(CommonSchema::Used)
 {
