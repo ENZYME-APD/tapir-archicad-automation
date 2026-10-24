@@ -169,7 +169,16 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     const UInt64 mask = includeZCoords ? APIMemoMask_Polygon | APIMemoMask_MeshPolyZ : APIMemoMask_Polygon;
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError || memo.coords == nullptr) {
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError) {
+        return {};
+    }
+
+    return GetPolygonsFromMemoCoords (memo, includeZCoords);
+}
+
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_ElementMemo& memo, bool includeZCoords)
+{
+    if (memo.coords == nullptr) {
         return {};
     }
 
@@ -202,7 +211,7 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
 
     const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc);
     for (GSIndex iArc = 0; iArc < nArcs; ++iArc) {
-        API_PolyArc& arc = (*memo.parcs)[iArc];
+        API_PolyArc arc = (*memo.parcs)[iArc];
         GSIndex iPoly = 0;
         for (; iPoly < nPolys; ++iPoly) {
             const auto& startEndPair = startEndIndices[iPoly];
@@ -633,12 +642,11 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
     }
 }
 
-void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+static void AddPolygonWithHoles (const std::vector<PolygonData>& polygons, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
 {
     const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
     const auto& holes = os.AddList<GS::ObjectState> (holesArrayFieldName);
 
-    const auto polygons = GetPolygonsFromMemoCoords (elemGuid, includeZCoords);
     if (polygons.empty ()) {
         return;
     }
@@ -692,6 +700,16 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
 
         holes (hole);
     }
+}
+
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+{
+    AddPolygonWithHoles (GetPolygonsFromMemoCoords (elemGuid, includeZCoords), os, coordsFieldName, arcsFieldName, holesArrayFieldName, holeCoordsFieldName, holeArcsFieldName, includeZCoords);
+}
+
+void AddPolygonWithHolesFromMemoCoords (const API_ElementMemo& memo, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
+{
+    AddPolygonWithHoles (GetPolygonsFromMemoCoords (memo, includeZCoords), os, coordsFieldName, arcsFieldName, holesArrayFieldName, holeCoordsFieldName, holeArcsFieldName, includeZCoords);
 }
 
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs)

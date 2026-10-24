@@ -40,6 +40,80 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     ACAPI_DisposeElemMemoHdls (&memo);
 }
 
+// The RoofDetails of a roof. The polygon is read from partMemo when given (a plane
+// of a decomposed multi-plane roof, which has no memo of its own), else from the
+// memo of the element with this guid.
+static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
+
+static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, short floorInd, const API_ElementMemo* partMemo, const Stories& stories, GS::ObjectState& os)
+{
+    const API_ShellBaseType& base = roof.shellBase;
+    os.Add ("roofClass", roof.roofClass == API_PolyRoofID ? "MultiPlane" : "SinglePlane");
+    os.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
+    os.Add ("thickness", base.thickness);
+    os.Add ("level", base.level);
+    os.Add ("zCoordinate", GetZPos (floorInd, base.level, stories));
+    if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
+        os.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
+    } else {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
+    }
+    if (roof.roofClass == API_PlaneRoofID) {
+        os.Add ("angle", roof.u.planeRoof.angle);
+        GS::ObjectState pivotLine;
+        pivotLine.Add ("begin", Create2DCoordinateObjectState (roof.u.planeRoof.baseLine.c1));
+        pivotLine.Add ("end", Create2DCoordinateObjectState (roof.u.planeRoof.baseLine.c2));
+        os.Add ("pivotLine", pivotLine);
+    } else {
+        os.Add ("eavesOverhang", roof.u.polyRoof.eavesOverHang);
+        const auto& levels = os.AddList<GS::ObjectState> ("levels");
+        for (short i = 0; i < roof.u.polyRoof.levelNum && i < 16; ++i) {
+            GS::ObjectState level;
+            level.Add ("height", roof.u.polyRoof.levelData[i].levelHeight);
+            level.Add ("angle", roof.u.polyRoof.levelData[i].levelAngle);
+            levels (level);
+        }
+        if (partMemo == nullptr) {
+            AddPivotPolygonFromMemo (guid, os);
+        }
+    }
+    // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
+    if (partMemo != nullptr) {
+        AddPolygonWithHolesFromMemoCoords (*partMemo, os, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+    } else {
+        AddPolygonWithHolesFromMemoCoords (guid, os, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+    }
+}
+
+// Collects the single-plane parts ACAPI_Element_Decompose generates for a multi-plane
+// roof. The part element and memo are only borrowed for the call (Archicad disposes
+// the memo afterwards), so everything is serialized right here.
+class RoofPlaneCollector : public API_ElementDecomposerInterface
+{
+public:
+    RoofPlaneCollector (short floorInd, const Stories& stories) :
+        floorInd (floorInd),
+        stories (stories)
+    {
+    }
+
+    virtual GSErrCode GeneratePartElement (const API_Guid& guid, const API_ElemPartId& partId, const API_Element& partElem, const API_ElementMemo& partMemo) override
+    {
+        GS::ObjectState plane;
+        plane.Add ("partId", GS::ObjectState ("main", partId.main, "sub", partId.sub));
+        GS::ObjectState details;
+        AddRoofDetails (partElem.roof, guid, floorInd, &partMemo, stories, details);
+        plane.Add ("details", details);
+        planes.Push (plane);
+        return NoError;
+    }
+
+    GS::Array<GS::ObjectState> planes;
+
+private:
+    const short     floorInd;
+    const Stories&  stories;
+};
 // The baseline of a Stair is a polyline, not a polygon: it lives in the memo's stairBaseLine
 // (the very handle CreateStairsCommand::SetTypeSpecificParameters fills in to place one),
 // 1-based like the other memo polygons, with no closing vertex. Read with APIMemoMask_All,
@@ -1913,38 +1987,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddMorphBodyFromMemo (elem, typeSpecificDetails);
                 break;
 
-            case API_RoofID: {
-                const API_ShellBaseType& base = elem.roof.shellBase;
-                typeSpecificDetails.Add ("roofClass", elem.roof.roofClass == API_PolyRoofID ? "MultiPlane" : "SinglePlane");
-                typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
-                typeSpecificDetails.Add ("thickness", base.thickness);
-                typeSpecificDetails.Add ("level", base.level);
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, base.level, stories));
-                if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
-                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
-                } else {
-                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
-                }
-                if (elem.roof.roofClass == API_PlaneRoofID) {
-                    typeSpecificDetails.Add ("angle", elem.roof.u.planeRoof.angle);
-                    GS::ObjectState pivotLine;
-                    pivotLine.Add ("begin", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c1));
-                    pivotLine.Add ("end", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c2));
-                    typeSpecificDetails.Add ("pivotLine", pivotLine);
-                } else {
-                    typeSpecificDetails.Add ("eavesOverhang", elem.roof.u.polyRoof.eavesOverHang);
-                    const auto& levels = typeSpecificDetails.AddList<GS::ObjectState> ("levels");
-                    for (short i = 0; i < elem.roof.u.polyRoof.levelNum && i < 16; ++i) {
-                        GS::ObjectState level;
-                        level.Add ("height", elem.roof.u.polyRoof.levelData[i].levelHeight);
-                        level.Add ("angle", elem.roof.u.polyRoof.levelData[i].levelAngle);
-                        levels (level);
-                    }
-                    AddPivotPolygonFromMemo (elem.header.guid, typeSpecificDetails);
-                }
-                // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
-                AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
-            } break;
+            case API_RoofID:
+                AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
+                break;
 
             case API_HotlinkID: {
                 API_Coord3D origin;
@@ -6284,6 +6329,150 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
 
     return response;
 }
+
+GetRoofPlanesCommand::GetRoofPlanesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRoofPlanesCommand::GetName () const
+{
+    return "GetRoofPlanes";
+}
+
+GS::Optional<GS::UniString> GetRoofPlanesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRoofPlanesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "roofPlanesOfElements": {
+                "type": "array",
+                "description": "The planes of each roof, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "planes": {
+                                    "type": "array",
+                                    "description": "The single planes of the roof: the planes Archicad decomposes a multi-plane roof into, or the roof itself for a single-plane roof.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "partId": {
+                                                "type": "object",
+                                                "description": "Archicad's identifier of the plane within the multi-plane roof (API_ElemPartId). Missing for a single-plane roof.",
+                                                "properties": {
+                                                    "main": {
+                                                        "type": "number",
+                                                        "description": "Identifies the pivot polygon edge the plane belongs to (by its vertex id)."
+                                                    },
+                                                    "sub": {
+                                                        "type": "number",
+                                                        "description": "Identifies the roof level the plane belongs to."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "main",
+                                                    "sub"
+                                                ]
+                                            },
+                                            "details": {
+                                                "$ref": "#/RoofDetails",
+                                                "description": "The plane as a single-plane roof: slope, pivot line, level and outline."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "details"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "planes"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofPlanesOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetRoofPlanesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& roofPlanesOfElements = response.AddList<GS::ObjectState> ("roofPlanesOfElements");
+
+    const Stories stories = GetStories ();
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            roofPlanesOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Element elem = {};
+        elem.header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_Get (&elem);
+        if (err != NoError) {
+            roofPlanesOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        if (GetElemTypeId (elem.header) != API_RoofID) {
+            roofPlanesOfElements (CreateErrorResponse (APIERR_BADPARS, "The element is not a Roof"));
+            continue;
+        }
+
+        GS::ObjectState roofPlanes;
+        const auto& planes = roofPlanes.AddList<GS::ObjectState> ("planes");
+        if (elem.roof.roofClass == API_PlaneRoofID) {
+            GS::ObjectState details;
+            AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, details);
+            planes (GS::ObjectState ("details", details));
+        } else {
+            RoofPlaneCollector collector (elem.header.floorInd, stories);
+            err = ACAPI_Element_Decompose (elem.header.guid, &collector);
+            if (err != NoError) {
+                roofPlanesOfElements (CreateErrorResponse (err, "Failed to decompose the roof into its planes"));
+                continue;
+            }
+            for (const GS::ObjectState& plane : collector.planes) {
+                planes (plane);
+            }
+        }
+        roofPlanesOfElements (roofPlanes);
+    }
 
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
