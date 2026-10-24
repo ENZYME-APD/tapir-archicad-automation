@@ -349,6 +349,19 @@ assert find_by_name(all_items, SUBSET_A_RENAMED), f"'{SUBSET_A_RENAMED}' not fou
 print("   PASS: RenameNavigatorItem")
 
 
+# ── 8b. RenameNavigatorItem newId on a layout — sets its custom layout number ─
+print(f"\n8b. RenameNavigatorItem newId: '{LAYOUT_2}' -> 'T02-RN'...")
+res = run("RenameNavigatorItem", {
+    "navigatorItemId": layout_nav_id_2,
+    "newId":           "T02-RN",
+})
+assert res.get("success"), f"RenameNavigatorItem (newId) failed: {res}"
+s4 = run("GetLayoutSettings", {"layoutDatabaseIds": [{"databaseId": layout_db_id_2}]})["layoutSettings"][0]
+assert s4["customLayoutNumber"] == "T02-RN", f"newId route: customLayoutNumber={s4['customLayoutNumber']}"
+assert s4["customLayoutNumbering"], f"newId route: customLayoutNumbering={s4['customLayoutNumbering']}"
+print("   PASS: RenameNavigatorItem newId on a layout")
+
+
 # ── 9. MoveNavigatorItem L1 -> Subset B (no previousNavigatorItemId) ───────
 lb = get_lb_tree()
 all_items = collect_all(lb["navigatorTree"]["rootItem"]["children"])
