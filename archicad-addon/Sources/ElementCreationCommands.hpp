@@ -233,6 +233,15 @@ public:
 // fields of the common schema (name, number, category, stamp and the levels) to the zone
 // and marks the changed fields in the mask. Returns an error response for an invalid field.
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
+class MeasureTextsCommand : public CommandBase
+{
+public:
+    MeasureTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
 
 // Shared helpers for Text/Label style, content and leader-line fields - declared here so
 // GetDetailsOfElementsCommand (ElementCommands.cpp) can read them back via AddXDetails.
