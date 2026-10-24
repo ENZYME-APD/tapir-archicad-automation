@@ -66,6 +66,30 @@ namespace TapirGrasshopperPlugin.Types.Attributes
         // Seconds since 1970-01-01 00:00:00 UTC.
         [JsonProperty("modificationTime")]
         public long ModificationTime;
+
+        // Only from Archicad 30, and only for an attribute Archicad keeps a
+        // creation record of; null otherwise.
+        [JsonProperty("creationInfo")]
+        public AttributeCreationInfo CreationInfo;
+    }
+
+    public class AttributeCreationInfo
+    {
+        [JsonProperty("method")]
+        public string Method;
+
+        [JsonProperty("methodDescription")]
+        public string MethodDescription;
+
+        [JsonProperty("source")]
+        public string Source;
+
+        [JsonProperty("creatorUserName")]
+        public string CreatorUserName;
+
+        // Seconds since 1970-01-01 00:00:00 UTC.
+        [JsonProperty("creationTime")]
+        public long CreationTime;
     }
 
     public class AttributeDetailsObject
