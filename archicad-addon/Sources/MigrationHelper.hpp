@@ -189,6 +189,11 @@ inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
     return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
 }
 
+inline GSErrCode ACAPI_View_Zoom ()
+{
+    return ACAPI_Automate (APIDo_ZoomID);
+}
+
 // The rendering scene calls of AC27+ (ACAPI_Rendering.h), on the pre-27 dispatchers:
 // APIEnv_GetRenderingSceneNamesID and APIEnv_SetCurrentRenderingSceneID of
 // APIdefs_Environment.h, APIDo_PhotoRenderID of APIdefs_Automate.h (par2, the
@@ -221,11 +226,6 @@ inline GSErrCode ACAPI_Rendering_GetRenderingSets (void* rendInfo, API_RendSetTy
 inline GSErrCode ACAPI_Rendering_ChangeRenderingSets (const void* rendInfo, API_RendSetTypeID rendSetType)
 {
     return ACAPI_Environment (APIEnv_ChangeRenderingSetsID, (void*) rendInfo, &rendSetType);
-}
-
-inline GSErrCode ACAPI_View_Zoom ()
-{
-    return ACAPI_Automate (APIDo_ZoomID);
 }
 
 inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
