@@ -28,11 +28,15 @@ name: Claude Bot PR Steward
 # Bounds:
 # - At most BOT_PR_MAX_FIX_ROUNDS fix runs per pull request (repository
 #   variable, default 6), counted from this workflow's own runs, which nothing
-#   a model writes can change. After that, and after ten reviews of one pull
-#   request without a recorded verdict, the pull request gets the
+#   a model writes can change. After that, and after BOT_PR_MAX_EMPTY_REVIEWS
+#   (repository variable, default 8) reviews of its latest commit that
+#   recorded no verdict, the pull request gets the
 #   `needs-maintainer` label and the steward leaves it alone. Removing the
 #   label hands it back with both counts reset: they count only the runs
 #   since the label was last removed.
+# - After a review that recorded no verdict, as after a failed one, the next
+#   review of that pull request waits for the next hourly sweep, so a review
+#   that keeps coming back empty costs one run an hour, not one per sweep.
 # - A review or fix run whose model call failed (an API error, a spent usage
 #   limit) did nothing, so it is not a round: the next one waits for the next
 #   hourly sweep, and only ten failures within a day (and since the label was
@@ -43,7 +47,7 @@ name: Claude Bot PR Steward
 # - A pull request labelled `needs-maintainer` or `do-not-merge`, or converted
 #   to a draft, is left alone - that is how a person takes one over.
 # - A sweep starts new work (builds, a review or a fix) on at most
-#   BOT_PR_SWEEP_BATCH pull requests (repository variable, default 5), so a
+#   BOT_PR_SWEEP_BATCH pull requests (repository variable, default 15), so a
 #   backlog is worked through over several hourly sweeps instead of
 #   flooding the runners. Work already running does not count: a pull
 #   request still building must not hold back one that only needs a fix.
@@ -88,7 +92,9 @@ jobs:
       vars.BOT_PR_STEWARD != 'false' &&
       (github.event_name == 'schedule' || inputs.pr_number == '')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # About half a minute per pull request it starts work on or has to wait
+    # for, so a full batch of BOT_PR_SWEEP_BATCH needs more than 15.
+    timeout-minutes: 30
     # One sweep at a time; a burst of starts collapses into one pending sweep.
     concurrency:
       group: bot-pr-sweep
@@ -104,16 +110,21 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
       MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '6' }}
-      BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '5' }}
+      # An empty review is a fault of the review run, not of the pull
+      # request (they ran at about one in three), so it takes many of them
+      # to hand a pull request over.
+      MAX_EMPTY: ${{ vars.BOT_PR_MAX_EMPTY_REVIEWS || '8' }}
+      BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '15' }}
     steps:
       - name: Sweep the bot's pull requests
         run: |
           set -euo pipefail
           case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=6 ;; esac
-          case "$BATCH" in ''|*[!0-9]*) BATCH=5 ;; esac
+          case "$MAX_EMPTY" in ''|*[!0-9]*|0) MAX_EMPTY=8 ;; esac
+          case "$BATCH" in ''|*[!0-9]*) BATCH=15 ;; esac
           busy=0
 
-          prs=$(gh pr list --repo "$REPO" --state open --base main --limit 200 \
+          prs=$(gh pr list --repo "$REPO" --state open --base main --limit 1000 \
             --json number,isDraft,headRefName,headRefOid,author,isCrossRepository,labels,mergeable,createdAt \
             --jq '[.[] | select((.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
                                and (.headRefName | startswith("claude/"))
@@ -150,11 +161,18 @@ jobs:
           # one minutes later, so an outage does not burn every attempt within
           # the hour. Under the cron period, so a run that failed just after
           # one hourly sweep is retried by the next one, not the one after.
+          # With $3 = any, a run that succeeded counts too, but only one
+          # created at or after $4 (when the head was pushed): a review is
+          # started only while its head has no verdict, so a review of this
+          # head recorded none, whatever its conclusion. An earlier head's
+          # review did, and must not hold back the new head's first one.
           failedRecently() {
-            local last
-            last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)" \
-              --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0]
-                     | select(.conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\") | .updated_at")
+            local last from
+            from=$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+            if [[ "${4:-}" > "$from" ]]; then from=$4; fi
+            last=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=workflow_dispatch&per_page=100&created=%3E%3D$from" \
+              --jq "[.workflow_runs[] | select(.display_title == \"$2\" and .status == \"completed\")][0] // empty
+                     | select(\"${3:-}\" == \"any\" or .conclusion == \"failure\" or .conclusion == \"timed_out\" or .conclusion == \"startup_failure\" or .conclusion == \"cancelled\") | .updated_at")
             [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 3000 ]
           }
 
@@ -348,16 +366,19 @@ jobs:
             if [ -z "$review" ] && [ "$buildFailed" = false ]; then
               reviewTitle="Claude review of PR #$pr"
               active=$(jq --arg t "$reviewTitle" '[.[] | select(.displayTitle == $t and .status != "completed")] | length' <<<"$reviewRuns")
-              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$since" success)
+              # Reviews since this head was pushed: earlier heads got theirs.
+              headSince=$(gh api "repos/$REPO/commits/$head" --jq '.commit.committer.date') || headSince=""
+              if [[ "$headSince" < "$since" ]]; then headSince=$since; fi
+              total=$(countRuns claude_pr_review.yml "$reviewTitle" "$headSince" success)
               failed=$(countRuns claude_pr_review.yml "$reviewTitle" "$failSince" failure)
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
-              elif [ "$total" -ge 10 ]; then
-                handOver "$pr" "ten reviews recorded no verdict"
+              elif [ "$total" -ge "$MAX_EMPTY" ]; then
+                handOver "$pr" "$total reviews of its latest commit recorded no verdict"
               elif [ "$failed" -ge 10 ]; then
                 handOver "$pr" "its review failed $failed times (see the runs' logs)"
-              elif failedRecently claude_pr_review.yml "$reviewTitle"; then
-                echo "the last review failed less than 50 minutes ago - waiting"
+              elif failedRecently claude_pr_review.yml "$reviewTitle" any "$headSince"; then
+                echo "the last review recorded no verdict less than 50 minutes ago - waiting"
               else
                 gh workflow run claude_pr_review.yml --repo "$REPO" --ref main -f pr_number="$pr" || echo "::warning::could not start it for #$pr"
                 echo "started the review"
@@ -494,10 +515,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do
