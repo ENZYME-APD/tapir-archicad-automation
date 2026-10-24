@@ -6399,6 +6399,9 @@ GS::ObjectState GetVisibleSkinStatusCommand::Execute (const GS::ObjectState& par
         visibleSkinStatuses (GS::ObjectState ("hasVisibleSkin", hasVisibleSkin));
     }
 
+    return response;
+}
+
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
 {
