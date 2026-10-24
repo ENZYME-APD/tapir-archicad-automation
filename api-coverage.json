@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 02:36 UTC",
+ "generatedAt": "2026-10-24 06:27 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 635,
+  "in progress": 632,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 47
+  "merged": 50
  },
  "items": [
   {
@@ -5036,10 +5036,6 @@
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
     {
-     "number": 1376,
-     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
-    },
-    {
      "number": 1374,
      "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
     },
@@ -7429,10 +7425,6 @@
      "title": "Add ModifyCurtainWalls command"
     },
     {
-     "number": 906,
-     "title": "Make the Element ID settable through SetDetailsOfElements and the Create* commands"
-    },
-    {
      "number": 905,
      "title": "ApplyFavoritesToElements: optional keepFields to keep the target's ID, size, sill, reference line and top link"
     },
@@ -8837,20 +8829,11 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 906,
-     "title": "Make the Element ID settable through SetDetailsOfElements and the Create* commands"
-    },
-    {
      "number": 905,
      "title": "ApplyFavoritesToElements: optional keepFields to keep the target's ID, size, sill, reference line and top link"
     }
    ],
-   "issues": [
-    {
-     "number": 902,
-     "title": "Element ID: settable through SetDetailsOfElements and the Create* commands (today read-only)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeMore",
@@ -9081,10 +9064,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 906,
-     "title": "Make the Element ID settable through SetDetailsOfElements and the Create* commands"
-    },
     {
      "number": 904,
      "title": "DeleteElements deletes the zones of a call before the other elements (#901)"
@@ -10235,10 +10214,6 @@
     {
      "number": 940,
      "title": "Add ModifyCurtainWalls command"
-    },
-    {
-     "number": 906,
-     "title": "Make the Element ID settable through SetDetailsOfElements and the Create* commands"
     },
     {
      "number": 905,
@@ -11414,14 +11389,9 @@
    "olderNames": [
     "APIAny_SearchElementByCoordID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 966,
-     "title": "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25353,10 +25323,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1385,
-     "title": "ChangeWindow: accept a databaseId without windowType"
-    },
-    {
      "number": 1135,
      "title": "Add GetDatabases command to list all databases of given types"
     },
@@ -26557,12 +26523,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1376,
-     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26578,14 +26539,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1376,
-     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1320,
@@ -26671,14 +26627,9 @@
     28
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1376,
-     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1320,
@@ -27042,10 +26993,6 @@
     {
      "number": 967,
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
-    },
-    {
-     "number": 966,
-     "title": "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"
     },
     {
      "number": 947,
@@ -40977,10 +40924,6 @@
      "title": "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"
     },
     {
-     "number": 966,
-     "title": "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"
-    },
-    {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
@@ -49554,10 +49497,6 @@
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
     },
     {
-     "number": 966,
-     "title": "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"
-    },
-    {
      "number": 964,
      "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
     },
@@ -49616,10 +49555,6 @@
     {
      "number": 912,
      "title": "Add ElevateElements command (vertical move)"
-    },
-    {
-     "number": 906,
-     "title": "Make the Element ID settable through SetDetailsOfElements and the Create* commands"
     },
     {
      "number": 900,
@@ -58367,10 +58302,6 @@
      "title": "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"
     },
     {
-     "number": 966,
-     "title": "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"
-    },
-    {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
@@ -62595,10 +62526,6 @@
     {
      "number": 999,
      "title": "Add GetSurfaceQuantitiesOfElements: exposed surface areas between elements"
-    },
-    {
-     "number": 966,
-     "title": "[1/4] Add GetElementAtCoordinate: the element of a type at a floor plan coordinate"
     },
     {
      "number": 963,
@@ -69731,10 +69658,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1376,
-     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
-    },
-    {
      "number": 1374,
      "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
     },
@@ -71054,10 +70977,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1376,
-     "title": "[5/6] Add RemoveIFCPropertiesOfElements and check IFC value types on Archicad 25–27"
-    },
     {
      "number": 1374,
      "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"

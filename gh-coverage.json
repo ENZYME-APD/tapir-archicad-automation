@@ -1,17 +1,17 @@
 {
- "generatedAt": "2026-10-24 02:36 UTC",
+ "generatedAt": "2026-10-24 06:27 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 49,
-  "merged": 3,
+  "open": 50,
+  "merged": 4,
   "claimed": 2,
   "not applicable": 1
  },
  "parameters": {
-  "all": 236,
+  "all": 229,
   "partial": 17,
-  "json": 37
+  "json": 45
  },
  "items": [
   {
@@ -120,7 +120,7 @@
    "id": "ChangeWindow",
    "group": "Application Commands",
    "version": "1.3.1",
-   "brief": "Changes the current (active) window to the given window. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
+   "brief": "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1125,7 +1125,7 @@
    "id": "SetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Sets the details of the given elements (floor, layer, order etc).",
+   "brief": "Sets the details of the given elements (floor, layer, order, Element ID etc).",
    "status": "done",
    "reason": "",
    "components": [
@@ -1139,7 +1139,7 @@
     }
    ],
    "parameters": "partial",
-   "parameterCount": 7,
+   "parameterCount": 8,
    "coveredParameters": [
     "elementsWithDetails",
     "elementsWithDetails.details",
@@ -1149,6 +1149,7 @@
    "missingParameters": [
     "elementsWithDetails.details.drawIndex",
     "elementsWithDetails.details.floorIndex",
+    "elementsWithDetails.details.id",
     "elementsWithDetails.details.layerIndex"
    ],
    "pullRequests": [
@@ -1218,6 +1219,31 @@
    "parameterCount": 1,
    "coveredParameters": [
     "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementAtCoordinate",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a coordinate of the floor plan of the current database, the way a click there would. Use the optional filters parameter (the values of FilterElements) to consider only, for example, the elements visible by layer, and the optional z parameter to give the elevation of the point. Returns found: false when there is no such element. Useful together with GetPointFromUser.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetElementAtCoordinateComponent",
+     "path": "Components/ElementsComponents/GetElementAtCoordinateComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "coordinate",
+    "elementType",
+    "filters",
+    "z"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -1758,7 +1784,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 19,
+   "parameterCount": 20,
    "coveredParameters": [
     "columnsData",
     "columnsData.axisRotationAngle",
@@ -1778,6 +1804,7 @@
     "columnsData.width"
    ],
    "missingParameters": [
+    "columnsData.id",
     "columnsData.isSlanted",
     "columnsData.isWidthAndHeightLinked",
     "columnsData.slantDirectionAngle"
@@ -1799,7 +1826,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 30,
+   "parameterCount": 31,
    "coveredParameters": [
     "wallsData",
     "wallsData.arcAngle",
@@ -1826,6 +1853,7 @@
     "wallsData.contourPen",
     "wallsData.contourPen3D",
     "wallsData.displayOption",
+    "wallsData.id",
     "wallsData.inheritEndSurface",
     "wallsData.linkToSettings",
     "wallsData.logHeight",
@@ -1856,7 +1884,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 19,
+   "parameterCount": 20,
    "coveredParameters": [
     "beamsData",
     "beamsData.anchorPoint",
@@ -1876,6 +1904,7 @@
     "beamsData.zCoordinate"
    ],
    "missingParameters": [
+    "beamsData.id",
     "beamsData.isSlanted",
     "beamsData.isWidthAndHeightLinked",
     "beamsData.profileAngle"
@@ -1896,8 +1925,8 @@
      "path": "Components/ElementsComponents/CreateStairsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 11,
+   "parameters": "json",
+   "parameterCount": 12,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -1911,7 +1940,9 @@
     "stairsData.treadDepth",
     "stairsData.zCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "stairsData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -1928,8 +1959,8 @@
      "path": "Components/ElementsComponents/CreateSlabsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 12,
+   "parameters": "json",
+   "parameterCount": 13,
    "coveredParameters": [
     "slabsData",
     "slabsData.buildingMaterialId",
@@ -1944,7 +1975,9 @@
     "slabsData.structureType",
     "slabsData.thickness"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "slabsData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -2153,8 +2186,8 @@
      "path": "Components/ElementsComponents/CreateCurtainWallsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 9,
+   "parameters": "json",
+   "parameterCount": 10,
    "coveredParameters": [
     "curtainWallsData",
     "curtainWallsData.cells",
@@ -2166,7 +2199,9 @@
     "curtainWallsData.secondaryPattern",
     "curtainWallsData.zCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "curtainWallsData.id"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -2311,7 +2346,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "zonesData",
     "zonesData.categoryAttributeId",
@@ -2324,6 +2359,7 @@
    "missingParameters": [
     "zonesData.fixedStampAngle",
     "zonesData.floorIndex",
+    "zonesData.id",
     "zonesData.stampAngle"
    ],
    "pullRequests": [],
@@ -2343,7 +2379,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "polylinesData",
     "polylinesData.arcs",
@@ -2356,6 +2392,7 @@
    ],
    "missingParameters": [
     "polylinesData.floorInd",
+    "polylinesData.id",
     "polylinesData.penWeightMm"
    ],
    "pullRequests": [],
@@ -2374,8 +2411,8 @@
      "path": "Components/ElementsComponents/CreateLineElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 9,
+   "parameters": "json",
+   "parameterCount": 10,
    "coveredParameters": [
     "linesData",
     "linesData.begCoordinate",
@@ -2387,7 +2424,9 @@
     "linesData.lineTypeId",
     "linesData.roomSeparator"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "linesData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -2404,8 +2443,8 @@
      "path": "Components/ElementsComponents/CreateArcsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 11,
+   "parameters": "json",
+   "parameterCount": 12,
    "coveredParameters": [
     "arcsData",
     "arcsData.begAngle",
@@ -2419,7 +2458,9 @@
     "arcsData.radius",
     "arcsData.roomSeparator"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "arcsData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -2436,8 +2477,8 @@
      "path": "Components/ElementsComponents/CreateCirclesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 9,
+   "parameters": "json",
+   "parameterCount": 10,
    "coveredParameters": [
     "circlesData",
     "circlesData.favoriteName",
@@ -2449,7 +2490,9 @@
     "circlesData.radius",
     "circlesData.roomSeparator"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "circlesData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -2466,8 +2509,8 @@
      "path": "Components/ElementsComponents/CreateHotspotsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 7,
+   "parameters": "json",
+   "parameterCount": 8,
    "coveredParameters": [
     "hotspotsData",
     "hotspotsData.favoriteName",
@@ -2477,7 +2520,9 @@
     "hotspotsData.penIndex",
     "hotspotsData.position"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "hotspotsData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -2495,7 +2540,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 15,
+   "parameterCount": 16,
    "coveredParameters": [
     "hatchesData",
     "hatchesData.arcs",
@@ -2513,6 +2558,7 @@
     "hatchesData.showArea"
    ],
    "missingParameters": [
+    "hatchesData.id",
     "hatchesData.roomSpecial"
    ],
    "pullRequests": [],
@@ -2531,8 +2577,8 @@
      "path": "Components/ElementsComponents/CreateSplinesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 9,
+   "parameters": "json",
+   "parameterCount": 10,
    "coveredParameters": [
     "splinesData",
     "splinesData.closed",
@@ -2544,7 +2590,9 @@
     "splinesData.lineTypeId",
     "splinesData.roomSeparator"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "splinesData.id"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -2562,7 +2610,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 26,
+   "parameterCount": 27,
    "coveredParameters": [
     "objectsData",
     "objectsData.angle",
@@ -2576,6 +2624,7 @@
    "missingParameters": [
     "objectsData.dimensions",
     "objectsData.fixPoint",
+    "objectsData.id",
     "objectsData.isAutoOnStoryVisibility",
     "objectsData.lineTypeId",
     "objectsData.linkToSettings",
@@ -2610,7 +2659,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 28,
+   "parameterCount": 29,
    "coveredParameters": [
     "lampsData",
     "lampsData.angle",
@@ -2624,6 +2673,7 @@
    "missingParameters": [
     "lampsData.dimensions",
     "lampsData.fixPoint",
+    "lampsData.id",
     "lampsData.isAutoOnStoryVisibility",
     "lampsData.lightColor",
     "lampsData.lightIsOn",
@@ -2748,7 +2798,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 16,
+   "parameterCount": 17,
    "coveredParameters": [
     "meshesData",
     "meshesData.buildingMaterialId",
@@ -2764,6 +2814,7 @@
    ],
    "missingParameters": [
     "meshesData.contourPen",
+    "meshesData.id",
     "meshesData.levelPen",
     "meshesData.lineTypeIndex",
     "meshesData.showLines",
@@ -2786,7 +2837,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 14,
    "coveredParameters": [
     "labelsData",
     "labelsData.begCoordinate",
@@ -2800,6 +2851,7 @@
     "labelsData.text"
    ],
    "missingParameters": [
+    "labelsData.id",
     "labelsData.leaderLine",
     "labelsData.runs",
     "labelsData.symbolStyle"
@@ -2821,7 +2873,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 12,
+   "parameterCount": 13,
    "coveredParameters": [
     "textsData",
     "textsData.angle",
@@ -2835,6 +2887,7 @@
     "textsData.text"
    ],
    "missingParameters": [
+    "textsData.id",
     "textsData.layerIndex",
     "textsData.runs"
    ],
@@ -2850,7 +2903,7 @@
    "reason": "",
    "components": [],
    "parameters": null,
-   "parameterCount": 15,
+   "parameterCount": 16,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -5637,6 +5690,21 @@
     "elementIFCPropertyValues.type",
     "elementIFCPropertyValues.value"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RemoveIFCPropertiesOfElements",
+   "group": "IFC Commands",
+   "version": "1.7.3",
+   "brief": "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
