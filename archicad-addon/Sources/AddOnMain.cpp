@@ -1327,6 +1327,11 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Gets the ID of the database associated with the supplied navigator item id"
         );
+        err |= RegisterCommand<GetDatabasesCommand> (
+            navigatorCommands, "1.7.2",
+            "Lists every database of the given types (sections, elevations, interior elevations, details, worksheets, 3D documents, layouts, master layouts) "
+            "with its database ID, name and reference ID, without walking the navigator trees."
+        );
         err |= RegisterCommand<CreateDetailsCommand> (
             navigatorCommands, "1.4.0",
             "Creates independent Detail databases."

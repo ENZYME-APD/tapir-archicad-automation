@@ -348,6 +348,174 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
     return response;
 }
 
+struct DatabaseTypeData {
+    const char*      name;
+    API_WindowTypeID typeID;
+};
+
+static const DatabaseTypeData databaseTypes[] = {
+    { "Section",           APIWind_SectionID },
+    { "Elevation",         APIWind_ElevationID },
+    { "InteriorElevation", APIWind_InteriorElevationID },
+    { "Detail",            APIWind_DetailID },
+    { "Worksheet",         APIWind_WorksheetID },
+    { "DocumentFrom3D",    APIWind_DocumentFrom3DID },
+    { "Layout",            APIWind_LayoutID },
+    { "MasterLayout",      APIWind_MasterLayoutID }
+};
+
+static GSErrCode GetDatabaseUnIdsOfType (API_WindowTypeID typeID, GS::Array<API_DatabaseUnId>& databaseUnIds)
+{
+    switch (typeID) {
+        case APIWind_SectionID:           return ACAPI_Database_GetSectionDatabases (nullptr, &databaseUnIds);
+        case APIWind_ElevationID:         return ACAPI_Database_GetElevationDatabases (nullptr, &databaseUnIds);
+        case APIWind_InteriorElevationID: return ACAPI_Database_GetInteriorElevationDatabases (nullptr, &databaseUnIds);
+        case APIWind_DetailID:            return ACAPI_Database_GetDetailDatabases (nullptr, &databaseUnIds);
+        case APIWind_WorksheetID:         return ACAPI_Database_GetWorksheetDatabases (nullptr, &databaseUnIds);
+        case APIWind_DocumentFrom3DID:    return ACAPI_Database_GetDocumentFrom3DDatabases (nullptr, &databaseUnIds);
+        case APIWind_LayoutID:            return ACAPI_Database_GetLayoutDatabases (nullptr, &databaseUnIds);
+        case APIWind_MasterLayoutID:      return ACAPI_Database_GetMasterLayoutDatabases (nullptr, &databaseUnIds);
+        default:                          return APIERR_BADPARS;
+    }
+}
+
+GetDatabasesCommand::GetDatabasesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetDatabasesCommand::GetName () const
+{
+    return "GetDatabases";
+}
+
+GS::Optional<GS::UniString> GetDatabasesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "types": {
+            "type": "array",
+            "description": "The types of the databases to list. Optional, by default the databases of every type are listed.",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "Section",
+                    "Elevation",
+                    "InteriorElevation",
+                    "Detail",
+                    "Worksheet",
+                    "DocumentFrom3D",
+                    "Layout",
+                    "MasterLayout"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": []
+})";
+}
+
+GS::Optional<GS::UniString> GetDatabasesCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "databases": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "The type of the database."
+                    },
+                    "databaseId": {
+                        "$ref": "#/DatabaseId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the database. Missing when the database info cannot be read."
+                    },
+                    "referenceId": {
+                        "type": "string",
+                        "description": "The reference id of the database. Missing when the database info cannot be read."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "databaseId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "databases"
+    ]
+})";
+}
+
+GS::ObjectState GetDatabasesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<const DatabaseTypeData*> requestedTypes;
+    GS::Array<GS::UniString> typeNames;
+    if (parameters.Get ("types", typeNames)) {
+        for (const GS::UniString& typeName : typeNames) {
+            const DatabaseTypeData* found = nullptr;
+            for (const DatabaseTypeData& databaseType : databaseTypes) {
+                if (typeName == databaseType.name) {
+                    found = &databaseType;
+                    break;
+                }
+            }
+            if (found == nullptr) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown database type: " + typeName);
+            }
+            if (!requestedTypes.Contains (found)) {
+                requestedTypes.Push (found);
+            }
+        }
+    } else {
+        for (const DatabaseTypeData& databaseType : databaseTypes) {
+            requestedTypes.Push (&databaseType);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& databases = response.AddList<GS::ObjectState> ("databases");
+
+    for (const DatabaseTypeData* databaseType : requestedTypes) {
+        GS::Array<API_DatabaseUnId> databaseUnIds;
+        // As with the layout lookups in DocumentCreationCommands, a type whose list
+        // cannot be read is treated as having no databases, so one failing type does
+        // not hide the others.
+        if (GetDatabaseUnIdsOfType (databaseType->typeID, databaseUnIds) != NoError) {
+            continue;
+        }
+
+        for (const API_DatabaseUnId& databaseUnId : databaseUnIds) {
+            API_DatabaseInfo databaseInfo = {};
+            databaseInfo.typeID = databaseType->typeID;
+            databaseInfo.databaseUnId = databaseUnId;
+
+            GS::ObjectState database (
+                "type", GS::UniString (databaseType->name),
+                "databaseId", CreateGuidObjectState (DatabaseIdResolver::Instance ().GetIdOfDatabase (databaseInfo)));
+
+            if (ACAPI_Window_GetDatabaseInfo (&databaseInfo) == NoError) {
+                database.Add ("name", GS::UniString (databaseInfo.name));
+                database.Add ("referenceId", GS::UniString (databaseInfo.ref));
+            }
+
+            databases (database);
+        }
+    }
+
+    return response;
+}
+
 GetModelViewOptionsCommand::GetModelViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
 {}
