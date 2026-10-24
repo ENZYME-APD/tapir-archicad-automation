@@ -3758,6 +3758,286 @@ GS::ObjectState GetRelationsOfElementsCommand::Execute (const GS::ObjectState& p
 #endif
 }
 
+// ---------------------------------------------------------------------------
+// Element links (LinkElements, UnlinkElements, GetLinksOfElements)
+// ---------------------------------------------------------------------------
+
+// Reads the two ends of a link item and checks that both elements exist.
+// Returns false with a FailedExecutionResult in failedResult otherwise.
+static bool GetElementLinkEnds (const GS::ObjectState& linkOS, API_Guid& fromGuid, API_Guid& toGuid, GS::ObjectState& failedResult)
+{
+    GS::ObjectState fromIdOS, toIdOS;
+    if (!linkOS.Get ("fromElementId", fromIdOS) || !linkOS.Get ("toElementId", toIdOS)) {
+        failedResult = CreateFailedExecutionResult (APIERR_BADPARS, "fromElementId or toElementId is missing.");
+        return false;
+    }
+
+    fromGuid = GetGuidFromObjectState (fromIdOS);
+    toGuid = GetGuidFromObjectState (toIdOS);
+
+    API_Elem_Head fromHead = {};
+    fromHead.guid = fromGuid;
+    if (ACAPI_Element_GetHeader (&fromHead) != NoError) {
+        failedResult = CreateFailedExecutionResult (APIERR_BADID, "Failed to find the element given as fromElementId.");
+        return false;
+    }
+
+    API_Elem_Head toHead = {};
+    toHead.guid = toGuid;
+    if (ACAPI_Element_GetHeader (&toHead) != NoError) {
+        failedResult = CreateFailedExecutionResult (APIERR_BADID, "Failed to find the element given as toElementId.");
+        return false;
+    }
+
+    return true;
+}
+
+LinkElementsCommand::LinkElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String LinkElementsCommand::GetName () const
+{
+    return "LinkElements";
+}
+
+GS::Optional<GS::UniString> LinkElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "links": {
+                "type": "array",
+                "description": "The links to create, each from one element to another.",
+                "items": {
+                    "$ref": "#/ElementLinkData"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "links"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> LinkElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per link, aligned with the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState LinkElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> links;
+    parameters.Get ("links", links);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("LinkElements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& linkOS : links) {
+            API_Guid fromGuid = APINULLGuid;
+            API_Guid toGuid = APINULLGuid;
+            GS::ObjectState failedResult;
+            if (!GetElementLinkEnds (linkOS, fromGuid, toGuid, failedResult)) {
+                executionResults (failedResult);
+                continue;
+            }
+
+            Int32 flags = 0;
+            linkOS.Get ("flags", flags);
+
+            const GSErrCode err = ACAPI_ElementLink_Link (fromGuid, toGuid, static_cast<GSFlags> (flags));
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to link the elements."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+UnlinkElementsCommand::UnlinkElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UnlinkElementsCommand::GetName () const
+{
+    return "UnlinkElements";
+}
+
+GS::Optional<GS::UniString> UnlinkElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "links": {
+                "type": "array",
+                "description": "The links to remove, each from one element to another.",
+                "items": {
+                    "$ref": "#/ElementLinkReference"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "links"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UnlinkElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per link, aligned with the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UnlinkElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> links;
+    parameters.Get ("links", links);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("UnlinkElements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& linkOS : links) {
+            API_Guid fromGuid = APINULLGuid;
+            API_Guid toGuid = APINULLGuid;
+            GS::ObjectState failedResult;
+            if (!GetElementLinkEnds (linkOS, fromGuid, toGuid, failedResult)) {
+                executionResults (failedResult);
+                continue;
+            }
+
+            const GSErrCode err = ACAPI_ElementLink_Unlink (fromGuid, toGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to unlink the elements."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+GetLinksOfElementsCommand::GetLinksOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLinksOfElementsCommand::GetName () const
+{
+    return "GetLinksOfElements";
+}
+
+GS::Optional<GS::UniString> GetLinksOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements whose outgoing links are returned."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLinksOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "linksOfElements": {
+                "type": "array",
+                "description": "The links starting from each element, aligned with the input.",
+                "items": {
+                    "$ref": "#/ElementLinksOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linksOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetLinksOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& linksOfElements = response.AddList<GS::ObjectState> ("linksOfElements");
+
+    for (const GS::ObjectState& elementOS : elements) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromElementsArrayItem (elementOS);
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            linksOfElements (CreateErrorResponse (APIERR_BADID, "Failed to find the element."));
+            continue;
+        }
+
+        GS::Array<API_Guid> linkedGuids;
+        const GSErrCode err = ACAPI_ElementLink_GetLinks (elemHead.guid, &linkedGuids);
+        if (err != NoError) {
+            linksOfElements (CreateErrorResponse (err, "Failed to get the links of the element."));
+            continue;
+        }
+
+        GS::ObjectState elementLinksOS;
+        const auto& linkList = elementLinksOS.AddList<GS::ObjectState> ("links");
+        for (const API_Guid& linkedGuid : linkedGuids) {
+            GSFlags flags = 0;
+            ACAPI_ElementLink_GetLinkFlags (elemHead.guid, linkedGuid, &flags);
+
+            GS::ObjectState linkOS;
+            linkOS.Add ("elementId", CreateGuidObjectState (linkedGuid));
+            linkOS.Add ("flags", static_cast<Int32> (flags));
+            linkList (linkOS);
+        }
+        linksOfElements (elementLinksOS);
+    }
+
+    return response;
+}
+
 GetZoneBoundariesCommand::GetZoneBoundariesCommand () :
     CommandBase (CommonSchema::Used)
 {
