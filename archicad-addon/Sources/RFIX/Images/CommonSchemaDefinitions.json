@@ -1939,6 +1939,10 @@
             "type": {
                 "$ref": "#/HotlinkType"
             },
+            "instances": {
+                "$ref": "#/Elements",
+                "description": "The hotlink instance elements placed from the node, in the order Archicad returns them - the input of ChangeHotlinkInstances and DeleteElements. Omitted when the node's instances cannot be read."
+            },
             "children": {
                 "$ref": "#/Hotlinks",
                 "description": "The children of the hotlink node if it has any."

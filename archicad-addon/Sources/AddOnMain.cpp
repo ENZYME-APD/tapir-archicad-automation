@@ -318,7 +318,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetHotlinksCommand> (
             projectCommands, "0.1.0",
-            "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."
+            "Gets the file system locations (path) of the hotlink modules and the instance elements placed from each node. The hotlinks can have tree hierarchy in the project."
         );
         err |= RegisterCommand<CreateHotlinkNodesCommand> (
             projectCommands, "1.5.9",

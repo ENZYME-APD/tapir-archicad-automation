@@ -359,6 +359,13 @@ inline GSErrCode ACAPI_Hotlink_UpdateHotlinkCache (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_UpdateHotlinkCacheID, (void*) hotlinkNodeGuid);
 }
 
+// APIDb_GetHotlinkInstancesID (APIdefs_Database.h): par1 is the node guid,
+// par2 receives the API_HotlinkType elements placed from that node.
+inline GSErrCode ACAPI_Hotlink_GetHotlinkInstances (const API_Guid* hotlinkNodeGuid, GS::Array<API_Guid>* elementRefList)
+{
+    return ACAPI_Database (APIDb_GetHotlinkInstancesID, (void*) hotlinkNodeGuid, (void*) elementRefList);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, setNum);
