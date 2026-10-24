@@ -481,18 +481,6 @@ static GS::ObjectState CreateUnknownLockableObjectSetError (const GS::UniString&
     return CreateErrorResponse (APIERR_BADPARS, "No lockable object set named '" + objectSetName + "' was found. Check the name and that the project is a Teamwork project.");
 }
 
-static const char* LockableStatusToString (API_LockableStatus status)
-{
-    switch (status) {
-        case APILockableStatus_Free:         return "Free";
-        case APILockableStatus_Editable:     return "Editable";
-        case APILockableStatus_Locked:       return "Locked";
-        case APILockableStatus_NotAvailable: return "NotAvailable";
-        case APILockableStatus_NotExist:
-        default:                             return "NotExist";
-    }
-}
-
 ReserveLockableObjectSetCommand::ReserveLockableObjectSetCommand () :
     CommandBase (CommonSchema::Used)
 {
