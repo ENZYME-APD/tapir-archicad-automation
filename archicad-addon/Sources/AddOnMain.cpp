@@ -340,6 +340,13 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.1",
             "Repoints hotlink module nodes at other source files, as the Hotlink Manager's Relink button does. Follow it with UpdateHotlinks to re-read the content."
         );
+        err |= RegisterCommand<BreakHotlinkNodesCommand> (
+            projectCommands, "1.7.3",
+            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file."
+        );
+        err |= RegisterCommand<DeleteHotlinkNodesCommand> (
+            projectCommands, "1.7.3",
+            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
         err |= RegisterCommand<GetHotlinkProxyElementTableCommand> (
             projectCommands, "1.7.3",
             "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element."
