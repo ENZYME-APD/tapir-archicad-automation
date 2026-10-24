@@ -926,3 +926,132 @@ GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
+// ---------------------------------------------------------------------------
+// GetElementFromUser
+// ---------------------------------------------------------------------------
+
+GetElementFromUserCommand::GetElementFromUserCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementFromUserCommand::GetName () const
+{
+    return "GetElementFromUser";
+}
+
+GS::Optional<GS::UniString> GetElementFromUserCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+            },
+            "elementTypes": {
+                "type": "array",
+                "description": "Only an element of one of these types is accepted. A click on empty space or on an element of another type asks for the click again. Default: any element.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementFromUserCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The clicked element. In a section or elevation window it is the model element the section element was cut from."
+            },
+            "elementType": {
+                "type": "string",
+                "description": "The type of the clicked element (one of the ElementType values, or Unknown)."
+            },
+            "position": {
+                "$ref": "#/Coordinate3D",
+                "description": "The clicked point in the project's coordinates, as GetPointFromUser returns it."
+            },
+            "elementPosition": {
+                "$ref": "#/Coordinate3D",
+                "description": "The coordinate of the clicked part of the element (e.g. its node or hotspot), when Archicad gives one for it."
+            },
+            "cancelled": {
+                "type": "boolean",
+                "description": "True when the input was cancelled with Escape; no other field is returned then."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Same input as GetPointFromUser, but the element under the click is returned too.
+    // A click that hits no element, or an element of a type not asked for, asks again.
+    GS::UniString prompt = "Click an element";
+    parameters.Get ("prompt", prompt);
+
+    GS::Array<GS::UniString> elementTypeNames;
+    parameters.Get ("elementTypes", elementTypeNames);
+    GS::Array<API_ElemTypeID> elementTypes;
+    for (const GS::UniString& elementTypeName : elementTypeNames) {
+        const API_ElemTypeID elementType = GetElementTypeFromNonLocalizedName (elementTypeName);
+        if (elementType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown element type: ") + elementTypeName);
+        }
+        elementTypes.Push (elementType);
+    }
+
+    for (;;) {
+        API_GetPointType pointInfo = {};
+        CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
+        pointInfo.enableQuickSelection = true;
+
+        const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+        if (err == APIERR_CANCEL) {
+            return GS::ObjectState ("cancelled", true);
+        }
+        if (err != NoError) {
+            return CreateErrorResponse (err, "No element was given - the input could not start (a modal dialog or a non-model window).");
+        }
+
+        API_Guid elemGuid = APINULLGuid;
+        if (ACAPI_Selection_GetSelectedElement (&pointInfo.neig, &elemGuid) != NoError || elemGuid == APINULLGuid) {
+            elemGuid = pointInfo.neig.guid;
+        }
+        if (elemGuid == APINULLGuid) {
+            continue;
+        }
+        elemGuid = GetParentElemOfSectElem (elemGuid);
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            continue;
+        }
+        const API_ElemTypeID elementType = GetElemTypeId (elemHead);
+        if (!elementTypes.IsEmpty () && !elementTypes.Contains (elementType)) {
+            continue;
+        }
+
+        GS::ObjectState response;
+        response.Add ("elementId", CreateGuidObjectState (elemGuid));
+        response.Add ("elementType", GetElementTypeNonLocalizedName (elementType));
+        response.Add ("position", Create3DCoordinateObjectState (pointInfo.pos));
+        API_Coord3D elementPosition = {};
+        if (ACAPI_Element_NeigToCoord (&pointInfo.neig, &elementPosition) == NoError) {
+            response.Add ("elementPosition", Create3DCoordinateObjectState (elementPosition));
+        }
+        return response;
+    }
+}
+

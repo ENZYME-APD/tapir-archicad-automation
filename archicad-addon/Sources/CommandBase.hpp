@@ -175,6 +175,8 @@ double GetZPos (const short floorIndex, const double offset, const Stories& stor
 GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+// The model element a section/elevation element was cut from, or elemGuid itself for any other element.
+API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid);
 short ParseAnchorPointString (const GS::UniString& anchorPoint);
 
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
