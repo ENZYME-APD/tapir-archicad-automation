@@ -614,6 +614,8 @@ inline GSErrCode ACAPI_LibraryPart_GetSectionList (Int32 libInd, Int32* nSection
 inline GSErrCode ACAPI_LibraryPart_GetSection (Int32 libInd, API_LibPartSection* section, GSHandle* sectionHdl, GS::UniString* sectionStr, GS::UniString* password = nullptr)
 {
     return ACAPI_LibPart_GetSection (libInd, section, sectionHdl, sectionStr, password);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_RunGDLParScript (const API_Elem_Head* elemHead, UInt32 mask = 0)
 {
     return ACAPI_Goodies (APIAny_RunGDLParScriptID, (void*) elemHead, (void*) (GS::IntPtr) mask);

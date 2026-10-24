@@ -1560,6 +1560,8 @@ GS::ObjectState GetLibraryPartSectionCommand::Execute (const GS::ObjectState& pa
     GS::ObjectState response;
     response.Add ("content", sectionStr);
     return response;
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
