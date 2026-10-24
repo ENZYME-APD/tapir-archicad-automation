@@ -955,6 +955,7 @@ GSErrCode Initialize (void)
             "Deletes a folder of the Favorites palette given by its path. Archicad deletes the folder's Favorites and subfolders with it, "
             "so a folder that is not empty is deleted only if recursive is true. The root folder cannot be deleted. "
             "Returns the deleted folder. Available from Archicad 29."
+        );
         err |= RegisterCommand<GetFavoriteSettingsCommand> (
             favoritesCommands, "1.7.3",
             "Reads the stored settings of the given favorites without applying them or placing an element: "

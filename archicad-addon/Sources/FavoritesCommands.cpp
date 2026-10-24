@@ -1981,6 +1981,8 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
+}
+
 // ============================================================================
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its
