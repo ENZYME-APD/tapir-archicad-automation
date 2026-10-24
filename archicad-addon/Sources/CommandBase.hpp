@@ -164,6 +164,8 @@ struct Story {
 using Stories = std::map<short, Story>;
 
 Stories GetStories ();
+// Returns the index of the highest story whose level is at or below zPos and the offset of zPos
+// from that level. A zPos below every story resolves to the lowest story with a negative offset.
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 // Same result as GetFloorIndexAndOffset (zPos, stories), except an explicit floorIndex value under
