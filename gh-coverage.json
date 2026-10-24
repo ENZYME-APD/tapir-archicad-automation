@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-10-24 19:39 UTC",
+ "generatedAt": "2026-10-24 22:05 UTC",
  "counts": {
   "done": 287,
-  "open": 111,
+  "open": 112,
   "merged": 15,
   "in progress": 9,
   "claimed": 2,
@@ -336,6 +336,21 @@
    "components": [],
    "parameters": null,
    "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetDialogAutoClose",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DIALOG_AUTOCLOSE environment variable to true for the Archicad process before starting it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],

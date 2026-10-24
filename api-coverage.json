@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 19:39 UTC",
+ "generatedAt": "2026-10-24 22:05 UTC",
  "versions": [
   25,
   26,
@@ -3167,12 +3167,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 953,
-     "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3518,10 +3513,6 @@
     {
      "number": 1026,
      "title": "[3/4] Add folderPath to GetAttributesByType"
-    },
-    {
-     "number": 953,
-     "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
     }
    ],
    "issues": []
@@ -3637,10 +3628,6 @@
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
-    },
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
     },
     {
      "number": 1333,
@@ -4726,10 +4713,6 @@
      "title": "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"
     },
     {
-     "number": 1028,
-     "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
      "number": 1012,
      "title": "[3/3] Grasshopper components for the Project Info groups and fields of Archicad 30"
     },
@@ -4772,10 +4755,6 @@
     {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    },
-    {
-     "number": 964,
-     "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
     },
     {
      "number": 956,
@@ -10051,7 +10030,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 968,
+     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
+    }
+   ],
    "issues": [
     {
      "number": 1319,
@@ -12172,10 +12156,6 @@
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
     {
-     "number": 1075,
-     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
-    },
-    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -12202,10 +12182,6 @@
     {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
-    },
-    {
-     "number": 1075,
-     "title": "Add SetGraphicOverrideRuleOrder: order the rules of a graphic override rule group"
     },
     {
      "number": 1011,
@@ -19280,10 +19256,6 @@
     {
      "number": 1028,
      "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 964,
-     "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
     }
    ],
    "issues": []
@@ -19417,16 +19389,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1028,
-     "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 964,
-     "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25225,10 +25188,6 @@
      "title": "Add GetMainGroups, GetAllElementsOfGroups and GetAutoGroupMode commands"
     },
     {
-     "number": 1028,
-     "title": "[3/4] Add the Zones page to GetProjectPreferences and SetProjectPreferences"
-    },
-    {
      "number": 1004,
      "title": "Let PhotoRender set the image size and resolution, report the current rendering scene"
     },
@@ -25239,10 +25198,6 @@
     {
      "number": 967,
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
-    },
-    {
-     "number": 964,
-     "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
     },
     {
      "number": 962,
@@ -36411,10 +36366,6 @@
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     },
     {
-     "number": 953,
-     "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
-    },
-    {
      "number": 916,
      "title": "Add ActivateLayerCombination command and Grasshopper component"
     }
@@ -46510,10 +46461,6 @@
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
     },
     {
-     "number": 964,
-     "title": "[1/4] Add GetProjectPreferences and SetProjectPreferences (working units, calculation units, reference levels)"
-    },
-    {
      "number": 963,
      "title": "[1/2] Add the DeselectAll, GetMarquee and SetMarquee commands"
     },
@@ -46528,10 +46475,6 @@
     {
      "number": 954,
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
-    },
-    {
-     "number": 953,
-     "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
     },
     {
      "number": 940,
@@ -65817,10 +65760,6 @@
      "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
-    },
-    {
      "number": 1338,
      "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
     },
@@ -65887,10 +65826,6 @@
     {
      "number": 968,
      "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
-    },
-    {
-     "number": 953,
-     "title": "[1/4] Add CreateAttributeFolders and DeleteAttributeFolders commands"
     },
     {
      "number": 916,
@@ -67151,10 +67086,6 @@
     {
      "number": 1361,
      "title": "[3/3] Add IsUsableGDLString command"
-    },
-    {
-     "number": 1354,
-     "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
     },
     {
      "number": 1353,
