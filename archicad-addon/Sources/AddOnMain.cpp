@@ -539,7 +539,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
-            "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
+            "Updates Zones (recalculates their geometry, updates their Zone Stamps and the connected elements). Without zones it updates the Zones of the current selection, and with an empty selection every Zone of the project, as the Update Zones command of Archicad does. With zones it updates exactly the given Zones - selecting them, with their story activated in the floor plan when needed, and putting the previous selection and story back - fails without updating anything when one of them cannot be selected, and reports for each whether its area changed. An empty zones list updates nothing."
         );
         err |= RegisterCommand<SetZoneLabelingSettingsCommand> (
             elementCommands, "1.7.3",
