@@ -28,8 +28,9 @@ name: Claude Bot PR Steward
 # Bounds:
 # - At most BOT_PR_MAX_FIX_ROUNDS fix runs per pull request (repository
 #   variable, default 6), counted from this workflow's own runs, which nothing
-#   a model writes can change. After that, and after three reviews of its
-#   latest commit that recorded no verdict, the pull request gets the
+#   a model writes can change. After that, and after BOT_PR_MAX_EMPTY_REVIEWS
+#   (repository variable, default 8) reviews of its latest commit that
+#   recorded no verdict, the pull request gets the
 #   `needs-maintainer` label and the steward leaves it alone. Removing the
 #   label hands it back with both counts reset: they count only the runs
 #   since the label was last removed.
@@ -109,12 +110,17 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
       MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '6' }}
+      # An empty review is a fault of the review run, not of the pull
+      # request (they ran at about one in three), so it takes many of them
+      # to hand a pull request over.
+      MAX_EMPTY: ${{ vars.BOT_PR_MAX_EMPTY_REVIEWS || '8' }}
       BATCH: ${{ vars.BOT_PR_SWEEP_BATCH || '15' }}
     steps:
       - name: Sweep the bot's pull requests
         run: |
           set -euo pipefail
           case "$MAX_ROUNDS" in ''|*[!0-9]*) MAX_ROUNDS=6 ;; esac
+          case "$MAX_EMPTY" in ''|*[!0-9]*|0) MAX_EMPTY=8 ;; esac
           case "$BATCH" in ''|*[!0-9]*) BATCH=15 ;; esac
           busy=0
 
@@ -367,7 +373,7 @@ jobs:
               failed=$(countRuns claude_pr_review.yml "$reviewTitle" "$failSince" failure)
               if [ "$active" -ne 0 ]; then
                 echo "review queued or running"
-              elif [ "$total" -ge 3 ]; then
+              elif [ "$total" -ge "$MAX_EMPTY" ]; then
                 handOver "$pr" "$total reviews of its latest commit recorded no verdict"
               elif [ "$failed" -ge 10 ]; then
                 handOver "$pr" "its review failed $failed times (see the runs' logs)"
