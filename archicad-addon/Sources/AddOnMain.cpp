@@ -1552,6 +1552,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetDocumentFrom3DDefaultsCommand> (
             navigatorCommands, "1.7.3",
             "Sets the defaults a newly created 3D Document starts with. Only the given fields are changed; existing 3D Documents are not affected. The fields are the ones returned by GetDocumentFrom3DDefaults."
+        );
         err |= RegisterCommand<Get3DWindowSettingsCommand> (
             navigatorCommands, "1.7.3",
             "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection."
