@@ -458,6 +458,19 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
         GS::ObjectState routingElementOs;
         routingElementOs.Add ("domain", DomainToString (routingElement->GetDomain ()));
         routingElementOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (routingElement->GetMEPSystem ()));
+        routingElementOs.Add ("offsetFromHomeStory", routingElement->GetOffsetFromHomeStory ());
+        ACAPI::Result<ACAPI::MEP::UniqueID> branchPreferenceTableId = routingElement->GetBranchPreferenceTableId ();
+        if (branchPreferenceTableId.IsOk ()) {
+            routingElementOs.Add ("branchPreferenceTableId", branchPreferenceTableId.Unwrap ().GetGuid ().ToUniString ());
+        }
+        const std::optional<ACAPI::MEP::UniqueID> portIdAtRouteBegin = routingElement->GetLogicallyConnectedPortIdAtRouteBegin ();
+        if (portIdAtRouteBegin.has_value ()) {
+            routingElementOs.Add ("logicallyConnectedPortIdAtRouteBegin", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteBegin.value ())));
+        }
+        const std::optional<ACAPI::MEP::UniqueID> portIdAtRouteEnd = routingElement->GetLogicallyConnectedPortIdAtRouteEnd ();
+        if (portIdAtRouteEnd.has_value ()) {
+            routingElementOs.Add ("logicallyConnectedPortIdAtRouteEnd", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteEnd.value ())));
+        }
 
         const auto& polyline = routingElementOs.AddList<GS::ObjectState> ("polyline");
         for (const API_Coord3D& coordinate : routingElement->GetPolyLine ()) {
@@ -480,6 +493,20 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
                 segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (referenceId.Unwrap ()));
             }
             segmentOs.Add ("preferenceTableId", segment->GetPreferenceTableId ().GetGuid ().ToUniString ());
+            segmentOs.Add ("beginNodeId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetBeginNodeId ())));
+            segmentOs.Add ("endNodeId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetEndNodeId ())));
+            segmentOs.Add ("anchor", AnchorIdToString (segment->GetAnchor ()));
+            segmentOs.Add ("referenceLineOffsetX", segment->GetReferenceLineOffsetX ());
+            segmentOs.Add ("referenceLineOffsetY", segment->GetReferenceLineOffsetY ());
+            segmentOs.Add ("wallThickness", segment->GetWallThickness ());
+            const std::optional<double> flangeSize = segment->GetFlangeSize ();
+            if (flangeSize.has_value ()) {
+                segmentOs.Add ("flangeSize", flangeSize.value ());
+            }
+            const auto& rigidSegments = segmentOs.AddList<GS::ObjectState> ("rigidSegments");
+            for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+                rigidSegments (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (rigidSegmentId)));
+            }
             segments (segmentOs);
         }
 
@@ -492,6 +519,27 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             GS::ObjectState nodeOs;
             nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (nodeId)));
             nodeOs.Add ("position", Create3DCoordinateObjectState (node->GetPosition ()));
+            const std::optional<ACAPI::MEP::UniqueID> incomingSegmentId = node->GetIncomingSegmentId ();
+            if (incomingSegmentId.has_value ()) {
+                nodeOs.Add ("incomingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (incomingSegmentId.value ())));
+            }
+            const std::optional<ACAPI::MEP::UniqueID> outgoingSegmentId = node->GetOutgoingSegmentId ();
+            if (outgoingSegmentId.has_value ()) {
+                nodeOs.Add ("outgoingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (outgoingSegmentId.value ())));
+            }
+            const auto& elbows = nodeOs.AddList<GS::ObjectState> ("elbows");
+#ifdef ServerMainVers_2900
+            for (const ACAPI::MEP::UniqueID& elbowId : node->GetElbowIds ()) {
+#else
+            // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
+            for (const ACAPI::MEP::UniqueID& elbowId : node->GetBendIds ()) {
+#endif
+                elbows (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (elbowId)));
+            }
+            const auto& transitions = nodeOs.AddList<GS::ObjectState> ("transitions");
+            for (const ACAPI::MEP::UniqueID& transitionId : node->GetTransitionIds ()) {
+                transitions (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (transitionId)));
+            }
             nodes (nodeOs);
         }
 
@@ -1107,6 +1155,41 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "$ref": "#/Guid",
                             "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
                         },
+                        "branchPreferenceTableId": {
+                            "$ref": "#/Guid",
+                            "description": "New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element."
+                        },
+                        "anchor": {
+                            "type": "string",
+                            "description": "New anchor point of the cross section, on a 3x3 grid, applied to all segments.",
+                            "enum": [
+                                "TopLeft",
+                                "TopCenter",
+                                "TopRight",
+                                "MiddleLeft",
+                                "Center",
+                                "MiddleRight",
+                                "BottomLeft",
+                                "BottomCenter",
+                                "BottomRight"
+                            ]
+                        },
+                        "referenceLineOffsetX": {
+                            "type": "number",
+                            "description": "New horizontal offset of the reference line from the anchor point, applied to all segments."
+                        },
+                        "referenceLineOffsetY": {
+                            "type": "number",
+                            "description": "New vertical offset of the reference line from the anchor point, applied to all segments."
+                        },
+                        "wallThickness": {
+                            "type": "number",
+                            "description": "New wall thickness applied to all segments."
+                        },
+                        "flangeSize": {
+                            "type": "number",
+                            "description": "New flange size applied to all segments."
+                        },
                         "nodePositions": {
                             "type": "array",
                             "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
@@ -1179,6 +1262,15 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             success &= result.IsOk ();
         }
 
+        GS::UniString branchPreferenceTableIdStr;
+        if (routingElementData.Get ("branchPreferenceTableId", branchPreferenceTableIdStr)) {
+            bool setterSucceeded = true;
+            ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+                setterSucceeded = modifier.SetBranchPreferenceTableId (Adapter::UniqueID (APIGuidFromString (branchPreferenceTableIdStr.ToCStr ()))).IsOk ();
+            }, "Modify Branch Preference Table of Routing Element");
+            success &= result.IsOk () && setterSucceeded;
+        }
+
         double width = 0.0;
         double height = 0.0;
         GS::UniString shapeStr;
@@ -1189,13 +1281,25 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         const bool hasShape = routingElementData.Get ("crossSectionShape", shapeStr);
         const bool hasReferenceId = routingElementData.Get ("crossSectionReferenceId", referenceId);
         const bool hasPreferenceTableId = routingElementData.Get ("preferenceTableId", preferenceTableIdStr);
-        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId) {
+        GS::UniString anchorStr;
+        double referenceLineOffsetX = 0.0;
+        double referenceLineOffsetY = 0.0;
+        double wallThickness = 0.0;
+        double flangeSize = 0.0;
+        const bool hasAnchor = routingElementData.Get ("anchor", anchorStr);
+        const bool hasReferenceLineOffsetX = routingElementData.Get ("referenceLineOffsetX", referenceLineOffsetX);
+        const bool hasReferenceLineOffsetY = routingElementData.Get ("referenceLineOffsetY", referenceLineOffsetY);
+        const bool hasWallThickness = routingElementData.Get ("wallThickness", wallThickness);
+        const bool hasFlangeSize = routingElementData.Get ("flangeSize", flangeSize);
+        if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId ||
+            hasAnchor || hasReferenceLineOffsetX || hasReferenceLineOffsetY || hasWallThickness || hasFlangeSize) {
             for (const ACAPI::MEP::UniqueID& segmentId : routingElement->GetRoutingSegmentIds ()) {
                 ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
                 if (segment.IsErr ()) {
                     success = false;
                     continue;
                 }
+                bool settersSucceeded = true;
                 ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
                     // Same order as in CreateMEPRoutingElements: table first, then the reference id
                     // that is resolved against it.
@@ -1217,8 +1321,23 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     if (hasReferenceId && referenceId >= 0) {
                         modifier.SetCrossSectionReferenceId (static_cast<uint32_t> (referenceId));
                     }
-                }, "Modify Cross Section of Routing Segment");
-                success &= result.IsOk ();
+                    if (hasAnchor) {
+                        modifier.SetAnchor (AnchorIdFromString (anchorStr));
+                    }
+                    if (hasReferenceLineOffsetX) {
+                        modifier.SetReferenceLineOffsetX (referenceLineOffsetX);
+                    }
+                    if (hasReferenceLineOffsetY) {
+                        modifier.SetReferenceLineOffsetY (referenceLineOffsetY);
+                    }
+                    if (hasWallThickness) {
+                        settersSucceeded &= modifier.SetWallThickness (wallThickness).IsOk ();
+                    }
+                    if (hasFlangeSize) {
+                        settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
+                    }
+                }, "Modify Routing Segment");
+                success &= result.IsOk () && settersSucceeded;
             }
         }
 
@@ -3855,6 +3974,35 @@ static GS::ObjectState CreateMEPIdObjectState (const char* idFieldName, const AC
     return CreateIdObjectState (idFieldName, MEPUniqueIDToAPIGuid (id));
 }
 
+// IsEditable returns an ACAPI::Result<void>: it succeeds when the system or group can be modified and fails otherwise.
+static std::optional<bool> ToOptionalBool (ACAPI::Result<void> value)
+{
+    return value.IsOk ();
+}
+
+static void AddIsEditable (GS::ObjectState& os, const std::optional<bool>& isEditable)
+{
+    if (isEditable.has_value ()) {
+        os.Add ("isEditable", isEditable.value ());
+    }
+}
+
+// Calls a modifier function that returns either nothing or an ACAPI::Result, and gives back its error code, if any.
+template <typename CallT>
+static std::optional<GSErrCode> GetErrorOfCall (CallT&& call)
+{
+    if constexpr (std::is_void_v<decltype (call ())>) {
+        call ();
+        return std::nullopt;
+    } else {
+        auto result = call ();
+        if (result.IsErr ()) {
+            return result.UnwrapErr ().kind;
+        }
+        return std::nullopt;
+    }
+}
+
 static GS::ObjectState CreatePhysicalSystemDetails (const ACAPI::MEP::UniqueID& systemId)
 {
     ACAPI::Result<PhysicalSystem> system = PhysicalSystem::Get (systemId);
@@ -3864,6 +4012,7 @@ static GS::ObjectState CreatePhysicalSystemDetails (const ACAPI::MEP::UniqueID& 
     GS::ObjectState systemOs;
     systemOs.Add ("physicalSystemId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (systemId)));
     systemOs.Add ("name", system->GetName ());
+    AddIsEditable (systemOs, ToOptionalBool (system->IsEditable ()));
     const std::optional<ACAPI::MEP::UniqueID> rootElementId = system->GetRootElementId ();
     if (rootElementId.has_value ()) {
         systemOs.Add ("rootElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (rootElementId.value ())));
@@ -3883,6 +4032,27 @@ static bool ContainsMEPId (const std::vector<ACAPI::MEP::UniqueID>& ids, const A
         }
     }
     return false;
+}
+
+// A physical system does not tell its group, so the group is the one that lists the system.
+static std::optional<ACAPI::MEP::UniqueID> FindSystemGroupOfPhysicalSystem (const ACAPI::MEP::UniqueID& systemId)
+{
+    ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> groupIds = GetSystemGroupIDs ();
+    if (groupIds.IsErr ()) {
+        return std::nullopt;
+    }
+    for (const ACAPI::MEP::UniqueID& groupId : groupIds.Unwrap ()) {
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (groupId);
+        if (group.IsErr ()) {
+            continue;
+        }
+        for (const ACAPI::MEP::UniqueID& groupSystemId : group->GetSystemIDs ()) {
+            if (groupSystemId.GetGuid () == systemId.GetGuid ()) {
+                return groupId;
+            }
+        }
+    }
+    return std::nullopt;
 }
 
 #else
@@ -3941,6 +4111,7 @@ GS::ObjectState GetMEPSystemGroupsCommand::Execute (const GS::ObjectState& /*par
         GS::ObjectState groupOs;
         groupOs.Add ("systemGroupId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (groupId)));
         groupOs.Add ("name", group->GetName ());
+        AddIsEditable (groupOs, ToOptionalBool (group->IsEditable ()));
         const auto& physicalSystems = groupOs.AddList<GS::ObjectState> ("physicalSystems");
         for (const ACAPI::MEP::UniqueID& systemId : group->GetSystemIDs ()) {
             physicalSystems (CreatePhysicalSystemDetails (systemId));
@@ -4211,6 +4382,349 @@ GS::ObjectState CreateMEPPhysicalSystemsCommand::Execute (const GS::ObjectState&
         }
     }
 
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+ModifyMEPSystemGroupsCommand::ModifyMEPSystemGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPSystemGroupsCommand::GetName () const
+{
+    return "ModifyMEPSystemGroups";
+}
+
+GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "systemGroupsData": {
+                "type": "array",
+                "description": "Array of data to modify system groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "systemGroupId": {
+                            "$ref": "#/MEPSystemGroupId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the system group."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "systemGroupId",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPSystemGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> systemGroupsData;
+    if (!parameters.Get ("systemGroupsData", systemGroupsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'systemGroupsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& groupData : systemGroupsData) {
+        const GS::ObjectState* groupId = groupData.Get ("systemGroupId");
+        if (groupId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'systemGroupId' parameter."));
+            continue;
+        }
+        GS::UniString name;
+        if (!groupData.Get ("name", name) || name.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'name' parameter is missing or empty."));
+            continue;
+        }
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (Adapter::UniqueID (GetGuidFromObjectState (*groupId)));
+        if (group.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'systemGroupId' is not a system group."));
+            continue;
+        }
+
+        std::optional<GSErrCode> setError;
+        ACAPI::Result<void> modifyResult = group->Modify ([&](SystemGroup::Modifier& modifier) {
+            setError = GetErrorOfCall ([&] () { return modifier.SetName (name); });
+        }, "Modify MEP System Group");
+        if (setError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (setError.has_value () ? setError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to rename the system group."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+ModifyMEPPhysicalSystemsCommand::ModifyMEPPhysicalSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPPhysicalSystemsCommand::GetName () const
+{
+    return "ModifyMEPPhysicalSystems";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystemsData": {
+                "type": "array",
+                "description": "Array of data to modify physical systems. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "physicalSystemId": {
+                            "$ref": "#/MEPPhysicalSystemId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the physical system."
+                        },
+                        "rootElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
+                        },
+                        "mepSystemId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The MEP system attribute used as the category of the physical system."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "physicalSystemId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystemsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> physicalSystemsData;
+    if (!parameters.Get ("physicalSystemsData", physicalSystemsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystemsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& systemData : physicalSystemsData) {
+        const GS::ObjectState* systemId = systemData.Get ("physicalSystemId");
+        if (systemId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'physicalSystemId' parameter."));
+            continue;
+        }
+
+        GS::UniString name;
+        const bool hasName = systemData.Get ("name", name);
+        if (hasName && name.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'name' parameter must not be empty."));
+            continue;
+        }
+
+        const GS::ObjectState* mepSystemId = systemData.Get ("mepSystemId");
+        const API_AttributeIndex systemCategory = mepSystemId != nullptr ? GetAttributeIndexFromGuid (API_MEPSystemID, GetGuidFromObjectState (*mepSystemId)) : ACAPI_CreateAttributeIndex (-1);
+        if (mepSystemId != nullptr && systemCategory == ACAPI_CreateAttributeIndex (-1)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'mepSystemId' is not an MEP system attribute."));
+            continue;
+        }
+
+        ACAPI::Result<PhysicalSystem> system = PhysicalSystem::Get (Adapter::UniqueID (GetGuidFromObjectState (*systemId)));
+        if (system.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'physicalSystemId' is not a physical system."));
+            continue;
+        }
+
+        const GS::ObjectState* rootElementId = systemData.Get ("rootElementId");
+        std::optional<GSErrCode> setError;
+        ACAPI::Result<void> modifyResult = system->Modify ([&](PhysicalSystem::Modifier& modifier) {
+            if (hasName) {
+                setError = GetErrorOfCall ([&] () { return modifier.SetName (name); });
+            }
+            if (rootElementId != nullptr && !setError.has_value ()) {
+                ACAPI::Result<void> result = modifier.SetRootElement (Adapter::UniqueID (GetGuidFromObjectState (*rootElementId)));
+                if (result.IsErr ()) {
+                    setError = result.UnwrapErr ().kind;
+                }
+            }
+            if (mepSystemId != nullptr && !setError.has_value ()) {
+                ACAPI::Result<void> result = modifier.SetSystemCategory (systemCategory);
+                if (result.IsErr ()) {
+                    setError = result.UnwrapErr ().kind;
+                }
+            }
+        }, "Modify MEP Physical System");
+        if (setError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (setError.has_value () ? setError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to modify the physical system."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, MEPSystemsRequireArchicad29);
+#endif
+}
+
+DeleteMEPPhysicalSystemsCommand::DeleteMEPPhysicalSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteMEPPhysicalSystemsCommand::GetName () const
+{
+    return "DeleteMEPPhysicalSystems";
+}
+
+GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "physicalSystems": {
+                "type": "array",
+                "description": "The physical systems to remove from their system groups. Their member elements are not deleted.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "physicalSystemId": {
+                            "$ref": "#/MEPPhysicalSystemId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "physicalSystemId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "physicalSystems"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> physicalSystems;
+    if (!parameters.Get ("physicalSystems", physicalSystems)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystems' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& systemItem : physicalSystems) {
+        const GS::ObjectState* systemIdOs = systemItem.Get ("physicalSystemId");
+        if (systemIdOs == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'physicalSystemId' parameter."));
+            continue;
+        }
+        const ACAPI::MEP::UniqueID systemId = Adapter::UniqueID (GetGuidFromObjectState (*systemIdOs));
+        const std::optional<ACAPI::MEP::UniqueID> groupId = FindSystemGroupOfPhysicalSystem (systemId);
+        if (!groupId.has_value ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'physicalSystemId' is not a physical system of any system group."));
+            continue;
+        }
+        ACAPI::Result<SystemGroup> group = SystemGroup::Get (groupId.value ());
+        if (group.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (group.UnwrapErr ().kind, "Failed to get the system group of the physical system."));
+            continue;
+        }
+
+        std::optional<GSErrCode> removeError;
+        ACAPI::Result<void> modifyResult = group->Modify ([&](SystemGroup::Modifier& modifier) {
+            removeError = GetErrorOfCall ([&] () { return modifier.Remove (systemId); });
+        }, "Delete MEP Physical System");
+        if (removeError.has_value () || modifyResult.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (removeError.has_value () ? removeError.value () : modifyResult.UnwrapErr ().kind,
+                "Failed to remove the physical system from its system group."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
     return response;
 #else
     UNUSED_PARAMETER (parameters);

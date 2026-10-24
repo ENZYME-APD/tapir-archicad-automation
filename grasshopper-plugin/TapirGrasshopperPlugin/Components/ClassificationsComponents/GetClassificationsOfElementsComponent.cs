@@ -136,7 +136,11 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                             continue;
                         }
 
-                        var classificationId = idOrError["classificationId"];
+                        // The command answers with the system and item ids
+                        // directly in each item; also accept them wrapped in
+                        // a classificationId object, as the schema describes.
+                        var classificationId =
+                            idOrError["classificationId"] ?? idOrError;
                         var systemGuid = JsonOutputHelp.WrappedGuidOf(
                             classificationId,
                             "classificationSystemId");
