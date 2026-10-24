@@ -1995,6 +1995,10 @@ GS::ObjectState GetGDLParametersOfLibraryPartsCommand::Execute (const GS::Object
 
         libPartParametersListAdder (libPartParameters);
     }
+
+    return response;
+}
+
 RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
