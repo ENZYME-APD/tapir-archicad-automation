@@ -135,7 +135,7 @@ GS::ObjectState CreateCoverFillObjectState (bool use, bool useFromSurface, bool 
 GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
-API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os);
+API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation);
 GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType);
 API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue = APIName_ViewOrSrcFileName);
 
@@ -164,6 +164,8 @@ struct Story {
 using Stories = std::map<short, Story>;
 
 Stories GetStories ();
+// Returns the index of the highest story whose level is at or below zPos and the offset of zPos
+// from that level. A zPos below every story resolves to the lowest story with a negative offset.
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 // Same result as GetFloorIndexAndOffset (zPos, stories), except an explicit floorIndex value under
@@ -175,6 +177,8 @@ double GetZPos (const short floorIndex, const double offset, const Stories& stor
 GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+// The model element a section/elevation element was cut from, or elemGuid itself for any other element.
+API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid);
 short ParseAnchorPointString (const GS::UniString& anchorPoint);
 
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
@@ -269,3 +273,8 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
+
+// Writes the Element ID of an existing element: the elemInfoString memo part, which
+// GetDetailsOfElements reads back as "id" (APIMemoMask_ElemInfoString). Must be called
+// inside an undoable command. Defined in CommandBase.cpp.
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);
