@@ -77,6 +77,15 @@ def select_elements(element_ids: list[ElementId]) -> None:
     })
 
 
+BATCH_SIZE = 1000
+
+
+def batched(items: list, size: int = BATCH_SIZE):
+    """ The items in slices of size, so one call does not get too large on big projects. """
+    for start in range(0, len(items), size):
+        yield items[start:start + size]
+
+
 _details_fields_supported = True
 
 
@@ -85,11 +94,45 @@ def get_details_of_elements(elements: list[ElementId], fields: list[str]) -> lis
     ones (floorPlanPolygons) the script does not need. Add-Ons before 1.5.9 do
     not know the fields parameter and reject the call; they get the plain one. """
     global _details_fields_supported
-    if not elements:
-        return []
-    if _details_fields_supported:
+    details = []
+    for chunk in batched(elements):
+        if _details_fields_supported:
+            try:
+                details += run_tapir("GetDetailsOfElements", {"elements": chunk, "fields": fields}).get("detailsOfElements", [])
+                continue
+            except ArchicadError:
+                _details_fields_supported = False
+        details += run_tapir("GetDetailsOfElements", {"elements": chunk}).get("detailsOfElements", [])
+    return details
+
+
+def get_story_names() -> dict[int, str]:
+    """ The story names by floor index. """
+    stories = run_tapir("GetStories").get("stories", [])
+    return {s["index"]: s.get("name") or f"Story {s['index']}" for s in stories}
+
+
+def get_elements(scope: str, element_types: list[str] | None = None, filters: list[str] | None = None) -> list[ElementId]:
+    """ The elements of the given types (all types when None) in the scope:
+    "selection", "story" (the current story) or "project". The filters are not
+    applied to the selection. A type the Add-On does not know is skipped. """
+    if scope == "selection":
+        elements = run_tapir("GetSelectedElements").get("elements", [])
+        if element_types is None:
+            return elements
+        details = get_details_of_elements(elements, ["type"])
+        return [e for e, d in zip(elements, details) if d.get("type") in element_types]
+
+    filters = list(filters or [])
+    if scope == "story":
+        filters.append("OnActualFloor")
+    parameters = {"filters": filters} if filters else {}
+    if element_types is None:
+        return run_tapir("GetAllElements", parameters).get("elements", [])
+    elements = []
+    for element_type in element_types:
         try:
-            return run_tapir("GetDetailsOfElements", {"elements": elements, "fields": fields}).get("detailsOfElements", [])
-        except ArchicadError:
-            _details_fields_supported = False
-    return run_tapir("GetDetailsOfElements", {"elements": elements}).get("detailsOfElements", [])
+            elements += run_tapir("GetElementsByType", {"elementType": element_type, **parameters}).get("elements", [])
+        except ArchicadError as e:
+            print(f"Skipping {element_type}: {e}")
+    return elements
