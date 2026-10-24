@@ -438,6 +438,11 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
     return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
 }
 
+// The goodie behind ACAPI_CurtainWall_GetCWAbsoluteBottom before AC27: par1 is the guid of
+// the curtain wall or its subelement, par2 the bottom.
+inline GSErrCode ACAPI_CurtainWall_GetCWAbsoluteBottom (const API_Guid* guid, double* bottom)
+{
+    return ACAPI_Goodies (APIAny_GetCWAbsoluteBottomID, (void*) guid, bottom);
 inline GSErrCode ACAPI_CurtainWall_GetCWHeight (const API_Guid* guid, double* height)
 {
     return ACAPI_Goodies (APIAny_GetCWHeightID, (void*) guid, height);

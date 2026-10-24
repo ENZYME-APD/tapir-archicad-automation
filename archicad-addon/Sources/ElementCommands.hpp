@@ -378,6 +378,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetCurtainWallAbsoluteBottomsCommand : public CommandBase
+{
+public:
+    GetCurtainWallAbsoluteBottomsCommand ();
 class GetSurfaceQuantitiesOfElementsCommand : public CommandBase
 {
 public:
