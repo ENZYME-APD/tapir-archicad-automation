@@ -1584,6 +1584,8 @@ GS::ObjectState GetFavoriteFoldersCommand::Execute (const GS::ObjectState& /*par
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
+}
+
 // ============================================================================
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its

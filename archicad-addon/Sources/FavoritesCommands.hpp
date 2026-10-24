@@ -117,6 +117,10 @@ class GetFavoriteFoldersCommand : public CommandBase
 public:
     GetFavoriteFoldersCommand ();
     virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetFavoriteSettingsCommand : public CommandBase
 {
 public:
