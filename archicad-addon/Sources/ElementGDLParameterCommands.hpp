@@ -34,6 +34,7 @@ private:
     static GSErrCode SetOneGDLParameter (
         const GS::ObjectState& parameter,
         const API_Guid& elemGuid,
+        API_ElemTypeID elemTypeId,
         const API_GetParamsType& getParams,
         const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
         const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,

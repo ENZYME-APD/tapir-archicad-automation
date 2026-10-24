@@ -464,6 +464,22 @@ static bool GetArrayValueField (const GS::ObjectState& parameter, GS::Array<T>& 
     return false;
 }
 
+// On a curtain wall frame these parameters mirror the frame's contour (a1, a2, b1, b2, the
+// frameContour of GetDetailsOfElements), which Archicad derives from the frame's own settings:
+// ACAPI_LibraryPart_ChangeAParameter and ACAPI_Element_Change accept a written value, but
+// Archicad re-derives it from the contour, so nothing changes. They are rejected up front
+// instead of reporting a change that did not happen.
+static bool IsMirroredCurtainWallFrameSizeParameter (const char* name)
+{
+    static const char* const MirroredNames[] = { "A", "B", "ac_frameWidth", "ac_frameDepth" };
+    for (const char* mirroredName : MirroredNames) {
+        if (CHCompareCStrings (name, mirroredName) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static bool SetParamValueString (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
@@ -839,7 +855,14 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             GS::Array<GS::ObjectState> elemGdlParameters;
             elementWithGDLParameters.Get ("gdlParameters", elemGdlParameters);
 
+            const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
+
             err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
+            if (err != NoError && elemTypeId == API_CurtainWallFrameID && element.cwFrame.libInd <= 0) {
+                // An invisible Boundary frame, for example: there is no library part to open the
+                // parameters of, so the frame has no GDL parameters to set.
+                errMessage = GS::UniString::Printf ("Curtain wall frame %T has no library part, so it has no GDL parameters", APIGuidToString (elemGuid).ToPrintf ());
+            }
             if (err == NoError) {
                 API_GetParamsType getParams = {};
                 err = ACAPI_LibraryPart_GetActParameters (&getParams);
@@ -870,7 +893,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         if (elemGdlParametersItem.Get ("parameters", parameters)) {
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
-                                err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                                err = SetOneGDLParameter (parameter, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                                 if (err == NoError) {
                                     err = ReadParametersAgain (getParams, elemGuid, errMessage);
                                 }
@@ -882,7 +905,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 break;
                             }
                         } else {
-                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
                             if (err == NoError) {
                                 err = ReadParametersAgain (getParams, elemGuid, errMessage);
                             }
@@ -929,6 +952,10 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
                                 ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
                                 break;
+                            case API_CurtainWallFrameID:
+                                // The frame's size follows its contour, not A and B; a written A or B is
+                                // rejected in SetOneGDLParameter (see IsMirroredCurtainWallFrameSizeParameter).
+                                break;
                             default:
                                 // Not supported yet
                                 break;
@@ -966,6 +993,7 @@ GSErrCode
 SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     const GS::ObjectState& parameter,
     const API_Guid& elemGuid,
+    API_ElemTypeID elemTypeId,
     const API_GetParamsType& getParams,
     const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
     const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
@@ -1007,6 +1035,12 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
         errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
+
+    if (elemTypeId == API_CurtainWallFrameID && IsMirroredCurtainWallFrameSizeParameter (changeParam.name)) {
+        errMessage = GS::UniString::Printf ("Invalid input: %s of curtain wall frame %T mirrors the frame's contour (frameContour in GetDetailsOfElements), which Archicad derives from the frame's settings, so it cannot be set through the GDL parameters; change it in the frame's settings in Archicad instead",changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+
     const bool isArrayParameter = (actParam->typeMod == API_ParArray);
 
     if (parameter.IsList (ParameterValueFieldName)) {
