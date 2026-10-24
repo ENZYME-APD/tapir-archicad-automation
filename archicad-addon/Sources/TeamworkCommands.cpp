@@ -1,6 +1,7 @@
 #include "TeamworkCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <limits>
 #include <map>
 
 TeamworkSendCommand::TeamworkSendCommand () :
@@ -211,6 +212,232 @@ GS::ObjectState ReleaseElementsCommand::Execute (const GS::ObjectState& paramete
         : CreateFailedExecutionResult (err, "Failed to release elements.");
 }
 
+static GS::UniString GetTeamworkUserName (short userId)
+{
+    GS::UniString userName;
+    ACAPI_Teamwork_GetUsernameFromId (userId, &userName);
+    return userName;
+}
+
+// The element reservation is in the element header: userId is the member who owns the element
+// and lockId is the member who has it reserved (0 when nobody has). ACAPI_Teamwork_GetLockableStatus
+// is for lockable object sets only, not for elements.
+
+GetReservationStatusOfElementsCommand::GetReservationStatusOfElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetReservationStatusOfElementsCommand::GetName () const
+{
+    return "GetReservationStatusOfElements";
+}
+
+GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "reservationStatuses": {
+                "type": "array",
+                "description": "One item per input element, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "description": "Free: nobody has reserved the element. Editable: the current user has reserved it. Locked: another user has reserved it (see reservedBy).",
+                                    "enum": ["Free", "Editable", "Locked"]
+                                },
+                                "reservedBy": {
+                                    "type": "object",
+                                    "description": "The user who has reserved the element. Left out when the element is free.",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "number"
+                                        },
+                                        "userName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "userId",
+                                        "userName"
+                                    ]
+                                },
+                                "owner": {
+                                    "type": "object",
+                                    "description": "The user who owns the element in Teamwork, usually the one who created it. Left out when the element has no owner.",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "number"
+                                        },
+                                        "userName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "userId",
+                                        "userName"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "status"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "reservationStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetReservationStatusOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectInfo projectInfo = {};
+    const GSErrCode projectErr = ACAPI_ProjectOperation_Project (&projectInfo);
+    if (projectErr != NoError) {
+        return CreateErrorResponse (projectErr, "Failed to retrieve project information. Check the opened project!");
+    }
+    if (!projectInfo.teamwork) {
+        return CreateErrorResponse (APIERR_NOTEAMWORKPROJECT, "The opened project is not a Teamwork project, so its elements have no reservation status.");
+    }
+    const short currentUserId = projectInfo.userId;
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& reservationStatuses = response.AddList<GS::ObjectState> ("reservationStatuses");
+
+    std::map<short, GS::UniString> userIdToNameMap;
+    const auto createUserObjectState = [&] (short userId) -> GS::ObjectState {
+        if (userIdToNameMap.find (userId) == userIdToNameMap.end ()) {
+            userIdToNameMap[userId] = GetTeamworkUserName (userId);
+        }
+        return GS::ObjectState ("userId", userId, "userName", userIdToNameMap[userId]);
+    };
+
+    for (const GS::ObjectState& element : elements) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromElementsArrayItem (element);
+        const GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            reservationStatuses (CreateErrorResponse (err, "Failed to find the element."));
+            continue;
+        }
+
+        const short lockerId = elemHead.lockId;
+        const short ownerId = elemHead.userId;
+
+        GS::ObjectState reservationStatus ("status",
+            lockerId == 0 ? "Free" : (lockerId == currentUserId ? "Editable" : "Locked"));
+        if (lockerId != 0) {
+            reservationStatus.Add ("reservedBy", createUserObjectState (lockerId));
+        }
+        if (ownerId != 0) {
+            reservationStatus.Add ("owner", createUserObjectState (ownerId));
+        }
+        reservationStatuses (reservationStatus);
+    }
+
+    return response;
+}
+
+GrantElementsCommand::GrantElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GrantElementsCommand::GetName () const
+{
+    return "GrantElements";
+}
+
+GS::Optional<GS::UniString> GrantElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "userId": {
+                "type": "number",
+                "description": "The Teamwork user id of the user to hand the elements over to, as GetTeamworkProjectInfo, GetReservationStatusOfElements and the conflicts of ReserveElements report users."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "userId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GrantElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState GrantElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+// ACAPI_Teamwork_GrantElements is new in the Archicad 27 API; the AC25 and AC26 DevKits have no
+// ACAPI_TeamworkControl_GrantElements to map it to.
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    Int32 userId = 0;
+    parameters.Get ("userId", userId);
+    if (userId <= 0 || userId > std::numeric_limits<short>::max ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The userId must be a positive Teamwork user id.");
+    }
+
+    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+
+    const GSErrCode err = ACAPI_Teamwork_GrantElements (elemIds, static_cast<short> (userId));
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to grant the elements to user %d.", (int) userId));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "GrantElements requires Archicad 27 or newer.");
+#endif
+}
+
 // Lockable object sets: the non-element things Teamwork can reserve (attributes, favorites,
 // project info, project preferences, ...), addressed by the names the DevKit documents for
 // ACAPI_Teamwork_FindLockableObjectSet.
@@ -234,9 +461,7 @@ static GS::UniString BuildLockableObjectSetInputParametersSchema ()
 
 static GS::ObjectState CreateTeamworkUserObjectState (short userId)
 {
-    GS::UniString userName;
-    ACAPI_Teamwork_GetUsernameFromId (userId, &userName);
-    return GS::ObjectState ("userId", userId, "userName", userName);
+    return GS::ObjectState ("userId", userId, "userName", GetTeamworkUserName (userId));
 }
 
 static void AddConflictingUsers (GS::ObjectState& response, const GS::PagedArray<short>& conflicts)
