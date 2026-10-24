@@ -2944,6 +2944,10 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetRawR
                         },
                         "columnSegments": {
                             "$ref": "#/Elements"
+                        },
+                        "externalSubelements": {
+                            "$ref": "#/Elements",
+                            "description": "The subelements of an external hierarchical element (for example an MEP element or an element of another add-on). Available from Archicad 28."
                         }
                     },
                     "additionalProperties": false,
@@ -2988,6 +2992,34 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
         }
 
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+#ifdef ServerMainVers_2800
+        API_Elem_Head header = {};
+        header.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&header) == NoError && GetElemTypeId (header) == API_ExternalElemID) {
+            std::vector<API_SubElement> externalSubelements;
+            const GS::OnExit externalGuard ([&externalSubelements] () {
+                for (API_SubElement& externalSubelement : externalSubelements) {
+                    ACAPI_DisposeElemMemoHdls (&externalSubelement.memo);
+                }
+            });
+            const GSErrCode err = ACAPI_Element_GetMemo_ExternalHierarchical (elemGuid, externalSubelements);
+            if (err != NoError) {
+                subelementsOfHierarchicalElements (CreateErrorResponse (err, "Failed to get the subelements"));
+                continue;
+            }
+
+            GS::ObjectState subelements;
+            if (!externalSubelements.empty ()) {
+                const auto& externalSubelementIds = subelements.AddList<GS::ObjectState> ("externalSubelements");
+                for (const API_SubElement& externalSubelement : externalSubelements) {
+                    externalSubelementIds (CreateElementIdObjectState (externalSubelement.subElem.header.guid));
+                }
+            }
+            subelementsOfHierarchicalElements (subelements);
+            continue;
+        }
+#endif
 
         API_ElementMemo memo = {};
         const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -3034,7 +3066,7 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
 
         AddSubelements (columnSegments);
 
-#undef AddSubelementsToObjectState
+#undef AddSubelements
 
         subelementsOfHierarchicalElements (subelements);
     }
