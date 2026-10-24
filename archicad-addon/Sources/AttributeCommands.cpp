@@ -6448,6 +6448,8 @@ GS::ObjectState GetUsedAttributesCommand::Execute (const GS::ObjectState& /*para
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
+}
+
 GetFontsByNameCommand::GetFontsByNameCommand () :
     CommandBase (CommonSchema::Used)
 {
