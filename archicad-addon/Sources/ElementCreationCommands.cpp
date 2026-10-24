@@ -2401,6 +2401,15 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
     const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("ModifyTexts", [&] () -> GSErrCode {
+        // Same autotext flag handling as CreateTexts (CreateElementsCommandBase::Execute): with the
+        // flag on, a content starting with a Project Info autotext key followed by a line break
+        // failed to change or lost its later lines, while CreateTexts wrote it correctly (#1096).
+        bool savedAutoTextFlag;
+        ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag);
+        bool setAutoTextFlag = false;
+        ACAPI_AutoText_ChangeAutoTextFlag (&setAutoTextFlag);
+        const GS::OnExit autoTextGuard ([&savedAutoTextFlag] () { ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag); });
+
         for (const GS::ObjectState& item : itemsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
             if (elementId == nullptr) {
@@ -2571,6 +2580,13 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     ACAPI_CallUndoableCommand ("ModifyLabels", [&] () -> GSErrCode {
+        // Same autotext flag handling as CreateLabels, see ModifyTexts.
+        bool savedAutoTextFlag;
+        ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag);
+        bool setAutoTextFlag = false;
+        ACAPI_AutoText_ChangeAutoTextFlag (&setAutoTextFlag);
+        const GS::OnExit autoTextGuard ([&savedAutoTextFlag] () { ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag); });
+
         for (const GS::ObjectState& item : itemsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
             if (elementId == nullptr) {
