@@ -1124,6 +1124,14 @@ GS::ObjectState GetLibraryPartMetadataCommand::Execute (const GS::ObjectState& p
             metadataAdder (error);
         }
     }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
