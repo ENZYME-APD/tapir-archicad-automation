@@ -1488,6 +1488,13 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.2",
             "Applies a graphic override combination, given by id or by name, to the current window. The current window must be a model window (floor plan, section, elevation, 3D, ...). To remove the overrides, apply the project's 'No Overrides' combination. The saved view is not changed (see SetViewSettings for that). Available from Archicad 30."
         );
+        err |= RegisterCommand<GetRenovationFiltersCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the renovation filters of the project, and the one the current window uses (Document > Renovation > Renovation Filter). A renovationFilterId has the same shape as the renovationFilterGuid of GetViewSettings and SetViewSettings, so a filter listed here can be set on saved views too."
+        );
+        err |= RegisterCommand<SetActiveRenovationFilterCommand> (
+            navigatorCommands, "1.7.3",
+            "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings."
         err |= RegisterCommand<GetStructureDisplayCommand> (
             navigatorCommands, "1.7.2",
             "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27."
