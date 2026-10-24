@@ -258,25 +258,63 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
     GS::Array<GS::ObjectState> items;
     parameters.Get ("embeddedLibraryItems", items);
 
-    for (const GS::ObjectState& item : items) {
+    const auto ItemExists = [] (const IO::Location& location) {
+        bool exists = false;
+        return IO::fileSystem.Contains (location, &exists) == NoError && exists;
+    };
+
+    // Index of the item in the input and its location, for every item with a path.
+    // The existing items are deleted with one API call, the others one by one as before.
+    struct ItemToDelete {
+        UIndex       inputIndex;
+        IO::Location location;
+    };
+    GS::Array<ItemToDelete> itemsToDelete;
+    GS::Array<IO::Location> locationsToDelete;
+    GS::Array<GS::ObjectState> results;
+
+    const bool keepGSMFile = false;
+    const bool silentMode = true;
+    const auto DeleteOneByOne = [&] (const ItemToDelete& item) {
+        IO::Location itemLocation = item.location;
+        GSErrCode err = ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&itemLocation, keepGSMFile, silentMode);
+        if (err != NoError) {
+            results[item.inputIndex] = CreateFailedExecutionResult (err, "Failed to delete the embedded library item on the given path.");
+        }
+    };
+
+    for (UIndex i = 0; i < items.GetSize (); ++i) {
         GS::UniString path;
-        if (!item.Get ("path", path) || path.IsEmpty ()) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing path parameter."));
+        if (!items[i].Get ("path", path) || path.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing path parameter."));
             continue;
         }
 
         IO::Location itemLocation = embeddedLibraryFolder;
         itemLocation.AppendToLocal (IO::RelativeLocation (path));
 
-        const bool keepGSMFile = false;
-        const bool silentMode = true;
-        GSErrCode err = ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&itemLocation, keepGSMFile, silentMode);
-        if (err != NoError) {
-            executionResults (CreateFailedExecutionResult (err, "Failed to delete the embedded library item on the given path."));
-            continue;
+        results.Push (CreateSuccessfulExecutionResult ());
+        if (ItemExists (itemLocation)) {
+            itemsToDelete.Push ({ i, itemLocation });
+            locationsToDelete.Push (itemLocation);
+        } else {
+            DeleteOneByOne ({ i, itemLocation });
         }
+    }
 
-        executionResults (CreateSuccessfulExecutionResult ());
+    if (!locationsToDelete.IsEmpty () &&
+        ACAPI_LibraryManagement_DeleteEmbeddedLibItems (&locationsToDelete, keepGSMFile, silentMode) != NoError) {
+        // The API reports one error for the whole list, so find out item by item which ones failed:
+        // an item that is gone now was deleted, the others are tried one by one as before.
+        for (const ItemToDelete& item : itemsToDelete) {
+            if (ItemExists (item.location)) {
+                DeleteOneByOne (item);
+            }
+        }
+    }
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
     }
 
     return response;
