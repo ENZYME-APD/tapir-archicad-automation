@@ -500,7 +500,68 @@ static GS::ObjectState CreateElementComponentIdObjectState (const API_ElemCompon
     return GS::ObjectState ("elementComponentId", elementComponentId);
 }
 
-// Reads an ElementComponentIdArrayItem; on a missing field sets error and returns false.
+// ACAPI_Element_GetComponents crashes Archicad for some 2D and annotation elements (Dimension,
+// LevelDimension, Hatch, RailingNode on AC29), so it is called only for the model element types
+// known to answer it.
+static bool ElementTypeCanHaveComponents (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_ObjectID:
+        case API_LampID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_MeshID:
+        case API_ZoneID:
+        case API_MorphID:
+        case API_CurtainWallID:
+        case API_CurtainWallSegmentID:
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_StairID:
+        case API_RiserID:
+        case API_TreadID:
+        case API_StairStructureID:
+        case API_RailingID:
+        case API_RailingToprailID:
+        case API_RailingHandrailID:
+        case API_RailingRailID:
+        case API_RailingPostID:
+        case API_RailingInnerPostID:
+        case API_RailingBalusterID:
+        case API_RailingPanelID:
+        case API_RailingSegmentID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// On an element that does not exist or whose type has no components sets error and returns false.
+static bool CheckElementCanHaveComponents (const API_Guid& elemGuid, GS::ObjectState& error)
+{
+    API_Elem_Head header = {};
+    if (!LoadElementHeaderByGuid (elemGuid, header)) {
+        error = CreateErrorResponse (APIERR_BADID, "Failed to find the element");
+        return false;
+    }
+
+    const API_ElemTypeID typeID = GetElemTypeId (header);
+    if (!ElementTypeCanHaveComponents (typeID)) {
+        error = CreateErrorResponse (APIERR_BADPARS, "Element type '" + GetElementTypeNonLocalizedName (typeID) + "' has no components");
+        return false;
+    }
+
+    return true;
+}
+
+// Reads an ElementComponentIdArrayItem; on a missing field or an element without components
+// sets error and returns false.
 static bool GetElemComponentIDFromObjectState (const GS::ObjectState& item, API_ElemComponentID& elemComponent, GS::ObjectState& error)
 {
     const GS::ObjectState* elementComponentId = item.Get ("elementComponentId");
@@ -523,7 +584,7 @@ static bool GetElemComponentIDFromObjectState (const GS::ObjectState& item, API_
 
     elemComponent.elemGuid = GetGuidFromObjectState (*elementId);
     elemComponent.componentID.componentGuid = GetGuidFromObjectState (*componentId);
-    return true;
+    return CheckElementCanHaveComponents (elemComponent.elemGuid, error);
 }
 
 GetComponentsOfElementsCommand::GetComponentsOfElementsCommand () :
@@ -584,8 +645,15 @@ GS::ObjectState GetComponentsOfElementsCommand::Execute (const GS::ObjectState& 
             continue;
         }
 
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        GS::ObjectState error;
+        if (!CheckElementCanHaveComponents (elemGuid, error)) {
+            componentsOfElements (error);
+            continue;
+        }
+
         GS::Array<API_ElemComponentID> elemComponents;
-        const GSErrCode err = ACAPI_Element_GetComponents (GetGuidFromObjectState (*elementId), elemComponents);
+        const GSErrCode err = ACAPI_Element_GetComponents (elemGuid, elemComponents);
         if (err != NoError) {
             componentsOfElements (CreateErrorResponse (err, "Failed to get the components of the element"));
             continue;
