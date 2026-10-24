@@ -4388,6 +4388,130 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
+ElevateElementsCommand::ElevateElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ElevateElementsCommand::GetName () const
+{
+    return "ElevateElements";
+}
+
+GS::Optional<GS::UniString> ElevateElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithElevations": {
+                "type": "array",
+                "description": "The elements with elevation offset pairs.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elevation": {
+                            "type": "number",
+                            "description" : "The vertical offset in meters to move the element by, like Edit > Move > Elevate. A positive value moves the element up, a negative value moves it down. The home story of the element does not change."
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description" : "Optional parameter. If true, then a copy of the element will be elevated. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "elevation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithElevations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ElevateElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+static GSErrCode ElevateElement (const API_Guid& elemGuid, double elevation, bool withCopy)
+{
+    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Elevate;
+    editPars.endC.z = elevation;
+    editPars.withDelete = !withCopy;
+
+    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+}
+
+GS::ObjectState	ElevateElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithElevations;
+    parameters.Get ("elementsWithElevations", elementsWithElevations);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Elevate Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithElevation : elementsWithElevations) {
+            const GS::ObjectState* elementId = elementWithElevation.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            double elevation = 0.0;
+            if (!elementWithElevation.Get ("elevation", elevation)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elevation is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            bool copy = false;
+            elementWithElevation.Get ("copy", copy);
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "elevated");
+            if (notEditableResult.HasValue ()) {
+                executionResults (*notEditableResult);
+                continue;
+            }
+
+            const GSErrCode err = ElevateElement (elemGuid, elevation, copy);
+            if (err != NoError) {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to elevate element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 static GSErrCode RotateElement (const API_Guid& elemGuid, const API_Coord& beginPoint, const API_Coord& endPoint, const API_Coord& origin, bool withCopy)
 {
     GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
