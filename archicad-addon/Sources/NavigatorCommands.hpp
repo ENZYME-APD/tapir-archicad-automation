@@ -148,6 +148,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ZoomToElementsCommand : public CommandBase
+{
+public:
+    ZoomToElementsCommand ();
 class SetZoomCommand : public CommandBase
 {
 public:

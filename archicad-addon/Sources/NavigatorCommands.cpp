@@ -1514,6 +1514,129 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+ZoomToElementsCommand::ZoomToElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ZoomToElementsCommand::GetName () const
+{
+    return "ZoomToElements";
+}
+
+GS::Optional<GS::UniString> ZoomToElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "keepSelection": {
+                "type": "boolean",
+                "description": "Restore the selection the window had before the command (default). With false the given elements stay selected."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ZoomToElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+// The selection of the current window as neigs; an empty array when nothing is selected.
+static GSErrCode GetSelectedNeigs (GS::Array<API_Neig>& selectedNeigs)
+{
+    selectedNeigs.Clear ();
+
+    API_SelectionInfo selectionInfo = {};
+    GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    BMKillHandle ((GSHandle*) &selectionInfo.marquee.coords);
+
+    if (err == APIERR_NOSEL || selectionInfo.typeID == API_SelEmpty) {
+        selectedNeigs.Clear ();
+        return NoError;
+    }
+
+    return err;
+}
+
+GS::ObjectState ZoomToElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    if (elements.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No elements were given.");
+    }
+
+    bool keepSelection = true;
+    parameters.Get ("keepSelection", keepSelection);
+
+    // APIDo_ZoomToSelectedID is documented to zoom to the selection "even in 3D", unlike
+    // the element list of ACAPI_View_ZoomToElements (FitInWindow): the given elements are
+    // selected, the window zooms to the selection, then the previous selection is restored.
+    GS::Array<API_Neig> previousSelection;
+    GSErrCode err = GetSelectedNeigs (previousSelection);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to retrieve the current selection.");
+    }
+
+    if (!previousSelection.IsEmpty ()) {
+        err = ACAPI_Selection_Select (previousSelection, false);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to clear the current selection.");
+        }
+    }
+
+    const auto restorePreviousSelection = [&] (const GS::Array<API_Neig>& selectionToRemove) -> GSErrCode {
+        if (!selectionToRemove.IsEmpty ()) {
+            const GSErrCode removeErr = ACAPI_Selection_Select (selectionToRemove, false);
+            if (removeErr != NoError) {
+                return removeErr;
+            }
+        }
+        if (previousSelection.IsEmpty ()) {
+            return NoError;
+        }
+        return ACAPI_Selection_Select (previousSelection, true);
+    };
+
+    // Elements that cannot be selected in the current window (on another story, on a
+    // hidden layer, ...) are skipped; the selection is read back to see what is left.
+    for (const GS::ObjectState& element : elements) {
+        ACAPI_Selection_Select ({ API_Neig (GetGuidFromElementsArrayItem (element)) }, true);
+    }
+
+    GS::Array<API_Neig> zoomSelection;
+    err = GetSelectedNeigs (zoomSelection);
+    if (err == NoError && zoomSelection.IsEmpty ()) {
+        err = APIERR_NOSEL;
+    }
+    if (err != NoError) {
+        restorePreviousSelection (zoomSelection);
+        return CreateFailedExecutionResult (err, "None of the given elements could be selected in the current window. They may be on another story, on a hidden layer or not shown in this window.");
+    }
+
+    err = ACAPI_View_ZoomToSelected ();
+    if (err != NoError) {
+        if (keepSelection) {
+            restorePreviousSelection (zoomSelection);
+        }
+        return CreateFailedExecutionResult (err, "Failed to zoom to the elements.");
+    }
+
+    if (keepSelection) {
+        err = restorePreviousSelection (zoomSelection);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Zoomed to the elements, but failed to restore the previous selection.");
+        }
 SetZoomCommand::SetZoomCommand () :
     CommandBase (CommonSchema::Used)
 {
