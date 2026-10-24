@@ -875,6 +875,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateElementSetsCommand> (
             elementGroupingCommands, "1.7.3",
             "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing)."
+        );
         err |= RegisterCommand<GetElementSetsOfElementsCommand> (
             elementGroupingCommands, "1.7.3",
             "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found."

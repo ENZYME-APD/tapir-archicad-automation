@@ -759,7 +759,7 @@ GS::ObjectState CreateElementSetsCommand::Execute(const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& elementSetIds = response.AddList<GS::ObjectState>("elementSets");
 
-    ACAPI_CallUndoableCommand("Create Element Sets", [&]() -> GSErrCode {
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Create Element Sets", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementSet : elementSets) {
             GS::Array<GS::ObjectState> elements;
             if (!elementSet.Get("elements", elements) || elements.IsEmpty()) {
@@ -790,6 +790,14 @@ GS::ObjectState CreateElementSetsCommand::Execute(const GS::ObjectState& paramet
         }
         return NoError;
     });
+
+    if (undoErr != NoError) {
+        return CreateErrorResponse(undoErr, "Failed to create the element sets.");
+    }
+
+    return response;
+}
+
 GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
     CommandBase(CommonSchema::Used)
 {
