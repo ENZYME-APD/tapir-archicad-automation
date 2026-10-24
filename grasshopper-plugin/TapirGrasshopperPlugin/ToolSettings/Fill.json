@@ -1,0 +1,163 @@
+{
+  "tool": "Fill",
+  "elementType": "Hatch",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "HatchDetails",
+    "create": "CreateHatchesCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-31.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "coordinates",
+      "set": "coordinates",
+      "apiMember": "API_HatchType::poly",
+      "apiDescription": "Polygon of the hatch element.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "arcs",
+      "set": "arcs",
+      "apiMember": "API_HatchType::poly",
+      "apiDescription": "Polygon of the hatch element.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "holes",
+      "set": null,
+      "apiMember": "API_HatchType::poly",
+      "apiDescription": "Polygon of the hatch element.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the fill (the level of its story, derived from the floor index).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "contourPenIndex",
+      "set": "contourPenIndex",
+      "apiMember": "API_HatchType::contPen",
+      "apiDescription": "Pen attribute index of the hatch contour (0 if contour is switched off).",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "fillId",
+      "set": "fillId",
+      "apiMember": "API_HatchType::fillInd",
+      "apiDescription": "Fill attribute index of the hatch. Used only is case of API_FillHatch.",
+      "label": "Fill Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-31.htm (heading \"Fill Type\"; text \"Choose the fill type that will be used to display the Fill\"; screenshot FillFillType.png)",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "buildingMaterialId",
+      "set": "buildingMaterialId",
+      "apiMember": "API_HatchType::buildingMaterial",
+      "apiDescription": "Building Material attribute index of the hatch. Used only is case of API_BuildingMaterialHatch.",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "fillPenIndex",
+      "set": "fillPenIndex",
+      "apiMember": "API_HatchType::fillPen",
+      "apiDescription": "Pen attribute index of the hatch fill.",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "fillBackgroundPenIndex",
+      "set": "fillBackgroundPenIndex",
+      "apiMember": "API_HatchType::fillBGPen",
+      "apiDescription": "Pen attribute index of hatch fill background.",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "foregroundColor",
+      "set": "foregroundColor",
+      "apiMember": "API_HatchType::foregroundRGB",
+      "apiDescription": "RGB color for foreground painting.",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "backgroundColor",
+      "set": "backgroundColor",
+      "apiMember": "API_HatchType::backgroundRGB",
+      "apiDescription": "RGB color for background painting.",
+      "label": null,
+      "labelSource": null,
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "showArea",
+      "set": "showArea",
+      "apiMember": "API_HatchType::showArea",
+      "apiDescription": "True if area text is shown (parameters in note).",
+      "label": "Show Area Text",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-31.htm (heading \"Show Area Text\"; screenshot FillGeneralSettings.png \"Show Area Text\")",
+      "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "roomSpecial",
+      "set": "roomSpecial",
+      "apiMember": "API_HatchType::roomSpecial",
+      "apiDescription": "Special area percent in a room (negative means OFF).",
+      "label": "Subtract from Zones",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-31.htm (heading \"Subtract from Zones\"; screenshot FillGeneralSettings.png \"Subtract from Zones\" with its \"% of Fill Area\" field)",
+      "group": "General Settings",
+      "subgroup": null
+    }
+  ]
+}
