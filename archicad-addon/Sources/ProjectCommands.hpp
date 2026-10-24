@@ -69,6 +69,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetNoteAutotextsCommand : public CommandBase
+{
+public:
+    GetNoteAutotextsCommand ();
 class GetNoteAutoTextKeywordsCommand : public CommandBase
 {
 public:
