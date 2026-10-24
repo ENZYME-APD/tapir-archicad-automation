@@ -1,0 +1,179 @@
+{
+  "tool": "Label",
+  "elementType": "Label",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "LabelDetails",
+    "create": "CreateLabelsCommand",
+    "modify": "ModifyLabelsCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-29.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-48.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-70.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-72.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-74.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "begCoordinate",
+      "set": "begCoordinate",
+      "apiMember": "API_LabelType::begC",
+      "apiDescription": "Beginning coordinate of the leader line.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "midCoordinate",
+      "set": "midCoordinate",
+      "apiMember": "API_LabelType::midC",
+      "apiDescription": "Middle coordinate of the leader line.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "endCoordinate",
+      "set": "endCoordinate",
+      "apiMember": "API_LabelType::endC",
+      "apiDescription": "End coordinate of the leader line.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorInd",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ownerElementId",
+      "set": "parentElementId",
+      "apiMember": "API_LabelType::parent",
+      "apiDescription": "When getting the Label defaults the labelable element type can be passed here. ACAPI_Element_GetDefaults will return the Label default for the given element type. When creating new Labels, set this to APINULLGuid to create an independent Label; or set this to the GUID of the owner element (a labelable element) to create an associative Label. When getting or changing a Label, this member will be filled with the GUID of the owner element, or APINULLGuid, if the Label is independent. You cannot change an existing associative Label to independent, or an existing independent Label to associative.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ownerElementType",
+      "set": null,
+      "apiMember": "API_LabelType::parentType",
+      "apiDescription": "Contains the type of the parent element, or API_ZombieElemID if the Label is independent.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "labelClass",
+      "set": "labelClass",
+      "apiMember": "API_LabelType::labelClass",
+      "apiDescription": "Type (class) of the label.",
+      "label": null,
+      "labelSource": null,
+      "group": "Type and Preview",
+      "subgroup": null
+    },
+    {
+      "get": "libPart",
+      "set": null,
+      "apiMember": "API_ObjectType::libInd",
+      "apiDescription": "Index to the symbol in the library.",
+      "label": null,
+      "labelSource": null,
+      "group": "Type and Preview",
+      "subgroup": null
+    },
+    {
+      "get": "style",
+      "set": "style",
+      "apiMember": "API_LabelType::u.text",
+      "apiDescription": "Contains the details of the textual label. The typeID field of the head should be set to API_LabelID (!).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "symbolStyle",
+      "set": "symbolStyle",
+      "apiMember": null,
+      "apiDescription": "The style of a symbol label: textWay, font, faceBits, flipEnabled, nonBreaking, textSize, useBgFill, fillBgPen and effectsBits of API_LabelType.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "hasLeaderLine",
+      "set": null,
+      "apiMember": "API_LabelType::hasLeaderLine",
+      "apiDescription": "Add a Leader Line (i.e. pointer line) to the Label? (For both Symbol and Text Labels.)",
+      "label": "Pointer",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-48.htm (text \"Click the Pointer button to assign a pointer line\"; screenshot DimToolPointerPanel.png); https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-74.htm (text \"the Pointer button is off\")",
+      "group": "Pointer",
+      "subgroup": null
+    },
+    {
+      "get": "leaderLine",
+      "set": "leaderLine",
+      "apiMember": null,
+      "apiDescription": "The leader (pointer) line: pen, ltypeInd, contourOffset, framed, hasLeaderLine, anchorPoint, leaderShape, squareRootAngle, arrowData and hideWithBaseElem of API_LabelType (begC, midC and endC output only).",
+      "label": null,
+      "labelSource": null,
+      "group": "Pointer",
+      "subgroup": null
+    },
+    {
+      "get": "text",
+      "set": "text",
+      "apiMember": "API_ElementMemo::textContent",
+      "apiDescription": "Text content for textual elements.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Label",
+      "subgroup": null
+    },
+    {
+      "get": "runs",
+      "set": "runs",
+      "apiMember": "API_ElementMemo::paragraphs",
+      "apiDescription": "Paragraph informations for text and label element.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Label",
+      "subgroup": null
+    },
+    {
+      "get": "paragraphCount",
+      "set": null,
+      "apiMember": "API_ElementMemo::paragraphs",
+      "apiDescription": "Paragraph informations for text and label element.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    }
+  ]
+}
