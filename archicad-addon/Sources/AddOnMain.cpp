@@ -1736,7 +1736,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPSystemGroupsCommand> (
             mepCommands, "1.7.2",
-            "Gets the MEP system groups of the project with their physical systems: name, root element and MEP system. Available from Archicad 29."
+            "Gets the MEP system groups of the project with their physical systems: name, editable flag, root element and MEP system. Available from Archicad 29."
         );
         err |= RegisterCommand<CreateMEPSystemGroupsCommand> (
             mepCommands, "1.7.2",
@@ -1745,6 +1745,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateMEPPhysicalSystemsCommand> (
             mepCommands, "1.7.2",
             "Creates physical systems in MEP system groups, optionally with a root element and an MEP system as their category. Available from Archicad 29."
+        );
+        err |= RegisterCommand<ModifyMEPSystemGroupsCommand> (
+            mepCommands, "1.7.3",
+            "Renames MEP system groups. Available from Archicad 29."
+        );
+        err |= RegisterCommand<ModifyMEPPhysicalSystemsCommand> (
+            mepCommands, "1.7.3",
+            "Modifies MEP physical systems: name, root element and the MEP system used as their category. Only the given fields are changed. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteMEPPhysicalSystemsCommand> (
+            mepCommands, "1.7.3",
+            "Removes MEP physical systems from their system groups. Their member elements are not deleted. Available from Archicad 29."
         );
         err |= RegisterCommand<GetElectricalPanelsCommand> (
             mepCommands, "1.7.2",
