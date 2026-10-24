@@ -361,6 +361,10 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetInputParamete
             },
             "properties": {
                 "$ref": "#/PropertyIds"
+            },
+            "includeAvailability": {
+                "type": "boolean",
+                "description": "Adds isAvailable to each property value or error, telling whether the property is available for the element (for example by its classification). Default is false."
             }
         },
         "additionalProperties": false,
@@ -395,6 +399,9 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
     GS::Array<GS::ObjectState> properties;
     parameters.Get ("properties", properties);
+
+    bool includeAvailability = false;
+    parameters.Get ("includeAvailability", includeAvailability);
 
     GS::ObjectState response;
     const auto& propertyValuesForElements = response.AddList<GS::ObjectState> ("propertyValuesForElements");
@@ -445,14 +452,21 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
             const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
+            const auto addPropertyValue = [&] (GS::ObjectState item) {
+                if (includeAvailability) {
+                    item.Add ("isAvailable", ACAPI_Element_IsPropertyDefinitionAvailable (elemGuid, propertyGuid));
+                }
+                propertyValues (item);
+            };
+
             if (!propertyMap.ContainsKey (propertyGuid)) {
-                propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+                addPropertyValue (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
                 continue;
             }
 
             const API_Property& propertyValue = *propertyMap[propertyGuid];
             if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
-                propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
+                addPropertyValue (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
                 continue;
             }
 
@@ -460,11 +474,11 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
             err = GetPropertyValueString (propertyValue, propertyValueString);
 
             if (err != NoError) {
-                propertyValues (CreateErrorResponse (err, "Failed to get property value as string"));
+                addPropertyValue (CreateErrorResponse (err, "Failed to get property value as string"));
                 continue;
             }
 
-            propertyValues (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
+            addPropertyValue (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
         }
 
         propertyValuesForElements (propertyValuesForElement);
