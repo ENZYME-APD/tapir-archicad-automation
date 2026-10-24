@@ -117,6 +117,49 @@
             "preferenceTableId": {
                 "$ref": "#/Guid",
                 "description": "The guid of the segment preference table used by the segment (see GetMEPPreferenceTables)."
+            },
+            "beginNodeId": {
+                "$ref": "#/ElementId",
+                "description": "The routing node at the beginning of the segment."
+            },
+            "endNodeId": {
+                "$ref": "#/ElementId",
+                "description": "The routing node at the end of the segment."
+            },
+            "anchor": {
+                "type": "string",
+                "description": "The anchor point of the cross section, on a 3x3 grid.",
+                "enum": [
+                    "TopLeft",
+                    "TopCenter",
+                    "TopRight",
+                    "MiddleLeft",
+                    "Center",
+                    "MiddleRight",
+                    "BottomLeft",
+                    "BottomCenter",
+                    "BottomRight"
+                ]
+            },
+            "referenceLineOffsetX": {
+                "type": "number",
+                "description": "The horizontal offset of the reference line from the anchor point."
+            },
+            "referenceLineOffsetY": {
+                "type": "number",
+                "description": "The vertical offset of the reference line from the anchor point."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "The wall thickness of the segment."
+            },
+            "flangeSize": {
+                "type": "number",
+                "description": "The flange size of the segment. Only present when the segment has flanges."
+            },
+            "rigidSegments": {
+                "$ref": "#/Elements",
+                "description": "The rigid segments (the straight duct, pipe or cable carrier pieces) of the routing segment."
             }
         },
         "additionalProperties": false,
@@ -136,6 +179,22 @@
             },
             "position": {
                 "$ref": "#/Coordinate3D"
+            },
+            "incomingSegmentId": {
+                "$ref": "#/ElementId",
+                "description": "The routing segment ending at this node. Not present at the beginning of the route."
+            },
+            "outgoingSegmentId": {
+                "$ref": "#/ElementId",
+                "description": "The routing segment starting at this node. Not present at the end of the route."
+            },
+            "elbows": {
+                "$ref": "#/Elements",
+                "description": "The elbows (bends in Archicad 28) at this node."
+            },
+            "transitions": {
+                "$ref": "#/Elements",
+                "description": "The transitions at this node."
             }
         },
         "additionalProperties": false,
@@ -153,6 +212,22 @@
             },
             "mepSystemId": {
                 "$ref": "#/AttributeId"
+            },
+            "offsetFromHomeStory": {
+                "type": "number",
+                "description": "The offset of the routing element from its home story."
+            },
+            "branchPreferenceTableId": {
+                "$ref": "#/Guid",
+                "description": "The guid of the branch preference table used by the routing element (see GetMEPPreferenceTables). Not present when the routing element has none."
+            },
+            "logicallyConnectedPortIdAtRouteBegin": {
+                "$ref": "#/Guid",
+                "description": "The port logically connected to the beginning of the route (see GetMEPPorts). Not present when nothing is connected there."
+            },
+            "logicallyConnectedPortIdAtRouteEnd": {
+                "$ref": "#/Guid",
+                "description": "The port logically connected to the end of the route (see GetMEPPorts). Not present when nothing is connected there."
             },
             "polyline": {
                 "type": "array",

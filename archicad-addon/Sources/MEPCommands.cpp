@@ -454,6 +454,19 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
         GS::ObjectState routingElementOs;
         routingElementOs.Add ("domain", DomainToString (routingElement->GetDomain ()));
         routingElementOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (routingElement->GetMEPSystem ()));
+        routingElementOs.Add ("offsetFromHomeStory", routingElement->GetOffsetFromHomeStory ());
+        ACAPI::Result<ACAPI::MEP::UniqueID> branchPreferenceTableId = routingElement->GetBranchPreferenceTableId ();
+        if (branchPreferenceTableId.IsOk ()) {
+            routingElementOs.Add ("branchPreferenceTableId", branchPreferenceTableId.Unwrap ().GetGuid ().ToUniString ());
+        }
+        const std::optional<ACAPI::MEP::UniqueID> portIdAtRouteBegin = routingElement->GetLogicallyConnectedPortIdAtRouteBegin ();
+        if (portIdAtRouteBegin.has_value ()) {
+            routingElementOs.Add ("logicallyConnectedPortIdAtRouteBegin", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteBegin.value ())));
+        }
+        const std::optional<ACAPI::MEP::UniqueID> portIdAtRouteEnd = routingElement->GetLogicallyConnectedPortIdAtRouteEnd ();
+        if (portIdAtRouteEnd.has_value ()) {
+            routingElementOs.Add ("logicallyConnectedPortIdAtRouteEnd", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteEnd.value ())));
+        }
 
         const auto& polyline = routingElementOs.AddList<GS::ObjectState> ("polyline");
         for (const API_Coord3D& coordinate : routingElement->GetPolyLine ()) {
@@ -476,6 +489,20 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
                 segmentOs.Add ("crossSectionReferenceId", static_cast<Int32> (referenceId.Unwrap ()));
             }
             segmentOs.Add ("preferenceTableId", segment->GetPreferenceTableId ().GetGuid ().ToUniString ());
+            segmentOs.Add ("beginNodeId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetBeginNodeId ())));
+            segmentOs.Add ("endNodeId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetEndNodeId ())));
+            segmentOs.Add ("anchor", AnchorIdToString (segment->GetAnchor ()));
+            segmentOs.Add ("referenceLineOffsetX", segment->GetReferenceLineOffsetX ());
+            segmentOs.Add ("referenceLineOffsetY", segment->GetReferenceLineOffsetY ());
+            segmentOs.Add ("wallThickness", segment->GetWallThickness ());
+            const std::optional<double> flangeSize = segment->GetFlangeSize ();
+            if (flangeSize.has_value ()) {
+                segmentOs.Add ("flangeSize", flangeSize.value ());
+            }
+            const auto& rigidSegments = segmentOs.AddList<GS::ObjectState> ("rigidSegments");
+            for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+                rigidSegments (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (rigidSegmentId)));
+            }
             segments (segmentOs);
         }
 
@@ -488,6 +515,27 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             GS::ObjectState nodeOs;
             nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (nodeId)));
             nodeOs.Add ("position", Create3DCoordinateObjectState (node->GetPosition ()));
+            const std::optional<ACAPI::MEP::UniqueID> incomingSegmentId = node->GetIncomingSegmentId ();
+            if (incomingSegmentId.has_value ()) {
+                nodeOs.Add ("incomingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (incomingSegmentId.value ())));
+            }
+            const std::optional<ACAPI::MEP::UniqueID> outgoingSegmentId = node->GetOutgoingSegmentId ();
+            if (outgoingSegmentId.has_value ()) {
+                nodeOs.Add ("outgoingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (outgoingSegmentId.value ())));
+            }
+            const auto& elbows = nodeOs.AddList<GS::ObjectState> ("elbows");
+#ifdef ServerMainVers_2900
+            for (const ACAPI::MEP::UniqueID& elbowId : node->GetElbowIds ()) {
+#else
+            // Archicad 28 calls the elbows bends (RoutingNode::GetBendIds).
+            for (const ACAPI::MEP::UniqueID& elbowId : node->GetBendIds ()) {
+#endif
+                elbows (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (elbowId)));
+            }
+            const auto& transitions = nodeOs.AddList<GS::ObjectState> ("transitions");
+            for (const ACAPI::MEP::UniqueID& transitionId : node->GetTransitionIds ()) {
+                transitions (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (transitionId)));
+            }
             nodes (nodeOs);
         }
 
