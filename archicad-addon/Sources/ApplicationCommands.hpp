@@ -182,6 +182,6 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-// Turns the dialog auto close on when the TAPIR_DG_AUTOCLOSE environment variable is 1, true, yes or on,
+// Turns the dialog auto close on when the TAPIR_DIALOG_AUTOCLOSE environment variable is true,
 // so that the dialogs Archicad shows while it opens the first project are closed too.
 void ApplyDialogAutoCloseFromEnvironment ();

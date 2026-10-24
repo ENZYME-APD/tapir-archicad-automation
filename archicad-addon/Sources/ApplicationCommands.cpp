@@ -1618,14 +1618,12 @@ GS::ObjectState SetDialogAutoCloseCommand::Execute (const GS::ObjectState& param
 
 void ApplyDialogAutoCloseFromEnvironment ()
 {
-    const char* value = std::getenv ("TAPIR_DG_AUTOCLOSE");
+    const char* value = std::getenv ("TAPIR_DIALOG_AUTOCLOSE");
     if (value == nullptr) {
         return;
     }
 
-    GS::UniString valueStr (value);
-    valueStr.SetToLowerCase ();
-    if (valueStr == "1" || valueStr == "true" || valueStr == "yes" || valueStr == "on") {
+    if (GS::UniString (value) == "true") {
         DGEnableAutoClose ();
     }
 }
