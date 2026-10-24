@@ -572,6 +572,11 @@ GS::ObjectState GetElementSetDataCommand::Execute(const GS::ObjectState& paramet
         userDataObj.Add("data", data);
         elementSetData.Add("userData", userDataObj);
         elementSetsData(elementSetData);
+    }
+
+    return response;
+}
+
 GetUserDataOfGroupsCommand::GetUserDataOfGroupsCommand() :
     CommandBase(CommonSchema::Used)
 {

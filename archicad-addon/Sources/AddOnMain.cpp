@@ -863,6 +863,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetElementSetDataCommand> (
             elementGroupingCommands, "1.7.3",
             "Gets the elements and the custom data of each given element set. Element sets are created by add-ons to link elements together; the custom data is returned as Base64 encoded bytes."
+        );
         err |= RegisterCommand<GetUserDataOfGroupsCommand> (
             elementGroupingCommands, "1.7.2",
             "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded). Returns an error for groups that have no user data."
