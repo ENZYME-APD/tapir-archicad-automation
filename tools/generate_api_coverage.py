@@ -22,6 +22,8 @@ it, so the page's "claim" link can put them into the issue it opens.
 Status of an item: done (used on main), merged (used on main but not in the
 latest release), in progress (added by an open pull request), claimed (named
 by an open issue), open, not applicable or skipped (both with a reason).
+A pull request adds a C++ member when its added lines call it in a file that
+uses its class, the file's lines on main included - the same test as on main.
 
 Standard library only. Usage:
 
@@ -35,7 +37,8 @@ Standard library only. Usage:
 
 github.json (optional, written by the workflow from the GitHub API):
     {"generatedAt": "...",
-     "openPullRequests": [{"number": 1, "title": "...", "addedText": "..."}],
+     "openPullRequests": [{"number": 1, "title": "...",
+                           "addedFiles": [{"path": "archicad-addon/Sources/...", "addedText": "..."}]}],
      "openIssues": [{"number": 2, "title": "...", "body": "..."}]}
 
 Writes out/api-coverage.json, out/api-coverage.md, out/api-coverage-summary.md
@@ -52,6 +55,7 @@ import pathlib
 import re
 
 REPO_URL = 'https://github.com/ENZYME-APD/tapir-archicad-automation'
+ADDON_SOURCES = 'archicad-addon/Sources/'
 
 C_EXPORT_RE = re.compile (r'(?:__APIEXPORT|\b[A-Z][A-Z0-9_]*EXPORT)\b[^;(]*?\b(ACAPI_[A-Za-z0-9_]+)\s*\(')
 # Prefixes of the AC25/26 command ids (APIDb_GetDrawingScaleID, APINavigator_GetNavigatorItemID, ...).
@@ -298,6 +302,8 @@ def record_statement (items, stack, statement, module, header_name, path):
     else:
         if not EXPORT_MACRO_RE.search (before_paren) and 'inline' not in before_paren and 'template' not in before_paren:
             return
+        if re.search (r'::\s*' + re.escape (name) + r'\s*$', before_paren):
+            return  # an out-of-class member definition (Accessory::Modify): covered by the member row
         key = f'{namespace}::{name}'
         items.setdefault (key, {'module': module, 'header': header_name, 'class': '', 'name': name, 'brief': '',
                                 'declaration': declaration_at (statement, 0), 'path': path})
@@ -448,11 +454,32 @@ def build (args):
     release_files = read_sources (args.release_sources) if args.release_sources else None
 
     github = json.loads (read_text (args.github_data)) if args.github_data else {}
-    pr_text = [(pr['number'], pr.get ('title', ''), pr.get ('addedText', '')) for pr in github.get ('openPullRequests', [])]
+    # The Grasshopper plugin's files are there for tools/generate_gh_coverage.py.
+    for pr in github.get ('openPullRequests', []):
+        pr['addedFiles'] = [f for f in pr.get ('addedFiles', []) if f.get ('path', '').startswith (ADDON_SOURCES)]
+    pr_text = [(pr['number'], pr.get ('title', ''), '\n'.join (f.get ('addedText', '') for f in pr.get ('addedFiles', [])))
+               for pr in github.get ('openPullRequests', [])]
     issue_text = [(i['number'], i.get ('title', ''), (i.get ('title', '') + '\n' + (i.get ('body') or ''))) for i in github.get ('openIssues', [])]
 
     pr_text = [(n, t, x, set (IDENT_RE.findall (x))) for n, t, x in pr_text]
     issue_text = [(n, t, x, set (IDENT_RE.findall (x))) for n, t, x in issue_text]
+
+    # The files of each pull request as cpp_used reads them: only the added
+    # lines can call a member, but the file's lines on main can use its class
+    # (an include or a variable of it that the added call goes through).
+    def pr_files (pr):
+        result = {}
+        for changed in pr.get ('addedFiles', []):
+            name = changed['path'].rsplit ('/', 1)[-1]
+            text = strip_comments (changed.get ('addedText', ''))
+            on_main = files.get (name, {'idents': set (), 'includes': set ()})
+            result[name] = {
+                'idents': set (IDENT_RE.findall (text)) | on_main['idents'],
+                'includes': set (re.findall (r'#\s*include\s*[<"]([^">]+)[">]', text)) | on_main['includes'],
+                'text': text,
+            }
+        return result
+    pr_sources = [pr_files (pr) for pr in github.get ('openPullRequests', [])]
 
     def mentioned (names, haystacks):
         found = []
@@ -473,9 +500,14 @@ def build (args):
 
     items = []
 
-    def add (item_id, kind, group, brief, item_versions, names, is_used, was_released, search_names, source):
+    def add (item_id, kind, group, brief, item_versions, names, is_used, was_released, search_names, source, cpp_named=()):
         status, reason = rule_for (item_id, group)
         prs = mentioned (search_names, pr_text)
+        if cpp_named:
+            found = {pr['number'] for pr in prs}
+            found |= {number for (number, _, _, _), sources in zip (pr_text, pr_sources)
+                      if any (cpp_used (i, sources) for i in cpp_named)}
+            prs = [{'number': number, 'title': title} for number, title, _, _ in pr_text if number in found]
         issues = mentioned (search_names, issue_text)
         if not status:
             if is_used:
@@ -535,7 +567,7 @@ def build (args):
         group = 'C++ ' + item['module']
         add (key, 'C++ member function' if item['class'] else 'C++ function', group, item['brief'],
              set ().union (*(i['versions'] for i in named)), names, is_used, released, search_names,
-             {'declaration': item['declaration'], 'header': item['path']})
+             {'declaration': item['declaration'], 'header': item['path']}, named)
 
     return versions, items, github.get ('generatedAt', '')
 
