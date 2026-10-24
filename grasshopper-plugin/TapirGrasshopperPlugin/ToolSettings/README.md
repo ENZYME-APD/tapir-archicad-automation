@@ -41,6 +41,7 @@ table or the Add-On's Get/Create/Modify code of a tool.
 
 ## Adding a tool
 
-Copy `Wall.json`, set `tool`, `elementType`, `commands` (`getCase` is the `case API_<Type>ID:`
-in `GetDetailsOfElementsCommand::Execute`, `create`/`modify` the command classes) and let the
-checker list the keys it expects.
+Copy `Wall.json`, set `tool`, `elementType` and `commands`, then let the checker list the
+keys it expects. In `commands`, `getSchema` is the tool's details schema in
+`archicad-addon/Sources/RFIX/Images/CommonSchemaDefinitions.json` (e.g. `WallDetails`), and
+`create`/`modify` are the command classes; a tool without a Modify command leaves `modify` out.

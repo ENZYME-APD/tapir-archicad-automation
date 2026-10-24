@@ -266,8 +266,12 @@ jobs:
             # request with no checks at all is not merged either.
             # The latest run of each check counts: a build started again
             # replaces the run it superseded (cancelled) on the same commit.
+            # API Coverage is left out: it runs on pull_request_target only to
+            # refresh the checklist, never tests the pull request's code, and
+            # cancels itself on every newer event, so its check on a head is
+            # cancelled more often than not.
             raw=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket,workflow,startedAt 2>/dev/null || true)
-            checks=$(jq 'group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
+            checks=$(jq '[.[] | select(.workflow != "API Coverage")] | group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
             total=$(printf '%s' "$checks" | jq 'length')
             if [ "$total" -eq 0 ]; then
               echo "skip: no checks have reported yet"
@@ -293,7 +297,14 @@ jobs:
               echo "::endgroup::"; continue
             fi
 
-            # Conflicts, or a base branch that has moved on.
+            # Conflicts, or a base branch that has moved on. GitHub computes
+            # mergeability in the background and resets it whenever main moves,
+            # so the first read after a merge is often UNKNOWN: ask again.
+            for attempt in 1 2 3; do
+              [ "$mergeable" = "UNKNOWN" ] || break
+              sleep 5
+              mergeable=$(gh pr view "$pr" --repo "$REPO" --json mergeable --jq '.mergeable' 2>/dev/null || echo UNKNOWN)
+            done
             if [ "$mergeable" != "MERGEABLE" ]; then
               echo "skip: not mergeable (mergeable=$mergeable)"
               echo "::endgroup::"; continue

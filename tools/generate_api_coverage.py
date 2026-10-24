@@ -55,6 +55,7 @@ import pathlib
 import re
 
 REPO_URL = 'https://github.com/ENZYME-APD/tapir-archicad-automation'
+ADDON_SOURCES = 'archicad-addon/Sources/'
 
 C_EXPORT_RE = re.compile (r'(?:__APIEXPORT|\b[A-Z][A-Z0-9_]*EXPORT)\b[^;(]*?\b(ACAPI_[A-Za-z0-9_]+)\s*\(')
 # Prefixes of the AC25/26 command ids (APIDb_GetDrawingScaleID, APINavigator_GetNavigatorItemID, ...).
@@ -453,6 +454,9 @@ def build (args):
     release_files = read_sources (args.release_sources) if args.release_sources else None
 
     github = json.loads (read_text (args.github_data)) if args.github_data else {}
+    # The Grasshopper plugin's files are there for tools/generate_gh_coverage.py.
+    for pr in github.get ('openPullRequests', []):
+        pr['addedFiles'] = [f for f in pr.get ('addedFiles', []) if f.get ('path', '').startswith (ADDON_SOURCES)]
     pr_text = [(pr['number'], pr.get ('title', ''), '\n'.join (f.get ('addedText', '') for f in pr.get ('addedFiles', [])))
                for pr in github.get ('openPullRequests', [])]
     issue_text = [(i['number'], i.get ('title', ''), (i.get ('title', '') + '\n' + (i.get ('body') or ''))) for i in github.get ('openIssues', [])]

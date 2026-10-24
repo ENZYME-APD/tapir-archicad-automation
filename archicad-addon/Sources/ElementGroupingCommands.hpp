@@ -12,6 +12,16 @@ public:
     virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class UngroupElementsCommand : public CommandBase
+{
+public:
+    UngroupElementsCommand();
+    virtual GS::String GetName() const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema() const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
+    virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetGroupsOfElementsCommand : public CommandBase
 {
 public:
@@ -55,6 +65,16 @@ class SetSuspendGroupsModeCommand : public CommandBase
 {
 public:
     SetSuspendGroupsModeCommand();
+    virtual GS::String GetName() const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema() const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
+    virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetElementSetsOfElementsCommand : public CommandBase
+{
+public:
+    GetElementSetsOfElementsCommand();
     virtual GS::String GetName() const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema() const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
