@@ -415,6 +415,163 @@ GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& param
     return response;
 }
 
+GetElementSetDataCommand::GetElementSetDataCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementSetDataCommand::GetName() const
+{
+    return "GetElementSetData";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to get the data of.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementSetId": {
+                            "type": "object",
+                            "description": "The identifier of an element set.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementSetId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The data of each given element set, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements of the element set."
+                                },
+                                "userData": {
+                                    "type": "object",
+                                    "description": "The custom data stored with the element set by the add-on that created it.",
+                                    "properties": {
+                                        "dataVersion": {
+                                            "type": "integer",
+                                            "description": "The version of the data, as set by the add-on that created the element set."
+                                        },
+                                        "platformSign": {
+                                            "type": "integer",
+                                            "description": "The platform sign of the data, telling the byte order it was written with."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "description": "The raw bytes of the data, Base64 encoded. Empty when the element set has no data."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "dataVersion",
+                                        "platformSign",
+                                        "data"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements",
+                                "userData"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementSetDataCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetsData = response.AddList<GS::ObjectState>("elementSets");
+
+    for (const GS::ObjectState& elementSet : elementSets) {
+        const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
+        if (elementSetId == nullptr) {
+            elementSetsData(CreateErrorResponse(APIERR_BADPARS, "elementSetId is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> elemGuids;
+        API_UserData userData = {};
+        const GSErrCode err = ACAPI_ElementSet_GetData(GetGuidFromObjectState(*elementSetId), &elemGuids, &userData);
+        if (err != NoError) {
+            BMKillHandle(&userData.dataHdl);
+            elementSetsData(CreateErrorResponse(err, "Failed to get the data of the element set."));
+            continue;
+        }
+
+        GS::UniString data;
+        const GSSize dataSize = BMGetHandleSize(userData.dataHdl);
+        if (dataSize > 0) {
+            data = Base64Converter::Encode(*userData.dataHdl, dataSize);
+            data.DeleteAll(GS::UniChar(char('\n')));
+        }
+        BMKillHandle(&userData.dataHdl);
+
+        GS::ObjectState elementSetData;
+        const auto& elements = elementSetData.AddList<GS::ObjectState>("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements(CreateElementIdObjectState(elemGuid));
+        }
+        GS::ObjectState userDataObj;
+        userDataObj.Add("dataVersion", static_cast<Int32>(userData.dataVersion));
+        userDataObj.Add("platformSign", static_cast<Int32>(userData.platformSign));
+        userDataObj.Add("data", data);
+        elementSetData.Add("userData", userDataObj);
+        elementSetsData(elementSetData);
 GetUserDataOfGroupsCommand::GetUserDataOfGroupsCommand() :
     CommandBase(CommonSchema::Used)
 {

@@ -42,6 +42,10 @@ public:
     virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetElementSetDataCommand : public CommandBase
+{
+public:
+    GetElementSetDataCommand();
 class GetUserDataOfGroupsCommand : public CommandBase
 {
 public:
