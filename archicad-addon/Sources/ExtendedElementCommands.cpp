@@ -4135,6 +4135,236 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
+SolveStairBaselineCommand::SolveStairBaselineCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SolveStairBaselineCommand::GetName () const
+{
+    return "SolveStairBaseline";
+}
+
+GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairsData": {
+                "type": "array",
+                "description": "Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the Stair to check. Fields that are not given come from the current Stair tool defaults, as in CreateStairs.",
+                    "properties": {
+                        "baseLinePoints": {
+                            "type": "array",
+                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "zCoordinate": {
+                            "type": "number",
+                            "description": "The Z coordinate (absolute elevation) of the stair base."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from zCoordinate."
+                        },
+                        "totalHeight": {
+                            "type": "number",
+                            "description": "Total height of the stair.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flightWidth": {
+                            "type": "number",
+                            "description": "Width of the stair flight.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "stepNum": {
+                            "type": "integer",
+                            "description": "Number of risers (steps).",
+                            "minimum": 1
+                        },
+                        "riserHeight": {
+                            "type": "number",
+                            "description": "Height of each riser.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "treadDepth": {
+                            "type": "number",
+                            "description": "Depth (going) of each tread.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["baseLinePoints", "zCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "solutions": {
+                "type": "array",
+                "description": "The results of the stair solver, aligned with the input stairsData.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "solution": {
+                                    "type": "string",
+                                    "enum": ["Correct", "Solved", "NotSolved"],
+                                    "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
+                                },
+                                "baseLinePoints": {
+                                    "type": "array",
+                                    "description": "The baseline polyline after the solver ran.",
+                                    "items": { "$ref": "#/Coordinate2D" }
+                                },
+                                "baseLineArcs": {
+                                    "type": "array",
+                                    "description": "The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.",
+                                    "items": { "$ref": "#/PolyArc" }
+                                },
+                                "totalHeight": {
+                                    "type": "number",
+                                    "description": "Total height of the stair after the solver ran."
+                                },
+                                "flightWidth": {
+                                    "type": "number",
+                                    "description": "Width of the stair flight after the solver ran."
+                                },
+                                "stepNum": {
+                                    "type": "integer",
+                                    "description": "Number of risers after the solver ran."
+                                },
+                                "riserHeight": {
+                                    "type": "number",
+                                    "description": "Height of each riser after the solver ran."
+                                },
+                                "treadDepth": {
+                                    "type": "number",
+                                    "description": "Depth (going) of each tread after the solver ran."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["solution", "baseLinePoints", "totalHeight", "flightWidth", "stepNum", "riserHeight", "treadDepth"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["solutions"]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static GS::UniString StairSolutionToString (API_StairSolutionID solution)
+{
+    switch (solution) {
+        case APISS_Correct:     return "Correct";
+        case APISS_Solved:      return "Solved";
+        case APISS_NotSolved:   return "NotSolved";
+        default:                return "NotSolved";
+    }
+}
+#endif
+
+GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> stairsData;
+    parameters.Get ("stairsData", stairsData);
+
+    GS::ObjectState response;
+    const auto& solutions = response.AddList<GS::ObjectState> ("solutions");
+
+    const Stories stories = GetStories ();
+    // The stair and its baseline memo are set up exactly as CreateStairs sets them up before
+    // ACAPI_Element_Create, so the solver sees the same input that CreateStairs would create from.
+    const CreateStairsCommand createStairsCommand;
+
+    for (const GS::ObjectState& data : stairsData) {
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+
+        element.header.type = API_StairID;
+        GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+        if (err != NoError) {
+            solutions (CreateErrorResponse (err, "Failed to read the Stair defaults."));
+            continue;
+        }
+
+        const auto os = createStairsCommand.SetTypeSpecificParameters (element, memo, stories, data);
+        if (os.HasValue ()) {
+            solutions (*os);
+            continue;
+        }
+
+        API_StairSolutionID solution = APISS_NotSolved;
+        err = ACAPI_HierarchicalEditing_SolveStair (&element.stair, &memo, &solution);
+        if (err != NoError) {
+            solutions (CreateErrorResponse (err, "Failed to solve the stair baseline."));
+            continue;
+        }
+
+        GS::ObjectState result;
+        result.Add ("solution", StairSolutionToString (solution));
+
+        const auto& baseLinePoints = result.AddList<GS::ObjectState> ("baseLinePoints");
+        const Int32 nCoords = memo.stairBaseLine.polygon.nCoords;
+        if (memo.stairBaseLine.coords != nullptr &&
+            BMGetHandleSize (reinterpret_cast<GSHandle> (memo.stairBaseLine.coords)) >= static_cast<GSSize> ((nCoords + 1) * sizeof (API_Coord))) {
+            // Coords are 1-based, index 0 is unused
+            for (Int32 i = 1; i <= nCoords; ++i) {
+                baseLinePoints (Create2DCoordinateObjectState ((*memo.stairBaseLine.coords)[i]));
+            }
+        }
+
+        const Int32 nArcs = memo.stairBaseLine.polygon.nArcs;
+        if (nArcs > 0 && memo.stairBaseLine.parcs != nullptr &&
+            BMGetHandleSize (reinterpret_cast<GSHandle> (memo.stairBaseLine.parcs)) >= static_cast<GSSize> (nArcs * sizeof (API_PolyArc))) {
+            const auto& baseLineArcs = result.AddList<GS::ObjectState> ("baseLineArcs");
+            for (Int32 i = 0; i < nArcs; ++i) {
+                baseLineArcs (CreatePolyArcObjectState ((*memo.stairBaseLine.parcs)[i]));
+            }
+        }
+
+        result.Add ("totalHeight", element.stair.totalHeight);
+        result.Add ("flightWidth", element.stair.flightWidth);
+        result.Add ("stepNum", static_cast<Int32> (element.stair.stepNum));
+        result.Add ("riserHeight", element.stair.riserHeight);
+        result.Add ("treadDepth", element.stair.treadDepth);
+
+        solutions (result);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 CreateWindowsCommand::CreateWindowsCommand () :
     CommandBase (CommonSchema::Used)
 {

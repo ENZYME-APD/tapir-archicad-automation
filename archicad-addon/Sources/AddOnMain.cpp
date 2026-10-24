@@ -551,6 +551,12 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.0",
             "Creates Stair elements based on the given baseline and parameters."
         );
+        err |= RegisterCommand<SolveStairBaselineCommand> (
+            elementCommands, "1.7.3",
+            "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. "
+            "Returns for each one whether the baseline was already correct, could be solved or could not be solved, "
+            "with the baseline and the main stair settings after solving. Available from Archicad 27."
+        );
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",
             "Creates Slab elements based on the given parameters."
