@@ -1068,6 +1068,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.5.4",
             "Returns the details of the given Pen Table attributes."
         );
+        err |= RegisterCommand<GetCurrentPenTableCommand> (
+            attributeCommands, "1.7.3",
+            "Returns the current Pen Table (its index, attribute identifier and name) and its number of pens. Pass the returned attributeId to GetPenTables to read the pens."
+        );
         err |= RegisterCommand<GetProfilesCommand> (
             attributeCommands, "1.5.4",
             "Returns the details of the given Profile attributes."
