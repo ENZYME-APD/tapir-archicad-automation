@@ -443,6 +443,8 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
 inline GSErrCode ACAPI_CurtainWall_GetCWAbsoluteBottom (const API_Guid* guid, double* bottom)
 {
     return ACAPI_Goodies (APIAny_GetCWAbsoluteBottomID, (void*) guid, bottom);
+}
+
 inline GSErrCode ACAPI_CurtainWall_GetCWHeight (const API_Guid* guid, double* height)
 {
     return ACAPI_Goodies (APIAny_GetCWHeightID, (void*) guid, height);
