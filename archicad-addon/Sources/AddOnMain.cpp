@@ -1728,6 +1728,9 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.5.1",
             "Sets active design options in the given combinations. Available from Archicad 29."
         );
+        err |= RegisterCommand<ActivateDesignOptionsInCombinationsCommand> (
+            designOptionsCommands, "1.7.3",
+            "Activates one design option in each of the given combinations, without listing all active design options of the combination. Available from Archicad 29."
         err |= RegisterCommand<DeactivateDesignOptionsInCombinationsCommand> (
             designOptionsCommands, "1.7.3",
             "Turns off the given design options in the given combinations, leaving their other options as they are. Available from Archicad 29."

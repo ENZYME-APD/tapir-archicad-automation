@@ -99,6 +99,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ActivateDesignOptionsInCombinationsCommand : public CommandBase
+{
+public:
+    ActivateDesignOptionsInCombinationsCommand ();
 class DuplicateDesignOptionCombinationsCommand : public CommandBase
 {
 public:

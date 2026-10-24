@@ -1118,6 +1118,115 @@ GS::ObjectState SetActiveDesignOptionsInCombinationsCommand::Execute (const GS::
 #endif
 }
 
+ActivateDesignOptionsInCombinationsCommand::ActivateDesignOptionsInCombinationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ActivateDesignOptionsInCombinationsCommand::GetName () const
+{
+    return "ActivateDesignOptionsInCombinations";
+}
+
+GS::Optional<GS::UniString> ActivateDesignOptionsInCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionsToActivate": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionCombinationId": {
+                            "$ref": "#/DesignOptionCombinationId"
+                        },
+                        "designOptionId": {
+                            "$ref": "#/DesignOptionId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionCombinationId",
+                        "designOptionId"
+                    ]
+                },
+                "description": "The design options to activate, each in the given combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionsToActivate"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ActivateDesignOptionsInCombinationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ActivateDesignOptionsInCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to activate design options.");
+    }
+
+    GS::Array<GS::ObjectState> designOptionsToActivate;
+    if (!parameters.Get ("designOptionsToActivate", designOptionsToActivate)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionsToActivate' parameter.");
+    }
+
+    auto allDesignOptionCombinations = manager->GetDesignOptionCombinations ();
+    if (allDesignOptionCombinations.IsErr ()) {
+        return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to list design option combinations.");
+    }
+
+    auto allDesignOptions = manager->GetAllDesignOptions ();
+    if (allDesignOptions.IsErr ()) {
+        return CreateErrorResponse (allDesignOptions.UnwrapErr ().kind, "Unable to list design options.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Activate Design Options In Combinations", [&]() -> GSErrCode {
+        for (auto&& designOptionToActivate : designOptionsToActivate) {
+            GS::Guid combinationGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionCombinationId", designOptionToActivate));
+            if (combinationGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            DesignOptionCombination* combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+            if (combinationPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
+                continue;
+            }
+            GS::Guid designOptionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionId", designOptionToActivate));
+            if (designOptionGuid.IsNull ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing or invalid 'designOptionId' parameter"));
+                continue;
+            }
+            DesignOption* optionPtr = FindDesignOptionItemByGuid (*allDesignOptions, designOptionGuid);
+            if (optionPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'designOptionId' parameter"));
+                continue;
+            }
+            auto result = manager->ActivateDesignOptionInCombination (*combinationPtr, *optionPtr);
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to activate design option in combination."));
 DuplicateDesignOptionCombinationsCommand::DuplicateDesignOptionCombinationsCommand () :
     CommandBase (CommonSchema::Used)
 {
