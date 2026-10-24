@@ -46,6 +46,7 @@
 #include "KeynoteCommands.hpp"
 #include "GraphicOverrideCommands.hpp"
 #include "GridElementCommands.hpp"
+#include "PropertyObjectCommands.hpp"
 #include "GraphicalOverrideCommands.hpp"
 #include "PolygonCommands.hpp"
 
@@ -433,6 +434,22 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetZoneReductionsCommand> (
             elementCommands, "1.7.2",
             "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements."
+        );
+        err |= RegisterCommand<GetPropertyObjectsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Gets the property objects of the given elements: the library parts of the old listing system (used by projects migrated from older Archicad versions) linked to each element by criteria or individually, with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements."
+        );
+        err |= RegisterCommand<GetDescriptorsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Gets the descriptors of the given elements: the listing descriptors in the property objects of each element, with the library part that declares them (index, name and guid), their listing database set and index, and their status (Normal, Deleted or Local). The output is aligned with the input array of elements."
+        );
+        err |= RegisterCommand<GetLinkedPropertyObjectsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Gets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, which of them match, and which one is assigned individually, each with the library part's index (the same as the index returned by GetAvailableLibraryParts), name and guid. The output is aligned with the input array of elements."
+        );
+        err |= RegisterCommand<SetLinkedPropertyObjectsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Sets how property objects (the library parts of the old listing system) are linked to the given elements, or to the element defaults of the given element types: whether the property objects matching their criteria are linked, and which one is assigned individually (0 removes the individual assignment). A link that is not given stays unchanged. All changes are made in one undoable step."
         );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
