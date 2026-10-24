@@ -40,3 +40,27 @@ Survey point position in the project after SetGeoLocation:
     "y": -7.25,
     "z": 1.5
 }
+Command: SetGeoLocation
+Parameters:
+{
+    "surveyPoint": {
+        "isVisible": true
+    }
+}
+Response:
+{
+    "success": true
+}
+Survey point visible after SetGeoLocation: True
+Command: SetGeoLocation
+Parameters:
+{
+    "surveyPoint": {
+        "isLocked": true
+    }
+}
+Response:
+{
+    "success": true
+}
+Survey point locked after SetGeoLocation: True
