@@ -24,6 +24,7 @@ class RunnerWindow:
         self.events: queue.Queue = queue.Queue()
         self.busy = False
         self.stop_requested = False
+        self.rows: list[dict] = []
         self.paused = tk.BooleanVar(value=False)
         self.post = tk.BooleanVar(value=True)
         self.every = tk.BooleanVar(value=False)
@@ -118,6 +119,10 @@ class RunnerWindow:
                 self.status.configure(text=value)
             elif kind == "rows":
                 self.fill(value)
+            elif kind == "row":
+                self.upsert(value)
+            elif kind == "clear":
+                self.table.delete(*self.table.get_children())
             elif kind == "done":
                 self.busy = False
                 self.set_buttons("normal")
@@ -146,23 +151,60 @@ class RunnerWindow:
     def fill(self, rows: list[dict]) -> None:
         self.table.delete(*self.table.get_children())
         for p in rows:
-            builds = "AC" + ",".join(p["builds"]) if p["builds"] else "none yet"
-            self.table.insert("", "end", iid=str(p["number"]), tags=() if p["testable"] else ("untestable",),
-                              values=(f"#{p['number']}", p["title"], p["branch"], p["checks"], builds,
-                                      "; ".join(p["last"]) or "-"))
+            self.upsert(p)
+
+    def upsert(self, p: dict) -> None:
+        """Adds or updates one row; details still being read show as '...'."""
+        if p["builds"] is None:
+            checks, builds, last = "...", "...", "..."
+        else:
+            checks, builds, last = p["checks"], "AC" + ",".join(p["builds"]) if p["builds"] else "none yet", "; ".join(p["last"]) or "-"
+        values = (f"#{p['number']}", p["title"], p["branch"], checks, builds, last)
+        tags = () if p["testable"] else ("untestable",)
+        iid = str(p["number"])
+        if self.table.exists(iid):
+            self.table.item(iid, values=values, tags=tags)
+        else:
+            self.table.insert("", "end", iid=iid, values=values, tags=tags)
+
+    def read_rows(self) -> list[dict]:
+        """Reads the list from GitHub; rows appear at once and fill in as their details arrive."""
+        self.events.put(("clear", None))
+
+        def on_row(row: dict, done: int, total: int) -> None:
+            self.events.put(("row", row))
+            if done:
+                self.events.put(("status", f"Reading pull requests {done}/{total} ..."))
+        return r.pull_rows(self.cfg, on_row=on_row)
+
+    def why_waiting(self, rows: list[dict]) -> str:
+        """One plain sentence on what automatic testing will do, so a quiet window never looks stuck."""
+        label = self.cfg.get("label", "needs-test")
+        due = [p for p in rows if p["testable"] and label in p["labels"].split(",")]
+        open_ = [f"Archicad {a['version']}" for a in self.cfg["archicads"] if r.archicad_running(a["archicadExe"])]
+        text = (f"{len(rows)} open pull request(s), {len(due)} marked '{label}' for you to test"
+                + ("" if due else " - automatic testing has nothing to do until a developer marks one"
+                   " (you can still select a row and click Test selected)"))
+        if open_:
+            text += f". {', '.join(open_)} is open: tests wait until you close it"
+        return text + "."
 
     def refresh(self) -> None:
         def job():
-            rows = r.pull_rows(self.cfg)
-            self.events.put(("rows", rows))
-            self.events.put(("log", f"{len(rows)} open pull request(s); gray ones are in forks you don't trust"))
+            self.rows = self.read_rows()
+            self.events.put(("log", self.why_waiting(self.rows)))
         self.work("Reading pull requests ...", job)
 
     def run(self, numbers: list[int] | None) -> None:
         def job():
-            r.run_pass(self.cfg, self.post.get(), numbers, every=self.every.get(), as_brief=True,
-                       log=lambda text: self.events.put(("log", text)), stop=lambda: self.stop_requested)
-            self.events.put(("rows", r.pull_rows(self.cfg)))
+            results = r.run_pass(self.cfg, self.post.get(), numbers, every=self.every.get(), as_brief=True,
+                                 log=lambda text: self.events.put(("log", text)), stop=lambda: self.stop_requested)
+            tested = [x for x in results if x["state"] == "tested"]
+            self.events.put(("log", f"pass finished: {len(tested)} tested, {len(results) - len(tested)} skipped or stopped"
+                             if results else "pass finished: nothing to test"))
+            if tested or not self.rows:  # re-reading a hundred pull requests every pass would use up GitHub's limit
+                self.rows = self.read_rows()
+            self.events.put(("log", self.why_waiting(self.rows)))
         self.work("Testing ...", job)
 
     def test_selected(self) -> None:
