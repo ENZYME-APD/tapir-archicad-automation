@@ -527,6 +527,64 @@ GS::ObjectState GetLayerCombinationsCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+GetCurrentLayerCombinationCommand::GetCurrentLayerCombinationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurrentLayerCombinationCommand::GetName () const
+{
+    return "GetCurrentLayerCombination";
+}
+
+GS::Optional<GS::UniString> GetCurrentLayerCombinationCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layerCombinationId": {
+                "$ref": "#/AttributeId",
+                "description": "The layer combination in effect in the current window. Missing when the current state of the layers matches no layer combination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the layer combination. Missing together with layerCombinationId."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetCurrentLayerCombinationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_AttributeIndex layerCombIndex = ACAPI_CreateAttributeIndex (0);
+    GSErrCode err = ACAPI_Navigator_GetCurrLayerComb (&layerCombIndex);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the current layer combination.");
+    }
+
+    GS::ObjectState response;
+    // Index 0 means the current state of the layers matches no layer combination.
+    if (GetAttributeIndex (layerCombIndex) == 0) {
+        return response;
+    }
+
+    GS::UniString name;
+    API_Attribute attribute = {};
+    attribute.header.typeID = API_LayerCombID;
+    attribute.header.index = layerCombIndex;
+    attribute.header.uniStringNamePtr = &name;
+    err = ACAPI_Attribute_Get (&attribute);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the current layer combination attribute.");
+    }
+
+    response.Add ("layerCombinationId", CreateGuidObjectState (attribute.header.guid));
+    response.Add ("name", name);
+    return response;
+}
+
 static GS::UniString LineItemTypeToString (API_LtypItemID itemType)
 {
     switch (itemType) {
