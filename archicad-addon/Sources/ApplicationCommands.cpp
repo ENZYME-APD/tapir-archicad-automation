@@ -52,6 +52,16 @@ static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocatio
 #define TAPIR_HAS_GSID
 #endif
 
+#if defined (ServerMainVers_2800) && __has_include ("ACAPI/LicenseInfo/LicenseInfoManager.hpp")
+#include "ACAPI/LicenseInfo/LicenseInfoManager.hpp"
+#define TAPIR_HAS_LICENSE_INFO
+#endif
+
+#if defined (ServerMainVers_2800) && __has_include ("ACAPI/CuttingPlane.hpp")
+#include "ACAPI/CuttingPlane.hpp"
+#define TAPIR_HAS_CUTTING_PLANE
+#endif
+
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -855,6 +865,279 @@ GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters
     return GS::ObjectState ("userId", *userId, "organizationIds", orgIdsArray);
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetUserGSID requires Archicad 27 or later.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// GetProductVersionInfo
+// ---------------------------------------------------------------------------
+
+GetProductVersionInfoCommand::GetProductVersionInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetProductVersionInfoCommand::GetName () const
+{
+    return "GetProductVersionInfo";
+}
+
+GS::Optional<GS::UniString> GetProductVersionInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "productName": {
+                "type": "string",
+                "description": "The name of the product. Archicad 29 or later."
+            },
+            "productType": {
+                "type": "string",
+                "description": "The Graphisoft product type. Archicad 29 or later."
+            },
+            "productFamilyId": {
+                "type": "string",
+                "description": "The identifier of the product family."
+            },
+            "languageCode": {
+                "type": "string",
+                "description": "The Graphisoft language code of the running Archicad (for example INT, GER)."
+            },
+            "buildNumber": {
+                "type": "integer",
+                "description": "The build number of the running Archicad."
+            },
+            "versionString": {
+                "type": "string",
+                "description": "The full version of the running Archicad as text."
+            },
+            "mainVersion": {
+                "type": "string",
+                "description": "The main version, as text. Archicad 29 or later."
+            },
+            "updateVersion": {
+                "type": "string",
+                "description": "The update version, as text. Archicad 29 or later."
+            },
+            "hotfixVersion": {
+                "type": "string",
+                "description": "The hotfix version, as text. Archicad 29 or later."
+            },
+            "versionNumbers": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                },
+                "description": "The three parts of the version number. Archicad 28 only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "productFamilyId",
+            "languageCode",
+            "buildNumber",
+            "versionString"
+        ]
+    })";
+}
+
+GS::ObjectState GetProductVersionInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_LICENSE_INFO
+    auto licenseInfoManager = ACAPI::LicenseInfo::GetLicenseInfoManager ();
+    if (licenseInfoManager.IsErr ()) {
+        return CreateErrorResponse (licenseInfoManager.UnwrapErr ().kind, "Failed to get the license info manager.");
+    }
+
+    const auto versionInfo = licenseInfoManager->GetProductVersionInfo ();
+
+    GS::ObjectState response;
+    response.Add ("productFamilyId", versionInfo.GetProductFamilyId ());
+    response.Add ("languageCode", versionInfo.GetGSLanguageCode ());
+    response.Add ("buildNumber", versionInfo.GetBuildNum ());
+#if defined (ServerMainVers_2900)
+    response.Add ("productName", versionInfo.GetProductName ());
+    response.Add ("productType", versionInfo.GetGSProductType ());
+    response.Add ("versionString", versionInfo.GetAppVersionString ());
+    response.Add ("mainVersion", versionInfo.GetMainVersionString ());
+    response.Add ("updateVersion", versionInfo.GetUpdateVersionString ());
+    response.Add ("hotfixVersion", versionInfo.GetHotfixVersionString ());
+#else
+    response.Add ("versionString", versionInfo.GetVersionString ());
+    GS::Array<Int32> versionNumbers;
+    versionNumbers.Push (versionInfo.GetVersionNum1 ());
+    versionNumbers.Push (versionInfo.GetVersionNum2 ());
+    versionNumbers.Push (versionInfo.GetVersionNum3 ());
+    response.Add ("versionNumbers", versionNumbers);
+#endif
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetProductVersionInfo requires Archicad 28 or later.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// Get3DCutawayStatus
+// ---------------------------------------------------------------------------
+
+Get3DCutawayStatusCommand::Get3DCutawayStatusCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String Get3DCutawayStatusCommand::GetName () const
+{
+    return "Get3DCutawayStatus";
+}
+
+GS::Optional<GS::UniString> Get3DCutawayStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cutawayEnabled": {
+                "type": "boolean",
+                "description": "Whether 3D Cutaway is on in the 3D window."
+            },
+            "cuttingPlanesVisible": {
+                "type": "boolean",
+                "description": "Whether the cutting planes are shown in the 3D window."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutawayEnabled",
+            "cuttingPlanesVisible"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DCutawayStatusCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_CUTTING_PLANE
+    auto cuttingPlane = ACAPI::Cutaway::GetCuttingPlane ();
+    if (cuttingPlane.IsErr ()) {
+        return CreateErrorResponse (cuttingPlane.UnwrapErr ().kind, "Failed to get the cutting plane.");
+    }
+
+    auto cutawayEnabled = cuttingPlane->Is3DCutawayEnabled ();
+    if (cutawayEnabled.IsErr ()) {
+        return CreateErrorResponse (cutawayEnabled.UnwrapErr ().kind, "Failed to get whether 3D Cutaway is on.");
+    }
+
+    auto cuttingPlanesVisible = cuttingPlane->AreCuttingPlanesVisible ();
+    if (cuttingPlanesVisible.IsErr ()) {
+        return CreateErrorResponse (cuttingPlanesVisible.UnwrapErr ().kind, "Failed to get whether the cutting planes are shown.");
+    }
+
+    return GS::ObjectState ("cutawayEnabled", *cutawayEnabled, "cuttingPlanesVisible", *cuttingPlanesVisible);
+#elif !defined (ServerMainVers_2800)
+    // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
+    bool cutawayEnabled = false;
+    GSErrCode err = ACAPI_CuttingPlane_Is3DCutawayEnabled (&cutawayEnabled);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get whether 3D Cutaway is on. Is the 3D window open?");
+    }
+
+    bool cuttingPlanesVisible = false;
+    err = ACAPI_CuttingPlane_IsCuttingPlanesVisible (&cuttingPlanesVisible);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get whether the cutting planes are shown. Is the 3D window open?");
+    }
+
+    return GS::ObjectState ("cutawayEnabled", cutawayEnabled, "cuttingPlanesVisible", cuttingPlanesVisible);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Get3DCutawayStatus is not available in this build.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// Set3DCutawayStatus
+// ---------------------------------------------------------------------------
+
+Set3DCutawayStatusCommand::Set3DCutawayStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Set3DCutawayStatusCommand::GetName () const
+{
+    return "Set3DCutawayStatus";
+}
+
+GS::Optional<GS::UniString> Set3DCutawayStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cutawayEnabled": {
+                "type": "boolean",
+                "description": "Turns 3D Cutaway on or off. Left unchanged when omitted."
+            },
+            "cuttingPlanesVisible": {
+                "type": "boolean",
+                "description": "Shows or hides the cutting planes. Left unchanged when omitted."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> Set3DCutawayStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_CUTTING_PLANE
+    auto cuttingPlane = ACAPI::Cutaway::GetCuttingPlane ();
+    if (cuttingPlane.IsErr ()) {
+        return CreateFailedExecutionResult (cuttingPlane.UnwrapErr ().kind, "Failed to get the cutting plane.");
+    }
+
+    bool cutawayEnabled = false;
+    if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
+        auto result = cuttingPlane->Set3DCutawayStatus (cutawayEnabled);
+        if (result.IsErr ()) {
+            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to turn 3D Cutaway on or off.");
+        }
+    }
+
+    bool cuttingPlanesVisible = false;
+    if (parameters.Get ("cuttingPlanesVisible", cuttingPlanesVisible)) {
+        auto result = cuttingPlane->SetCuttingPlanesVisibility (cuttingPlanesVisible);
+        if (result.IsErr ()) {
+            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to show or hide the cutting planes.");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#elif !defined (ServerMainVers_2800)
+    // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
+    bool cutawayEnabled = false;
+    if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
+        GSErrCode err = ACAPI_CuttingPlane_Set3DCutawayStatus (&cutawayEnabled);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off. Is the 3D window open?");
+        }
+    }
+
+    bool cuttingPlanesVisible = false;
+    if (parameters.Get ("cuttingPlanesVisible", cuttingPlanesVisible)) {
+        GSErrCode err = ACAPI_CuttingPlane_SetCuttingPlanesVisibility (&cuttingPlanesVisible);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to show or hide the cutting planes. Is the 3D window open?");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Set3DCutawayStatus is not available in this build.");
 #endif
 }
 
