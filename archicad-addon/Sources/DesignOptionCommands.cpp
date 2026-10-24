@@ -58,6 +58,8 @@ static void AddIsEditable (GS::ObjectState& os, const ItemT& item)
     if (editable.IsErr ()) {
         os.Add ("notEditableError", CreateErrorObjectState (editable, "Not editable."));
     }
+}
+
 // Returns the error response with Archicad's own text when the user may not
 // create design options, sets or combinations (e.g. a Teamwork project
 // without the right); no value when creating them is allowed.
