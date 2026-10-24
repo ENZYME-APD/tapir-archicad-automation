@@ -1037,6 +1037,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetClassificationsOfAttributesCommand> (
             classificationCommands, "1.7.3",
             "Sets the classifications of attributes (building materials, composites, surfaces, etc.). The given item replaces the attribute's current item in the same classification system. In order to set the classification of an attribute to unclassified in a system, omit the classificationItemId field."
+        );
         err |= RegisterCommand<GetClassificationsOfElementDefaultsCommand> (
             classificationCommands, "1.7.3",
             "Returns the classification of the tool defaults (the settings new elements get) of the given element types in the given classification systems."

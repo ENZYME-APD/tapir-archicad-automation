@@ -489,6 +489,20 @@ GS::ObjectState SetClassificationsOfAttributesCommand::Execute (const GS::Object
                     err = ACAPI_Attribute_RemoveClassificationItem (attrHead, currentItemGuid.Get ());
                     if (err != NoError) {
                         executionResults (CreateFailedExecutionResult (err, DescribeAttributeClassificationError (err, "Failed to remove the classification item of the attribute")));
+                        continue;
+                    }
+                }
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 GetClassificationsOfElementDefaultsCommand::GetClassificationsOfElementDefaultsCommand () :
     CommandBase (CommonSchema::Used)
 {
