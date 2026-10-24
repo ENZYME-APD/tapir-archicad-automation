@@ -45,16 +45,21 @@ archicad-addon/          C++ Archicad Add-On
   Installer/             Cross-platform end-user installer (tapir_installer.py, PyInstaller-packaged in CI)
   README.md
 grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged via Yak
-  TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/
+  TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/,
+                         ToolSettings/ (API field -> Archicad GUI label tables per tool)
 builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference),
-                         api-coverage/ page of the Archicad API coverage checklist
+                         api-coverage/ page of the Archicad API coverage checklist,
+                         gh-coverage/ page of the Grasshopper coverage checklist
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
                          command scaffolder (new_command.py),
+                         Grasshopper GUI label table checker (check_tool_settings.py),
                          API coverage generator (generate_api_coverage.py,
-                         fetch_api_coverage_github_data.py, api_coverage_rules.json)
+                         fetch_api_coverage_github_data.py, api_coverage_rules.json),
+                         Grasshopper coverage generator (generate_gh_coverage.py,
+                         gh_coverage_rules.json)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -193,6 +198,65 @@ python test_examples.py
   [grasshopper-plugin/YakPackage/](grasshopper-plugin/YakPackage/) and
   `create_package_win.bat`.
 
+### Naming from the Archicad GUI
+
+Every Grasshopper component uses the names a user sees in Archicad, not the API names.
+- An input, output or JSON key that stands for a setting of an Archicad tool is named after
+  the English label of that setting's control in the tool's settings dialog, e.g. the wall's
+  `begThickness` gets the label of its thickness control. This applies to new and changed inputs
+  and outputs; existing ones are renamed when their tool component (below) replaces them.
+- The labels, with the dialog panel (Group) and the panel's subheading (Subgroup), are kept per
+  tool in [grasshopper-plugin/TapirGrasshopperPlugin/ToolSettings/](grasshopper-plugin/TapirGrasshopperPlugin/ToolSettings/)
+  (`<Tool>.json`, e.g. `Wall.json`), checked by `python tools/check_tool_settings.py`. Take the
+  labels from there; code only uses that copy.
+- Never invent a label. Add a label to the table only when it is found verbatim on Graphisoft's help
+  page for that settings dialog (help.graphisoft.com, the Archicad version the table names: its text
+  or its dialog screenshots) or in a DevKit comment that names the control, and name the page and
+  screenshot in `labelSource`; otherwise leave it `null`, and the API name is used. Capitalization
+  follows the dialog (Title Case).
+- Labels are unique per tool, case-insensitively, because the JSON is translated back to API
+  names by label. A field belongs to exactly one Group.
+
+### Archicad tool components (target architecture)
+
+Elements are handled by **one component per Archicad tool** (Walls, Slabs, Columns, …) that
+mirrors the tool's settings dialog. It is introduced tool by tool, starting with Walls (prototype:
+`Components/DesignToolsComponents/`, `ElementToolComponent` with `WallsComponent` and its `Walls_API`
+twin); new work on an element tool follows these rules:
+- **Name and place:** the plural tool name ("Walls"), in the group Graphisoft puts the tool in:
+  `GroupNames.DesignTools` ("Design Tools"); `DocumentTools` and `ViewpointTools` are added with
+  their first component.
+- **Built from the table:** a tool component derives from `ElementToolComponent`, which builds its
+  JSON inputs and outputs from `ToolSettings/<Tool>.json` (embedded in the plugin); the subclass
+  only names the tool, its Create/Modify commands with the keys each accepts, its geometry
+  inputs and its dialog panels (`JsonGroups`). Saved definitions find parameters by position, so
+  the JSON parameters come last and `JsonGroups` is append-only: never reorder or remove a panel.
+  Execute checks the element type first (the Modify commands do not), and `PrepareSettings` drops
+  values the commands cannot write, so a JSON read by Refresh can always be fed back.
+- **Three buttons, one set of JSON objects:** *Refresh* reads (`GetDetailsOfElements`), *Execute*
+  writes, *Create* makes new elements (the tool's `Create<Type>` command, starting from the tool
+  defaults or the `FavoriteName` input). Writing and creating only happen on a button press; the
+  component ignores `AutoExecute`, only *Refresh* may run automatically. Clear the request flags
+  inside `SolveInstance`, where they are used, not after `ExpireSolution (true)`.
+- **One JSON input and output per dialog panel:** the Group name without spaces + `_JSON`
+  (`GeometryAndPositioning_JSON`, `FloorPlanAndSection_JSON`, `Model_JSON`,
+  `ClassificationAndProperties_JSON`), keys are the GUI labels from the table. Only the keys given are
+  written (partial updates), arrays are replaced, not merged. With N elements each JSON input holds
+  0 (unchanged), 1 (all) or N items; anything else is an error.
+- **Plain inputs/outputs** for what is not on a dialog panel: `ElementGuid`, `ElementID`,
+  `LayerIndex`, `DrawOrder`; and **every input that defines the geometry** (drawn in Archicad), e.g.
+  `StartPoint`/`EndPoint` for walls, which override the JSON on *Create*.
+- **Execute and Create accept the same keys:** on the add-on side they share one apply-function
+  (walls: `ApplyWallDetails`, used by `CreateWalls` and `ModifyWalls`; `SetDetailsOfElements`'s
+  wall case only takes coordinates, height, offset and the thicknesses of trapezoid walls).
+- **Delete is never part of a tool component**; it stays in the separate `DeleteElements`
+  component.
+- A `<Tool>_API` twin with the raw API names may exist for testing.
+- The old per-command components stay until the tool component reaches parity, then get
+  `Exposure` `GH_Exposure.hidden` for one release and are removed in the next. Keep a component's
+  GUID when moving it. Archicad attributes (building materials, surfaces, composites, …) will follow
+  the same pattern later.
+
 ## Versioning
 
 Version lives in multiple places that must stay in sync:
@@ -316,7 +380,14 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   when set; `API_COVERAGE=false` turns it off. It uses `pull_request_target`, so it
   must never check out or run pull request code. Maintainers mark items skipped,
   with a reason, in the `skip` section of `tools/api_coverage_rules.json`; the
-  `notApplicable` section lists what cannot be a JSON command.
+  `notApplicable` section lists what cannot be a JSON command. The same run
+  writes the Grasshopper coverage (`tools/generate_gh_coverage.py`): which Tapir
+  commands a Grasshopper component calls (sent with `ToAddOn`; a same-named
+  official command sent with `ToArchicad` does not count) and whether the
+  components name every parameter of the command's input schema, cover the
+  rest through a JSON input, or miss some. It publishes `gh-coverage.*` to the
+  same branch, read by `docs/gh-coverage/index.html`; commands that need no
+  component go in `tools/gh_coverage_rules.json`.
 
 ## Installation (end users)
 
@@ -350,6 +421,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - Add-On JSON command reference: <https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon>
 - Archicad API coverage checklist: <https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/>
   (data on the `api-coverage` branch, generated by `.github/workflows/api_coverage.yml`)
+- Grasshopper coverage of the Tapir commands: <https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/>
+  (same branch and workflow)
 - Developer docs (wiki): <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki>
 - Add-On development guide: <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development>
 - Roadmap: <https://github.com/orgs/ENZYME-APD/projects/4/views/1>
