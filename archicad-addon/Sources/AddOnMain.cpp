@@ -1008,6 +1008,13 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<CheckPropertyExpressionsCommand> (
+            propertyCommands, "1.7.3",
+            "Checks whether the given property expressions are syntactically valid."
+        );
+        err |= RegisterCommand<GetPropertyExpressionReferencesCommand> (
+            propertyCommands, "1.7.3",
+            "Returns the strings that refer to the given properties in property expressions."
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."
