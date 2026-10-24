@@ -2061,6 +2061,38 @@
             }
         ]
     },
+    "HotlinkOwnersOfElement": {
+        "type": "object",
+        "description": "The hotlink an element comes from. Both ids are omitted when the element is not part of a hotlinked module.",
+        "properties": {
+            "isInHotlink": {
+                "type": "boolean",
+                "description": "True when Archicad reports a hotlink for the element, that is, when at least one of the ids below is returned."
+            },
+            "hotlinkElementId": {
+                "$ref": "#/ElementId",
+                "description": "The hotlink element which contains the element (ACAPI_Hotlink_GetContainingHotlinkGuid)."
+            },
+            "hotlinkInstanceId": {
+                "$ref": "#/ElementId",
+                "description": "The hotlink instance the element belongs to (ACAPI_Hotlink_GetHotLinkOwner)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "isInHotlink" ]
+    },
+    "HotlinkOwnersOfElementOrError": {
+        "type": "object",
+        "description": "The hotlink an element comes from, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/HotlinkOwnersOfElement"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "SetGDLParameterArray": {
         "type": "array",
         "description": "The list of GDL parameters.",
