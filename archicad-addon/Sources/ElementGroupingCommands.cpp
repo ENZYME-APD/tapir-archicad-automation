@@ -816,6 +816,11 @@ GS::ObjectState GetElementSetDataCommand::Execute(const GS::ObjectState& paramet
         BMKillHandle(&userData.dataHdl);
 
         elementSetData(dataItem);
+    }
+
+    return response;
+}
+
 GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
     CommandBase(CommonSchema::Used)
 {
