@@ -1239,6 +1239,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.7.2",
             "Gets all graphic override rule groups of the project with the rules they contain, empty groups included. Available from Archicad 27."
         );
+        err |= RegisterCommand<SetGraphicOverrideRuleOrderCommand> (
+            attributeCommands, "1.7.3",
+            "Sets the order of the rules in graphic override rule groups, found by name. The listed rules come first, in the given order; the other rules of the group keep their order after them. Available from Archicad 27."
+        );
         err |= RegisterCommand<RenameGraphicOverrideRuleGroupsCommand> (
             attributeCommands, "1.7.3",
             "Renames graphic override rule groups, found by name. Their rules are kept. Available from Archicad 27."
