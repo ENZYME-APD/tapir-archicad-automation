@@ -832,11 +832,11 @@ GSErrCode Initialize (void)
             "Deletes the given attributes."
         );
         err |= RegisterCommand<CreateAttributeFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Creates attribute folders, each given by attribute type and path (the folder names from the root folder down). Missing parent folders are created too; a folder that already exists is kept and reported as success. Available from Archicad 26."
         );
         err |= RegisterCommand<DeleteAttributeFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26."
         );
         err |= RegisterCommand<CreateLayersCommand> (

@@ -2793,25 +2793,14 @@ GS::ObjectState CreateAttributeFoldersCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
-        // Created level by level from the root, so a missing parent folder is created too and an existing one,
-        // including the requested folder itself, is kept as it is.
-        GSErrCode err = NoError;
-        API_AttributeFolder current;
-        current.typeID = folder.typeID;
-        current.guid = GS::Guid ();
-        for (const GS::UniString& folderName : folder.path) {
-            current.path.Push (folderName);
-            if (FindAttributeFolder (current)) {
-                continue;
-            }
-            err = ACAPI_Attribute_CreateFolder (current);
-            if (err != NoError) {
-                break;
-            }
-        }
+        // ACAPI_Attribute_CreateFolder creates every missing folder along the full path and keeps the existing
+        // ones (returning NoError when the whole path already exists), so one call per item is enough. It is
+        // an in/out parameter that rewrites path and guid, so it is given a copy.
+        API_AttributeFolder toCreate = folder;
+        const GSErrCode err = ACAPI_Attribute_CreateFolder (toCreate);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to create attribute folder '%T'.", GetAttributeFolderPathString (current.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to create attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
             continue;
         }
 
