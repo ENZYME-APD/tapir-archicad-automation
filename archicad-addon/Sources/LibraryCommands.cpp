@@ -17,9 +17,6 @@
 #include <vector>
 
 namespace ACLib = ACAPI::Library;
-#include "ACAPI/Library/GSMObject.hpp"
-
-#include <functional>
 
 using ACAPI::Library::GSMObject;
 
@@ -1804,6 +1801,14 @@ GS::ObjectState ModifyLibraryListCommand::Execute (const GS::ObjectState& parame
             removeResultsAdder (CreateSuccessfulExecutionResult ());
         }
     }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
