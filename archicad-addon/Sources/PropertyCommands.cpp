@@ -178,7 +178,7 @@ constexpr uint32_t PackTypes (API_PropertyCollectionType colType, API_VariantTyp
     return (static_cast<uint32_t> (colType) << 16) | static_cast<uint32_t> (valType);
 }
 
-static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString)
+GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString)
 {
     if (propertyValue.value.variantStatus == API_VariantStatusUserUndefined) {
         resultString = "<Undefined>";

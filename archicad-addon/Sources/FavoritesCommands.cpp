@@ -1,4 +1,5 @@
 #include "FavoritesCommands.hpp"
+#include "PropertyCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NativeImage.hpp"
@@ -292,6 +293,244 @@ GS::ObjectState GetFavoritePreviewImageCommand::Execute (const GS::ObjectState& 
     auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
     str.DeleteAll (GS::UniChar(char('\n')));
     return GS::ObjectState ("previewImage", str);
+}
+
+// ============================================================================
+// GetFavoriteDetails — read-only audit of what a Favorite would apply: its
+// classifications, property values and element category values, as
+// ACAPI_Favorite_Get fills them in (the same data ApplyFavoritesToElements and
+// ApplyFavoritesToElementDefaults apply). The memo and the sub-elements are not
+// requested, so no handle is allocated.
+// ============================================================================
+
+GetFavoriteDetailsCommand::GetFavoriteDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteDetailsCommand::GetName () const
+{
+    return "GetFavoriteDetails";
+}
+
+GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "$ref": "#/Favorites"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favoriteDetails": {
+                "type": "array",
+                "description": "The details of the given favorites, in the order of the input, or an error for a favorite that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "favorite": {
+                                    "type": "string",
+                                    "description": "The name of the favorite."
+                                },
+                                "elementType": {
+                                    "type": "string",
+                                    "description": "The element type of the favorite, as in GetFavoritesByType."
+                                },
+                                "classifications": {
+                                    "type": "array",
+                                    "description": "The classifications the favorite applies, one per classification system.",
+                                    "items": {
+                                        "$ref": "#/ClassificationIdArrayItem"
+                                    }
+                                },
+                                "properties": {
+                                    "type": "array",
+                                    "description": "The property values stored in the favorite.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "propertyId": {
+                                                "$ref": "#/PropertyId"
+                                            },
+                                            "propertyName": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "HasValue",
+                                                    "NotEvaluated",
+                                                    "NotAvailable"
+                                                ],
+                                                "description": "The evaluation status of the value. propertyValue is only present for HasValue."
+                                            },
+                                            "isDefault": {
+                                                "type": "boolean",
+                                                "description": "True if the value is the default value of the property."
+                                            },
+                                            "propertyValue": {
+                                                "$ref": "#/PropertyValue"
+                                            },
+                                            "error": {
+                                                "$ref": "#/Error"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "propertyId",
+                                            "propertyName",
+                                            "status",
+                                            "isDefault"
+                                        ]
+                                    }
+                                },
+                                "categoryValues": {
+                                    "type": "array",
+                                    "description": "The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "categoryId": {
+                                                "$ref": "#/GuidId"
+                                            },
+                                            "categoryName": {
+                                                "type": "string"
+                                            },
+                                            "categoryValueId": {
+                                                "$ref": "#/GuidId"
+                                            },
+                                            "categoryValueName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "categoryId",
+                                            "categoryName",
+                                            "categoryValueId",
+                                            "categoryValueName"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "favorite",
+                                "elementType",
+                                "classifications",
+                                "properties",
+                                "categoryValues"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoriteDetails"
+        ]
+    })";
+}
+
+static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status)
+{
+    switch (status) {
+        case API_Property_HasValue:     return "HasValue";
+        case API_Property_NotEvaluated: return "NotEvaluated";
+        default:                        return "NotAvailable";
+    }
+}
+
+GS::ObjectState GetFavoriteDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> favorites;
+    parameters.Get ("favorites", favorites);
+
+    GS::ObjectState response;
+    const auto& favoriteDetails = response.AddList<GS::ObjectState> ("favoriteDetails");
+
+    for (const GS::UniString& favoriteName : favorites) {
+        API_Favorite favorite;
+        favorite.name = favoriteName;
+        favorite.properties.New ();
+        favorite.classifications.New ();
+        favorite.elemCategoryValues.New ();
+
+        const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+        if (err != NoError) {
+            favoriteDetails (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
+            continue;
+        }
+
+        GS::ObjectState details;
+        details.Add ("favorite", favoriteName);
+        details.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (favorite.element.header)));
+
+        const auto& classifications = details.AddList<GS::ObjectState> ("classifications");
+        for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+            GS::ObjectState classificationId;
+            classificationId.Add ("classificationSystemId", CreateGuidObjectState (pair.first));
+            classificationId.Add ("classificationItemId", CreateGuidObjectState (pair.second));
+            classifications (GS::ObjectState ("classificationId", classificationId));
+        }
+
+        // The value is only valid for API_Property_HasValue, so it is left out otherwise
+        // rather than reported as an empty string.
+        const auto& properties = details.AddList<GS::ObjectState> ("properties");
+        for (const API_Property& property : *favorite.properties) {
+            GS::ObjectState propertyDetails;
+            propertyDetails.Add ("propertyId", CreateGuidObjectState (property.definition.guid));
+            propertyDetails.Add ("propertyName", property.definition.name);
+            propertyDetails.Add ("status", PropertyValueStatusToString (property.status));
+            propertyDetails.Add ("isDefault", property.isDefault);
+            if (property.status == API_Property_HasValue) {
+                GS::UniString valueString;
+                const GSErrCode valueErr = GetPropertyValueString (property, valueString);
+                if (valueErr == NoError) {
+                    propertyDetails.Add ("propertyValue", GS::ObjectState ("value", valueString));
+                } else {
+                    GS::ObjectState error;
+                    error.Add ("code", valueErr);
+                    error.Add ("message", "Failed to get property value as string");
+                    propertyDetails.Add ("error", error);
+                }
+            }
+            properties (propertyDetails);
+        }
+
+        const auto& categoryValues = details.AddList<GS::ObjectState> ("categoryValues");
+        for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+            GS::ObjectState categoryValueDetails;
+            categoryValueDetails.Add ("categoryId", CreateGuidObjectState (categoryValue.category.guid));
+            categoryValueDetails.Add ("categoryName", GS::UniString (categoryValue.category.name));
+            categoryValueDetails.Add ("categoryValueId", CreateGuidObjectState (categoryValue.guid));
+            categoryValueDetails.Add ("categoryValueName", GS::UniString (categoryValue.name));
+            categoryValues (categoryValueDetails);
+        }
+
+        favoriteDetails (details);
+    }
+
+    return response;
 }
 
 ApplyFavoritesToElementDefaultsCommand::ApplyFavoritesToElementDefaultsCommand () :
