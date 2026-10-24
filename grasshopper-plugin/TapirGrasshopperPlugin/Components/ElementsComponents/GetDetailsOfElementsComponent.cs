@@ -117,7 +117,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
                 var detailsOfElement = response.DetailsOfElements[i];
-                if (detailsOfElement == null)
+                // An element that could not be read comes back as an error
+                // entry, which has no type.
+                if (detailsOfElement == null || detailsOfElement.Type == null)
                 {
                     continue;
                 }
