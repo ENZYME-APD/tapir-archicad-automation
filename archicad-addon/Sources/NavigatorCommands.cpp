@@ -1366,6 +1366,8 @@ GS::ObjectState SetGhostStorySettingsCommand::Execute (const GS::ObjectState& pa
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
 // The Partial Structure Display of the current (front) window, as opposed to
 // the one stored in a saved view (Get/SetViewSettings "structureDisplay").
 

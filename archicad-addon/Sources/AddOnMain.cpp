@@ -1495,6 +1495,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetGhostStorySettingsCommand> (
             navigatorCommands, "1.7.3",
             "Sets the Trace & Reference ghost story settings of the floor plan through its ghost record, which is created when the floor plan has none. Every field is optional; the ones left out keep their value, and without a story choice the current reference is kept."
+        );
         err |= RegisterCommand<GetStructureDisplayCommand> (
             navigatorCommands, "1.7.2",
             "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27."
