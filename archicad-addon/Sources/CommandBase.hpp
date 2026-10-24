@@ -269,3 +269,8 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
+
+// Writes the Element ID of an existing element: the elemInfoString memo part, which
+// GetDetailsOfElements reads back as "id" (APIMemoMask_ElemInfoString). Must be called
+// inside an undoable command. Defined in CommandBase.cpp.
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);

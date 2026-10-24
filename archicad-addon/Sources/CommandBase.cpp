@@ -1204,3 +1204,17 @@ void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coor
     const double det = transformation.tmx[0] * transformation.tmx[5] - transformation.tmx[1] * transformation.tmx[4];
     mirrored = det < 0.0;
 }
+
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+{
+    // Only the info string part of the memo is filled and masked, so nothing else of the
+    // element is touched. ACAPI_DisposeElemMemoHdls deletes elemInfoString, the same way
+    // it frees the one ACAPI_Element_GetMemo allocates in GetDetailsOfElements.
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    memo.elemInfoString = new GS::UniString (id);
+
+    // ACAPI_Element_ChangeMemo takes the guid by non-const reference.
+    API_Guid guid = elementGuid;
+    return ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
+}
