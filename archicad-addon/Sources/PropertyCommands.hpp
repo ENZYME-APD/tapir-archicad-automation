@@ -151,6 +151,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetPropertyAvailabilityOfDefaultsCommand : public CommandBase
+{
+public:
+    GetPropertyAvailabilityOfDefaultsCommand ();
 class MakePropertyAvailableForElementsCommand : public CommandBase
 {
 public:
