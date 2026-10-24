@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 14:53 UTC",
+ "generatedAt": "2026-10-24 18:21 UTC",
  "versions": [
   25,
   26,
@@ -10,11 +10,11 @@
  ],
  "counts": {
   "not applicable": 620,
-  "in progress": 631,
+  "in progress": 626,
   "claimed": 745,
   "done": 743,
   "open": 89,
-  "merged": 51
+  "merged": 56
  },
  "items": [
   {
@@ -3976,13 +3976,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -5034,10 +5030,6 @@
     {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
-    },
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
     },
     {
      "number": 1370,
@@ -20901,10 +20893,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    },
-    {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
     },
@@ -25653,14 +25641,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1318,
@@ -25680,14 +25663,9 @@
     26
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1318,
@@ -25733,14 +25711,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1318,
@@ -25759,14 +25732,9 @@
     27
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1318,
@@ -69637,10 +69605,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    },
-    {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
@@ -69651,6 +69615,10 @@
     {
      "number": 1363,
      "title": "[3/6] GetIFCClassificationReferencesOfElements on Archicad 25-27"
+    },
+    {
+     "number": 1362,
+     "title": "[3/3] AC25–26 batch property commands: SetPropertyValueOfElements, AddPropertyToElements, RemovePropertyFromElements"
     },
     {
      "number": 1355,
@@ -69665,6 +69633,10 @@
      "title": "[1/6] GetIFCAttributesOfElements: read IFC attributes on Archicad 25-27"
     },
     {
+     "number": 1336,
+     "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
+    },
+    {
      "number": 1333,
      "title": "[1/4] Add GetPropertyDefinitionsOfAttributes command"
     },
@@ -69677,6 +69649,14 @@
      "title": "[1/3] Add GetIFCAttributesOfElements command"
     },
     {
+     "number": 1292,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
+     "number": 1279,
+     "title": "Add GetPropertyAvailabilityOfDefaults command (property availability and visibility of tool defaults)"
+    },
+    {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
     },
@@ -69685,8 +69665,24 @@
      "title": "Add GetCurrentPenTable command (current pen set and pen count)"
     },
     {
+     "number": 1238,
+     "title": "Add GetPropertyEditability command (property value editability and visibility)"
+    },
+    {
      "number": 1221,
      "title": "Add GetAttributesFromProject: read attributes from another project or template file"
+    },
+    {
+     "number": 1148,
+     "title": "[3/4] ModifyPropertyValueOfElements: set one property value on several elements, all or nothing (AC27+)"
+    },
+    {
+     "number": 1147,
+     "title": "[2/4] Add CheckPropertyValues command (ACAPI_Property_IsValidValue)"
+    },
+    {
+     "number": 1146,
+     "title": "[1/4] Add CheckPropertyExpressions and GetPropertyExpressionReferences"
     },
     {
      "number": 1121,
@@ -69695,6 +69691,10 @@
     {
      "number": 1024,
      "title": "[2/4] Add RenameAttributeFolders and MoveAttributesAndFolders commands"
+    },
+    {
+     "number": 1019,
+     "title": "Add element component commands: list components and read their properties"
     },
     {
      "number": 1009,
@@ -69707,6 +69707,10 @@
     {
      "number": 975,
      "title": "Add ModifyPens: change single pens of the active pen table"
+    },
+    {
+     "number": 968,
+     "title": "[1/3] Add Get/SetPropertyValuesOfElementDefaults"
     },
     {
      "number": 953,
@@ -70956,10 +70960,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1374,
-     "title": "[4/4] Add AddPropertyToAttributes and RemovePropertyFromAttributes (Archicad 25–27)"
-    },
     {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"

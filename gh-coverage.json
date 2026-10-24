@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-24 14:53 UTC",
+ "generatedAt": "2026-10-24 18:21 UTC",
  "counts": {
   "done": 287,
   "in progress": 5,
-  "open": 50,
+  "open": 53,
   "merged": 4,
   "claimed": 2,
   "not applicable": 1
@@ -4142,6 +4142,51 @@
      "title": "Classifications of attributes: get, add and remove"
     }
    ]
+  },
+  {
+   "id": "GetPropertyDefinitionsOfAttributes",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "brief": "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "AddPropertyToAttributes",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "brief": "Makes an existing custom property available for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RemovePropertyFromAttributes",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "brief": "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreatePropertyGroups",
