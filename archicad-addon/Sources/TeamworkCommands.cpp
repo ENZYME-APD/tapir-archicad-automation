@@ -502,3 +502,105 @@ GS::ObjectState ReleaseHotlinkCacheManagementCommand::Execute (const GS::ObjectS
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to release the Hotlink and XRef management.");
 }
+
+GetTeamworkStatusCommand::GetTeamworkStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTeamworkStatusCommand::GetName () const
+{
+    return "GetTeamworkStatus";
+}
+
+GS::Optional<GS::UniString> GetTeamworkStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isShared": {
+                "type": "boolean",
+                "description": "Whether the opened project is a Teamwork (BIMcloud) project."
+            },
+            "isOnline": {
+                "type": "boolean",
+                "description": "Whether there is a live connection to the Teamwork server. Always false for a project that is not shared."
+            },
+            "users": {
+                "type": "array",
+                "description": "The members of the shared project. Only present when the project is shared.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "userId": {
+                            "type": "number"
+                        },
+                        "userName": {
+                            "type": "string",
+                            "description": "The login name of the user."
+                        },
+                        "fullName": {
+                            "type": "string"
+                        },
+                        "isConnected": {
+                            "type": "boolean",
+                            "description": "Whether the user has joined the project."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "userId",
+                        "userName",
+                        "fullName",
+                        "isConnected"
+                    ]
+                }
+            },
+            "hotlinkCacheManagementOwner": {
+                "$ref": "#/User",
+                "description": "The user who has reserved the Hotlink and XRef management. Only present when somebody has reserved it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isShared",
+            "isOnline"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkStatusCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ProjectInfo projectInfo = {};
+    const GSErrCode err = ACAPI_ProjectOperation_Project (&projectInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
+    }
+
+    const bool isShared = projectInfo.teamwork;
+    GS::ObjectState response ("isShared", isShared,
+                              "isOnline", isShared && ACAPI_Teamwork_HasConnection ());
+    if (!isShared) {
+        return response;
+    }
+
+    API_SharingInfo sharingInfo = {};
+    if (ACAPI_Teamwork_ProjectSharing (&sharingInfo) == NoError) {
+        const auto& usersOutput = response.AddList<GS::ObjectState> ("users");
+        for (Int32 i = 0; i < sharingInfo.nUsers; ++i) {
+            const API_UserInfo& userInfo = (*sharingInfo.users)[i];
+            usersOutput (GS::ObjectState ("userId", userInfo.userId,
+                                          "userName", GS::UniString (userInfo.loginName),
+                                          "fullName", GS::UniString (userInfo.fullName),
+                                          "isConnected", userInfo.connected));
+        }
+        BMKillHandle (reinterpret_cast<GSHandle*> (&sharingInfo.users));
+    }
+
+    short hotlinkCacheManagementOwner = 0;
+    if (ACAPI_Teamwork_GetHotlinkCacheManagementOwner (&hotlinkCacheManagementOwner) == NoError && hotlinkCacheManagementOwner != 0) {
+        response.Add ("hotlinkCacheManagementOwner", CreateTeamworkUserObjectState (hotlinkCacheManagementOwner));
+    }
+
+    return response;
+}
