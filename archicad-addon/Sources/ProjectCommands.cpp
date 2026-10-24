@@ -1,6 +1,9 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "Location.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/IFCObjectAccessor.hpp"
@@ -1929,6 +1932,122 @@ GS::ObjectState SaveCurrentWindowAsImageCommand::Execute (const GS::ObjectState&
         }
     }
     return response;
+}
+
+GetCurrentViewImageCommand::GetCurrentViewImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurrentViewImageCommand::GetName () const
+{
+    return "GetCurrentViewImage";
+}
+
+GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "source": {
+                "type": "string",
+                "description": "Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.",
+                "enum": ["3DWindow", "RenderingWindow"]
+            },
+            "format": {
+                "type": "string",
+                "description": "Optional, png by default. The image format.",
+                "enum": ["png", "jpg"]
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "image": {
+                "type": "string",
+                "description": "The base64 encoded image, in the requested format."
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the image in pixels."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the image in pixels."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "image",
+            "width",
+            "height"
+        ]
+    })";
+}
+
+GS::ObjectState GetCurrentViewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_3000
+    // ACAPI_View_GetCurrentImage is new in the Archicad 30 API: it gets the image of the
+    // 3D window or of the PhotoRendering window, whichever API_ImageSource selects.
+    API_ImageSource imageSource = API_ImageSource::From3DWindow;
+    GS::UniString windowName = "3D";
+    GS::UniString sourceStr;
+    if (parameters.Get ("source", sourceStr)) {
+        if (sourceStr == "3DWindow") {
+            imageSource = API_ImageSource::From3DWindow;
+            windowName = "3D";
+        } else if (sourceStr == "RenderingWindow") {
+            imageSource = API_ImageSource::FromRenderingWindow;
+            windowName = "PhotoRendering";
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "source must be 3DWindow or RenderingWindow.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "format must be png or jpg.");
+        }
+    }
+
+    NewDisplay::NativeImage nativeImage;
+    const GSErrCode err = ACAPI_View_GetCurrentImage (nativeImage, imageSource);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString ("Failed to get the image of the ") + windowName + " window: the window is not open, or it has no image yet.");
+    }
+    if (nativeImage.GetWidth () == 0 || nativeImage.GetHeight () == 0) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("The ") + windowName + " window has no image: the window is not open, or it has not been rendered yet.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to encode the image of the ") + windowName + " window.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar (char ('\n')));
+    return GS::ObjectState (
+        "image", str,
+        "width", static_cast<Int32> (nativeImage.GetWidth ()),
+        "height", static_cast<Int32> (nativeImage.GetHeight ()));
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 30.");
+#endif
 }
 
 GetGeoLocationCommand::GetGeoLocationCommand () :

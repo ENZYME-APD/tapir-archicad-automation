@@ -368,6 +368,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.1",
             "Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format."
         );
+        err |= RegisterCommand<GetCurrentViewImageCommand> (
+            projectCommands, "1.7.2",
+            "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30."
+        );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
             "Gets the project calculation units."
