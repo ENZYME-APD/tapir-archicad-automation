@@ -1494,6 +1494,116 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
 }
 
 // ============================================================================
+// ReadFavoritesFile — wraps ACAPI_Favorite_Read, which reads the Favorites of a
+// .prefs file or folder without importing them, so a caller can compare them
+// with the project's Favorites before ImportFavorites overwrites anything.
+// ============================================================================
+
+ReadFavoritesFileCommand::ReadFavoritesFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ReadFavoritesFileCommand::GetName () const
+{
+    return "ReadFavoritesFile";
+}
+
+GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["path"]
+    })";
+}
+
+GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the Favorite."
+                        },
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "folder": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "description": "The folder hierarchy of the Favorite in the file or folder. Empty = root."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "elementType",
+                        "folder"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState ReadFavoritesFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString path;
+    parameters.Get ("path", path);
+    if (path.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "path is required");
+    }
+
+    // Nothing is imported: ACAPI_Favorite_Read only fills this array, the project's
+    // Favorites stay as they are.
+    GS::Array<API_Favorite> favorites;
+    const GSErrCode err = ACAPI_Favorite_Read (LocationFromPath (path), &favorites);
+
+    GS::ObjectState response;
+    const auto& favoritesList = response.AddList<GS::ObjectState> ("favorites");
+    for (API_Favorite& favorite : favorites) {
+        if (err == NoError) {
+            GS::ObjectState favoriteOS;
+            favoriteOS.Add ("name", favorite.name);
+            favoriteOS.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (favorite.element.header)));
+            const auto& folder = favoriteOS.AddList<GS::UniString> ("folder");
+            if (favorite.folder.HasValue ()) {
+                for (const GS::UniString& part : *favorite.folder) {
+                    folder (part);
+                }
+            }
+            favoritesList (favoriteOS);
+        }
+
+        // Only the name, type and folder are returned; the memo handles the read
+        // allocated are released here, also when it failed part way.
+        if (favorite.memo.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        }
+        if (favorite.memoMarker.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        }
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the Favorites file or folder.");
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its
 // sub-elements and its folder) without applying it to the tool defaults or
