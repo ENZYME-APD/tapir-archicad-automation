@@ -461,6 +461,8 @@ inline GSErrCode ACAPI_LibraryManagement_GetGDLDate (Int32* date)
 inline GSErrCode ACAPI_LibraryManagement_ChangeGDLDate (Int32* date)
 {
     return ACAPI_Environment (APIEnv_ChangeGDLDateID, date);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_CreateFolderInLibrary (const IO::Location* newFolderLocationInLibrary)
 {
     return ACAPI_Environment (APIEnv_CreateFolderInLibraryID, (void*) newFolderLocationInLibrary);
