@@ -1604,6 +1604,12 @@ GS::ObjectState ReadFavoritesFileCommand::Execute (const GS::ObjectState& parame
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the Favorites file or folder.");
+    }
+
+    return response;
+}
+
+// ============================================================================
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its
 // sub-elements and its folder) without applying it to the tool defaults or

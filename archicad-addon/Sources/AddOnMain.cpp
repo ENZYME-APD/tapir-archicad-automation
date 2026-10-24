@@ -940,6 +940,7 @@ GSErrCode Initialize (void)
             "Read the Favorites of a .prefs file or folder without importing them, returning the name, "
             "element type and folder of each. Nothing in the project changes, so the result can be "
             "compared with the project's Favorites before ImportFavorites."
+        );
         err |= RegisterCommand<GetFavoriteSettingsCommand> (
             favoritesCommands, "1.7.3",
             "Reads the stored settings of the given favorites without applying them or placing an element: "
