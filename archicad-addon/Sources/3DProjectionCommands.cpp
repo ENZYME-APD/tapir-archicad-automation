@@ -196,3 +196,206 @@ GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to set the 3D projection settings.");
 }
+
+// Both commands mirror API_3DWindowInfo: the pixel size of the 3D window (hSize, vSize) and
+// the zoom of its projection (zoomScaleX/Y, zoomDispX/Y). Archicad applies the size only
+// when setWindowSize is true and the zoom only when setZoom is true.
+
+static const char* Window3DSettingsSchema = R"({
+    "type": "object",
+    "properties": {
+        "hSize": {
+            "type": "integer",
+            "description": "The horizontal size of the 3D window in pixels."
+        },
+        "vSize": {
+            "type": "integer",
+            "description": "The vertical size of the 3D window in pixels."
+        },
+        "zoomScaleX": {
+            "type": "number",
+            "description": "The horizontal zoom scale of the 3D projection."
+        },
+        "zoomScaleY": {
+            "type": "number",
+            "description": "The vertical zoom scale of the 3D projection."
+        },
+        "zoomDispX": {
+            "type": "number",
+            "description": "The horizontal displacement (pan) of the 3D projection."
+        },
+        "zoomDispY": {
+            "type": "number",
+            "description": "The vertical displacement (pan) of the 3D projection."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "hSize",
+        "vSize",
+        "zoomScaleX",
+        "zoomScaleY",
+        "zoomDispX",
+        "zoomDispY"
+    ]
+})";
+
+static GS::ObjectState Create3DWindowSettingsObjectState (const API_3DWindowInfo& windowInfo)
+{
+    return GS::ObjectState (
+        "hSize", static_cast<Int32> (windowInfo.hSize),
+        "vSize", static_cast<Int32> (windowInfo.vSize),
+        "zoomScaleX", windowInfo.zoomScaleX,
+        "zoomScaleY", windowInfo.zoomScaleY,
+        "zoomDispX", windowInfo.zoomDispX,
+        "zoomDispY", windowInfo.zoomDispY);
+}
+
+Get3DWindowSettingsCommand::Get3DWindowSettingsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String Get3DWindowSettingsCommand::GetName () const
+{
+    return "Get3DWindowSettings";
+}
+
+GS::Optional<GS::UniString> Get3DWindowSettingsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (Window3DSettingsSchema);
+}
+
+GS::ObjectState Get3DWindowSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_3DWindowInfo windowInfo {};
+    GSErrCode err = ACAPI_View_Get3DWindowSets (&windowInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the 3D window settings.");
+    }
+
+    return Create3DWindowSettingsObjectState (windowInfo);
+}
+
+Set3DWindowSettingsCommand::Set3DWindowSettingsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String Set3DWindowSettingsCommand::GetName () const
+{
+    return "Set3DWindowSettings";
+}
+
+GS::Optional<GS::UniString> Set3DWindowSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "hSize": {
+            "type": "integer",
+            "description": "The horizontal size of the 3D window in pixels.",
+            "minimum": 1,
+            "maximum": 32767
+        },
+        "vSize": {
+            "type": "integer",
+            "description": "The vertical size of the 3D window in pixels.",
+            "minimum": 1,
+            "maximum": 32767
+        },
+        "zoomScaleX": {
+            "type": "number",
+            "description": "The horizontal zoom scale of the 3D projection.",
+            "exclusiveMinimum": 0
+        },
+        "zoomScaleY": {
+            "type": "number",
+            "description": "The vertical zoom scale of the 3D projection.",
+            "exclusiveMinimum": 0
+        },
+        "zoomDispX": {
+            "type": "number",
+            "description": "The horizontal displacement (pan) of the 3D projection."
+        },
+        "zoomDispY": {
+            "type": "number",
+            "description": "The vertical displacement (pan) of the 3D projection."
+        }
+    },
+    "additionalProperties": false,
+    "minProperties": 1,
+    "required": []
+})";
+}
+
+GS::Optional<GS::UniString> Set3DWindowSettingsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (Window3DSettingsSchema);
+}
+
+GS::ObjectState Set3DWindowSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // Start from the current settings so every value that is not given is kept.
+    API_3DWindowInfo windowInfo {};
+    GSErrCode err = ACAPI_View_Get3DWindowSets (&windowInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current 3D window settings.");
+    }
+    windowInfo.setWindowSize = false;
+    windowInfo.setZoom = false;
+
+    // API_3DWindowInfo keeps the window size in shorts.
+    const auto getSize = [&] (const char* name, short& size) -> bool {
+        Int32 value = 0;
+        if (!parameters.Get (name, value) || value < 1 || value > 32767) {
+            return false;
+        }
+        size = static_cast<short> (value);
+        windowInfo.setWindowSize = true;
+        return true;
+    };
+    const auto getZoom = [&] (const char* name, bool mustBePositive, double& zoom) -> bool {
+        double value = 0.0;
+        if (!parameters.Get (name, value) || (mustBePositive && !(value > 0.0))) {
+            return false;
+        }
+        zoom = value;
+        windowInfo.setZoom = true;
+        return true;
+    };
+
+    if (parameters.Contains ("hSize") && !getSize ("hSize", windowInfo.hSize)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameter: hSize must be an integer from 1 to 32767.");
+    }
+    if (parameters.Contains ("vSize") && !getSize ("vSize", windowInfo.vSize)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameter: vSize must be an integer from 1 to 32767.");
+    }
+    if (parameters.Contains ("zoomScaleX") && !getZoom ("zoomScaleX", true, windowInfo.zoomScaleX)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameter: zoomScaleX must be greater than 0.");
+    }
+    if (parameters.Contains ("zoomScaleY") && !getZoom ("zoomScaleY", true, windowInfo.zoomScaleY)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameter: zoomScaleY must be greater than 0.");
+    }
+    if (parameters.Contains ("zoomDispX") && !getZoom ("zoomDispX", false, windowInfo.zoomDispX)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameter: zoomDispX must be a number.");
+    }
+    if (parameters.Contains ("zoomDispY") && !getZoom ("zoomDispY", false, windowInfo.zoomDispY)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameter: zoomDispY must be a number.");
+    }
+
+    if (!windowInfo.setWindowSize && !windowInfo.setZoom) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid parameters: give at least one of hSize, vSize, zoomScaleX, zoomScaleY, zoomDispX and zoomDispY.");
+    }
+
+    err = ACAPI_View_Change3DWindowSets (&windowInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the 3D window settings.");
+    }
+
+    API_3DWindowInfo newWindowInfo {};
+    err = ACAPI_View_Get3DWindowSets (&newWindowInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The 3D window settings were changed, but reading them back failed.");
+    }
+
+    return Create3DWindowSettingsObjectState (newWindowInfo);
+}
