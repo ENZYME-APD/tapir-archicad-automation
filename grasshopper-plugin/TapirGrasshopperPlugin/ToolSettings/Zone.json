@@ -1,0 +1,152 @@
+{
+  "tool": "Zone",
+  "elementType": "Zone",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "ZoneDetails",
+    "create": "CreateZonesCommand"
+  },
+  "plainKeys": [
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "name",
+      "set": "name",
+      "apiMember": "API_ZoneType::roomName",
+      "apiDescription": "Name of the room as a Unicode string.",
+      "label": "Name",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm (text \"Zone Name and Number (No.)\"; screenshot ZoneNamePanel.png \"Name:\")",
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "numberStr",
+      "set": "numberStr",
+      "apiMember": "API_ZoneType::roomNoStr",
+      "apiDescription": "Room number as a Unicode string.",
+      "label": "No",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm (text \"Zone Name and Number (No.)\"; screenshot ZoneNamePanel.png \"No:\")",
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "categoryAttributeId",
+      "set": "categoryAttributeId",
+      "apiMember": "API_ZoneType::catInd",
+      "apiDescription": "Index of the actual zone category.",
+      "label": "Category",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm (text \"Zone Category: Choose a Zone category\"; screenshot ZoneNamePanel.png \"Category:\")",
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm (heading \"Home Story\"; screenshot ZoneNamePanel.png \"Home Story:\")",
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the zone bottom (derived from the home story and API_ZoneType::roomBaseLev, the base level of the room measured from the floor level).",
+      "label": "Bottom Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm (heading \"Bottom Elevation [to Reference level]\")",
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "isManual",
+      "set": null,
+      "apiMember": "API_ZoneType::manual",
+      "apiDescription": "Manually created zone; all edges static, no reference point (refPos).",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": null,
+      "set": "geometry",
+      "apiMember": null,
+      "apiDescription": "Automatic zone: the reference point (API_ZoneType::refPos) to find the zone around; manual zone: the polygon (API_ZoneType::poly with the memo coordinates).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "polygonOutline",
+      "set": null,
+      "apiMember": "API_ZoneType::poly",
+      "apiDescription": "Polygon of the zone.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "polygonArcs",
+      "set": null,
+      "apiMember": "API_ZoneType::poly",
+      "apiDescription": "Polygon of the zone.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "holes",
+      "set": null,
+      "apiMember": "API_ZoneType::poly",
+      "apiDescription": "Polygon of the zone.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "stampPosition",
+      "set": "stampPosition",
+      "apiMember": "API_ZoneType::pos",
+      "apiDescription": "Position of the origin of the zone stamp.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "stampAngle",
+      "set": "stampAngle",
+      "apiMember": "API_ZoneType::stampAngle",
+      "apiDescription": "Rotation angle of the room stamp [radian].",
+      "label": "Zone Stamp Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-8.htm (heading \"Zone Stamp Angle\": \"Enter a rotation angle for the Zone Stamp\"; screenshot ZoneStampAngle.png \"Zone Stamp Angle:\")",
+      "group": "Zone Stamp",
+      "subgroup": null
+    },
+    {
+      "get": "fixedStampAngle",
+      "set": "fixedStampAngle",
+      "apiMember": "API_ZoneType::fixedAngle",
+      "apiDescription": "The stampAngle will not change when the element is rotated and this flag is true.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    }
+  ]
+}

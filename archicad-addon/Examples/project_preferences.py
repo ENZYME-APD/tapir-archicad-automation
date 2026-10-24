@@ -5,7 +5,7 @@ import aclib
 originalPreferences = aclib.RunTapirCommand ('GetProjectPreferences')
 
 aclib.RunTapirCommand ('GetProjectPreferences', {
-    'preferenceTypes': ['WorkingUnits', 'Zones']
+    'preferenceTypes': ['WorkingUnits', 'Dimensions', 'Zones']
 })
 
 # A page changes only in the fields given; the rest keeps its value.
@@ -19,6 +19,22 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
             'decimals': 0
         },
         'angle': {
+            'decimals': 2
+        }
+    },
+    'dimensions': {
+        'linear': {
+            'unit': 'Millimeter',
+            'decimals': 0,
+            'accuracy': 'Off',
+            'hideZeroDecimals': True
+        },
+        'angle': {
+            'unit': 'DecimalDegree',
+            'decimals': 2
+        },
+        'area': {
+            'unit': 'SquareMeter',
             'decimals': 2
         }
     },
@@ -50,6 +66,11 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
     'workingUnits': {
         'length': {
             'unit': 'Furlong'
+        }
+    },
+    'dimensions': {
+        'level': {
+            'decimals': 3
         }
     },
     'calculationUnits': {
