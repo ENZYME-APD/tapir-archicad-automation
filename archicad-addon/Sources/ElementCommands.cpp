@@ -7,6 +7,7 @@
 #include "CoordTypedef.hpp"
 #include "ModelEdge.hpp"
 #include "ModelMeshBody.hpp"
+#include "Polygon2D.hpp"
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
@@ -17,6 +18,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
@@ -6111,7 +6113,7 @@ static GSErrCode CollectSolidBodies (const API_Elem_Head& elemHead, GS::Array<GS
 }
 
 template<typename APIElemType>
-static void CollectSubelementBodies (APIElemType* subelemArray, GS::Array<GS::ObjectState>& bodies)
+static void ForEachSubelementHeadIn (APIElemType* subelemArray, const std::function<void (const API_Elem_Head&)>& action)
 {
     if (subelemArray == nullptr) {
         return;
@@ -6119,22 +6121,24 @@ static void CollectSubelementBodies (APIElemType* subelemArray, GS::Array<GS::Ob
 
     const GSSize nSubelements = BMGetPtrSize (reinterpret_cast<GSPtr>(subelemArray)) / sizeof (APIElemType);
     for (GSIndex i = 0; i < nSubelements; ++i) {
-        CollectSolidBodies (subelemArray[i].head, bodies);
+        action (subelemArray[i].head);
     }
 }
 
 // A Stair carries its 3D geometry in its subelements (see CalculateStairBounds above), and so do
-// a Railing and a Curtain Wall, so their subelements' bodies are collected too. The 3D model of a
-// Column or a Beam belongs to its segments, so theirs are collected when the element itself has
-// no body, which keeps a body from being answered twice. Returns whether the element is one of those.
-static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
+// a Railing and a Curtain Wall, so whatever is read from an element's 3D model has to be read from
+// their subelements too: `action` is called with the head of each. The 3D model of a Column or a
+// Beam belongs to its segments, so `action` is called with theirs only when the element itself has
+// no body (hasOwnBodies is false), which keeps a body from being answered twice. Returns whether
+// the element is one of those types.
+static bool ForEachSubelementHead (const API_Elem_Head& elemHead, bool hasOwnBodies, const std::function<void (const API_Elem_Head&)>& action)
 {
     const API_ElemTypeID typeID = GetElemTypeId (elemHead);
     const bool isSegmented = typeID == API_ColumnID || typeID == API_BeamID;
     if (typeID != API_StairID && typeID != API_RailingID && typeID != API_CurtainWallID && !isSegmented) {
         return false;
     }
-    if (isSegmented && !bodies.IsEmpty ()) {
+    if (isSegmented && hasOwnBodies) {
         return true;
     }
 
@@ -6144,33 +6148,43 @@ static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array
         return true;
     }
 
-    CollectSubelementBodies (memo.stairRisers, bodies);
-    CollectSubelementBodies (memo.stairTreads, bodies);
-    CollectSubelementBodies (memo.stairStructures, bodies);
+    ForEachSubelementHeadIn (memo.stairRisers, action);
+    ForEachSubelementHeadIn (memo.stairTreads, action);
+    ForEachSubelementHeadIn (memo.stairStructures, action);
 
-    CollectSubelementBodies (memo.railingPosts, bodies);
-    CollectSubelementBodies (memo.railingInnerPosts, bodies);
-    CollectSubelementBodies (memo.railingBalusters, bodies);
-    CollectSubelementBodies (memo.railingPanels, bodies);
-    CollectSubelementBodies (memo.railingRails, bodies);
-    CollectSubelementBodies (memo.railingToprails, bodies);
-    CollectSubelementBodies (memo.railingHandrails, bodies);
-    CollectSubelementBodies (memo.railingRailEnds, bodies);
-    CollectSubelementBodies (memo.railingToprailEnds, bodies);
-    CollectSubelementBodies (memo.railingHandrailEnds, bodies);
-    CollectSubelementBodies (memo.railingRailConnections, bodies);
-    CollectSubelementBodies (memo.railingToprailConnections, bodies);
-    CollectSubelementBodies (memo.railingHandrailConnections, bodies);
+    ForEachSubelementHeadIn (memo.railingPosts, action);
+    ForEachSubelementHeadIn (memo.railingInnerPosts, action);
+    ForEachSubelementHeadIn (memo.railingBalusters, action);
+    ForEachSubelementHeadIn (memo.railingPanels, action);
+    ForEachSubelementHeadIn (memo.railingRails, action);
+    ForEachSubelementHeadIn (memo.railingToprails, action);
+    ForEachSubelementHeadIn (memo.railingHandrails, action);
+    ForEachSubelementHeadIn (memo.railingRailEnds, action);
+    ForEachSubelementHeadIn (memo.railingToprailEnds, action);
+    ForEachSubelementHeadIn (memo.railingHandrailEnds, action);
+    ForEachSubelementHeadIn (memo.railingRailConnections, action);
+    ForEachSubelementHeadIn (memo.railingToprailConnections, action);
+    ForEachSubelementHeadIn (memo.railingHandrailConnections, action);
 
-    CollectSubelementBodies (memo.cWallFrames, bodies);
-    CollectSubelementBodies (memo.cWallPanels, bodies);
-    CollectSubelementBodies (memo.cWallJunctions, bodies);
-    CollectSubelementBodies (memo.cWallAccessories, bodies);
+    ForEachSubelementHeadIn (memo.cWallFrames, action);
+    ForEachSubelementHeadIn (memo.cWallPanels, action);
+    ForEachSubelementHeadIn (memo.cWallJunctions, action);
+    ForEachSubelementHeadIn (memo.cWallAccessories, action);
 
-    CollectSubelementBodies (memo.columnSegments, bodies);
-    CollectSubelementBodies (memo.beamSegments, bodies);
+    ForEachSubelementHeadIn (memo.columnSegments, action);
+    ForEachSubelementHeadIn (memo.beamSegments, action);
 
     return true;
+}
+
+// The bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column
+// or Beam without a body of its own, in the shape CollectSolidBodies produces. Returns whether the
+// element is one of those.
+static bool CollectBodiesOfSubelements (const API_Elem_Head& elemHead, GS::Array<GS::ObjectState>& bodies)
+{
+    return ForEachSubelementHead (elemHead, !bodies.IsEmpty (), [&bodies] (const API_Elem_Head& subelemHead) {
+        CollectSolidBodies (subelemHead, bodies);
+    });
 }
 
 Get3DGeometryOfElementsCommand::Get3DGeometryOfElementsCommand () :
@@ -6284,6 +6298,349 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
 
     return response;
 }
+
+#ifdef ServerMainVers_2700
+
+// Adds the indices of the solid bodies of the element's own 3D model to `bodyIndices` - the
+// indices ACAPI_ModelAccess_GetComponent and the cutting plane query take. Same walk as
+// CollectSolidBodies above, without reading the bodies' geometry.
+static GSErrCode CollectSolidBodyIndices (const API_Elem_Head& elemHead, GS::Array<Int32>& bodyIndices)
+{
+    API_ElemInfo3D info3D = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D component = {};
+        component.header.typeID = API_BodyID;
+        component.header.index = iBody;
+        if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
+            continue;
+        }
+        if (component.body.nPgon == 0) { // Skip non-solid bodies
+            continue;
+        }
+        bodyIndices.Push (iBody);
+    }
+
+    return NoError;
+}
+
+// The contours of a cut polygon as closed 2D coordinate rings: the first is the outline, the rest
+// are its holes. Each ring repeats its first coordinate at the end, the way every polygonOutline
+// of this add-on does.
+static GS::Array<GS::Array<API_Coord>> GetContoursOfPolygon (const Geometry::Polygon2D& polygon)
+{
+    GS::Array<GS::Array<API_Coord>> contours;
+    for (Geometry::Polygon2D::ConstContourIterator contourIt = polygon.EnumerateContour (); contourIt != nullptr; ++contourIt) {
+        GS::Array<API_Coord> ring;
+        for (Geometry::Polygon2D::ConstVertexIterator vertexIt = contourIt->EnumerateVertex (); vertexIt != nullptr; ++vertexIt) {
+            const auto& coord = vertexIt->GetCoord ();
+            ring.Push (API_Coord { coord.x, coord.y });
+        }
+        if (ring.GetSize () < 3) {
+            continue;
+        }
+        const API_Coord first = ring.GetFirst ();
+        if (!IsSame2DCoordinate (first, ring.GetLast ())) {
+            ring.Push (first);
+        }
+        contours.Push (ring);
+    }
+    return contours;
+}
+
+static GS::ObjectState CreateCutPolygonObjectState (const GS::Array<GS::Array<API_Coord>>& contours)
+{
+    GS::ObjectState polygonOS;
+    const auto& outline = polygonOS.AddList<GS::ObjectState> ("polygonOutline");
+    for (const API_Coord& coord : contours[0]) {
+        outline (Create2DCoordinateObjectState (coord));
+    }
+    if (contours.GetSize () > 1) {
+        const auto& holes = polygonOS.AddList<GS::ObjectState> ("holes");
+        for (UIndex h = 1; h < contours.GetSize (); ++h) {
+            GS::ObjectState hole;
+            const auto& holeOutline = hole.AddList<GS::ObjectState> ("polygonOutline");
+            for (const API_Coord& coord : contours[h]) {
+                holeOutline (Create2DCoordinateObjectState (coord));
+            }
+            holes (hole);
+        }
+    }
+    return polygonOS;
+}
+
+// Cuts the bodies with the horizontal plane at cutHeight and appends the cut polygons to
+// `polygons`, adding their area to `area`. API_Plane3D is a coordinate frame (a base point and
+// three axes, as the opening's extrusion frame uses it) and the cut polygons come back in the
+// coordinates of that frame, so the base point is put at the cut height on the Z axis and the
+// axes are the world axes: the 2D coordinates of the cut polygons are then the project X and Y.
+static GSErrCode CutBodiesAtHeight (const GS::Array<Int32>& bodyIndices, double cutHeight, GS::Array<GS::ObjectState>& polygons, double& area)
+{
+    API_Plane3D cutPlane = {};
+    cutPlane.basePoint = { 0.0, 0.0, cutHeight };
+    cutPlane.axisX = { 1.0, 0.0, 0.0 };
+    cutPlane.axisY = { 0.0, 1.0, 0.0 };
+    cutPlane.axisZ = { 0.0, 0.0, 1.0 };
+
+    for (Int32 bodyIndex : bodyIndices) {
+        GS::Array<Geometry::MultiPolygon2D> cutPolygons;
+        double bodyArea = 0.0;
+        const GSErrCode err = ACAPI_CuttingPlane_GetCutPolygonInfo (bodyIndex, cutPlane, &cutPolygons, &bodyArea);
+        if (err != NoError) {
+            return err;
+        }
+        area += bodyArea;
+        for (const Geometry::MultiPolygon2D& multiPolygon : cutPolygons) {
+            for (const Geometry::Polygon2D& polygon : multiPolygon) {
+                const GS::Array<GS::Array<API_Coord>> contours = GetContoursOfPolygon (polygon);
+                if (contours.IsEmpty ()) {
+                    continue;
+                }
+                polygons.Push (CreateCutPolygonObjectState (contours));
+            }
+        }
+    }
+
+    return NoError;
+}
+
+// The Cut Plane height of the Floor Plan Cut Plane Settings, measured from the level of the story
+// it is displayed on. It is a project setting, so it is read once per command.
+static GS::Optional<double> GetFloorPlanCutLevel ()
+{
+    API_FloorPlanCutDefinition cutDefinition = {};
+    if (ACAPI_ProjectSetting_GetPreferences (&cutDefinition, APIPrefs_FloorPlanCutPlaneDef) != NoError) {
+        return GS::NoValue;
+    }
+    return cutDefinition.currCutLevel;
+}
+
+// The height of the floor plan cut plane on the given story, or no value when the story is not
+// found (GetZPos would silently treat the cut level as absolute then).
+static GS::Optional<double> GetFloorPlanCutHeightOfStory (short floorIndex, double cutLevel, const Stories& stories)
+{
+    if (stories.find (floorIndex) == stories.end ()) {
+        return GS::NoValue;
+    }
+    return GetZPos (floorIndex, cutLevel, stories);
+}
+
+#endif
+
+GetCutPolygonsOfElementsCommand::GetCutPolygonsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCutPolygonsOfElementsCommand::GetName () const
+{
+    return "GetCutPolygonsOfElements";
+}
+
+GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "cutHeight": {
+                "type": "number",
+                "description": "The absolute height (Z from the project zero, in meters) of the horizontal plane to cut the elements with. Optional: by default every element is cut at the floor plan cut plane of its home story, which is the Cut Plane height of the Floor Plan Cut Plane Settings measured from that story's level."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cutPolygonsOfElements": {
+                "type": "array",
+                "description": "The cut of each element, aligned with the input: the polygons where the horizontal plane cuts the solid bodies of its 3D model and their total area, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "cutHeight": {
+                                    "type": "number",
+                                    "description": "The absolute height (Z from the project zero, in meters) the element was cut at: the given cutHeight, or the floor plan cut plane of its home story."
+                                },
+                                "area": {
+                                    "type": "number",
+                                    "description": "The total area of the cut polygons in square meters, as Archicad reports it for each cut body."
+                                },
+                                "polygons": {
+                                    "type": "array",
+                                    "description": "The cut polygons in the coordinates of the cutting plane, which for a horizontal plane are the project X and Y. Empty when the plane misses every solid body of the element, or the element has no solid 3D model (a 2D element, or one filtered out of the 3D view). Includes the bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "polygonOutline": {
+                                                "type": "array",
+                                                "description": "The outline of the cut polygon; the last coordinate repeats the first.",
+                                                "items": {
+                                                    "$ref": "#/Coordinate2D"
+                                                },
+                                                "minItems": 4
+                                            },
+                                            "holes": {
+                                                "type": "array",
+                                                "description": "The holes of the cut polygon, only present when it has any.",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "polygonOutline": {
+                                                            "type": "array",
+                                                            "description": "The outline of the hole; the last coordinate repeats the first.",
+                                                            "items": {
+                                                                "$ref": "#/Coordinate2D"
+                                                            },
+                                                            "minItems": 4
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "required": [
+                                                        "polygonOutline"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "polygonOutline"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "cutHeight",
+                                "area",
+                                "polygons"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutPolygonsOfElements"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+
+GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    double givenCutHeight = 0.0;
+    const bool hasGivenCutHeight = parameters.Get ("cutHeight", givenCutHeight);
+
+    // The stories are only needed to place the floor plan cut plane, and the lookup is not free.
+    Stories stories;
+    GS::Optional<double> floorPlanCutLevel;
+    if (!hasGivenCutHeight) {
+        stories = GetStories ();
+        floorPlanCutLevel = GetFloorPlanCutLevel ();
+    }
+
+    GS::ObjectState response;
+    const auto& cutPolygonsOfElements = response.AddList<GS::ObjectState> ("cutPolygonsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            cutPolygonsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            cutPolygonsOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        double cutHeight = givenCutHeight;
+        if (!hasGivenCutHeight) {
+            if (!floorPlanCutLevel.HasValue ()) {
+                cutPolygonsOfElements (CreateErrorResponse (APIERR_GENERAL, "Failed to get the floor plan cut plane settings"));
+                continue;
+            }
+            const GS::Optional<double> storyCutHeight = GetFloorPlanCutHeightOfStory (elemHead.floorInd, *floorPlanCutLevel, stories);
+            if (!storyCutHeight.HasValue ()) {
+                cutPolygonsOfElements (CreateErrorResponse (APIERR_GENERAL, "Failed to find the home story of the element"));
+                continue;
+            }
+            cutHeight = *storyCutHeight;
+        }
+
+        GS::Array<Int32> bodyIndices;
+        err = CollectSolidBodyIndices (elemHead, bodyIndices);
+        // A subelement without a 3D model of its own (one hidden or filtered out of the 3D view) is
+        // skipped on purpose, the same way Get3DGeometryOfElements skips it: it is not cut on the
+        // floor plan either, and failing the whole Stair, Railing or Curtain Wall for it would hide
+        // the cut of the rest.
+        if (ForEachSubelementHead (elemHead, !bodyIndices.IsEmpty (), [&bodyIndices] (const API_Elem_Head& subelemHead) { CollectSolidBodyIndices (subelemHead, bodyIndices); })) {
+            // A hierarchical element may have no 3D model of its own (see Get3DGeometryOfElements);
+            // its subelements' bodies are the answer.
+            err = NoError;
+        }
+        if (err != NoError) {
+            cutPolygonsOfElements (CreateErrorResponse (err, "Failed to get the 3D model of the element"));
+            continue;
+        }
+
+        GS::Array<GS::ObjectState> polygons;
+        double area = 0.0;
+        err = CutBodiesAtHeight (bodyIndices, cutHeight, polygons, area);
+        if (err != NoError) {
+            cutPolygonsOfElements (CreateErrorResponse (err, "Failed to cut the 3D model of the element"));
+            continue;
+        }
+
+        GS::ObjectState cut;
+        cut.Add ("cutHeight", cutHeight);
+        cut.Add ("area", area);
+        const auto& polygonsList = cut.AddList<GS::ObjectState> ("polygons");
+        for (const GS::ObjectState& polygon : polygons) {
+            polygonsList (polygon);
+        }
+        cutPolygonsOfElements (cut);
+    }
+
+    return response;
+}
+
+#else
+
+GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    return CreateFailedExecutionResult (APIERR_GENERAL, GetName () + " command is not supported for this AC version.");
+}
+
+#endif
 
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)

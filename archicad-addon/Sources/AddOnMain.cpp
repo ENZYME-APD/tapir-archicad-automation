@@ -481,6 +481,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.2",
             "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a coordinate of the floor plan of the current database, the way a click there would. Use the optional filters parameter (the values of FilterElements) to consider only, for example, the elements visible by layer, and the optional z parameter to give the elevation of the point. Returns found: false when there is no such element. Useful together with GetPointFromUser."
         );
+        err |= RegisterCommand<GetCutPolygonsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Cuts the solid bodies of the 3D model of elements with a horizontal plane and gets the cut polygons (with their holes) and their total area, the way the floor plan cuts them: at the given absolute cutHeight, or by default at the floor plan cut plane of each element's home story. The bodies of the subelements of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, are included. The output is aligned with the input array of elements. The 3D model of the elements is generated as needed, so many elements can take a while. Available from Archicad 27."
+        );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
             "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate all the elements in one Archicad call."
