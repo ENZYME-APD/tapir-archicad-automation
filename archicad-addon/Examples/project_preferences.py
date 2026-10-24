@@ -5,7 +5,7 @@ import aclib
 originalPreferences = aclib.RunTapirCommand ('GetProjectPreferences')
 
 aclib.RunTapirCommand ('GetProjectPreferences', {
-    'preferenceTypes': ['WorkingUnits']
+    'preferenceTypes': ['WorkingUnits', 'Dimensions']
 })
 
 # A page changes only in the fields given; the rest keeps its value.
@@ -22,6 +22,22 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
             'decimals': 2
         }
     },
+    'dimensions': {
+        'linear': {
+            'unit': 'Millimeter',
+            'decimals': 0,
+            'accuracy': 'Off',
+            'hideZeroDecimals': True
+        },
+        'angle': {
+            'unit': 'DecimalDegree',
+            'decimals': 2
+        },
+        'area': {
+            'unit': 'SquareMeter',
+            'decimals': 2
+        }
+    },
     'calculationUnits': {
         'area': {
             'unit': 'SquareMeter',
@@ -33,11 +49,16 @@ aclib.RunTapirCommand ('SetProjectPreferences', {
 
 aclib.RunTapirCommand ('GetProjectPreferences')
 
-# A wrong unit name fails that page only, the other page still changes.
+# A wrong unit name fails that page only, the other pages still change.
 aclib.RunTapirCommand ('SetProjectPreferences', {
     'workingUnits': {
         'length': {
             'unit': 'Furlong'
+        }
+    },
+    'dimensions': {
+        'level': {
+            'decimals': 3
         }
     },
     'calculationUnits': {
