@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 22:05 UTC",
+ "generatedAt": "2026-10-24 23:57 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 101,
+  "open": 105,
   "claimed": 733,
-  "in progress": 326,
+  "in progress": 322,
   "done": 743
  },
  "items": [
@@ -16142,14 +16142,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1035,
-     "title": "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16168,14 +16163,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1035,
-     "title": "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16220,14 +16210,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1035,
-     "title": "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16246,14 +16231,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1035,
-     "title": "[2/3] Store custom script data on elements: SetElementUserData, GetElementUserData"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
