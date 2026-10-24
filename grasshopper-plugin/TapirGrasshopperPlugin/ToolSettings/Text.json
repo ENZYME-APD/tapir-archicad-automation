@@ -1,0 +1,137 @@
+{
+  "tool": "Text",
+  "elementType": "Text",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "TextDetails",
+    "create": "CreateTextsCommand",
+    "modify": "ModifyTextsCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-27.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-62.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "position",
+      "set": "coordinate",
+      "apiMember": "API_TextType::loc",
+      "apiDescription": "Coordinates of text anchor point.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the text (the level of its home story; output only).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "text",
+      "set": "text",
+      "apiMember": "API_ElementMemo::textContent",
+      "apiDescription": "Text content for textual elements.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "runs",
+      "set": "runs",
+      "apiMember": "API_ElementMemo::paragraphs",
+      "apiDescription": "Paragraph informations for text and label element.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "paragraphCount",
+      "set": null,
+      "apiMember": "API_ElementMemo::paragraphs",
+      "apiDescription": "Paragraph informations for text and label element.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_TextType::size",
+      "apiDescription": "Character height in mm.",
+      "label": "Font Size",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm (heading \"Font and Font Size\": \"Enter the font height, in mm\")",
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "pen",
+      "set": "pen",
+      "apiMember": "API_TextType::pen",
+      "apiDescription": "Pen attribute index.",
+      "label": "Text Pencolor",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm (heading \"Text Pencolor\")",
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "justification",
+      "set": "justification",
+      "apiMember": "API_TextType::just",
+      "apiDescription": "Justification of the text (see API_JustID).",
+      "label": "Alignment",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm (heading \"Alignment\": \"Left, center, right, or justify.\")",
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "angle",
+      "set": "angle",
+      "apiMember": "API_TextType::angle",
+      "apiDescription": "Rotation angle [radian].",
+      "label": "Rotation Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-27.htm (heading \"Rotation Angle\")",
+      "group": "Text Block Formatting",
+      "subgroup": null
+    },
+    {
+      "get": "style",
+      "set": "style",
+      "apiMember": null,
+      "apiDescription": "The text style as a whole: pen, font, faceBits, just, size, spacing, angle, effectsBits, widthFactor, charSpaceFactor, fixedSize, usedContour, usedFill, contourPen, fillPen, anchor, fixedAngle, contourOffset, flipEnabled and textFrame of API_TextType (nLine, width and height output only).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    }
+  ]
+}
