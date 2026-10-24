@@ -375,7 +375,7 @@ class ConfigTests(NoSleepTestCase):
         self._env = dict(os.environ)
         for name in ("LOOKBACK_MINUTES", "MAX_ISSUES_PER_RUN",
                      "MAX_ISSUES_PER_DAY", "MIN_CONFIDENCE",
-                     "MIN_MESSAGE_LENGTH", "DRY_RUN"):
+                     "MIN_MESSAGE_LENGTH", "DRY_RUN", "CLEANUP_SEEN_MARKS"):
             os.environ.pop(name, None)
         os.environ.update(self.FULL_ENV)
 
@@ -401,6 +401,259 @@ class ConfigTests(NoSleepTestCase):
         with self.assertRaises(SystemExit) as raised:
             bot.Config.from_env()
         self.assertEqual(raised.exception.code, 1)
+
+
+class GroupingTests(NoSleepTestCase):
+    def message(self, message_id, author_id, content="text", **extra):
+        message = {"id": message_id, "type": 0, "content": content,
+                   "author": {"id": author_id, "username": author_id}}
+        message.update(extra)
+        return message
+
+    def test_consecutive_messages_of_one_author_form_one_group(self):
+        messages = [self.message("1", "a"), self.message("2", "a"),
+                    self.message("3", "b"), self.message("4", "a")]
+        groups = bot.group_messages(messages)
+        self.assertEqual([[m["id"] for m in g] for g in groups],
+                         [["1", "2"], ["3"], ["4"]])
+
+    def test_bot_message_ends_a_group(self):
+        messages = [self.message("1", "a"),
+                    self.message("2", "bot", author={"id": "bot", "bot": True}),
+                    self.message("3", "a")]
+        groups = bot.group_messages(messages)
+        self.assertEqual([[m["id"] for m in g] for g in groups], [["1"], ["3"]])
+
+    def test_merge_joins_text_and_attachments_under_the_first_id(self):
+        merged = bot.merge_group([
+            self.message("1", "a", "Export crashes"),
+            self.message("2", "a", " ", attachments=[{"id": "x"}]),
+            self.message("3", "a", "when the plan has curtain walls")])
+        self.assertEqual(merged["id"], "1")
+        self.assertEqual(merged["content"],
+                         "Export crashes\nwhen the plan has curtain walls")
+        self.assertEqual(merged["attachments"], [{"id": "x"}])
+
+
+class FakeDiscord:
+    """Reactions live on the message dicts, as the API returns them."""
+
+    def __init__(self, messages, add_ok=True):
+        self.messages = messages
+        self.add_ok = add_ok
+        self.calls = []
+
+    def get_channel(self, channel_id):
+        return {"name": "general", "guild_id": "g"}
+
+    def recent_messages(self, channel_id, since, max_pages=20):
+        return self.messages
+
+    has_mark = bot.DiscordClient.has_mark
+
+    def add_mark(self, channel_id, message_id, emoji):
+        self.calls.append(("add", message_id, emoji))
+        if not self.add_ok:
+            return False
+        message = next(m for m in self.messages if m["id"] == message_id)
+        message.setdefault("reactions", []).append({"emoji": {"name": emoji}, "me": True})
+        return True
+
+    def remove_mark(self, channel_id, message_id, emoji):
+        self.calls.append(("remove", message_id, emoji))
+        message = next(m for m in self.messages if m["id"] == message_id)
+        message["reactions"] = [r for r in message.get("reactions", [])
+                                if r["emoji"]["name"] != emoji]
+        return True
+
+    def reply(self, channel_id, message_id, content):
+        self.calls.append(("reply", message_id))
+
+    def seen(self):
+        return [m["id"] for m in self.messages if self.has_mark(m, bot.SEEN_MARK)]
+
+
+class FakeClassifier:
+    def __init__(self, verdicts):
+        self.verdicts = verdicts
+        self.classified = []
+
+    def classify_batch(self, chunk):
+        result = {}
+        for candidate in chunk:
+            self.classified.append(candidate["id"])
+            verdict = self.verdicts.get(candidate["id"], "chat")
+            if verdict == "fail":
+                continue
+            result[candidate["id"]] = {
+                "actionable": verdict == "bug", "type": "bug" if verdict == "bug" else None,
+                "confidence": 0.9, "title": "t", "summary": "s"}
+        return result
+
+
+class FakeGitHub:
+    def __init__(self, search=None):
+        self.search = search
+        self.created = []
+
+    def find_issue_for_message(self, message_id):
+        return self.search
+
+    def create_issue(self, title, body, labels):
+        self.created.append(body)
+        number = len(self.created)
+        return {"number": number, "html_url": "https://x/{}".format(number)}
+
+
+class CheckpointTests(NoSleepTestCase):
+    NOW = datetime.datetime.now(datetime.timezone.utc)
+
+    class Config:
+        min_message_length = 5
+        min_confidence = 0.7
+        max_issues_per_run = 5
+        lookback_minutes = 1440
+        dry_run = False
+
+    def message(self, message_id, author="a", minutes_ago=60, seen=False, content=None):
+        message = {"id": message_id, "type": 0, "channel_id": "c",
+                   "content": content or "message number {}".format(message_id),
+                   "author": {"id": author, "username": author},
+                   "timestamp": (self.NOW - datetime.timedelta(minutes=minutes_ago)).isoformat()}
+        if seen:
+            message["reactions"] = [{"emoji": {"name": bot.SEEN_MARK}, "me": True}]
+        return message
+
+    def run_channel(self, messages, verdicts=None, github=None, config=None, add_ok=True):
+        discord = FakeDiscord(messages, add_ok)
+        classifier = FakeClassifier(verdicts or {})
+        github = github or FakeGitHub()
+        state = {"created": 0, "created_numbers": [], "unreadable_channels": 0,
+                 "github_failures": 0, "human_messages": 0, "messages_with_signal": 0,
+                 "borderline": []}
+        self.state = state
+        bot.process_channel("c", config or self.Config, discord, github, classifier, state)
+        return discord, classifier, github
+
+    def test_only_the_last_checked_message_carries_the_mark(self):
+        messages = [self.message("1", "a"), self.message("2", "b"), self.message("3", "c")]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, ["1", "2", "3"])
+        self.assertEqual(discord.seen(), ["3"])
+
+    def test_messages_up_to_the_checkpoint_are_skipped(self):
+        messages = [self.message("1", "a", seen=True), self.message("2", "b"),
+                    self.message("3", "c")]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, ["2", "3"])
+        self.assertEqual(discord.seen(), ["3"])
+
+    def test_old_marks_in_the_window_are_removed(self):
+        messages = [self.message("1", "a", seen=True), self.message("2", "b", seen=True),
+                    self.message("3", "c")]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, ["3"])
+        self.assertEqual(discord.seen(), ["3"])
+
+    def test_classifier_down_stops_the_scan_at_the_first_failure(self):
+        messages = [self.message("1", "a"), self.message("2", "b"),
+                    self.message("3", "c"), self.message("4", "d")]
+        discord, classifier, _ = self.run_channel(messages, {"2": "fail", "3": "fail"})
+        self.assertEqual(classifier.classified, ["1", "2", "3"])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_one_unclassifiable_message_is_skipped_with_a_trace(self):
+        messages = [self.message("1", "a"), self.message("2", "b"), self.message("3", "c")]
+        discord, classifier, _ = self.run_channel(messages, {"2": "fail"})
+        self.assertEqual(classifier.classified, ["1", "2", "3"])
+        self.assertEqual(discord.seen(), ["3"])
+        self.assertTrue(any("Could not be classified" in line for line in self.state["borderline"]))
+
+    def test_a_filed_message_does_not_vouch_for_the_classifier(self):
+        messages = [self.message("1", "a"), self.message("2", "b"), self.message("3", "c")]
+        messages[1]["reactions"] = [{"emoji": {"name": bot.PROCESSED_MARK}, "me": True}]
+        discord, classifier, _ = self.run_channel(messages, {"1": "fail", "3": "fail"})
+        self.assertEqual(classifier.classified, ["1", "3"])
+        self.assertEqual(discord.seen(), [])
+
+    def test_failed_duplicate_search_stops_the_scan(self):
+        messages = [self.message("1", "a"), self.message("2", "b")]
+        discord, classifier, github = self.run_channel(
+            messages, {"1": "bug"}, github=FakeGitHub(search=bot.SEARCH_FAILED))
+        self.assertEqual(github.created, [])
+        self.assertEqual(classifier.classified, ["1"])
+        self.assertEqual(discord.seen(), [])
+
+    def test_issue_cap_stops_the_scan(self):
+        class CapConfig(self.Config):
+            max_issues_per_run = 1
+        messages = [self.message("1", "a"), self.message("2", "b"),
+                    self.message("3", "c"), self.message("4", "d")]
+        discord, classifier, github = self.run_channel(
+            messages, {"1": "bug", "2": "bug"}, config=CapConfig)
+        self.assertEqual(len(github.created), 1)
+        self.assertEqual(classifier.classified, ["1", "2"])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_failed_add_keeps_the_old_checkpoint(self):
+        messages = [self.message("1", "a", seen=True), self.message("2", "b")]
+        discord, _, _ = self.run_channel(messages, add_ok=False)
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_consecutive_messages_are_filed_as_one_issue(self):
+        messages = [self.message("1", "a", content="Export to IFC crashes"),
+                    self.message("2", "a", content="only with curtain walls"),
+                    self.message("3", "b")]
+        discord, classifier, github = self.run_channel(messages, {"1": "bug"})
+        self.assertEqual(classifier.classified, ["1", "3"])
+        self.assertEqual(len(github.created), 1)
+        self.assertIn("> only with curtain walls", github.created[0])
+        self.assertIn(("reply", "1"), discord.calls)
+        self.assertIn(("add", "1", bot.PROCESSED_MARK), discord.calls)
+        self.assertEqual(discord.seen(), ["3"])
+
+    def test_group_marked_on_its_last_message(self):
+        messages = [self.message("1", "a"), self.message("2", "a"), self.message("3", "b")]
+        discord, _, _ = self.run_channel(messages, {"3": "fail"})
+        self.assertEqual(discord.seen(), ["2"])
+
+    def test_a_run_still_being_typed_is_left_for_the_next_scan(self):
+        messages = [self.message("1", "a"), self.message("2", "b", minutes_ago=2)]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, ["1"])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_filed_group_is_not_classified_again(self):
+        messages = [self.message("1", "a"), self.message("2", "b")]
+        messages[0]["reactions"] = [{"emoji": {"name": bot.PROCESSED_MARK}, "me": True}]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, ["2"])
+        self.assertEqual(discord.seen(), ["2"])
+
+    def test_dry_run_moves_nothing(self):
+        class DryConfig(self.Config):
+            dry_run = True
+        messages = [self.message("1", "a", seen=True), self.message("2", "b")]
+        discord, classifier, _ = self.run_channel(messages, config=DryConfig)
+        self.assertEqual(classifier.classified, ["2"])
+        self.assertEqual(discord.seen(), ["1"])
+
+
+class CleanupTests(NoSleepTestCase):
+    def test_all_but_the_newest_mark_removed(self):
+        def message(message_id, seen):
+            message = {"id": message_id}
+            if seen:
+                message["reactions"] = [{"emoji": {"name": bot.SEEN_MARK}, "me": True}]
+            return message
+        messages = [message("1", True), message("2", False), message("3", True),
+                    message("4", True), message("5", False)]
+        discord = FakeDiscord(messages)
+
+        class Config:
+            dry_run = False
+        self.assertTrue(bot.cleanup_seen_marks("c", Config, discord))
+        self.assertEqual(discord.seen(), ["4"])
 
 
 class IntentDetectionTests(NoSleepTestCase):
