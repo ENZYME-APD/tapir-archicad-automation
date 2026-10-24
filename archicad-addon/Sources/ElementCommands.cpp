@@ -4,6 +4,7 @@
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
 #include "Plane.hpp"
+#include "Polygon2D.hpp"
 #include "CoordTypedef.hpp"
 #include "ModelEdge.hpp"
 #include "ModelMeshBody.hpp"
@@ -6284,6 +6285,171 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
 
     return response;
 }
+
+// ACAPI_Element_GetSkylightHolePolygon is the Archicad 27+ name; Archicad 25/26 reach the same
+// function through the untyped ACAPI_Goodies dispatcher with APIAny_GetSkylightHolePolygonID, the
+// same split the TAPIR_Polygon_* wrappers in ExtendedElementCommands.cpp make.
+static GSErrCode TAPIR_Element_GetSkylightHolePolygon (const API_Guid* skylightGuid, Geometry::Polygon2D* holePoly)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Element_GetSkylightHolePolygon (skylightGuid, holePoly);
+#else
+    return ACAPI_Goodies (APIAny_GetSkylightHolePolygonID, (void*) skylightGuid, holePoly);
+#endif
+}
+
+// The vertices of one contour of a Polygon2D. A contour may repeat its first vertex at its end to
+// close itself; that copy is dropped, the outline is closed implicitly like every other polygon
+// outline of the add-on. Arcs are not carried: a curved edge comes back as its end points.
+template<typename ContourIterator>
+static GS::Array<API_Coord> GetContourCoordinates (const ContourIterator& contourIt)
+{
+    GS::Array<API_Coord> coords;
+    for (auto vertexIt = contourIt->BeginVertex (); vertexIt != contourIt->EndVertex (); ++vertexIt) {
+        const Coord& coord = vertexIt->GetCoord ();
+        coords.Push (API_Coord { coord.x, coord.y });
+    }
+    if (coords.GetSize () > 1 && coords.GetFirst ().x == coords.GetLast ().x && coords.GetFirst ().y == coords.GetLast ().y) {
+        coords.Pop ();
+    }
+    return coords;
+}
+
+GetSkylightHolePolygonsCommand::GetSkylightHolePolygonsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSkylightHolePolygonsCommand::GetName () const
+{
+    return "GetSkylightHolePolygons";
+}
+
+GS::Optional<GS::UniString> GetSkylightHolePolygonsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSkylightHolePolygonsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "skylightHolePolygons": {
+                "type": "array",
+                "description": "The hole each Skylight cuts into its host Roof or Shell, aligned with the input: its polygon, or an error (for example for an element that is not a Skylight).",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "polygonOutline": {
+                                    "type": "array",
+                                    "description": "The 2D coordinates of the outline of the hole, as Archicad returns them. The outline is closed implicitly (the first vertex is not repeated at the end); a curved edge is given by its end points only.",
+                                    "items": {
+                                        "$ref": "#/Coordinate2D"
+                                    }
+                                },
+                                "holes": {
+                                    "$ref": "#/Holes2D"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "polygonOutline",
+                                "holes"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "skylightHolePolygons"
+        ]
+    })";
+}
+
+GS::ObjectState GetSkylightHolePolygonsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& skylightHolePolygons = response.AddList<GS::ObjectState> ("skylightHolePolygons");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            skylightHolePolygons (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            skylightHolePolygons (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        if (GetElemTypeId (elemHead) != API_SkylightID) {
+            skylightHolePolygons (CreateErrorResponse (APIERR_BADPARS, "The element is not a Skylight."));
+            continue;
+        }
+
+        Geometry::Polygon2D holePolygon;
+        err = TAPIR_Element_GetSkylightHolePolygon (&elemHead.guid, &holePolygon);
+        if (err != NoError) {
+            skylightHolePolygons (CreateErrorResponse (err, "Failed to get the hole polygon of the Skylight."));
+            continue;
+        }
+
+        // The first contour of a Polygon2D is its outline, the ones after it are its holes.
+        GS::Array<GS::Array<API_Coord>> contours;
+        for (auto contourIt = holePolygon.BeginContour (); contourIt != holePolygon.EndContour (); ++contourIt) {
+            contours.Push (GetContourCoordinates (contourIt));
+        }
+        if (contours.IsEmpty () || contours[0].GetSize () < 3) {
+            skylightHolePolygons (CreateErrorResponse (APIERR_GENERAL, "The Skylight cuts no hole into its host."));
+            continue;
+        }
+
+        GS::ObjectState polygonOS;
+        {
+            const auto& polygonOutline = polygonOS.AddList<GS::ObjectState> ("polygonOutline");
+            for (const API_Coord& coord : contours[0]) {
+                polygonOutline (Create2DCoordinateObjectState (coord));
+            }
+        }
+        const auto& holes = polygonOS.AddList<GS::ObjectState> ("holes");
+        for (UIndex i = 1; i < contours.GetSize (); ++i) {
+            if (contours[i].GetSize () < 3) {
+                continue;
+            }
+            GS::ObjectState hole;
+            const auto& holeOutline = hole.AddList<GS::ObjectState> ("polygonOutline");
+            for (const API_Coord& coord : contours[i]) {
+                holeOutline (Create2DCoordinateObjectState (coord));
+            }
+            holes (hole);
+        }
+        skylightHolePolygons (polygonOS);
+    }
 
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
