@@ -1,16 +1,16 @@
 {
- "generatedAt": "2026-10-24 18:38 UTC",
+ "generatedAt": "2026-10-24 19:24 UTC",
  "counts": {
   "done": 287,
-  "in progress": 5,
-  "open": 54,
-  "merged": 4,
+  "open": 111,
+  "merged": 15,
+  "in progress": 9,
   "claimed": 2,
   "not applicable": 1
  },
  "parameters": {
-  "all": 228,
-  "partial": 18,
+  "all": 238,
+  "partial": 19,
   "json": 45
  },
  "items": [
@@ -48,6 +48,36 @@
     }
    ],
    "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetArchicadReleaseInfo",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetPrinterInfo",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes).",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
@@ -97,6 +127,21 @@
    "issues": []
   },
   {
+   "id": "GetElementFromUser",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetCurrentWindowType",
    "group": "Application Commands",
    "version": "1.0.7",
@@ -117,6 +162,36 @@
    "issues": []
   },
   {
+   "id": "GetCurrentWindowDrawingScale",
+   "group": "Application Commands",
+   "version": "1.7.2",
+   "brief": "Returns the drawing scale of the current (active) window, the scale shown in the bottom bar, as its denominator: 100.0 for 1:100, 20.0 for 1:20. Unlike GetViewSettings it needs no saved view. It reads the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts always return 1.0.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetCurrentWindowDrawingScale",
+   "group": "Application Commands",
+   "version": "1.7.2",
+   "brief": "Changes the drawing scale of the current (active) window, the scale shown in the bottom bar, to the given denominator: 100 for 1:100. It changes the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts are always 1:1 and are rejected. The scale must be between 1 and 30000. The change is undoable.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ChangeWindow",
    "group": "Application Commands",
    "version": "1.3.1",
@@ -131,6 +206,21 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetContainingDatabases",
+   "group": "Application Commands",
+   "version": "1.7.2",
+   "brief": "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -202,6 +292,51 @@
    "coveredParameters": [
     "folderTypes"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetProductVersionInfo",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type and main/update/hotfix versions from Archicad 29. Requires Archicad 28 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Get3DCutawayStatus",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Set3DCutawayStatus",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "brief": "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -405,10 +540,25 @@
    "issues": []
   },
   {
+   "id": "GetNoteAutoTextKeywords",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the keywords of note autotexts (the autotexts of dimension, label and other element notes) by their numeric API_NoteAutotextID values. Available from Archicad 26.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetHotlinks",
    "group": "Project Commands",
    "version": "0.1.0",
-   "brief": "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project.",
+   "brief": "Gets the file system locations (path) of the hotlink modules and the instance elements placed from each node. The hotlinks can have tree hierarchy in the project.",
    "status": "done",
    "reason": "",
    "components": [
@@ -567,6 +717,21 @@
    ]
   },
   {
+   "id": "GetHotlinkProxyElementTable",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "OpenProject",
    "group": "Project Commands",
    "version": "1.0.7",
@@ -586,12 +751,29 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
+   "issues": []
+  },
+  {
+   "id": "NewProject",
+   "group": "Project Commands",
+   "version": "1.7.2",
+   "brief": "Starts a new, untitled project from the template set in Archicad's New Project settings, as File > New does; with newAndReset also the working environment is reset, as New and Reset All does. The unsaved changes of the open project are discarded, as with OpenProject.",
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 928,
-     "title": "Add NewProject command"
+     "name": "NewProjectComponent",
+     "path": "Components/ProjectComponents/NewProjectComponent.cs"
     }
-   ]
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "newAndReset"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CloseProject",
@@ -611,12 +793,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 928,
-     "title": "Add NewProject command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SaveProject",
@@ -638,12 +815,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 928,
-     "title": "Add NewProject command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SaveAsModuleFile",
@@ -720,14 +892,33 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 950,
-     "title": "Add GetCurrentViewImage: return the 3D or rendering window image without a file (Archicad 30)"
-    },
-    {
      "number": 939,
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
     }
    ]
+  },
+  {
+   "id": "GetCurrentViewImage",
+   "group": "Project Commands",
+   "version": "1.7.2",
+   "brief": "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetCurrentViewImageComponent",
+     "path": "Components/ProjectComponents/GetCurrentViewImageComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "format",
+    "source"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetCalculationUnits",
@@ -793,7 +984,7 @@
    "id": "GetGeoLocation",
    "group": "Project Commands",
    "version": "1.1.6",
-   "brief": "Gets the project location details.",
+   "brief": "Gets the project location details: the project location, and the survey point's position, geo-referencing parameters, visibility and lock state (the lock from Archicad 26).",
    "status": "done",
    "reason": "",
    "components": [
@@ -811,18 +1002,29 @@
     {
      "number": 939,
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    },
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
     }
    ]
+  },
+  {
+   "id": "GetSurveyPointTransformation",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Gets the 3x4 matrix that transforms points from the Project Origin coordinate system into the Survey Point coordinate system, row by row, and its inverse when it is invertible. Read only. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "SetGeoLocation",
    "group": "Project Commands",
    "version": "1.2.9",
-   "brief": "Sets the project location details.",
+   "brief": "Sets the project location details: the project location, and the survey point's position, geo-referencing parameters, visibility and lock state (the lock from Archicad 26). Omitted fields stay unchanged.",
    "status": "done",
    "reason": "",
    "components": [
@@ -843,12 +1045,38 @@
     {
      "number": 939,
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    },
-    {
-     "number": 938,
-     "title": "Get/SetGeoLocation: survey point visibility and lock"
     }
    ]
+  },
+  {
+   "id": "GetProjectNotes",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Gets the Project Notes of the project (File > Info > Project Notes): client, project name, company, address, architect, draftsmen, project status, date of issue, keywords and notes.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetProjectNotes",
+   "group": "Project Commands",
+   "version": "1.7.3",
+   "brief": "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 13,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "PrintView",
@@ -1023,7 +1251,7 @@
    "id": "FilterElements",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Tests an elements by the given criterias.",
+   "brief": "Keeps the elements that match all the given criteria: Archicad's flag filters (filters), layer (layerIndices), home story (floorIndices) and element type (elementTypes). Within one criterion any of the listed values matches; an omitted criterion does not filter.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1033,19 +1261,17 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 5,
    "coveredParameters": [
+    "elementTypes",
     "elements",
-    "filters"
+    "filters",
+    "floorIndices",
+    "layerIndices"
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 909,
-     "title": "FilterElements: add layer, story and element type filters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetDetailsOfElements",
@@ -1094,22 +1320,24 @@
     {
      "name": "GetDetailsOfZonesComponent",
      "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
+    },
+    {
+     "name": "WallsApiComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WallsComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "elements"
-   ],
-   "missingParameters": [
+    "elements",
     "fields"
    ],
-   "pullRequests": [
-    {
-     "number": 1415,
-     "title": "Grasshopper: Walls tool component prototype, built from ToolSettings/Wall.json"
-    }
-   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 913,
@@ -1136,34 +1364,81 @@
     {
      "name": "SetDetailsOfWallsComponent",
      "path": "Components/ElementsComponents/SetDetailsOfElementsComponent.cs"
+    },
+    {
+     "name": "WallsApiComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WallsComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 8,
    "coveredParameters": [
     "elementsWithDetails",
     "elementsWithDetails.details",
-    "elementsWithDetails.details.typeSpecificDetails",
-    "elementsWithDetails.elementId"
-   ],
-   "missingParameters": [
     "elementsWithDetails.details.drawIndex",
     "elementsWithDetails.details.floorIndex",
     "elementsWithDetails.details.id",
-    "elementsWithDetails.details.layerIndex"
+    "elementsWithDetails.details.layerIndex",
+    "elementsWithDetails.details.typeSpecificDetails",
+    "elementsWithDetails.elementId"
    ],
-   "pullRequests": [
-    {
-     "number": 1415,
-     "title": "Grasshopper: Walls tool component prototype, built from ToolSettings/Wall.json"
-    }
-   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 913,
      "title": "Add ModifyCurtainWalls command"
     }
    ]
+  },
+  {
+   "id": "GetElementCategories",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Lists the element categories of the project (Structural Function, Position, Renovation Status, Renovation Filter and, in the German version, BRI) with their possible values. The names of the categories and values are localized: identify a category by its type and a value by its categoryValueId, never by name.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCategoryValuesOfElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Gets the category values (Structural Function, Position, Renovation Status ...) of the given elements, optionally only for the given category types. An element that has none of the requested categories (an annotation, for example) gets an error item. The names are localized: use the type and the categoryValueId in scripts.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetCategoryValuesOfElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "Get3DBoundingBoxes",
@@ -1272,18 +1547,51 @@
     "calculateInOneCall"
    ],
    "pullRequests": [],
-   "issues": [
+   "issues": []
+  },
+  {
+   "id": "TriangulatePolygonsOfElements",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetSurfaceQuantitiesOfElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Gets the exposed surface areas of the given elements calculated by Archicad: for each element one item per surface attribute and building material pair with the area that is not covered by the covering elements (for example the wall area behind a slab is taken off the wall's surface). The covering elements are the optional coverElements; by default every construction element of the project. The output is aligned with the input array of elements.",
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 945,
-     "title": "Add GetSurfaceQuantitiesOfElements: covered and exposed surface areas between elements"
+     "name": "GetSurfaceQuantitiesOfElementsComponent",
+     "path": "Components/ElementsComponents/GetSurfaceQuantitiesOfElementsComponent.cs"
     }
-   ]
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "coverElements",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetSubelementsOfHierarchicalElements",
    "group": "Element Commands",
    "version": "1.0.6",
-   "brief": "Gets the subelements of the given hierarchical elements.",
+   "brief": "Gets the subelements of the given hierarchical elements. From Archicad 28 the subelements of external hierarchical elements (for example MEP elements or elements of other add-ons) are returned as externalSubelements.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1340,6 +1648,21 @@
    "issues": []
   },
   {
+   "id": "GetElementsInDrawOrder",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetSectionElements",
    "group": "Element Commands",
    "version": "1.5.8",
@@ -1382,6 +1705,66 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "LinkElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Creates persistent links between pairs of elements, each from one element to another, with an optional integer flags value per link. Scripts can record their own relations between elements this way (for example which label documents which column) instead of storing GUIDs in properties. The links are stored in the project and have no effect on geometry; they are independent from groups, hotlinks and solid element operations. A link is directional: it is returned by GetLinksOfElements for the element it starts from only, and removed by UnlinkElements. Undoable.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1033,
+     "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "UnlinkElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Removes the links created by LinkElements between the given pairs of elements. The direction matters: the link starting from fromElementId and pointing to toElementId is removed. Undoable.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1033,
+     "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "GetLinksOfElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Gets the links created by LinkElements that start from the given elements: the linked element and the flags of each link. Links pointing to an element are not returned; query the elements they start from. Returns an error item for an element that does not exist.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1033,
+     "title": "[2/2] Grasshopper: add LinkElements, UnlinkElements and GetLinksOfElements components"
+    }
+   ],
    "issues": []
   },
   {
@@ -1450,6 +1833,21 @@
     "undoBottomTrim",
     "undoTopTrim"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetZoneLabelingSettings",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Turns the automatic labeling of Zones on or off. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -1537,12 +1935,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 907,
-     "title": "Add MirrorElements command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "RotateElements",
@@ -1570,18 +1963,40 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
+   "issues": []
+  },
+  {
+   "id": "MirrorElements",
+   "group": "Element Commands",
+   "version": "1.7.2",
+   "brief": "Mirrors elements across an axis given by two points on the floor plan, optionally as a copy. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.",
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 907,
-     "title": "Add MirrorElements command"
+     "name": "MirrorElementsComponent",
+     "path": "Components/ElementsComponents/MirrorElementsComponent.cs"
     }
-   ]
+   ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "elementsWithMirrorAxes",
+    "elementsWithMirrorAxes.copy",
+    "elementsWithMirrorAxes.elementId",
+    "elementsWithMirrorAxes.mirrorAxis",
+    "elementsWithMirrorAxes.mirrorAxis.beginPoint",
+    "elementsWithMirrorAxes.mirrorAxis.endPoint"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "DeleteElements",
    "group": "Element Commands",
    "version": "1.2.1",
-   "brief": "Deletes elements. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently.",
+   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1599,6 +2014,21 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteSelectedElements",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Deletes the currently selected elements in one undo step, the same as pressing the Delete key.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -1682,7 +2112,7 @@
    "id": "SetGDLParametersOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Sets the given GDL parameters of the given elements.",
+   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1864,12 +2294,7 @@
     "wallsData.useCompositePriority",
     "wallsData.viewDepthLimitation"
    ],
-   "pullRequests": [
-    {
-     "number": 1415,
-     "title": "Grasshopper: Walls tool component prototype, built from ToolSettings/Wall.json"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1945,6 +2370,21 @@
    "missingParameters": [
     "stairsData.id"
    ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SolveStairBaseline",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 10,
+   "coveredParameters": [],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -2079,6 +2519,81 @@
      "title": "Add ModifyOpenings command"
     }
    ]
+  },
+  {
+   "id": "GetOpeningDefault",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Returns the settings of the Opening tool defaults: the extrusion parameters (as GetOpeningDetails returns them) and the floor plan parameters (as GetOpeningFloorPlanParameters returns them). Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetOpeningFloorPlanParameters",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Returns the floor plan parameters of Opening elements: the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetOpeningFloorPlanParameters",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Changes the floor plan parameters of Opening elements returned by GetOpeningFloorPlanParameters, and sets or removes their cut and uncut symbols. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 26,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetOpeningDetails",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Returns the details of Opening elements: the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (size, anchor, offsets, surface overrides). Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetOpeningDetails",
+   "group": "Element Commands",
+   "version": "1.7.3",
+   "brief": "Changes the details of Opening elements: the parent element, the cut elements, the polygon, a transformation of the geometry and the extrusion parameters (size, anchor, offsets, surface overrides) returned by GetOpeningDetails. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 19,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateMorphs",
@@ -2216,7 +2731,7 @@
    "id": "CreateAssociativeDimensions",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates associative linear dimensions from explicit witness point references.",
+   "brief": "Creates associative linear dimensions from explicit witness point references. A witness point can also be static, given by its coordinate instead of an element.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2973,12 +3488,7 @@
     "wallsWithDetails.visibility",
     "wallsWithDetails.zoneRel"
    ],
-   "pullRequests": [
-    {
-     "number": 1415,
-     "title": "Grasshopper: Walls tool component prototype, built from ToolSettings/Wall.json"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3041,7 +3551,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 17,
+   "parameterCount": 18,
    "coveredParameters": [
     "slabsWithDetails",
     "slabsWithDetails.buildingMaterialId",
@@ -3060,6 +3570,7 @@
     "slabsWithDetails.cutFillBackgroundPen",
     "slabsWithDetails.cutFillPen",
     "slabsWithDetails.floorFill",
+    "slabsWithDetails.floorIndex",
     "slabsWithDetails.sideMaterial",
     "slabsWithDetails.topMaterial"
    ],
@@ -3080,7 +3591,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 24,
+   "parameterCount": 25,
    "coveredParameters": [
     "columnsWithDetails",
     "columnsWithDetails.axisRotationAngle",
@@ -3101,6 +3612,7 @@
     "columnsWithDetails.coverFill",
     "columnsWithDetails.cutFillBackgroundPen",
     "columnsWithDetails.cutFillPen",
+    "columnsWithDetails.floorIndex",
     "columnsWithDetails.isFlipped",
     "columnsWithDetails.isSlanted",
     "columnsWithDetails.isWidthAndHeightLinked",
@@ -3483,12 +3995,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 950,
-     "title": "Add GetCurrentViewImage: return the 3D or rendering window image without a file (Archicad 30)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetRoomImage",
@@ -3516,12 +4023,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 950,
-     "title": "Add GetCurrentViewImage: return the 3D or rendering window image without a file (Archicad 30)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetElementNotificationClient",
@@ -3603,12 +4105,29 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
+   "issues": []
+  },
+  {
+   "id": "UngroupElements",
+   "group": "Element grouping Commands",
+   "version": "1.7.2",
+   "brief": "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. A group nested in another group is reported as failed; ungroup the containing group first. Returns an execution result per group.",
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 914,
-     "title": "Add UngroupElements command"
+     "name": "UngroupElementsComponent",
+     "path": "Components/ElementsComponents/UngroupElementsComponent.cs"
     }
-   ]
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "groups"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetGroupsOfElements",
@@ -3630,12 +4149,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 914,
-     "title": "Add UngroupElements command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetElementsOfGroups",
@@ -3657,12 +4171,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 914,
-     "title": "Add UngroupElements command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetUserDataOfGroups",
@@ -3754,6 +4263,21 @@
    "coveredParameters": [
     "elementType"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAllFavorites",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Returns every Favorite of the project, or only those of the given element type, with its name and element type. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -3865,7 +4389,7 @@
    "id": "ExportFavorites",
    "group": "Favorites Commands",
    "version": "1.5.0",
-   "brief": "Export the project's Favorites to a .prefs file or folder.",
+   "brief": "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format).",
    "status": "done",
    "reason": "",
    "components": [
@@ -3874,13 +4398,15 @@
      "path": "Components/FavoritesComponents/ExportFavoritesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "names",
     "path"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "format"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -3888,7 +4414,7 @@
    "id": "ApplyFavoritesToElements",
    "group": "Favorites Commands",
    "version": "1.5.4",
-   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves or resizes the target element. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually.",
+   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves or resizes the target element. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3898,7 +4424,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 8,
    "coveredParameters": [
     "applyCategories",
     "applyClassifications",
@@ -3906,7 +4432,8 @@
     "applySettings",
     "favoritesToApply",
     "favoritesToApply.elementId",
-    "favoritesToApply.favorite"
+    "favoritesToApply.favorite",
+    "keepFields"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -4029,7 +4556,7 @@
    "id": "GetPropertyValuesOfElements",
    "group": "Property Commands",
    "version": "1.0.6",
-   "brief": "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also.",
+   "brief": "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also. With includeAvailability it also tells whether each property is available for the element.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4042,13 +4569,15 @@
      "path": "Components/PropertiesComponents/GetPropertyValuesOfElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "elements",
     "properties"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "includeAvailability"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -4067,6 +4596,14 @@
     {
      "name": "SetPropertyValuesOfElementsComponent",
      "path": "Components/PropertiesComponents/SetPropertyValuesOfElementsComponent.cs"
+    },
+    {
+     "name": "WallsApiComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
+    },
+    {
+     "name": "WallsComponent",
+     "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
    "parameters": "all",
@@ -4075,12 +4612,7 @@
     "elementPropertyValues"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1415,
-     "title": "Grasshopper: Walls tool component prototype, built from ToolSettings/Wall.json"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 944,
@@ -4657,7 +5189,7 @@
    "id": "GetAttributesByType",
    "group": "Attribute Commands",
    "version": "1.1.3",
-   "brief": "Returns the details of every attribute of the given type.",
+   "brief": "Returns the details of every attribute of the given type. From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4673,12 +5205,22 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 948,
-     "title": "GetAttributesByType: add attribute creation info on Archicad 30 (method, source, creator, time)"
-    }
-   ]
+   "issues": []
+  },
+  {
+   "id": "GetAttributesFromProject",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Reads the attributes of the given types from another project or template file without opening it, for example to compare them with the attributes of the open project. Nothing is imported into the open project. The names are the legacy 8-bit names, so non-ASCII characters may not come through. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "DeleteAttributes",
@@ -4702,6 +5244,86 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateAttributeFolders",
+   "group": "Attribute Commands",
+   "version": "1.7.2",
+   "brief": "Creates attribute folders, each given by attribute type and path (the folder names from the root folder down). Missing parent folders are created too; a folder that already exists is kept and reported as success. Available from Archicad 26.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1029,
+     "title": "[4/4] Grasshopper components for the attribute folder commands"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "DeleteAttributeFolders",
+   "group": "Attribute Commands",
+   "version": "1.7.2",
+   "brief": "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1029,
+     "title": "[4/4] Grasshopper components for the attribute folder commands"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "RenameAttributeFolders",
+   "group": "Attribute Commands",
+   "version": "1.7.2",
+   "brief": "Renames attribute folders, each given by attribute type and path, to the given new names. The root folder cannot be renamed. Available from Archicad 26.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1029,
+     "title": "[4/4] Grasshopper components for the attribute folder commands"
+    }
+   ],
+   "issues": []
+  },
+  {
+   "id": "MoveAttributesAndFolders",
+   "group": "Attribute Commands",
+   "version": "1.7.2",
+   "brief": "Moves attributes and attribute folders (with their contents) into the target folder, which must be of the same attribute type; an empty target path is the root folder. Returns one execution result per attribute and per folder. Available from Archicad 26.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 1029,
+     "title": "[4/4] Grasshopper components for the attribute folder commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5171,6 +5793,21 @@
    ]
   },
   {
+   "id": "GetCurrentLayerCombination",
+   "group": "Attribute Commands",
+   "version": "1.7.2",
+   "brief": "Returns the layer combination in effect in the current window. No layer combination is returned when the current state of the layers matches none.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetLines",
    "group": "Attribute Commands",
    "version": "1.5.4",
@@ -5294,6 +5931,21 @@
      "title": "Add ModifyPens: change single pens of the active pen table"
     }
    ]
+  },
+  {
+   "id": "GetCurrentPenTable",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Returns the current Pen Table (its index, attribute identifier and name) and its number of pens. Pass the returned attributeId to GetPenTables to read the pens.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetProfiles",
@@ -5566,6 +6218,21 @@
    "issues": []
   },
   {
+   "id": "RenameGraphicOverrideRuleGroups",
+   "group": "Attribute Commands",
+   "version": "1.7.3",
+   "brief": "Renames graphic override rule groups, found by name. Their rules are kept. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "DeleteGraphicOverrideRuleGroups",
    "group": "Attribute Commands",
    "version": "1.7.2",
@@ -5725,6 +6392,36 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetIFCAttributesOfElements",
+   "group": "IFC Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the IFC attributes (Name, Description, ObjectType, Tag, PredefinedType, LongName, ...) of the given elements, subelements included: the name, the IFC value type and the value of each attribute. On Archicad 25, 26 and 27 storedOnly returns only the attributes stored on the elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetIFCAttributesOfElements",
+   "group": "IFC Commands",
+   "version": "1.7.3",
+   "brief": "Sets the values of IFC attributes (Name, Description, ObjectType, Tag, ...) of elements. The attribute must be one GetIFCAttributesOfElements returns for the element; its IFC value type is kept. Available only in Archicad 25, 26 and 27 for now.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6053,6 +6750,51 @@
    "issues": []
   },
   {
+   "id": "GetReservationStatusOfElements",
+   "group": "Teamwork Commands",
+   "version": "1.7.2",
+   "brief": "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user and the element's owner.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetReservationStatusOfElementsComponent",
+     "path": "Components/TeamworkComponents/TeamworkElementComponents.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GrantElements",
+   "group": "Teamwork Commands",
+   "version": "1.7.2",
+   "brief": "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog. Available from Archicad 27.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GrantElementsComponent",
+     "path": "Components/TeamworkComponents/TeamworkElementComponents.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elements",
+    "userId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ReserveLockableObjectSet",
    "group": "Teamwork Commands",
    "version": "1.7.1",
@@ -6164,6 +6906,21 @@
    "issues": []
   },
   {
+   "id": "GetTeamworkStatus",
+   "group": "Teamwork Commands",
+   "version": "1.7.3",
+   "brief": "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "PublishPublisherSet",
    "group": "Navigator Commands",
    "version": "0.1.0",
@@ -6251,6 +7008,21 @@
    "issues": []
   },
   {
+   "id": "GetDatabases",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Lists every database of the given types (sections, elevations, interior elevations, details, worksheets, 3D documents, layouts, master layouts) with its database ID, name and reference ID, without walking the navigator trees.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateDetails",
    "group": "Navigator Commands",
    "version": "1.4.0",
@@ -6302,7 +7074,7 @@
    "id": "CreateLayout",
    "group": "Navigator Commands",
    "version": "1.4.0",
-   "brief": "Creates Layouts and their backing master layouts.",
+   "brief": "Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6312,14 +7084,15 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 18,
+   "parameterCount": 20,
    "coveredParameters": [
     "layoutsData",
     "layoutsData.layoutName",
     "layoutsData.layoutParameters",
     "layoutsData.masterLayoutName",
     "layoutsData.masterNavigatorItemId",
-    "layoutsData.parentNavigatorItemId"
+    "layoutsData.parentNavigatorItemId",
+    "layoutsData.position"
    ],
    "missingParameters": [
     "layoutsData.layoutParameters.bottomMargin",
@@ -6333,7 +7106,8 @@
     "layoutsData.layoutParameters.topMargin",
     "layoutsData.layoutParameters.verticalSize",
     "layoutsData.paperHeight",
-    "layoutsData.paperWidth"
+    "layoutsData.paperWidth",
+    "layoutsData.previousNavigatorItemId"
    ],
    "pullRequests": [],
    "issues": []
@@ -6367,6 +7141,21 @@
     "subsetsData.startAt",
     "subsetsData.useUpperPrefix"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLayoutSubsetSettings",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Gets the settings of existing Layout Book subsets: the same fields CreateLayoutSubset accepts (name, ID prefix, numbering style, ...).",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6407,7 +7196,7 @@
    "id": "ChangeDrawingLink",
    "group": "Navigator Commands",
    "version": "1.5.7",
-   "brief": "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink API, so this recreates the Drawing against the new source and deletes the original - the returned elementId is a NEW guid, not the input one. The Drawing Title marker's own position is not preserved (undocumented Archicad limitation).",
+   "brief": "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink API, so this recreates the Drawing against the new source and deletes the original - the returned elementId is a NEW guid, not the input one. The Drawing Title marker's own position is not preserved (undocumented Archicad limitation). The new source view is made current before the Drawing is created (Archicad 27 or later), and the window and story that were active when the command started are restored afterwards; the view settings (zoom, layers, scale) shown in that window are not restored.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6432,7 +7221,7 @@
    "id": "GetLayoutSettings",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Gets settings of layouts, including Layout Info Panel custom data fields.",
+   "brief": "Gets settings of layouts, including their master layout and Layout Info Panel custom data fields.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6456,7 +7245,7 @@
    "id": "SetLayoutSettings",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Sets settings of layouts, including Layout Info Panel custom data fields.",
+   "brief": "Sets settings of layouts, including their master layout and Layout Info Panel custom data fields.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6466,7 +7255,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 15,
+   "parameterCount": 18,
    "coveredParameters": [
     "layoutsData"
    ],
@@ -6481,6 +7270,9 @@
     "layoutsData.layoutName",
     "layoutsData.layoutNavigatorItemId",
     "layoutsData.leftMargin",
+    "layoutsData.masterLayoutDatabaseId",
+    "layoutsData.masterLayoutName",
+    "layoutsData.masterNavigatorItemId",
     "layoutsData.rightMargin",
     "layoutsData.showMasterBelow",
     "layoutsData.topMargin",
@@ -6770,7 +7562,7 @@
    "id": "Set3DCutPlanes",
    "group": "Navigator Commands",
    "version": "1.3.1",
-   "brief": "Sets the 3D cut planes.",
+   "brief": "Sets the 3D cut planes. An empty cutPlanes array switches the 3D cut off.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6788,6 +7580,21 @@
     "cutPlanes.pc",
     "cutPlanes.pd"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "Get3DCutPlanes",
+   "group": "Navigator Commands",
+   "version": "1.7.2",
+   "brief": "Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -7069,7 +7876,7 @@
    "id": "DeleteNavigatorItems",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Deletes navigator items from the navigator tree.",
+   "brief": "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets and marker-linked worksheets and details cannot be deleted.",
    "status": "open",
    "reason": "",
    "components": [],
@@ -7084,12 +7891,27 @@
    "id": "GetNavigatorItemTree",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Returns the full navigator item tree for the specified map.",
+   "brief": "Returns the full navigator item tree for the specified map. With includeChildCount true every item also reports the number of its direct children.",
    "status": "open",
    "reason": "",
    "components": [],
    "parameters": null,
-   "parameterCount": 2,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetNavigatorParentItems",
+   "group": "Navigator Commands",
+   "version": "1.7.3",
+   "brief": "Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -7205,12 +8027,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 946,
-     "title": "Add ImportMarkupsFromPDF command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "AddCommentToIssue",
@@ -7375,12 +8192,29 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
+   "issues": []
+  },
+  {
+   "id": "ImportMarkupsFromPDF",
+   "group": "Issue Management Commands",
+   "version": "1.7.2",
+   "brief": "Imports the markups of the specified PDF file as issues, like Issue Manager > Import PDF markups, without any dialog and without opening the Issue Manager palette, and reports the issues it created. Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 946,
-     "title": "Add ImportMarkupsFromPDF command"
+     "name": "ImportMarkupsFromPDFComponent",
+     "path": "Components/IssuesComponents/ImportMarkupsFromPDFComponent.cs"
     }
-   ]
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "pdfFilePath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetRevisionIssues",
@@ -7431,6 +8265,21 @@
      "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data"
     }
    ]
+  },
+  {
+   "id": "GetRevisionChangeCustomScheme",
+   "group": "Revision Management Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the custom fields of changes (the change custom scheme): the key and the name of each field. The keys are the customSchemeKey values in the customSchemeData of changes.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetDocumentRevisions",
@@ -7525,7 +8374,7 @@
    "id": "GetDesignOptionSets",
    "group": "Design Options Commands",
    "version": "1.2.9",
-   "brief": "Retrieves information about existing design option sets. Available from Archicad 29.",
+   "brief": "Retrieves information about existing design option sets, and in Teamwork projects the Teamwork identifier of the design options. Available from Archicad 29.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7691,6 +8540,21 @@
     "activeDesignOptionsInCombinations.activeDesignOptions",
     "activeDesignOptionsInCombinations.designOptionCombinationId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeactivateDesignOptionsInCombinations",
+   "group": "Design Options Commands",
+   "version": "1.7.3",
+   "brief": "Turns off the given design options in the given combinations, leaving their other options as they are. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -7878,6 +8742,21 @@
    "coveredParameters": [
     "designOptionCombinations"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DuplicateDesignOptionCombinations",
+   "group": "Design Options Commands",
+   "version": "1.7.3",
+   "brief": "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -8099,6 +8978,126 @@
    "issues": []
   },
   {
+   "id": "GetProjectDataKeys",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Lists the project data stored by Tapir in the project: the names, the identifiers of the add-on objects that store them, whether they are kept on this client only and the Teamwork user who has reserved them. Project data is text (for example JSON) saved in the project file by scripts and Grasshopper definitions, such as their settings or the mapping of elements to an external system.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Gets the content of the project data with the given names.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Creates or overwrites project data: text (for example JSON) saved in the project under a name. New project data can be kept on this client only, or created as unique so that in Teamwork only one can exist with its name. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Deletes the project data with the given names.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ReserveProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Reserves the project data with the given names in Teamwork, so that other users cannot change it. Returns the users who have already reserved some of it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ReleaseProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Releases the project data with the given names in Teamwork.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RequestProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Requests the project data with the given names in Teamwork from the users who have reserved it, with an optional message.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GrantProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "brief": "Grants the project data with the given names, reserved by the current user, to another Teamwork user.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetMEPElements",
    "group": "MEP Commands",
    "version": "1.5.6",
@@ -8125,7 +9124,7 @@
    "id": "GetMEPRoutingElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data (shape, size, preference table and reference id) and nodes. Available from Archicad 28.",
+   "brief": "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size and rigid segments, and nodes with their incoming and outgoing segments, elbows and transitions. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8247,7 +9246,7 @@
    "id": "ModifyMEPRoutingElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Modifies the given MEP routing elements: MEP system, cross section data (shape, size, preference table and reference id) of all segments and node positions. Available from Archicad 28.",
+   "brief": "Modifies the given MEP routing elements: MEP system, branch preference table, cross section data (shape, size, preference table and reference id), anchor, reference line offsets, wall thickness and flange size of all segments, and node positions. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8256,8 +9255,8 @@
      "path": "Components/MEPComponents/ModifyMEPRoutingElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 9,
+   "parameters": "partial",
+   "parameterCount": 15,
    "coveredParameters": [
     "routingElementsData",
     "routingElementsData.crossSectionHeight",
@@ -8269,7 +9268,14 @@
     "routingElementsData.nodePositions",
     "routingElementsData.preferenceTableId"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "routingElementsData.anchor",
+    "routingElementsData.branchPreferenceTableId",
+    "routingElementsData.flangeSize",
+    "routingElementsData.referenceLineOffsetX",
+    "routingElementsData.referenceLineOffsetY",
+    "routingElementsData.wallThickness"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -8325,76 +9331,115 @@
    "id": "GetMEPSystemGroups",
    "group": "MEP Commands",
    "version": "1.7.2",
-   "brief": "Gets the MEP system groups of the project with their physical systems: name, root element and MEP system. Available from Archicad 29.",
-   "status": "in progress",
+   "brief": "Gets the MEP system groups of the project with their physical systems: name, editable flag, root element and MEP system. Available from Archicad 29.",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetMEPSystemGroupsComponent",
+     "path": "Components/MEPComponents/GetMEPSystemGroupsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1005,
-     "title": "Grasshopper components for MEP system groups and physical systems"
-    }
-   ],
-   "issues": [
-    {
-     "number": 982,
-     "title": "Grasshopper components for MEP system groups and physical systems"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateMEPSystemGroups",
    "group": "MEP Commands",
    "version": "1.7.2",
    "brief": "Creates MEP system groups. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 1005,
-     "title": "Grasshopper components for MEP system groups and physical systems"
+     "name": "CreateMEPSystemGroupsComponent",
+     "path": "Components/MEPComponents/CreateMEPSystemGroupsComponent.cs"
     }
    ],
-   "issues": [
-    {
-     "number": 982,
-     "title": "Grasshopper components for MEP system groups and physical systems"
-    }
-   ]
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "systemGroupsData",
+    "systemGroupsData.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateMEPPhysicalSystems",
    "group": "MEP Commands",
    "version": "1.7.2",
    "brief": "Creates physical systems in MEP system groups, optionally with a root element and an MEP system as their category. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CreateMEPPhysicalSystemsComponent",
+     "path": "Components/MEPComponents/CreateMEPPhysicalSystemsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "physicalSystemsData",
+    "physicalSystemsData.mepSystemId",
+    "physicalSystemsData.name",
+    "physicalSystemsData.rootElementId",
+    "physicalSystemsData.systemGroupId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyMEPSystemGroups",
+   "group": "MEP Commands",
+   "version": "1.7.3",
+   "brief": "Renames MEP system groups. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyMEPPhysicalSystems",
+   "group": "MEP Commands",
+   "version": "1.7.3",
+   "brief": "Modifies MEP physical systems: name, root element and the MEP system used as their category. Only the given fields are changed. Available from Archicad 29.",
+   "status": "open",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 1005,
-     "title": "Grasshopper components for MEP system groups and physical systems"
-    }
-   ],
-   "issues": [
-    {
-     "number": 982,
-     "title": "Grasshopper components for MEP system groups and physical systems"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteMEPPhysicalSystems",
+   "group": "MEP Commands",
+   "version": "1.7.3",
+   "brief": "Removes MEP physical systems from their system groups. Their member elements are not deleted. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetElectricalPanels",
@@ -8743,6 +9788,66 @@
     "wiringTypesToAdd.name",
     "wiringTypesToRemove"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetCurrentAnalyticalModel",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the Structural Analytical Model created for the current view. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "UpdateAnalyticalModel",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "brief": "Triggers an update of the given Structural Analytical Model, or of the model of the current view when no model is given. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetAnalyticalGenerationSettingsToNoRule",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "brief": "Sets the generation settings of the current Structural Analytical Model to no rules. Available from Archicad 27.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetAnalyticalModelCheckTypeId",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "brief": "Retrieves the type identifier of the Structural Analytical Model check. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
