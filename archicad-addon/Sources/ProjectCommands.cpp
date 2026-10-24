@@ -595,6 +595,8 @@ GS::ObjectState InterpretAutoTextsCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+}
+
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
     CommandBase (CommonSchema::Used)
 {
