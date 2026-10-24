@@ -315,6 +315,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetNoteAutotextsCommand> (
             projectCommands, "1.7.3",
             "Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. Needs Archicad 26 or later."
+        );
         err |= RegisterCommand<GetNoteAutoTextKeywordsCommand> (
             projectCommands, "1.7.3",
             "Retrieves the keywords of note autotexts (the autotexts of dimension, label and other element notes) by their numeric API_NoteAutotextID values. Available from Archicad 26."

@@ -531,6 +531,9 @@ GS::ObjectState GetNoteAutotextsCommand::Execute (const GS::ObjectState& paramet
 #else
     (void) parameters;
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetNoteAutotexts needs Archicad 26 or later.");
+#endif
+}
+
 GetNoteAutoTextKeywordsCommand::GetNoteAutoTextKeywordsCommand () :
     CommandBase (CommonSchema::Used)
 {
