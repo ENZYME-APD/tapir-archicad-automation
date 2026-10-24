@@ -741,11 +741,11 @@ GSErrCode Initialize (void)
             "Sets the property values of elements. It works for subelements of hierarchal elements also."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementDefaultsCommand> (
-            propertyCommands, "1.7.2",
+            propertyCommands, "1.7.3",
             "Returns the property values of the tool defaults (the settings new elements get) of the given element types for the given properties."
         );
         err |= RegisterCommand<SetPropertyValuesOfElementDefaultsCommand> (
-            propertyCommands, "1.7.2",
+            propertyCommands, "1.7.3",
             "Sets the property values of the tool defaults (the settings new elements get) of element types, so every element placed afterwards gets them, without saving and applying a favorite."
         );
         err |= RegisterCommand<GetPropertyValuesOfAttributesCommand> (
