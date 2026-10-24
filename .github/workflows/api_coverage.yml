@@ -11,6 +11,12 @@
 #   - hourly, in case an event was missed, and by hand.
 # A newer run cancels an older one, so a burst of events costs one run.
 #
+# The same run also writes the Grasshopper coverage of the Tapir commands
+# (tools/generate_gh_coverage.py): which Add-On commands a Grasshopper
+# component calls, and whether the components cover their parameters. It is
+# published next to the API checklist as gh-coverage.* (read by
+# docs/gh-coverage/index.html).
+#
 # It publishes without touching main:
 #   - api-coverage.json, api-coverage.md and api-coverage-summary.md as one
 #     commit on the api-coverage branch (read by docs/api-coverage/index.html
@@ -93,9 +99,10 @@ jobs:
           tag=$(gh release view --json tagName --jq .tagName 2>/dev/null || true)
           mkdir -p release
           if [ -n "$tag" ]; then
-            git archive "$tag" archicad-addon/Sources | tar -x -C release
+            git archive "$tag" archicad-addon/Sources grasshopper-plugin/TapirGrasshopperPlugin | tar -x -C release
           fi
           echo "RELEASE_SOURCES=$([ -n "$tag" ] && echo release/archicad-addon/Sources || true)" >> "$GITHUB_ENV"
+          echo "RELEASE_PLUGIN=$([ -n "$tag" ] && echo release/grasshopper-plugin/TapirGrasshopperPlugin || true)" >> "$GITHUB_ENV"
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -120,10 +127,22 @@ jobs:
             --rules tools/api_coverage_rules.json \
             --out-dir out
 
+      - name: Generate the Grasshopper coverage
+        run: |
+          set -eu
+          release_arg=""
+          [ -n "$RELEASE_PLUGIN" ] && release_arg="--release-sources $RELEASE_PLUGIN"
+          python3 tools/generate_gh_coverage.py \
+            --sources grasshopper-plugin/TapirGrasshopperPlugin $release_arg \
+            --github-data github.json \
+            --rules tools/gh_coverage_rules.json \
+            --out-dir out
+
       - name: Publish to the api-coverage branch
         run: |
           set -eu
-          files="api-coverage.json api-coverage.md api-coverage-summary.md api-coverage-badge.json api-coverage.svg api-coverage-dark.svg"
+          files="api-coverage.json api-coverage.md api-coverage-summary.md api-coverage-badge.json api-coverage.svg api-coverage-dark.svg
+                 gh-coverage.json gh-coverage.md gh-coverage-summary.md gh-coverage-badge.json gh-coverage.svg gh-coverage-dark.svg"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if git fetch -q origin api-coverage; then
@@ -142,7 +161,7 @@ jobs:
             exit 0
           fi
           base=$(git rev-parse -q --verify HEAD || true)
-          git commit -q -m "Update the Archicad API coverage checklist"
+          git commit -q -m "Update the Archicad API and Grasshopper coverage checklists"
           if git push -q origin HEAD:api-coverage; then
             exit 0
           fi

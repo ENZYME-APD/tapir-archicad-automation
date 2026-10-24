@@ -5,13 +5,12 @@
   "tokenEnv": "TAPIR_RUNNER_TOKEN",
   "pollMinutes": 15,
   "allowForks": false,
+  "trustedForks": ["your-github-name"],
   "archicads": [
     {
       "version": "28",
       "archicadExe": "C:\\Program Files\\Graphisoft\\Archicad 28\\Archicad.exe",
-      "addonFile": "C:\\Users\\me\\TapirRunner\\AC28\\TapirAddOn_AC28_Win.apx",
-      "blankTemplate": "C:\\Users\\me\\TapirRunner\\blank-AC28.tpl",
-      "port": 19723,
+      "blankTemplate": "C:\\Program Files\\Graphisoft\\Archicad 28\\Defaults\\Archicad\\Archicad 28 Template.tpl",
       "startTimeout": 300,
       "quitTimeout": 180
     }
