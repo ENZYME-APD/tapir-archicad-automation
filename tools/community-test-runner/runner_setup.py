@@ -115,6 +115,19 @@ def run(config_path: Path | str, yes: bool, claude_skill: bool) -> int:
         if ac["version"] in chosen:
             entry = dict(ac, startTimeout=300, quitTimeout=180)
             entry.update({k: v for k, v in previous.get(ac["version"], {}).items() if k not in ("archicadExe",)})
+            try:
+                swap = [] if entry.get("addonFile") else rw.AddOnList(ac["version"]).swap_files()
+            except RuntimeError:
+                swap = []
+            if len(swap) == 1:
+                entry["addonFile"] = str(swap[0])
+                print(f"  Archicad {ac['version']}: your Tapir is in its Add-Ons folder, which Archicad up to 28 does not "
+                      "allow next to a test build in the add-on list (#1150). The runner swaps that file instead "
+                      "and needs administrator rights for it.")
+            elif swap:
+                print(f"  Archicad {ac['version']}: there are {len(swap)} Tapirs in its Add-Ons folder "
+                      f"({', '.join(str(p) for p in swap)}); keep one and run setup again, or the others load next "
+                      "to every test build.")
             archicads.append(entry)
     cfg["archicads"] = archicads
 
