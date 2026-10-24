@@ -408,6 +408,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.3",
             "Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated."
         );
+        err |= RegisterCommand<GetSunSettingsCommand> (
+            projectCommands, "1.7.3",
+            "Gets the project's date and time (Options > Project Preferences > Location Settings), the sun position Archicad calculates for them at the project location, and the sun and ambient light settings."
+        );
+        err |= RegisterCommand<CalculateSunPositionCommand> (
+            projectCommands, "1.7.3",
+            "Calculates the sun position (azimuth and altitude in degrees) for a date and time, at the project location unless another one is given, without changing the project."
+        );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",
             "Prints from the current view."
