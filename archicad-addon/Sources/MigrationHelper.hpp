@@ -659,6 +659,13 @@ inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
     return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
+// APIAny_GetCWSubElemParamsID is the AC25/26 name of ACAPI_CurtainWall_GetCWSubElemParams:
+// par1 is the guid of the curtain wall sub-element, par2 receives the parameter handle.
+inline GSErrCode ACAPI_CurtainWall_GetCWSubElemParams (const API_Guid* guid, API_AddParType*** params)
+{
+    return ACAPI_Goodies (APIAny_GetCWSubElemParamsID, (void*) guid, params);
+}
+
 inline GSErrCode ACAPI_CurtainWall_IsCWPanelDegenerate (const API_Guid* guid, bool* isDegenerate)
 {
     return ACAPI_Database (APIDb_IsCWPanelDegenerateID, const_cast<API_Guid*> (guid), isDegenerate);
