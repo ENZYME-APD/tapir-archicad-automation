@@ -17,7 +17,10 @@ name: Auto Merge
 #   - the commit status `claude-review` on that head is a success, and has been
 #     for BOT_AUTO_MERGE_DELAY_HOURS (repository variable, default 72) - the
 #     time people get to look. claude_pr_review.yml sets it from its verdict,
-#     in a job that runs no model; no other job holds statuses: write;
+#     in a job that runs no model; only jobs that run no model hold
+#     statuses: write (claude_bot_pr_steward.yml's sweep and restart, which
+#     set their own `steward-fix` status - pending while a pull request
+#     waits for an earlier one, which holds the merge back like any check);
 #   - no review thread a person opened is unresolved, and no reviewer's latest
 #     review requests changes;
 #   - gates 2 and 3 hold, as for everyone: the release critical paths below
