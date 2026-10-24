@@ -5077,8 +5077,33 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetInputParametersSchema () c
             },
             "filters": {
                 "type": "array",
+                "description": "Optional. Archicad's own flag filters. An element is kept only when it fulfills all of them.",
                 "items": {
                     "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            },
+            "layerIndices": {
+                "type": "array",
+                "description": "Optional. An element is kept only when it is on one of these layers (the layerIndex field of GetDetailsOfElements).",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 1
+            },
+            "floorIndices": {
+                "type": "array",
+                "description": "Optional. An element is kept only when its home story is one of these (the floorIndex field of GetDetailsOfElements).",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 1
+            },
+            "elementTypes": {
+                "type": "array",
+                "description": "Optional. An element is kept only when its type is one of these.",
+                "items": {
+                    "$ref": "#/ElementType"
                 },
                 "minItems": 1
             }
@@ -5118,7 +5143,31 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
     for (const GS::UniString& filter : filters) {
         filterFlags |= ConvertFilterStringToFlag (filter);
     }
-    if (filterFlags == APIFilt_None) {
+    if (!filters.IsEmpty () && filterFlags == APIFilt_None) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing filters!");
+    }
+
+    GS::Array<Int32> layerIndices;
+    parameters.Get ("layerIndices", layerIndices);
+
+    GS::Array<Int32> floorIndices;
+    parameters.Get ("floorIndices", floorIndices);
+
+    GS::Array<GS::UniString> elementTypeStrs;
+    parameters.Get ("elementTypes", elementTypeStrs);
+    GS::Array<API_ElemTypeID> elementTypes;
+    for (const GS::UniString& elementTypeStr : elementTypeStrs) {
+        const API_ElemTypeID elementType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elementType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+        elementTypes.Push (elementType);
+    }
+
+    // The header based criteria (layer, home story, type) are checked only when at least one of them is given.
+    const bool checkHeader = !layerIndices.IsEmpty () || !floorIndices.IsEmpty () || !elementTypes.IsEmpty ();
+    if (filterFlags == APIFilt_None && !checkHeader) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing filters!");
     }
 
@@ -5132,8 +5181,25 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
         }
 
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-        if (!ACAPI_Element_Filter (elemGuid, filterFlags)) {
+        if (filterFlags != APIFilt_None && !ACAPI_Element_Filter (elemGuid, filterFlags)) {
             continue;
+        }
+
+        if (checkHeader) {
+            API_Elem_Head elemHead = {};
+            elemHead.guid = elemGuid;
+            if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+                continue;
+            }
+            if (!layerIndices.IsEmpty () && !layerIndices.Contains (GetAttributeIndex (elemHead.layer))) {
+                continue;
+            }
+            if (!floorIndices.IsEmpty () && !floorIndices.Contains (elemHead.floorInd)) {
+                continue;
+            }
+            if (!elementTypes.IsEmpty () && !elementTypes.Contains (GetElemTypeId (elemHead))) {
+                continue;
+            }
         }
 
         filteredElements (CreateElementIdObjectState (elemGuid));
