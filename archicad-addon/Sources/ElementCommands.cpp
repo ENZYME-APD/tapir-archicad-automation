@@ -1671,6 +1671,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
                 }
                 typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Drawing Settings > "Include scale in Autotext and index" (#817)
+                typeSpecificDetails.Add ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES);
                 // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
                 // index here means no title object is instantiated at all (nothing to show); setting
                 // it to a valid index (e.g. copied from another drawing) is what makes Archicad
@@ -2291,6 +2293,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("isScaleIncludedInAutotextAndIndex", elem.drawing.includeInAutoTextsAndIES)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, includeInAutoTextsAndIES);
                         }
                         if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
