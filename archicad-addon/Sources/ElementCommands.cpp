@@ -3338,6 +3338,128 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
     return response;
 }
 
+EditHierarchicalElementCommand::EditHierarchicalElementCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String EditHierarchicalElementCommand::GetName () const
+{
+    return "EditHierarchicalElement";
+}
+
+GS::Optional<GS::UniString> EditHierarchicalElementCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) to open in hierarchical editing mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> EditHierarchicalElementCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState EditHierarchicalElementCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    const GS::ObjectState* elementId = parameters.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+    }
+
+    const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+    if (elemGuid == APINULLGuid) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is corrupt or missing");
+    }
+
+    // A complete operation: it must not run inside ACAPI_CallUndoableCommand, so it is called directly.
+    const GSErrCode err = ACAPI_HierarchicalEditing_EditHierarchicalElem (&elemGuid);
+    if (err == APIERR_REFUSEDCMD) {
+        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Finish it first with FinishHierarchicalEditing.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to open the element in hierarchical editing mode; it must be a Curtain Wall, Stair, Railing, Beam or Column.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "EditHierarchicalElement requires Archicad 27 or later.");
+#endif
+}
+
+FinishHierarchicalEditingCommand::FinishHierarchicalEditingCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FinishHierarchicalEditingCommand::GetName () const
+{
+    return "FinishHierarchicalEditing";
+}
+
+GS::Optional<GS::UniString> FinishHierarchicalEditingCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "accept": {
+                "type": "boolean",
+                "description": "True to accept the changes made in the hierarchical editing mode (OK), false to discard them (Cancel)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "accept"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> FinishHierarchicalEditingCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState FinishHierarchicalEditingCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    // Required, never defaulted: the changes are only discarded when the caller asks for it.
+    bool accept = false;
+    if (!parameters.Get ("accept", accept)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: accept.");
+    }
+
+    // Complete operations: they must not run inside ACAPI_CallUndoableCommand, so they are called directly.
+    const GSErrCode err = accept
+        ? ACAPI_HierarchicalEditing_OkHierarchicalElem ()
+        : ACAPI_HierarchicalEditing_CancelHierarchicalElem ();
+    if (err == APIERR_REFUSEDCMD) {
+        return CreateFailedExecutionResult (err, "Archicad is not in a hierarchical editing mode that can be finished.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, accept ? "Failed to accept the hierarchical editing." : "Failed to cancel the hierarchical editing.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "FinishHierarchicalEditing requires Archicad 27 or later.");
+#endif
 GetHierarchicalElementOwnersCommand::GetHierarchicalElementOwnersCommand () :
     CommandBase (CommonSchema::Used)
 {
