@@ -8853,6 +8853,22 @@
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
             },
+            "hasBorderLine": {
+                "type": "boolean",
+                "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
+            },
+            "borderLineTypeIndex": {
+                "type": "integer",
+                "description": "Attribute index of the line type of the drawing's border."
+            },
+            "borderPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the drawing's border."
+            },
+            "borderSize": {
+                "type": "number",
+                "description": "Border size of the drawing (API_DrawingType::borderSize), in meters."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
@@ -8875,6 +8891,10 @@
             "nameType",
             "numberingType",
             "isInNumbering",
+            "hasBorderLine",
+            "borderLineTypeIndex",
+            "borderPenIndex",
+            "borderSize",
             "titleLibraryPartIndex"
         ]
     },
@@ -10432,6 +10452,25 @@
             "isInNumbering": {
                 "type": "boolean",
                 "description": "Whether the drawing is included in the automatic drawing numbering sequence."
+            },
+            "hasBorderLine": {
+                "type": "boolean",
+                "description": "Whether the drawing shows a printable border (Drawing Settings > Frame > Add Printable Border)."
+            },
+            "borderLineTypeIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Attribute index of the line type of the drawing's border."
+            },
+            "borderPenIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "Pen index of the drawing's border."
+            },
+            "borderSize": {
+                "type": "number",
+                "description": "Border size of the drawing (API_DrawingType::borderSize), in meters."
             },
             "titleLibraryPartIndex": {
                 "type": "number",
