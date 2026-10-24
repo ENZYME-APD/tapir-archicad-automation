@@ -39,7 +39,7 @@ class FakeArchicad:
         if command == "GetAddOnVersion":
             return {"version": self.version}
         if command == "API.GetProductInfo":
-            return {"version": 28, "buildNumber": 7006}
+            return {"version": 28, "buildNumber": 7006, "languageCode": "GER"}
         if command == "GetProjectInfo":
             return {"isUntitled": self.untitled}
         if command == "GetElementsByType":
@@ -157,6 +157,9 @@ class EngineTest(unittest.TestCase):
                 {"check": "c", "step": "s", "what": "w", "ok": None, "detail": "skipped"}]
         first = r.report(rows, "28", "1.7.0", "abcdef123").splitlines()[0]
         self.assertEqual(first, "tapir-test: AC28 PASS 1/1 build abcdef1 tapir 1.7.0")
+        self.assertEqual(r.archicad_label(FakeArchicad()), "28 GER")
+        self.assertTrue(r.report(rows, r.archicad_label(FakeArchicad()), "1.7.0", "abcdef123")
+                        .startswith("tapir-test: AC28 GER PASS 1/1 "))
 
 
 class ChecksTest(unittest.TestCase):
