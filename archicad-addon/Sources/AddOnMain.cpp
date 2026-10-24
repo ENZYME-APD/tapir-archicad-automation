@@ -1066,6 +1066,10 @@ GSErrCode Initialize (void)
             classificationCommands, "1.6.0",
             "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed."
         );
+        err |= RegisterCommand<GetClassificationItemVisibilityCommand> (
+            classificationCommands, "1.7.3",
+            "Tells whether the given classification items are visible (offered) for the given elements, element tool defaults and attributes, such as building materials. Non-existing targets and classification items are reported as errors. Visibility does not tell whether the target is classified with the item, and an item can be visible even if its parent item is not."
+        );
         AddCommandGroup (classificationCommands);
     }
 

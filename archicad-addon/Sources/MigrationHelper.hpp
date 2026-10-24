@@ -791,6 +791,12 @@ inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head
 #endif
 }
 
+inline bool TAPIR_Element_IsClassificationItemVisibleDefault (const API_Elem_Head& elemHead, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.type, itemGuid);
+#else
+    return ACAPI_Element_IsClassificationItemVisibleDefault (elemHead.typeID, elemHead.variationID, itemGuid);
 // The classification of the tool defaults of a plain element type (generic variation):
 // since AC26 the API takes an API_ElemType, which an API_ElemTypeID converts to; before
 // that the typeID and the variationID are separate arguments.
