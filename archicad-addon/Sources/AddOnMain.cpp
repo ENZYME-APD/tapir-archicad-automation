@@ -1026,6 +1026,10 @@ GSErrCode Initialize (void)
             classificationCommands, "1.0.7",
             "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
         );
+        err |= RegisterCommand<GetElementsByClassificationCommand> (
+            classificationCommands, "1.7.3",
+            "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call."
+        );
         err |= RegisterCommand<SetClassificationsOfElementsCommand> (
             classificationCommands, "1.0.7",
             "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
