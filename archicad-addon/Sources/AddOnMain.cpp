@@ -1015,6 +1015,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetPropertyExpressionReferencesCommand> (
             propertyCommands, "1.7.3",
             "Returns the strings that refer to the given properties in property expressions."
+        );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."
