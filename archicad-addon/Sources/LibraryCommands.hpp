@@ -89,6 +89,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetLibraryPartMetadataCommand : public CommandBase
+{
+public:
+    GetLibraryPartMetadataCommand ();
 class SetLibraryPartScriptsCommand : public CommandBase
 {
 public:

@@ -954,6 +954,176 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     return response;
 }
 
+GetLibraryPartMetadataCommand::GetLibraryPartMetadataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartMetadataCommand::GetName () const
+{
+    return "GetLibraryPartMetadata";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartMetadataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to read the metadata of.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'Door 26.gsm')."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartMetadataCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The metadata of each given library part, or an error, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "description": {
+                                    "type": "string",
+                                    "description": "The description of the library part."
+                                },
+                                "keywords": {
+                                    "type": "string",
+                                    "description": "The keywords of the library part as stored, usually a comma separated list used for searching."
+                                },
+                                "author": {
+                                    "type": "string",
+                                    "description": "The author of the library part."
+                                },
+                                "isPlaceable": {
+                                    "type": "boolean",
+                                    "description": "True if the library part can be placed in the plan; false e.g. for macros."
+                                },
+                                "isPasswordProtected": {
+                                    "type": "boolean",
+                                    "description": "True if the library part is password protected and encrypted."
+                                },
+                                "isHierarchicalPagesUsed": {
+                                    "type": "boolean",
+                                    "description": "True if the user interface of the library part uses hierarchical pages."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "description",
+                                "keywords",
+                                "author",
+                                "isPlaceable",
+                                "isPasswordProtected",
+                                "isHierarchicalPagesUsed"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+template <typename T>
+static bool AddLibraryPartMetadataField (GS::ObjectState& metadata, const char* key, const ACAPI::Result<T>& result, const GS::UniString& name, GS::ObjectState& error)
+{
+    if (result.IsErr ()) {
+        GS::UniString errorMessage = "Failed to read the " + GS::UniString (key) + " of the library part '" + name + "'";
+        const GS::UniString errorText (result.UnwrapErr ().text.c_str ());
+        if (!errorText.IsEmpty ()) {
+            errorMessage += " (" + errorText + ")";
+        }
+        errorMessage += ".";
+        error = CreateErrorResponse (result.UnwrapErr ().kind, errorMessage);
+        return false;
+    }
+    metadata.Add (key, result.Unwrap ());
+    return true;
+}
+#endif
+
+GS::ObjectState GetLibraryPartMetadataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& metadataAdder = response.AddList<GS::ObjectState> ("libraryParts");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::UniString name;
+        if (!libraryPart.Get ("name", name) || name.IsEmpty ()) {
+            metadataAdder (CreateErrorResponse (APIERR_BADPARS, "Missing 'name' parameter."));
+            continue;
+        }
+
+        auto libPart = libraryManager->GetLibPartByName (name);
+        if (libPart.IsErr ()) {
+            metadataAdder (CreateErrorResponse (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+            continue;
+        }
+
+        auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+        if (gsmObject.IsErr ()) {
+            metadataAdder (CreateErrorResponse (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
+            continue;
+        }
+
+        GS::ObjectState metadata;
+        GS::ObjectState error;
+        if (AddLibraryPartMetadataField (metadata, "description", gsmObject->GetDescription (), name, error) &&
+            AddLibraryPartMetadataField (metadata, "keywords", gsmObject->GetKeywords (), name, error) &&
+            AddLibraryPartMetadataField (metadata, "author", gsmObject->GetAuthor (), name, error) &&
+            AddLibraryPartMetadataField (metadata, "isPlaceable", gsmObject->IsPlaceable (), name, error) &&
+            AddLibraryPartMetadataField (metadata, "isPasswordProtected", gsmObject->IsPasswordProtected (), name, error) &&
+            AddLibraryPartMetadataField (metadata, "isHierarchicalPagesUsed", gsmObject->IsHierarchicalPagesUsed (), name, error)) {
+            metadataAdder (metadata);
+        } else {
+            metadataAdder (error);
+        }
+    }
 SetLibraryPartScriptsCommand::SetLibraryPartScriptsCommand () :
     CommandBase (CommonSchema::Used)
 {
