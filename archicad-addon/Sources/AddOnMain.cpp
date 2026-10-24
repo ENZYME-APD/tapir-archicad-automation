@@ -196,6 +196,9 @@ GSErrCode Initialize (void)
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
 
+    // The Add-On is preloaded, so this runs before Archicad opens the first project.
+    ApplyDialogAutoCloseFromEnvironment ();
+
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
         err |= RegisterCommand<GetAddOnVersionCommand> (
@@ -269,6 +272,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<Set3DCutawayStatusCommand> (
             applicationCommands, "1.7.3",
             "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. In Archicad 25-27 the 3D window may need to be open."
+        );
+        err |= RegisterCommand<SetDialogAutoCloseCommand> (
+            applicationCommands, "1.7.3",
+            "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DIALOG_AUTOCLOSE environment variable to true for the Archicad process before starting it."
         );
 
         AddCommandGroup (applicationCommands);
