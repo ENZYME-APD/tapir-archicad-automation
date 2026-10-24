@@ -985,6 +985,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.2.4",
             "Returns the details of layer combination attributes."
         );
+        err |= RegisterCommand<ActivateLayerCombinationCommand> (
+            attributeCommands, "1.7.2",
+            "Activates the given layer combination in the current window, like choosing it in the Quick Layers palette. Saved views are not changed."
+        );
         err |= RegisterCommand<GetLinesCommand> (
             attributeCommands, "1.5.4",
             "Returns the details of the given Line attributes."
