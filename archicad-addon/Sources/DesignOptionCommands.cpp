@@ -9,6 +9,10 @@
 #endif
 
 #ifdef ServerMainVers_2900
+#include "ACAPI/DesignOptionsManipulationRightsChecker.hpp"
+#endif
+
+#ifdef ServerMainVers_2900
 using namespace ACAPI::DesignOptions;
 #elif defined (ServerMainVers_2800)
 using DesignOptionManager = ACAPI::DesignOptions::v1::DesignOptionManager;
@@ -30,6 +34,18 @@ static auto FindDesignOptionItemByGuid (ContainerT& items, const GS::Guid& guid)
         }
     }
     return nullptr;
+}
+
+// Returns the error response with Archicad's own text when the user may not
+// create design options, sets or combinations (e.g. a Teamwork project
+// without the right); no value when creating them is allowed.
+static GS::Optional<GS::ObjectState> CheckDesignOptionCreationRights ()
+{
+    const auto error =DesignOptionsManipulationRightsChecker::CheckCreationRights ();
+    if (error.has_value ()) {
+        return CreateErrorResponse (error->kind, GS::UniString (error->text.c_str ()));
+    }
+    return GS::NoValue;
 }
 #endif
 
@@ -547,6 +563,11 @@ GS::ObjectState CreateDesignOptionSetsCommand::Execute (const GS::ObjectState& p
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to create design option sets.");
     }
 
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
+    }
+
     GS::Array<GS::UniString> designOptionSets;
     if (!parameters.Get ("designOptionSets", designOptionSets)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionSets' parameter.");
@@ -621,6 +642,11 @@ GS::ObjectState CreateDesignOptionsCommand::Execute (const GS::ObjectState& para
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to create design options.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> designOptions;
@@ -728,6 +754,11 @@ GS::ObjectState CreateDesignOptionCombinationsCommand::Execute (const GS::Object
     ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
     if (manager.IsErr ()) {
         return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to create design option combinations.");
+    }
+
+    const GS::Optional<GS::ObjectState> rightsError = CheckDesignOptionCreationRights ();
+    if (rightsError.HasValue ()) {
+        return *rightsError;
     }
 
     GS::Array<GS::ObjectState> designOptionCombinations;
