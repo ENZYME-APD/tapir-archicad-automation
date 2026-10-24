@@ -2879,6 +2879,28 @@ static GS::ObjectState CreateDimensionsObjectState (const API_DimensionPrefs& pr
         "area", CreateAreaDimFormatObjectState (prefs.area));
 }
 
+// The Zones page (API_ZonePrefs). Up to ZoneHeightLimitCount ceiling height limits
+// (roomHeightLimits, nLowAreas of them in use) split a zone into height ranges, each
+// reduced in the calculated area by its own percent (roomRedPercents: one per limit and
+// a last one for the area above the highest limit). The wall inset (niche) sizes of the
+// dialog are not in the struct, so the page has only the low ceiling area reduction.
+static const UIndex ZoneHeightLimitCount = 3;
+
+static GS::ObjectState CreateZonesObjectState (const API_ZonePrefs& prefs)
+{
+    GS::ObjectState lowCeilingAreaReduction;
+    lowCeilingAreaReduction.Add ("activeHeightLimits", static_cast<Int32> (prefs.nLowAreas));
+    const auto& heightLimitAdder = lowCeilingAreaReduction.AddList<GS::ObjectState> ("heightLimits");
+    for (UIndex i = 0; i < ZoneHeightLimitCount; ++i) {
+        heightLimitAdder (GS::ObjectState (
+            "height", prefs.roomHeightLimits[i],
+            "reductionPercent", prefs.roomRedPercents[i]));
+    }
+    lowCeilingAreaReduction.Add ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
+
+    return GS::ObjectState ("lowCeilingAreaReduction", lowCeilingAreaReduction);
+}
+
 #ifdef ServerMainVers_2700
 
 template <typename EnumType>
@@ -3211,6 +3233,39 @@ static GS::Optional<GS::UniString> ApplyDimensions (const GS::ObjectState& os, A
         if (error.HasValue ()) {
             return error;
         }
+    }
+
+    return GS::NoValue;
+}
+
+// --- Zones page
+
+static GS::Optional<GS::UniString> ApplyZones (const GS::ObjectState& os, API_ZonePrefs& prefs, bool& changed)
+{
+    GS::ObjectState lowCeilingAreaReduction;
+    if (os.Get ("lowCeilingAreaReduction", lowCeilingAreaReduction)) {
+        Int32 activeHeightLimits = 0;
+        if (lowCeilingAreaReduction.Get ("activeHeightLimits", activeHeightLimits)) {
+            if (activeHeightLimits < 0 || activeHeightLimits > static_cast<Int32> (ZoneHeightLimitCount)) {
+                return GS::UniString ("activeHeightLimits has to be between 0 and 3.");
+            }
+            prefs.nLowAreas = static_cast<decltype (prefs.nLowAreas)> (activeHeightLimits);
+            changed = true;
+        }
+
+        // The given items change the limits of the same index; the rest keep their values.
+        GS::Array<GS::ObjectState> heightLimits;
+        if (lowCeilingAreaReduction.Get ("heightLimits", heightLimits)) {
+            if (heightLimits.IsEmpty () || heightLimits.GetSize () > ZoneHeightLimitCount) {
+                return GS::UniString ("heightLimits has to have 1 to 3 items.");
+            }
+            for (UIndex i = 0; i < heightLimits.GetSize (); ++i) {
+                changed |= heightLimits[i].Get ("height", prefs.roomHeightLimits[i]);
+                changed |= heightLimits[i].Get ("reductionPercent", prefs.roomRedPercents[i]);
+            }
+        }
+
+        changed |= lowCeilingAreaReduction.Get ("reductionPercentAboveHeightLimits", prefs.roomRedPercents[ZoneHeightLimitCount]);
     }
 
     return GS::NoValue;
@@ -3576,6 +3631,74 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
     return schema;
 }
 
+// The item count of the height limits list: all three in the response of
+// GetProjectPreferences, one to three in the input of SetProjectPreferences,
+// where the given items change the limits of the same index.
+static GS::UniString GetProjectPreferencesHeightLimitsItemCount (bool allFieldsRequired)
+{
+    if (allFieldsRequired) {
+        return "\"minItems\": 3, \"maxItems\": 3";
+    }
+    return "\"minItems\": 1, \"maxItems\": 3";
+}
+
+static GS::UniString GetZonesSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
+        "properties": {
+            "lowCeilingAreaReduction": {
+                "type": "object",
+                "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
+                "properties": {
+                    "activeHeightLimits": {
+                        "type": "integer",
+                        "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
+                    },
+                    "heightLimits": {
+                        "type": "array",
+                        "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "height": {
+                                    "type": "number",
+                                    "description": "The ceiling height limit in meters."
+                                },
+                                "reductionPercent": {
+                                    "type": "number",
+                                    "description": "The reduction of the area under this limit, in percent."
+                                }
+                            },
+                            "additionalProperties": false,
+                            )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("height", "reductionPercent")");
+    schema += R"(
+                        },
+                        )";
+    schema += GetProjectPreferencesHeightLimitsItemCount (allFieldsRequired);
+    schema += R"(
+                    },
+                    "reductionPercentAboveHeightLimits": {
+                        "type": "number",
+                        "description": "The reduction of the area above the highest height limit, in percent."
+                    }
+                },
+                "additionalProperties": false,
+                )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("activeHeightLimits", "heightLimits", "reductionPercentAboveHeightLimits")");
+    schema += R"(
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction")");
+    schema += R"(
+    })";
+    return schema;
+}
+
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3599,7 +3722,8 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                     "enum": [
                         "WorkingUnits",
                         "Dimensions",
-                        "CalculationUnits"
+                        "CalculationUnits",
+                        "Zones"
                     ]
                 },
                 "minItems": 1
@@ -3625,6 +3749,9 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += R"(,
             "calculationUnits": )";
     schema += GetCalculationUnitsPageSchema (true);
+    schema += R"(,
+            "zones": )";
+    schema += GetZonesSchema (true);
     schema += R"(
         },
         "additionalProperties": false,
@@ -3641,6 +3768,7 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         preferenceTypes.Push ("WorkingUnits");
         preferenceTypes.Push ("Dimensions");
         preferenceTypes.Push ("CalculationUnits");
+        preferenceTypes.Push ("Zones");
     }
 
     GS::ObjectState response;
@@ -3666,6 +3794,13 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
                 return CreateErrorResponse (err, "Failed to read the calculation units preferences.");
             }
             response.Add ("calculationUnits", CreateCalculationUnitsObjectState (prefs));
+        } else if (preferenceType == "Zones") {
+            API_ZonePrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ZonesID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the zones preferences.");
+            }
+            response.Add ("zones", CreateZonesObjectState (prefs));
         } else {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
         }
@@ -3698,6 +3833,9 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSche
     schema += R"(,
             "calculationUnits": )";
     schema += GetCalculationUnitsPageSchema (false);
+    schema += R"(,
+            "zones": )";
+    schema += GetZonesSchema (false);
     schema += R"(
         },
         "additionalProperties": false,
@@ -3720,6 +3858,9 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
                 "$ref": "#/ExecutionResult"
             },
             "calculationUnits": {
+                "$ref": "#/ExecutionResult"
+            },
+            "zones": {
                 "$ref": "#/ExecutionResult"
             }
         },
@@ -3753,8 +3894,14 @@ GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         response.Add ("calculationUnits", SetProjectPreferencesPage<API_CalcUnitPrefs> ("calculation units", APIPrefs_CalcUnitsID, calculationUnits, ApplyCalculationUnits));
     }
 
+    GS::ObjectState zones;
+    if (parameters.Get ("zones", zones)) {
+        anyPage = true;
+        response.Add ("zones", SetProjectPreferencesPage<API_ZonePrefs> ("zones", APIPrefs_ZonesID, zones, ApplyZones));
+    }
+
     if (!anyPage) {
-        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions or calculationUnits.");
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits or zones.");
     }
 
     return response;
