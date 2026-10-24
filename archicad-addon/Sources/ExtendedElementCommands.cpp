@@ -297,6 +297,13 @@ GS::Optional<GS::UniString> CheckOpeningSize (const GS::ObjectState& data)
 //
 // `switched` says whether anything has to be restored: when the floor plan is already the
 // current database nothing is touched, so the path that works today stays exactly as it is.
+//
+// Defined OUTSIDE the anonymous namespace: CommandBase.hpp declares it for the ghost story
+// commands in NavigatorCommands.cpp, and a definition inside the anonymous namespace has
+// internal linkage, a distinct entity from the header's declaration, which makes every call
+// site ambiguous between the two.
+} // namespace
+
 GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, bool& switched)
 {
     switched = false;
@@ -324,6 +331,8 @@ GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, 
     switched = true;
     return NoError;
 }
+
+namespace {
 
 GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
 {

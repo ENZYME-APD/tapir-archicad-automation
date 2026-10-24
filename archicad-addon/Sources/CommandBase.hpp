@@ -271,6 +271,11 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
 // ExtendedElementCommands.cpp, next to the Window/Door specific variant.
 GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API_ElemTypeID expectedTypeId);
 
+// Makes the floor plan the current database (not the front window) and reports in `switched`
+// whether it had to; the caller puts `previousDatabase` back when it did. Defined in
+// ExtendedElementCommands.cpp.
+GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, bool& switched);
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
 
