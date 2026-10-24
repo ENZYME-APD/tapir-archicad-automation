@@ -6451,6 +6451,9 @@ GS::ObjectState GetSkylightHolePolygonsCommand::Execute (const GS::ObjectState& 
         skylightHolePolygons (polygonOS);
     }
 
+    return response;
+}
+
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
 {
