@@ -1227,6 +1227,17 @@ GS::ObjectState ActivateDesignOptionsInCombinationsCommand::Execute (const GS::O
             }
             auto result = manager->ActivateDesignOptionInCombination (*combinationPtr, *optionPtr);
             executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to activate design option in combination."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 DuplicateDesignOptionCombinationsCommand::DuplicateDesignOptionCombinationsCommand () :
     CommandBase (CommonSchema::Used)
 {
