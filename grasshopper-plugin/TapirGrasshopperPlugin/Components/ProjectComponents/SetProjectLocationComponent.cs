@@ -38,11 +38,23 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             InText(nameof(SurveyPointPositionInProject.PositionInProjectX));
             InText(nameof(SurveyPointPositionInProject.PositionInProjectY));
             InText(nameof(SurveyPointPositionInProject.PositionInProjectZ));
+            // Boolean inputs without a default value: an unconnected one is not sent,
+            // so the survey point's visibility and lock stay unchanged.
+            inManager.AddBooleanParameter(
+                nameof(SurveyPoint.IsVisible),
+                nameof(SurveyPoint.IsVisible),
+                "Shows (true) or hides (false) the survey point. Unconnected means unchanged.".WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+            inManager.AddBooleanParameter(
+                nameof(SurveyPoint.IsLocked),
+                nameof(SurveyPoint.IsLocked),
+                "Locks (true) or unlocks (false) the survey point. Unconnected means unchanged. Needs Archicad 26 or later.".WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
 
             SetOptionality(
                 new[]
                 {
-                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
                 });
         }
 
@@ -114,6 +126,17 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     PositionInProjectY = positionInProjectY.Value,
                     PositionInProjectZ = positionInProjectZ.Value
                 };
+            }
+
+            // The boolean inputs have no default value, so TryGet fails when they are
+            // unconnected and the visibility and the lock are left out of the command.
+            if (da.TryGet(19, out bool isVisible))
+            {
+                projectLocation.Survey.IsVisible = isVisible;
+            }
+            if (da.TryGet(20, out bool isLocked))
+            {
+                projectLocation.Survey.IsLocked = isLocked;
             }
 
             SetCadValues(

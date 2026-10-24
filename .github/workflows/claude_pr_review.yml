@@ -256,10 +256,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do
@@ -361,6 +361,13 @@ jobs:
             finding in the summary instead, one line each, starting with its
             file:line.
 
+            Post the summary this way and no other: write it with the Write
+            tool to .review-context/summary.md, then run
+            `gh pr comment <PR NUMBER> --body-file .review-context/summary.md`.
+            Never pass it with --body, a heredoc or $(...): those are refused.
+            If that command fails, leave the file as it is - it is posted for
+            you after you finish.
+
             KEEP IT SHORT. A maintainer reads this between other work, and a
             review nobody finishes reading is a review that did not happen.
 
@@ -446,7 +453,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model ${{ steps.pr.outputs.re_review == 'true' && (vars.CLAUDE_LIGHT_MODEL || 'sonnet') || (vars.CLAUDE_MODEL || 'opus') }}
-            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
+            --allowedTools "Read,Grep,Glob,Edit(./.review-context/summary.md),mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
 
       # What the run came to, in the job summary: the result message of its
       # execution file, with the error text of a failed run, so a failure can be
@@ -497,6 +504,34 @@ jobs:
         run: |
           echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
           exit 1
+
+      # Posts the summary the review wrote to its file, when the review did
+      # not post it itself: about a third of the dispatched reviews (38 of 98
+      # on 2026-10-19/20, on both models) posted no summary, and those runs
+      # had more refused commands than the ones that did; the steward counted
+      # each against the pull request. Only a file carrying this run's nonce
+      # counts, and only once.
+      - name: Post the summary the review wrote
+        if: always() && steps.pr.outputs.skip != 'true' && steps.result.outputs.refused != 'true'
+        env:
+          STARTED_AT: ${{ steps.pr.outputs.started_at }}
+          NONCE: ${{ steps.pr.outputs.nonce }}
+        run: |
+          set -euo pipefail
+          file=.review-context/summary.md
+          if [ ! -s "$file" ] || ! grep -qE "claude-review-verdict: (clean|blocking) $NONCE" "$file"; then
+            echo "No summary file with this run's verdict."
+            exit 0
+          fi
+          posted=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq "[.[] | select(.user.login == \"github-actions[bot]\" and .created_at >= \"$STARTED_AT\" and (.body | contains(\"$NONCE\")))] | length" \
+            | jq -s 'add // 0')
+          if [ "$posted" -gt 0 ]; then
+            echo "The review posted its summary itself."
+            exit 0
+          fi
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$file"
+          echo "Posted the summary the review left in $file."
 
       # Resolves what the review listed as settled - in shell, and only threads
       # this bot opened on this pull request, whatever the marker says.
