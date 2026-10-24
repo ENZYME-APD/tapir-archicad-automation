@@ -268,6 +268,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetLibPartTransformationsCommand : public CommandBase
+{
+public:
+    GetLibPartTransformationsCommand ();
 class ConvertRevealOffsetsCommand : public CommandBase
 {
 public:
