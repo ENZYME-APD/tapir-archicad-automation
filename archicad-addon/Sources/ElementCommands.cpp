@@ -2714,9 +2714,11 @@ GS::Optional<GS::UniString> GetSelectedElementsCommand::GetRawResponseSchema () 
 
 GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    API_SelectionInfo selectionInfo;
+    API_SelectionInfo selectionInfo = {};
     GS::Array<API_Neig> selectedNeigs;
     GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    // The marquee polygon handle is owned by the caller (same as the Selection_Manager DevKit example).
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
     if (err != NoError && err != APIERR_NOSEL) {
         return CreateErrorResponse (err, "Failed to retrieve selected elements.");
     }
@@ -2825,6 +2827,290 @@ GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState
     }
 
     return response;
+}
+
+DeselectAllCommand::DeselectAllCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeselectAllCommand::GetName () const
+{
+    return "DeselectAll";
+}
+
+GS::Optional<GS::UniString> DeselectAllCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState DeselectAllCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    const GSErrCode err = ACAPI_Selection_DeselectAll ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to deselect all elements.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// The marquee of the current window is read and written through API_SelectionInfo:
+// typeID tells the marquee shape (API_MarqueeHorBox, API_MarqueeRotBox, API_MarqueePoly),
+// marquee.box/boxRotAngle hold a rectangle, marquee.coords/nCoords the polygon in the
+// usual 1-based form with the closing vertex repeated, and multiStory the "thick" marquee.
+// Unlike API_ElementMemo, API_Region has no nested polygon member: its vertex count is the
+// field nCoords right next to coords (marquee.polygon.nCoords does not compile, AC25 to AC30).
+
+static bool IsMarqueeSelectionType (API_SelTypeID typeID)
+{
+    return typeID == API_MarqueePoly || typeID == API_MarqueeHorBox || typeID == API_MarqueeRotBox;
+}
+
+static GS::ObjectState CreateBoxObjectState (const API_Box& box)
+{
+    return GS::ObjectState (
+        "xMin", box.xMin,
+        "yMin", box.yMin,
+        "xMax", box.xMax,
+        "yMax", box.yMax);
+}
+
+static void AddMarqueePolygonFromCoords (const API_Region& marquee, GS::ObjectState& os)
+{
+    if (marquee.coords == nullptr) {
+        return;
+    }
+
+    const GSSize handleSize = BMhGetSize (reinterpret_cast<GSHandle> (marquee.coords)) / sizeof (API_Coord);
+    GSIndex last = handleSize - 1;
+    if (marquee.nCoords > 0 && marquee.nCoords < last) {
+        last = marquee.nCoords;
+    }
+    if (last < 1) {
+        return;
+    }
+
+    // The closing vertex repeats the first one; the response lists each vertex once.
+    if (last > 1 && IsSame2DCoordinate ((*marquee.coords)[last], (*marquee.coords)[1])) {
+        --last;
+    }
+
+    const auto& polygon = os.AddList<GS::ObjectState> ("polygon");
+    for (GSIndex i = 1; i <= last; ++i) {
+        polygon (Create2DCoordinateObjectState ((*marquee.coords)[i]));
+    }
+}
+
+GetMarqueeCommand::GetMarqueeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetMarqueeCommand::GetName () const
+{
+    return "GetMarquee";
+}
+
+GS::Optional<GS::UniString> GetMarqueeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The shape of the marquee in the current window, or 'none' when there is no marquee.",
+                "enum": ["none", "rectangle", "rotatedRectangle", "polygon"]
+            },
+            "multiStory": {
+                "type": "boolean",
+                "description": "True for a multi-story (thick) marquee, false for a single-story (thin) one. Absent when there is no marquee."
+            },
+            "box": {
+                "$ref": "#/BoundingBox2D",
+                "description": "The rectangle of a 'rectangle' or 'rotatedRectangle' marquee. For a rotated rectangle the box is given as Archicad stores it, together with rotationAngle."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "The rotation angle (radians) of a 'rotatedRectangle' marquee."
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The vertices of the marquee outline, each listed once. The four corners of a 'rectangle' marquee, the vertices of a 'polygon' marquee.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
+    })";
+}
+
+GS::ObjectState GetMarqueeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selectedNeigs;
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    if (err != NoError && err != APIERR_NOSEL) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+        return CreateErrorResponse (err, "Failed to retrieve the marquee.");
+    }
+
+    // APIERR_NOSEL only means that no element is selected: a marquee drawn over empty space
+    // returns it too, with typeID still holding the marquee type. So typeID alone decides.
+    GS::ObjectState response;
+    if (!IsMarqueeSelectionType (selectionInfo.typeID)) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+        response.Add ("type", GS::UniString ("none"));
+        return response;
+    }
+
+    const API_Region& marquee = selectionInfo.marquee;
+    switch (selectionInfo.typeID) {
+        case API_MarqueeHorBox:
+            response.Add ("type", GS::UniString ("rectangle"));
+            response.Add ("box", CreateBoxObjectState (marquee.box));
+            {
+                const auto& polygon = response.AddList<GS::ObjectState> ("polygon");
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMin, marquee.box.yMin }));
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMax, marquee.box.yMin }));
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMax, marquee.box.yMax }));
+                polygon (Create2DCoordinateObjectState ({ marquee.box.xMin, marquee.box.yMax }));
+            }
+            break;
+        case API_MarqueeRotBox:
+            response.Add ("type", GS::UniString ("rotatedRectangle"));
+            response.Add ("box", CreateBoxObjectState (marquee.box));
+            response.Add ("rotationAngle", marquee.boxRotAngle);
+            AddMarqueePolygonFromCoords (marquee, response);
+            break;
+        default:
+            response.Add ("type", GS::UniString ("polygon"));
+            AddMarqueePolygonFromCoords (marquee, response);
+            break;
+    }
+    response.Add ("multiStory", selectionInfo.multiStory);
+
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+
+    return response;
+}
+
+SetMarqueeCommand::SetMarqueeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetMarqueeCommand::GetName () const
+{
+    return "SetMarquee";
+}
+
+GS::Optional<GS::UniString> SetMarqueeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "polygon": {
+                "type": "array",
+                "description": "The vertices of a polygon marquee, in order. The polygon is closed automatically; a repeated first vertex at the end is accepted. Give either polygon or box.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "box": {
+                "$ref": "#/BoundingBox2D",
+                "description": "A rectangle marquee, rotated by rotationAngle when that is given. Give either polygon or box."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Rotation angle (radians) of the box. The default is 0: a horizontal rectangle."
+            },
+            "multiStory": {
+                "type": "boolean",
+                "description": "True for a multi-story (thick) marquee, false for a single-story (thin) one. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetMarqueeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetMarqueeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> polygon;
+    const bool hasPolygon = parameters.Get ("polygon", polygon) && !polygon.IsEmpty ();
+    GS::ObjectState boxOS;
+    const bool hasBox = parameters.Get ("box", boxOS);
+    if (hasPolygon && hasBox) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Give either polygon or box, not both.");
+    }
+
+    API_SelectionInfo selectionInfo = {};
+    parameters.Get ("multiStory", selectionInfo.multiStory);
+
+    if (hasBox) {
+        API_Box& box = selectionInfo.marquee.box;
+        if (!boxOS.Get ("xMin", box.xMin) || !boxOS.Get ("yMin", box.yMin) ||
+            !boxOS.Get ("xMax", box.xMax) || !boxOS.Get ("yMax", box.yMax)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "box needs xMin, yMin, xMax and yMax.");
+        }
+        if (box.xMax <= box.xMin || box.yMax <= box.yMin) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "box must have a positive width and height.");
+        }
+        double rotationAngle = 0.0;
+        parameters.Get ("rotationAngle", rotationAngle);
+        if (std::fabs (rotationAngle) > 1e-9) {
+            selectionInfo.typeID = API_MarqueeRotBox;
+            selectionInfo.marquee.boxRotAngle = rotationAngle;
+        } else {
+            selectionInfo.typeID = API_MarqueeHorBox;
+        }
+    } else if (hasPolygon) {
+        // The closing vertex is added here, so drop it when the caller already repeated the first one.
+        USize nUnique = polygon.GetSize ();
+        if (nUnique > 1 && IsSame2DCoordinate (polygon[nUnique - 1], polygon[0])) {
+            --nUnique;
+        }
+        if (nUnique < 3) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "polygon needs at least 3 distinct vertices.");
+        }
+
+        const Int32 nCoords = (Int32) nUnique + 1; // + closing duplicate vertex
+        selectionInfo.typeID = API_MarqueePoly;
+        selectionInfo.marquee.nCoords = nCoords;
+        selectionInfo.marquee.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        if (selectionInfo.marquee.coords == nullptr) {
+            return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the marquee polygon.");
+        }
+        for (USize i = 0; i < nUnique; ++i) {
+            (*selectionInfo.marquee.coords)[i + 1] = Get2DCoordinateFromObjectState (polygon[i]);
+        }
+        (*selectionInfo.marquee.coords)[nCoords] = (*selectionInfo.marquee.coords)[1];
+    } else {
+        selectionInfo.typeID = API_SelEmpty; // removes the marquee
+    }
+
+    const GSErrCode err = ACAPI_Selection_SetMarquee (&selectionInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, selectionInfo.typeID == API_SelEmpty ? "Failed to remove the marquee." : "Failed to set the marquee.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 GetSubelementsOfHierarchicalElementsCommand::GetSubelementsOfHierarchicalElementsCommand () :
