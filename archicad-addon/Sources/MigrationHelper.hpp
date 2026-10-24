@@ -354,6 +354,16 @@ inline GSErrCode ACAPI_Navigator_GetNavigatorChildrenItems (API_NavigatorItem* i
     return ACAPI_Navigator (APINavigator_GetNavigatorChildrenItemsID, item, nullptr, items);
 }
 
+inline GSErrCode ACAPI_Navigator_GetNavigatorParentItem (const API_Guid* guid, API_NavigatorItem* parent)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorParentItemID, (void*) guid, parent);
+}
+
+inline GSErrCode ACAPI_Navigator_GetNavigatorChildNum (API_NavigatorItem* parent, Int32* num)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorChildNumID, parent, num);
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);

@@ -1415,7 +1415,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetNavigatorItemTreeCommand> (
             navigatorCommands, "1.1.7",
-            "Returns the full navigator item tree for the specified map."
+            "Returns the full navigator item tree for the specified map. With includeChildCount true every item also reports the number of its direct children."
+        );
+        err |= RegisterCommand<GetNavigatorParentItemsCommand> (
+            navigatorCommands, "1.7.3",
+            "Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error."
         );
         AddCommandGroup (navigatorCommands);
     }
