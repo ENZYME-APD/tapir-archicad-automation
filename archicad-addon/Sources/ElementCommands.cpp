@@ -6900,3 +6900,195 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
 
     return response;
 }
+
+
+// GetSurfaceQuantitiesOfElements
+
+GetSurfaceQuantitiesOfElementsCommand::GetSurfaceQuantitiesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSurfaceQuantitiesOfElementsCommand::GetName () const
+{
+    return "GetSurfaceQuantitiesOfElements";
+}
+
+GS::Optional<GS::UniString> GetSurfaceQuantitiesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to get the surface quantities of."
+            },
+            "coverElements": {
+                "$ref": "#/Elements",
+                "description": "Optional covering elements: the area where one of them overlaps a surface of an element is subtracted from that surface, so for example a slab on a wall takes its footprint off the top surface of the wall. When omitted, every Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Stair and Curtain Wall of the project is a covering element. Pass an empty array to get the whole surfaces with nothing subtracted. An element never covers itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSurfaceQuantitiesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "surfaceQuantitiesOfElements": {
+                "type": "array",
+                "description": "The surface quantities of the elements, in the order of the given elements. Areas are in square meters.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "surfaces": {
+                                    "type": "array",
+                                    "description": "The surfaces of the element as Archicad reports them: one item per surface attribute and building material pair of the element, so an element has as many items as it has distinct pairs (a basic wall with three different surfaces reports three items). Empty when Archicad reports no surface for the element, for example for an element without a 3D model.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "surfaceId": {
+                                                "$ref": "#/AttributeIdArrayItem",
+                                                "description": "The surface (material) attribute of the surface. Left out when the surface is not a project attribute, for example one defined by a GDL script."
+                                            },
+                                            "buildingMaterialId": {
+                                                "$ref": "#/AttributeIdArrayItem",
+                                                "description": "The building material of the part of the element the surface belongs to."
+                                            },
+                                            "exposedArea": {
+                                                "type": "number",
+                                                "description": "The area of the surface that is not covered by any of the covering elements, in square meters."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "buildingMaterialId",
+                                            "exposedArea"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "surfaces"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "surfaceQuantitiesOfElements"
+        ]
+    })";
+}
+
+// The covering elements when the caller names none: every modelled construction element of the
+// project, the ones that can hide a surface of another element.
+static GS::Array<API_Guid> GetDefaultCoverElements ()
+{
+    static const API_ElemTypeID coverElemTypes[] = {
+        API_WallID, API_ColumnID, API_BeamID, API_SlabID, API_RoofID,
+        API_ShellID, API_MorphID, API_MeshID, API_StairID, API_CurtainWallID
+    };
+
+    GS::Array<API_Guid> coverElemGuids;
+    for (API_ElemTypeID typeID : coverElemTypes) {
+        GS::Array<API_Guid> elemList;
+        if (ACAPI_Element_GetElemList (typeID, &elemList) != NoError) {
+            continue;
+        }
+        for (const API_Guid& elemGuid : elemList) {
+            coverElemGuids.Push (elemGuid);
+        }
+    }
+    return coverElemGuids;
+}
+
+GS::ObjectState GetSurfaceQuantitiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::Array<API_Guid> coverElemGuids;
+    GS::Array<GS::ObjectState> coverElements;
+    if (parameters.Get ("coverElements", coverElements)) {
+        for (const GS::ObjectState& coverElement : coverElements) {
+            const GS::ObjectState* coverElementId = coverElement.Get ("elementId");
+            if (coverElementId != nullptr) {
+                coverElemGuids.Push (GetGuidFromObjectState (*coverElementId));
+            }
+        }
+    } else {
+        coverElemGuids = GetDefaultCoverElements ();
+    }
+
+    GS::ObjectState response;
+    const auto& surfaceQuantitiesOfElements = response.AddList<GS::ObjectState> ("surfaceQuantitiesOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            surfaceQuantitiesOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            surfaceQuantitiesOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // One call per element keeps the result aligned with the input and reports a failure
+        // for that element only. The element is left out of its own covering elements.
+        GS::Array<API_Guid> elemGuids = { elemHead.guid };
+        GS::Array<API_Guid> coverElemGuidsOfElement;
+        for (const API_Guid& coverElemGuid : coverElemGuids) {
+            if (coverElemGuid != elemHead.guid) {
+                coverElemGuidsOfElement.Push (coverElemGuid);
+            }
+        }
+
+        // Archicad rejects a nullptr covering element array (APIERR_BADPARS), so an empty one
+        // is passed for the whole surfaces.
+        GS::Array<API_ElemPartSurfaceQuantity> surfaceQuantities;
+        err = ACAPI_Element_GetSurfaceQuantities (&elemGuids, &coverElemGuidsOfElement, &surfaceQuantities);
+        if (err != NoError) {
+            surfaceQuantitiesOfElements (CreateErrorResponse (err, "Failed to get the surface quantities of the element"));
+            continue;
+        }
+
+        GS::ObjectState surfaceQuantitiesOfElement;
+        const auto& surfaces = surfaceQuantitiesOfElement.AddList<GS::ObjectState> ("surfaces");
+        for (const API_ElemPartSurfaceQuantity& surfaceQuantity : surfaceQuantities) {
+            GS::ObjectState surfaceOs;
+            // A surface defined by a GDL script is not a project attribute, so it has no guid
+            // and the field is left out, as in Get3DGeometryOfElements.
+            const API_Guid surfaceGuid = GetAttributeGuidFromIndex (API_MaterialID, surfaceQuantity.materialIndex);
+            if (surfaceGuid != APINULLGuid) {
+                surfaceOs.Add ("surfaceId", CreateAttributeIdObjectState (surfaceGuid));
+            }
+            surfaceOs.Add ("buildingMaterialId", CreateAttributeIdObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, surfaceQuantity.buildMatIdx)));
+            surfaceOs.Add ("exposedArea", surfaceQuantity.exposedSurface);
+            surfaces (surfaceOs);
+        }
+
+        surfaceQuantitiesOfElements (surfaceQuantitiesOfElement);
+    }
+
+    return response;
+}
