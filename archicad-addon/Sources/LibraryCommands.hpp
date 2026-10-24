@@ -22,6 +22,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class CreateLibraryPartsCommand : public CommandBase
+{
+public:
+    CreateLibraryPartsCommand ();
 class CreateFolderInEmbeddedLibraryCommand : public CommandBase
 {
 public:

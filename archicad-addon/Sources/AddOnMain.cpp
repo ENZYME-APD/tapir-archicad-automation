@@ -1317,6 +1317,9 @@ GSErrCode Initialize (void)
             libraryCommands, "1.6.0",
             "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
         );
+        err |= RegisterCommand<CreateLibraryPartsCommand> (
+            libraryCommands, "1.7.3",
+            "Creates GDL library parts in the embedded library from their scripts (master, 2D, 3D, parameter, interface, properties) and parameter definitions, under the given parent subtype. The new parts are placeable right away, e.g. with CreateObjects. With the overwriteExisting flag an embedded library item already existing on the path of a new part is replaced (Archicad 27 or newer)."
         err |= RegisterCommand<CreateFolderInEmbeddedLibraryCommand> (
             libraryCommands, "1.7.3",
             "Creates a folder, with any missing parent folders, inside the embedded library. The folderPath is relative to the embedded library, like the outputPath of AddFilesToEmbeddedLibrary."
