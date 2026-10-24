@@ -2497,6 +2497,9 @@ GS::ObjectState RemovePropertyFromElementsCommand::Execute (const GS::ObjectStat
 #else
     (void) parameters;
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, ElementListPropertyCommandsNeedArchicad26);
+#endif
+}
+
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {

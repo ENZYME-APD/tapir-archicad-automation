@@ -1019,6 +1019,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RemovePropertyFromElementsCommand> (
             propertyCommands, "1.7.3",
             "Removes a custom property from the given elements. Available only in Archicad 25 and 26; in later versions the availability of a property is set by classification on its definition."
+        );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."
