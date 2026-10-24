@@ -3042,6 +3042,9 @@ GS::ObjectState GetDimensionStandardsCommand::Execute (const GS::ObjectState& pa
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_CalcUnitPrefs unitPrefs = {};
