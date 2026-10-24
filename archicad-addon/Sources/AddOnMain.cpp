@@ -1078,6 +1078,10 @@ GSErrCode Initialize (void)
             ifcCommands, "1.7.0",
             "Sets local IFC properties on elements by creating or modifying single value (IfcPropertySingleValue) properties in the given property sets. Available only in Archicad 25, 26 and 27 for now."
         );
+        err |= RegisterCommand<RemoveIFCPropertiesOfElementsCommand> (
+            ifcCommands, "1.7.3",
+            "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now."
+        );
         AddCommandGroup (ifcCommands);
     }
 
