@@ -1394,6 +1394,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("stampAngle", elem.zone.stampAngle);
                 typeSpecificDetails.Add ("fixedStampAngle", elem.zone.fixedAngle);
                 typeSpecificDetails.Add ("isManual", elem.zone.manual);
+                if (!elem.zone.manual) {
+                    // The point an automatic zone was placed from (CreateZones geometry.referencePosition);
+                    // the stamp is often moved away from it, so it is the only way to recreate the zone as it was.
+                    typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
+                }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
@@ -2291,6 +2296,13 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("fixedStampAngle", elem.zone.fixedAngle)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+                        }
+                        // Only an automatic zone is found around its reference point; a manual
+                        // zone has its outline instead, so the field is ignored for it.
+                        const GS::ObjectState* referencePosition = typeSpecificDetails->Get ("referencePosition");
+                        if (referencePosition != nullptr && !elem.zone.manual) {
+                            elem.zone.refPos = Get2DCoordinateFromObjectState (*referencePosition);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, refPos);
                         }
                     } break;
                     case API_LineID: {

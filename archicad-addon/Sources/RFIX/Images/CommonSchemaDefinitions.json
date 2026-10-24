@@ -7892,6 +7892,10 @@
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
             },
+            "referencePosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "The reference point an automatic zone was placed from (the referencePosition of CreateZones); the zone is found around it when zones are updated. Only present when isManual is false."
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
@@ -9845,6 +9849,10 @@
             "fixedStampAngle": {
                 "type": "boolean",
                 "description": "If true, the zone stamp angle remains fixed when the element is rotated."
+            },
+            "referencePosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
             }
         },
         "additionalProperties": false,
