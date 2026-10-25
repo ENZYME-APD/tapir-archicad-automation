@@ -602,6 +602,22 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         // rather than silently falling back to a plain database/window switch.
         const GS::UniString guidStr = APIGuidToString (navGuid);
         err = ACAPI_View_GoToView (guidStr.ToCStr ().Get ());
+
+        // GoToView rejects master layout items of the Layout Book with APIERR_GENERAL
+        // (#1481), while switching to their database works. Layout Book items carry no
+        // view settings to apply, so for them a plain database/window switch is the same
+        // as opening the item in the Navigator.
+        if (err != NoError && (navigatorItem.itemType == API_LayoutNavItem || navigatorItem.itemType == API_MasterLayoutNavItem)) {
+            API_DatabaseInfo targetDatabase = navigatorItem.db;
+            err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
+            if (err == NoError) {
+                err = ACAPI_Database_ChangeCurrentDatabase (&targetDatabase);
+            }
+            if (err == NoError) {
+                API_WindowInfo windowInfo = targetDatabase;
+                err = ACAPI_Window_ChangeWindow (&windowInfo);
+            }
+        }
         return err == NoError
             ? CreateSuccessfulExecutionResult ()
             : CreateErrorResponse (err, "Failed to activate the view");
