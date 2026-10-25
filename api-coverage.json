@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 23:25 UTC",
+ "generatedAt": "2026-10-25 23:32 UTC",
  "versions": [
   25,
   26,
@@ -4617,6 +4617,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
+    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
     },
@@ -5628,6 +5632,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
+    {
+     "number": 1486,
+     "title": "ChangeWindow: open master layouts by navigatorItemId"
+    },
+    {
+     "number": 1483,
+     "title": "Get3DGeometryOfElements: work with a 3D Document as the active window"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     },
@@ -5769,6 +5785,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
+    {
+     "number": 1483,
+     "title": "Get3DGeometryOfElements: work with a 3D Document as the active window"
+    },
     {
      "number": 1474,
      "title": "MoveElements/RotateElements/MirrorElements: fail for an element in another 2D database"
@@ -7853,6 +7877,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
+    {
+     "number": 1485,
+     "title": "SetDetailsOfElements: report a Drawing's ignored drawingScale as a failure"
+    },
+    {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
     },
@@ -8541,6 +8573,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
+    {
+     "number": 1485,
+     "title": "SetDetailsOfElements: report a Drawing's ignored drawingScale as a failure"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
@@ -16027,6 +16067,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1483,
+     "title": "Get3DGeometryOfElements: work with a 3D Document as the active window"
+    },
+    {
      "number": 1038,
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
     }
@@ -16346,6 +16390,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
     {
      "number": 756,
      "title": "Rename Project Map viewpoints through their element and verify renames"
@@ -23214,7 +23262,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1484,
+     "title": "SaveCurrentWindowAsImage: return an error for master layout windows"
+    }
+   ],
    "issues": [
     {
      "number": 1478,
@@ -23788,6 +23841,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1486,
+     "title": "ChangeWindow: open master layouts by navigatorItemId"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -23917,6 +23974,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1489,
+     "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
+    },
+    {
+     "number": 1486,
+     "title": "ChangeWindow: open master layouts by navigatorItemId"
+    },
+    {
+     "number": 1483,
+     "title": "Get3DGeometryOfElements: work with a 3D Document as the active window"
+    },
     {
      "number": 1474,
      "title": "MoveElements/RotateElements/MirrorElements: fail for an element in another 2D database"
