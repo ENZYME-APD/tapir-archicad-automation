@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24 23:57 UTC",
+ "generatedAt": "2026-10-25 01:36 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 105,
+  "open": 106,
   "claimed": 733,
-  "in progress": 322,
+  "in progress": 321,
   "done": 743
  },
  "items": [
@@ -21405,7 +21405,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 955,
+     "title": "[1/3] Teamwork: add the GetTeamworkProjectInfo command"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -21487,14 +21492,9 @@
    "olderNames": [
     "ACAPI_TeamworkControl_IsOnline"
    ],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 955,
-     "title": "[1/3] Teamwork: add the GetTeamworkProjectInfo command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
