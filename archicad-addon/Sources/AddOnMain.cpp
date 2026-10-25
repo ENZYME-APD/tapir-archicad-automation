@@ -814,6 +814,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyCurtainWallsCommand> (
             elementCommands, "1.7.3",
             "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls."
+        );
         err |= RegisterCommand<MeasureTextsCommand> (
             elementCommands, "1.7.2",
             "Measures texts before placing them: the length of every line for a given font, style and height, on paper in millimetres or in the model at the current drawing scale, and the font's capital size factor. Creates nothing."
