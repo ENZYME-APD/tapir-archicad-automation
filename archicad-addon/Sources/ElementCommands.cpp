@@ -790,56 +790,64 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
         "properties": {
             "detailsOfElements": {
                 "type": "array",
+                "description": "One entry per input element, in the same order as the input elements array. An element that cannot be read gets an error entry in its place, so the position of an entry tells which input element it belongs to.",
                 "items": {
-                    "type": "object",
-                    "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/ElementType"
-                        },
-                        "id": {
-                            "type": "string"
-                        },
-                        "floorIndex": {
-                            "type": "number"
-                        },
-                        "layerIndex": {
-                            "type": "number"
-                        },
-                        "drawIndex": {
-                            "type": "number"
-                        },
-                        "hotlinkId": {
-                            "$ref": "#/ElementId",
-                            "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
-                        },
-                        "details": {
-                            "$ref": "#/TypeSpecificDetails"
-                        },
-                        "floorPlanPolygons": {
-                            "type": "array",
-                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "coordinates": {
-                                        "type": "array",
-                                        "items": {
-                                            "$ref": "#/Coordinate2D"
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
+                            "properties": {
+                                "type": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "id": {
+                                    "type": "string"
+                                },
+                                "floorIndex": {
+                                    "type": "number"
+                                },
+                                "layerIndex": {
+                                    "type": "number"
+                                },
+                                "drawIndex": {
+                                    "type": "number"
+                                },
+                                "hotlinkId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
+                                },
+                                "details": {
+                                    "$ref": "#/TypeSpecificDetails"
+                                },
+                                "floorPlanPolygons": {
+                                    "type": "array",
+                                    "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "coordinates": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/Coordinate2D"
+                                                }
+                                            }
                                         }
                                     }
                                 }
-                            }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "type",
+                                "id",
+                                "floorIndex",
+                                "layerIndex",
+                                "drawIndex",
+                                "details"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
                         }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type",
-                        "id",
-                        "floorIndex",
-                        "layerIndex",
-                        "drawIndex",
-                        "details"
                     ]
                 }
             }
@@ -1213,7 +1221,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         GSErrCode err = ACAPI_Element_Get (&elem);
 
         if (err != NoError) {
-            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element"));
+            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element (element guid: \"" + APIGuidToString (elem.header.guid) + "\")"));
             continue;
         }
 
