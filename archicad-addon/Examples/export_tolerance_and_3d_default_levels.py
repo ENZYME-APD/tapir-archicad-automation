@@ -21,8 +21,10 @@ aclib.RunTapirCommand (
         'elementTypes': elementTypes
     })
 
-aclib.RunTapirCommand (
-    'SetLast3DDefaultLevels', {
-        'elementTypes': elementTypes,
-        'levels': originalLevels['levels']
-    }, debug = False)
+# Not available in Archicad 26, so there is nothing to restore there
+if 'levels' in originalLevels:
+    aclib.RunTapirCommand (
+        'SetLast3DDefaultLevels', {
+            'elementTypes': elementTypes,
+            'levels': originalLevels['levels']
+        }, debug = False)
