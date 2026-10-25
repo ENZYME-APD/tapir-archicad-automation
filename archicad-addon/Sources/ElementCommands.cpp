@@ -4723,7 +4723,7 @@ GS::ObjectState SetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& 
                 }
             }
             if (hasAutomaticLabeling) {
-                return modifier.SetAutomaticLabeling (automaticLabeling);
+                modifier.SetAutomaticLabeling (automaticLabeling);
             }
             return ACAPI::Ok ();
         }
