@@ -350,10 +350,13 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   an Archicad version newer than the newest in `devkits.json` (its first public
   build, x.3000 or later, with Windows and macOS zips), `tools/devkits.py update` adds
   it there and to the README's download table, and this opens a bot PR on a
-  `claude/devkit-…` branch and starts the steward. That PR touches no release
-  critical path, so the steward builds it, fixes what the new DevKit breaks, and
-  `claude_auto_merge.yml` merges it like any bot PR. `DEVKIT_UPDATE=false` turns it
-  off.
+  `claude/devkit-<version>-<release>` branch and starts the steward. The steward
+  builds it and fixes what the new DevKit breaks, and `claude_auto_merge.yml`
+  merges it like any bot PR. `devkits.json` is a release critical path, so
+  auto-merge lets a bot PR through with it only when the file is `main`'s with new
+  versions appended (ascending, each `NN.NNNN` of its own version, nothing else
+  changed) and the branch is named after the newest one. `DEVKIT_UPDATE=false`
+  turns it off.
 - `claude_bot_pr_steward.yml` — drives the issue bot's PRs to mergeable without a
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
