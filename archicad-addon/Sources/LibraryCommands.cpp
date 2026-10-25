@@ -994,6 +994,8 @@ GS::ObjectState CreateLibraryPartsCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+}
+
 static GSErrCode GetEmbeddedLibraryFolder (IO::Location& embeddedLibraryFolder)
 {
     auto folderId = API_SpecFolderID::API_EmbeddedProjectLibraryFolderID;
