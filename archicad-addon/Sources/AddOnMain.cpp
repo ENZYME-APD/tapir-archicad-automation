@@ -1092,11 +1092,11 @@ GSErrCode Initialize (void)
             "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26."
         );
         err |= RegisterCommand<RenameAttributeFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Renames attribute folders, each given by attribute type and path, to the given new names. The root folder cannot be renamed. Available from Archicad 26."
         );
         err |= RegisterCommand<MoveAttributesAndFoldersCommand> (
-            attributeCommands, "1.7.2",
+            attributeCommands, "1.7.3",
             "Moves attributes and attribute folders (with their contents) into the target folder, which must be of the same attribute type; an empty target path is the root folder. Returns one execution result per attribute and per folder. Available from Archicad 26."
         );
         err |= RegisterCommand<CreateLayersCommand> (
