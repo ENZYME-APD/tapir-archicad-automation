@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 23:21 UTC",
+ "generatedAt": "2026-10-25 23:25 UTC",
  "versions": [
   25,
   26,
@@ -5740,7 +5740,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1474,
+     "title": "MoveElements/RotateElements/MirrorElements: fail for an element in another 2D database"
+    }
+   ],
    "issues": []
   },
   {
@@ -5764,6 +5769,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1474,
+     "title": "MoveElements/RotateElements/MirrorElements: fail for an element in another 2D database"
+    },
     {
      "number": 972,
      "title": "Add GetGhostStorySettings and SetGhostStorySettings commands"
@@ -8385,6 +8394,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1474,
+     "title": "MoveElements/RotateElements/MirrorElements: fail for an element in another 2D database"
+    },
     {
      "number": 912,
      "title": "Add ElevateElements command (vertical move)"
@@ -19059,7 +19072,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1478,
+     "title": "SaveCurrentWindowAsImage: MasterLayout exports a floor plan and its zoom"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_SaveAsModuleFile",
@@ -23197,7 +23215,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1478,
+     "title": "SaveCurrentWindowAsImage: MasterLayout exports a floor plan and its zoom"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_GoToView",
@@ -23220,7 +23243,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1481,
+     "title": "ChangeWindow: MasterLayout navigatorItemId fails while databaseId activation succeeds"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_IsAutoGroupOn",
@@ -23889,6 +23917,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1474,
+     "title": "MoveElements/RotateElements/MirrorElements: fail for an element in another 2D database"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
