@@ -2860,16 +2860,22 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchFlags);
                     hasElementChanges = true;
                 }
+                // The hatch type decides which of fillInd and buildingMaterial Archicad uses, so a given
+                // attribute also switches the type; the building material wins when both are given.
                 const GS::ObjectState* fillId = typeSpecificDetails->Get ("fillId");
                 if (fillId != nullptr) {
                     elem.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
+                    elem.hatch.hatchType = API_FillHatch;
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillInd);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchType);
                     hasElementChanges = true;
                 }
                 const GS::ObjectState* buildingMaterialId = typeSpecificDetails->Get ("buildingMaterialId");
                 if (buildingMaterialId != nullptr) {
                     elem.hatch.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialId));
+                    elem.hatch.hatchType = API_BuildingMaterialHatch;
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, buildingMaterial);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, hatchType);
                     hasElementChanges = true;
                 }
                 Int32 roomSpecial = 0;
