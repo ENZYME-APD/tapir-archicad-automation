@@ -369,3 +369,183 @@ GS::ObjectState CreateGraphicalOverrideCombinationCommand::Execute (const GS::Ob
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer (graphic override rule groups).");
 #endif
 }
+
+#ifdef ServerMainVers_2700
+// API_OverrideStyle is the style an element is actually drawn with in the current window. A member
+// is "overridden" when the active combination replaces the element's own value.
+
+static GS::ObjectState CreateOverriddenAttributeObjectState (const API_OverriddenAttribute& attr, API_AttrTypeID typeID)
+{
+    GS::ObjectState os ("overridden", attr.hasValue);
+    if (attr.hasValue) {
+        os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (typeID, attr.value)));
+    }
+    return os;
+}
+
+static GS::ObjectState CreateColorObjectState (const API_RGBColor& color)
+{
+    return GS::ObjectState ("red", color.f_red, "green", color.f_green, "blue", color.f_blue);
+}
+
+static GS::ObjectState CreateOverriddenPenOrColorObjectState (const API_OverriddenPenOrRGB& penOrColor)
+{
+    GS::ObjectState os ("overridden", penOrColor.hasValue);
+    if (penOrColor.hasValue) {
+        if (std::holds_alternative<API_PenIndex> (penOrColor.value)) {
+            os.Add ("penIndex", static_cast<Int32> (std::get<API_PenIndex> (penOrColor.value)));
+        } else {
+            os.Add ("color", CreateColorObjectState (std::get<API_RGBColor> (penOrColor.value)));
+        }
+    }
+    return os;
+}
+
+static GS::ObjectState CreateOverriddenSurfaceObjectState (const API_OverriddenAttributeOrRGB& surface)
+{
+    GS::ObjectState os ("overridden", surface.hasValue);
+    if (surface.hasValue) {
+        if (std::holds_alternative<API_AttributeIndex> (surface.value)) {
+            os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, std::get<API_AttributeIndex> (surface.value))));
+        } else {
+            os.Add ("color", CreateColorObjectState (std::get<API_RGBColor> (surface.value)));
+        }
+    }
+    return os;
+}
+
+static GS::ObjectState CreateOverrideStyleObjectState (const API_OverrideStyle& style)
+{
+    GS::ObjectState os;
+    os.Add ("lineType", CreateOverriddenAttributeObjectState (style.lineType, API_LinetypeID));
+    os.Add ("lineMarkerTextPen", CreateOverriddenPenObjectState (style.lineMarkerTextPen));
+    os.Add ("overrideLinePenThickness", style.overrideLinePenThickness);
+    os.Add ("cutFillType", CreateOverriddenAttributeObjectState (style.cutFillType, API_FilltypeID));
+    os.Add ("cutFillForegroundPen", CreateOverriddenPenObjectState (style.cutFillFGPen));
+    os.Add ("cutFillBackgroundPen", CreateOverriddenPenOrColorObjectState (style.cutFillBGPen));
+    os.Add ("overrideCutFillForegroundThickness", style.overrideCutFillFGThickness);
+    os.Add ("coverFillType", CreateOverriddenAttributeObjectState (style.coverFillType, API_FilltypeID));
+    os.Add ("coverFillForegroundPen", CreateOverriddenPenObjectState (style.coverFillFGPen));
+    os.Add ("coverFillBackgroundPen", CreateOverriddenPenOrColorObjectState (style.coverFillBGPen));
+    os.Add ("overrideCoverFillForegroundThickness", style.overrideCoverFillFGThickness);
+    os.Add ("draftFillType", CreateOverriddenAttributeObjectState (style.draftFillType, API_FilltypeID));
+    os.Add ("draftFillForegroundPen", CreateOverriddenPenObjectState (style.draftFillFGPen));
+    os.Add ("draftFillBackgroundPen", CreateOverriddenPenOrColorObjectState (style.draftFillBGPen));
+    os.Add ("overrideDraftFillForegroundThickness", style.overrideDraftFillFGThickness);
+    os.Add ("cutSurface", CreateOverriddenSurfaceObjectState (style.cutSurfaceType));
+    os.Add ("uncutSurface", CreateOverriddenSurfaceObjectState (style.uncutSurfaceType));
+    os.Add ("showSkinSeparators", style.showSkinSeparators);
+    os.Add ("hideCutContours", style.hideCutContours);
+    os.Add ("hideUncutContours", style.hideUncutContours);
+    return os;
+}
+#endif
+
+GetGraphicalOverrideStyleOfElementsCommand::GetGraphicalOverrideStyleOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGraphicalOverrideStyleOfElementsCommand::GetName () const
+{
+    return "GetGraphicalOverrideStyleOfElements";
+}
+
+GS::Optional<GS::UniString> GetGraphicalOverrideStyleOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetGraphicalOverrideStyleOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "styles": {
+                "type": "array",
+                "description": "The graphic override style of each element in the current window, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "lineType": { "$ref": "#/OverriddenValue" },
+                                "lineMarkerTextPen": { "$ref": "#/OverriddenValue" },
+                                "overrideLinePenThickness": { "type": "boolean" },
+                                "cutFillType": { "$ref": "#/OverriddenValue" },
+                                "cutFillForegroundPen": { "$ref": "#/OverriddenValue" },
+                                "cutFillBackgroundPen": { "$ref": "#/OverriddenValue" },
+                                "overrideCutFillForegroundThickness": { "type": "boolean" },
+                                "coverFillType": { "$ref": "#/OverriddenValue" },
+                                "coverFillForegroundPen": { "$ref": "#/OverriddenValue" },
+                                "coverFillBackgroundPen": { "$ref": "#/OverriddenValue" },
+                                "overrideCoverFillForegroundThickness": { "type": "boolean" },
+                                "draftFillType": { "$ref": "#/OverriddenValue" },
+                                "draftFillForegroundPen": { "$ref": "#/OverriddenValue" },
+                                "draftFillBackgroundPen": { "$ref": "#/OverriddenValue" },
+                                "overrideDraftFillForegroundThickness": { "type": "boolean" },
+                                "cutSurface": { "$ref": "#/OverriddenValue" },
+                                "uncutSurface": { "$ref": "#/OverriddenValue" },
+                                "showSkinSeparators": { "type": "boolean" },
+                                "hideCutContours": { "type": "boolean" },
+                                "hideUncutContours": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "styles"
+        ]
+    })";
+}
+
+GS::ObjectState GetGraphicalOverrideStyleOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& styles = response.AddList<GS::ObjectState> ("styles");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            styles (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_OverrideStyle style = {};
+        const GSErrCode err = ACAPI_Element_GetActualOverrideStyle (GetGuidFromObjectState (*elementId), style);
+        if (err != NoError) {
+            styles (CreateErrorResponse (err, "Failed to get the graphic override style of the element. The current window must show the element."));
+            continue;
+        }
+
+        styles (CreateOverrideStyleObjectState (style));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
