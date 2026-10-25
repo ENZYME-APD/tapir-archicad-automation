@@ -195,6 +195,18 @@ static GS::UniString StructureTypeToString (API_ModelElemStructureType structure
     }
 }
 
+// An object that belongs to another element, such as a zone stamp or a part of a stair or railing.
+// The listing commands leave these out unless the IncludeSubElemObjects filter asks for them.
+static bool IsSubElemObject (const API_Guid& elemGuid)
+{
+    API_Element elem = {};
+    elem.header.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&elem.header) != NoError || GetElemTypeId (elem.header) != API_ObjectID) {
+        return false;
+    }
+    return ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid;
+}
+
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -223,19 +235,14 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
         return err;
     }
 
-    if (elemType == API_ObjectID && !includeSubElemObjects) {
-        for (const API_Guid& elemGuid : elemList) {
-            const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
-            API_Element elem = {};
-            elem.header.guid = parentGuid;
-            if (ACAPI_Element_Get (&elem) == NoError && elem.object.owner == APINULLGuid) {
-                elementsListProxy (CreateElementIdObjectState (parentGuid));
-            }
+    // Only a listing of Objects or of every type (GetAllElements) can contain sub-element objects.
+    const bool skipSubElemObjects = !includeSubElemObjects && (elemType == API_ObjectID || elemType == API_ZombieElemID);
+    for (const API_Guid& elemGuid : elemList) {
+        const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
+        if (skipSubElemObjects && IsSubElemObject (parentGuid)) {
+            continue;
         }
-    } else {
-        for (const API_Guid& elemGuid : elemList) {
-            elementsListProxy (CreateElementIdObjectState (GetParentElemOfSectElem (elemGuid)));
-        }
+        elementsListProxy (CreateElementIdObjectState (parentGuid));
     }
     return NoError;
 }
@@ -427,12 +434,8 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         if (elemType != API_ZombieElemID && reportedType != elemType) {
             continue;
         }
-        if (elemType == API_ObjectID && !includeSubElemObjects) {
-            API_Element elem = {};
-            elem.header.guid = elemGuid;
-            if (ACAPI_Element_Get (&elem) != NoError || elem.object.owner != APINULLGuid) {
-                continue;
-            }
+        if (!includeSubElemObjects && reportedType == API_ObjectID && IsSubElemObject (elemGuid)) {
+            continue;
         }
         if (reportedGuids.Contains (elemGuid)) {
             continue;
