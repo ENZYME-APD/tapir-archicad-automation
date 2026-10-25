@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 01:55 UTC",
+ "generatedAt": "2026-10-25 02:04 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 115,
-  "claimed": 724,
-  "in progress": 321,
+  "claimed": 722,
+  "in progress": 323,
   "done": 743
  },
  "items": [
@@ -8579,9 +8579,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1450,
+     "title": "[2/3] GetGraphicalOverrideStyleOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 942,
@@ -21220,9 +21225,14 @@
    "olderNames": [
     "APIEnv_GetTWAccessRightID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1449,
+     "title": "[2/5] Add GetTeamworkAccessRights command"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -25068,6 +25078,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1449,
+     "title": "[2/5] Add GetTeamworkAccessRights command"
+    },
     {
      "number": 1417,
      "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
