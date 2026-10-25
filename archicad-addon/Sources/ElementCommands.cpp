@@ -6258,6 +6258,32 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& geometries3D = response.AddList<GS::ObjectState> ("geometries3D");
 
+    // ACAPI_ModelAccess_Get3DInfo answers APIERR_BADDATABASE (-2130313110) when the current
+    // database is a 3D Document (and likewise a section, elevation, layout, ...), while it works
+    // from the floor plan and the 3D window (#1482). So switch the CURRENT DATABASE - not the
+    // visible window - to the floor plan for the reads in those cases, as CreateWindows and
+    // CreateDoors do (see SwitchCurrentDatabaseToFloorPlan in ExtendedElementCommands.cpp), and
+    // put the previous one back on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&]() {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (ACAPI_Database_GetCurrentDatabase (&previousDatabase) == NoError &&
+        previousDatabase.typeID != APIWind_FloorPlanID &&
+        previousDatabase.typeID != APIWind_3DModelID)
+    {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        if (ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase) == NoError &&
+            ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase) == NoError)
+        {
+            databaseSwitched = true;
+        }
+    }
+
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
