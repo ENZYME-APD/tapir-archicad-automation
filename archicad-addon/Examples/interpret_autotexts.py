@@ -32,11 +32,13 @@ elements = aclib.RunTapirCommand ('CreateTexts', {
         }
     ]
 }, debug = False)['elements']
-values = aclib.RunTapirCommand ('InterpretAutoTexts', {
-    'autoTexts': ['<PROJECTNAME>'],
-    'elementId': elements[0]['elementId']
-}, debug = False)['values']
-check ('<PROJECTNAME> resolves in an element context', values[0].get ('value') == projectNameField['projectInfoValue'])
-aclib.RunTapirCommand ('DeleteElements', {'elements': elements}, debug = False)
+try:
+    values = aclib.RunTapirCommand ('InterpretAutoTexts', {
+        'autoTexts': ['<PROJECTNAME>'],
+        'elementId': elements[0]['elementId']
+    }, debug = False)['values']
+    check ('<PROJECTNAME> resolves in an element context', values[0].get ('value') == projectNameField['projectInfoValue'])
+finally:
+    aclib.RunTapirCommand ('DeleteElements', {'elements': elements}, debug = False)
 
 print ('interpret_autotexts: {} check(s) failed'.format (failed))
