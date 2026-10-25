@@ -752,6 +752,8 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             if (!projectInfoValue.IsEmpty ()) {
                 err = ACAPI_ProjectInfo_SetFieldValue (fieldGuid, projectInfoValue);
                 if (err != NoError) {
+                    // Roll back the empty field: the caller gets no id to clean it up with.
+                    ACAPI_ProjectInfo_DeleteField (fieldGuid);
                     fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to set the initial value of the project information field"));
                     continue;
                 }
