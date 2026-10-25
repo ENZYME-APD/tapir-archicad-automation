@@ -1922,6 +1922,14 @@ GSErrCode Initialize (void)
             mepCommands, "1.7.3",
             "Removes MEP physical systems from their system groups. Their member elements are not deleted. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetMEPToolDefaultsCommand> (
+            mepCommands, "1.7.3",
+            "Retrieves the current settings of the MEP tools per domain, without changing them: the routing tool (MEP system, branch preference table, floor plan display settings from Archicad 29, and its segment, node, elbow (from Archicad 29) and transition defaults), the flexible segment tool, and the library part and port settings of the terminal, accessory, fitting and equipment tools. Available from Archicad 28."
+        );
+        err |= RegisterCommand<TransferMEPSettingsCommand> (
+            mepCommands, "1.7.3",
+            "Picks up the settings of an MEP element and injects them into other MEP elements of the same type and domain, like Archicad's pick up and inject parameters. Works for routing elements, terminals, accessories, equipment, fittings, flexible segments, branches, take-offs and (from Archicad 30) electrical panels and devices. Each target is changed in its own undoable step. Available from Archicad 28."
+        );
         err |= RegisterCommand<GetElectricalPanelsCommand> (
             mepCommands, "1.7.2",
             "Gets the electrical panels (distribution boards) of the project or the given ones: name, circuit naming, circuits, parent circuit, placement and the connected and demand loads in total and per phase. Available from Archicad 30."
