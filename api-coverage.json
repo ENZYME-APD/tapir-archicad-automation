@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 06:00 UTC",
+ "generatedAt": "2026-10-25 08:55 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 115,
-  "claimed": 500,
-  "in progress": 545,
+  "open": 113,
+  "claimed": 431,
+  "in progress": 616,
   "done": 743
  },
  "items": [
@@ -4616,6 +4616,22 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    },
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -11172,7 +11188,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": []
   },
   {
@@ -11681,6 +11702,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -14217,6 +14242,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
      "number": 1439,
      "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
     },
@@ -14670,6 +14699,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
@@ -18917,6 +18950,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
     {
      "number": 955,
      "title": "[1/3] Teamwork: add the GetTeamworkProjectInfo command"
@@ -27432,7 +27473,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29308,7 +29354,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29325,7 +29380,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29342,7 +29402,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29357,9 +29422,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29381,7 +29455,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29398,7 +29477,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29415,7 +29499,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29432,7 +29521,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29450,6 +29544,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -29469,9 +29567,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29491,9 +29598,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29515,7 +29631,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29532,7 +29653,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29549,7 +29675,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29564,9 +29695,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29589,6 +29729,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -29805,9 +29949,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29827,9 +29980,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -29849,9 +30011,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -30243,9 +30414,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -30268,6 +30448,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
     {
      "number": 1391,
      "title": "Dimension creation commands: add favoriteName for text size and frame"
@@ -30358,6 +30550,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -30378,7 +30574,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30470,6 +30671,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -30490,7 +30695,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30548,6 +30758,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -30575,6 +30789,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -30595,7 +30813,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30613,6 +30836,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -30634,7 +30861,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30652,6 +30884,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -30671,9 +30907,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -30761,9 +31002,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -30839,9 +31089,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -30861,9 +31120,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -30917,9 +31185,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -31153,9 +31430,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -31175,9 +31461,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -31197,9 +31492,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -31646,9 +31950,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -31670,9 +31979,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -31793,9 +32107,14 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": []
   },
   {
@@ -31882,6 +32201,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
      "number": 1336,
      "title": "[1/3] Add GetPropertyValuesOfElementDefaults command (property values of tool defaults)"
     },
@@ -31949,9 +32276,14 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": []
   },
   {
@@ -32087,6 +32419,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -32134,9 +32470,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32182,6 +32523,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
      "number": 1286,
      "title": "[4/4] Add DeleteFavoriteFolder command"
     },
@@ -32217,9 +32562,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32256,9 +32606,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32278,9 +32633,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32439,6 +32799,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
      "number": 1282,
      "title": "[3/4] Add MoveFavorites command (move Favorites into a folder by path)"
     }
@@ -32483,6 +32847,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
      "number": 1286,
      "title": "[4/4] Add DeleteFavoriteFolder command"
     },
@@ -32518,9 +32886,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32540,9 +32913,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32562,9 +32940,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32611,9 +32994,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32694,6 +33082,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
      "number": 1286,
      "title": "[4/4] Add DeleteFavoriteFolder command"
     },
@@ -32745,9 +33137,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -32838,9 +33239,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33388,9 +33798,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33434,9 +33849,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33531,9 +33951,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33553,9 +33978,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33575,9 +34005,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33649,9 +34084,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -33861,9 +34301,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34045,9 +34490,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34275,7 +34725,16 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -34444,9 +34903,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34467,9 +34931,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34490,9 +34959,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34513,9 +34987,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34536,9 +35015,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34558,9 +35042,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34580,9 +35069,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34603,9 +35097,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34626,9 +35125,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34649,9 +35153,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34672,9 +35181,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34695,9 +35209,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34718,9 +35237,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34741,9 +35265,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34789,7 +35318,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -34805,9 +35339,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34830,7 +35369,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -34846,9 +35390,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34869,9 +35418,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34892,9 +35446,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -34982,9 +35541,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35028,9 +35592,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35051,9 +35620,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35074,9 +35648,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35097,9 +35676,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35120,9 +35704,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35143,9 +35732,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35168,7 +35762,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -35186,7 +35785,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -35225,9 +35829,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35248,9 +35857,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35296,7 +35910,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -35312,9 +35931,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35337,7 +35961,16 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -35356,6 +35989,18 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    },
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
     {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
@@ -35438,9 +36083,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -35540,6 +36190,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
@@ -36097,6 +36755,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    },
+    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
@@ -36148,9 +36814,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -36201,6 +36872,18 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    },
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
     {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
@@ -36660,7 +37343,16 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    }
+   ],
    "issues": []
   },
   {
@@ -37406,6 +38098,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -38154,6 +38862,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -46643,6 +47355,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
+    {
+     "number": 1466,
+     "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -48483,6 +49211,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -48529,6 +49261,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -55516,6 +56252,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -55595,6 +56335,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -55937,6 +56681,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -56585,6 +57333,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -60148,7 +60912,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -60863,7 +61632,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -61377,6 +62151,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1469,
+     "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
+    },
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    },
+    {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -63272,6 +64062,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -63618,7 +64412,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": []
   },
   {
@@ -68305,6 +69104,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1465,
+     "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
+    },
+    {
+     "number": 1464,
+     "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -68534,9 +69341,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -68557,9 +69369,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -68582,7 +69399,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": []
   },
   {
@@ -68598,9 +69420,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1467,
+     "title": "[4/6] Zone labeling settings and library part types"
+    }
+   ],
    "issues": [
     {
      "number": 1463,
@@ -70044,6 +70871,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1468,
+     "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
+    },
     {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
