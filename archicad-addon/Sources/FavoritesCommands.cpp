@@ -281,21 +281,10 @@ GS::ObjectState GetFavoritePreviewImageCommand::Execute (const GS::ObjectState& 
     parameters.Get ("height", height);
 
     NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
-#ifdef ServerMainVers_2900
-    const auto favoriteObject = ACAPI::Favorite::GetFavoriteManager ().GetFavoriteByName (favorite);
-    if (favoriteObject.IsErr ()) {
-        return CreateErrorResponse (favoriteObject.UnwrapErr ().kind, "Failed to find the favorite.");
-    }
-    const auto previewResult = favoriteObject.Unwrap ().GetPreviewImage (viewType, nativeImage);
-    if (previewResult.IsErr ()) {
-        return CreateErrorResponse (previewResult.UnwrapErr ().kind, "Failed to get favorite preview image.");
-    }
-#else
     GSErrCode err = ACAPI_Favorite_GetPreviewImage (favorite, viewType, &nativeImage);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get favorite preview image.");
     }
-#endif
 
     GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
     if (!nativeImage.Encode (memChannel, encoding)) {
@@ -1587,8 +1576,7 @@ GS::ObjectState UpdateFavoritesFromElementsCommand::Execute (const GS::ObjectSta
 
 // ============================================================================
 // RenameFavorites / DeleteFavorites — trivial batch wrappers around
-// ACAPI_Favorite_Rename (FavoriteManager::RenameFavorite from Archicad 29) /
-// ACAPI_Favorite_Delete.
+// ACAPI_Favorite_Rename / ACAPI_Favorite_Delete.
 // ============================================================================
 
 RenameFavoritesCommand::RenameFavoritesCommand () :
@@ -1649,20 +1637,8 @@ GS::ObjectState RenameFavoritesCommand::Execute (const GS::ObjectState& paramete
             rename.Get ("oldName", oldName);
             rename.Get ("newName", newName);
 
-#ifdef ServerMainVers_2900
-            const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
-            const auto favorite = manager.GetFavoriteByName (oldName);
-            if (favorite.IsErr ()) {
-                executionResults (CreateFailedExecutionResult (favorite.UnwrapErr ().kind, "Failed to find favorite"));
-                continue;
-            }
-
-            const auto renameResult = manager.RenameFavorite (favorite.Unwrap (), newName);
-            executionResults (renameResult.IsErr () ? CreateFailedExecutionResult (renameResult.UnwrapErr ().kind, "Failed to rename favorite") : CreateSuccessfulExecutionResult ());
-#else
             const GSErrCode err = ACAPI_Favorite_Rename (oldName, newName);
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to rename favorite"));
-#endif
         }
 
         return NoError;
