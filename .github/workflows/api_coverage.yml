@@ -69,30 +69,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      # Every supported Archicad version, from archicad-addon/devkits.json.
-      - name: Read the DevKit list
-        run: echo "DEVKITS=$(python3 tools/devkits.py pairs)" >> "$GITHUB_ENV"
-
-      - name: Cache the DevKits
-        id: devkits
-        uses: actions/cache@v4
+      # The headers of every version in archicad-addon/devkits.json, cached.
+      - name: Download the DevKits
+        uses: ./.github/actions/download-devkits
         with:
           path: devkits
-          key: archicad-devkit-headers-${{ env.DEVKITS }}
-
-      - name: Download the DevKits
-        if: steps.devkits.outputs.cache-hit != 'true'
-        run: |
-          set -eu
-          # The same releases the build checks use. Only the headers are read, so
-          # only they are kept: the cache is about 15 MB instead of 150 MB.
-          for entry in $DEVKITS; do
-            major=${entry%%:*}; version=${entry#*:}
-            mkdir -p "devkits/AC$major"
-            curl -sSfL -o devkit.zip "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/$version/API.Development.Kit.WIN.$version.zip"
-            unzip -qq devkit.zip 'Support/Inc/*.h' 'Support/Modules/*.h' 'Support/Modules/*.hpp' -d "devkits/AC$major"
-            rm devkit.zip
-          done
+          examples: 'false'
 
       - name: Get the sources of the latest release
         run: |
@@ -116,9 +98,8 @@ jobs:
         run: |
           set -eu
           args=""
-          for entry in $DEVKITS; do
-            major=${entry%%:*}
-            args="$args --devkit $major=devkits/AC$major/Support"
+          for dir in devkits/AC*; do
+            args="$args --devkit ${dir#devkits/AC}=$dir/Support"
           done
           release_arg=""
           [ -n "$RELEASE_SOURCES" ] && release_arg="--release-sources $RELEASE_SOURCES"

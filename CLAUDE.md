@@ -339,9 +339,10 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   without a model, from a nonce-tagged marker in the review).
 - The Claude jobs of `claude_issue_triage.yml` (`fix`, `reply`),
   `claude_bot_pr_steward.yml` (`fix`) and `claude_pr_review.yml` get the DevKit
-  headers of every version in `devkits.json`, and the newest DevKit's Examples, in
-  `archicad-addon/Build/DevKits/` before Claude starts, from
-  [.github/actions/download-devkits](.github/actions/download-devkits/action.yml).
+  headers of every version in `devkits.json`, and the C/C++ sources of the newest
+  DevKit's Examples, in `archicad-addon/Build/DevKits/` before Claude starts, from
+  the cached [.github/actions/download-devkits](.github/actions/download-devkits/action.yml)
+  (which `api_coverage.yml` uses too).
   The steward and the review load that action from a checkout of the workflow's own
   commit, never from a pull request's branch; they read the pull request's
   `devkits.json` (data only), so a PR adding a version has its headers.

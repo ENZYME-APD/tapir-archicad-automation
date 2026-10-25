@@ -215,10 +215,8 @@ jobs:
           ref: ${{ steps.pr.outputs.base_sha }}
           fetch-depth: 0
 
-      # The DevKit headers, so the review can check the change against the
-      # API (#976). The action is loaded from a checkout of this workflow's own
-      # commit, not from the base commit above (which can predate the action);
-      # nothing from the pull request is checked out or run.
+      # The DevKit headers (#976), with the action from this workflow's own
+      # commit, not the base commit above (which can predate the action).
       - name: Checkout the DevKit download action
         if: steps.pr.outputs.skip != 'true'
         uses: actions/checkout@v6

@@ -230,9 +230,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The DevKit headers, so the fix can be checked against the API instead of
-      # guessed from existing call sites (#976). This checkout is the workflow's
-      # own commit (main), so the action is trusted code; it runs before Claude.
+      # The DevKit headers (#976); this checkout is the workflow's own commit.
       - name: Download the DevKit headers
         uses: ./.github/actions/download-devkits
 
@@ -678,9 +676,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The DevKit headers, so the fix can be checked against the API instead of
-      # guessed from existing call sites (#976). This checkout is the workflow's
-      # own commit (main), so the action is trusted code; it runs before Claude.
+      # The DevKit headers (#976); this checkout is the workflow's own commit.
       - name: Download the DevKit headers
         uses: ./.github/actions/download-devkits
 
