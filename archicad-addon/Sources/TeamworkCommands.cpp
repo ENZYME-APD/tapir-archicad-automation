@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <vector>
 
 TeamworkSendCommand::TeamworkSendCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -825,6 +826,240 @@ GS::ObjectState GetTeamworkStatusCommand::Execute (const GS::ObjectState& /*para
     short hotlinkCacheManagementOwner = 0;
     if (ACAPI_Teamwork_GetHotlinkCacheManagementOwner (&hotlinkCacheManagementOwner) == NoError && hotlinkCacheManagementOwner != 0) {
         response.Add ("hotlinkCacheManagementOwner", CreateTeamworkUserObjectState (hotlinkCacheManagementOwner));
+    }
+
+    return response;
+}
+
+namespace {
+
+struct TeamworkAccessRightName {
+    const char*          name;
+    API_TWAccessRights   right;
+};
+
+// The names are the API_TWAccessRights enumerators without the "API" prefix. Every version only adds
+// to the enum (AC28 renames DesignVariants to DesignOptions), so the list follows the Archicad version.
+const TeamworkAccessRightName teamworkAccessRightNames[] = {
+    { "NoPermission", APINoPermission },
+    { "LineTypesCreate", APILineTypesCreate },
+    { "LineTypesDeleteModify", APILineTypesDeleteModify },
+    { "FillTypesCreate", APIFillTypesCreate },
+    { "FillTypesDeleteModify", APIFillTypesDeleteModify },
+    { "CompositesCreate", APICompositesCreate },
+    { "CompositesDeleteModify", APICompositesDeleteModify },
+    { "PenSetsCreate", APIPenSetsCreate },
+    { "PenSetsDeleteModify", APIPenSetsDeleteModify },
+    { "ProfilesCreate", APIProfilesCreate },
+    { "ProfilesDeleteModify", APIProfilesDeleteModify },
+    { "CitiesCreate", APICitiesCreate },
+    { "CitiesDeleteModify", APICitiesDeleteModify },
+    { "MarkupStylesCreate", APIMarkupStylesCreate },
+    { "MarkupStylesDeleteModify", APIMarkupStylesDeleteModify },
+    { "ZoneCategoriesCreate", APIZoneCategoriesCreate },
+    { "ZoneCategoriesDeleteModify", APIZoneCategoriesDeleteModify },
+    { "LayersCreate", APILayersCreate },
+    { "LayersDeleteModify", APILayersDeleteModify },
+    { "MaterialsCreate", APIMaterialsCreate },
+    { "MaterialsDeleteModify", APIMaterialsDeleteModify },
+    { "FavoritesCreate", APIFavoritesCreate },
+    { "FavoritesDeleteModify", APIFavoritesDeleteModify },
+    { "PublicFindSelectCriteriaCreate", APIPublicFindSelectCriteriaCreate },
+    { "PublicFindSelectCriteriaDeleteModify", APIPublicFindSelectCriteriaDeleteModify },
+    { "MasterLayoutsCreate", APIMasterLayoutsCreate },
+    { "MasterLayoutsDeleteModify", APIMasterLayoutsDeleteModify },
+    { "ModelViewOptionsCreate", APIModelViewOptionsCreate },
+    { "ModelViewOptionsDeleteModify", APIModelViewOptionsDeleteModify },
+    { "ProjectLocation", APIProjectLocation },
+    { "ProjectPreferences", APIProjectPreferences },
+    { "ProjectInfo", APIProjectInfo },
+    { "StoreyCreate", APIStoreyCreate },
+    { "StoreyDeleteModify", APIStoreyDeleteModify },
+    { "ViewsAndFoldersCreate", APIViewsAndFoldersCreate },
+    { "ViewsAndFoldersDeleteModify", APIViewsAndFoldersDeleteModify },
+    { "LayoutsAndSubsetsCreate", APILayoutsAndSubsetsCreate },
+    { "LayoutsAndSubsetsDeleteModify", APILayoutsAndSubsetsDeleteModify },
+    { "ProjectNotesManage", APIProjectNotesManage },
+    { "DesignToolElements", APIDesignToolElements },
+    { "GridToolElements", APIGridToolElements },
+    { "DocumentToolElements", APIDocumentToolElements },
+    { "ExternalDrawingsManage", APIExternalDrawingsManage },
+    { "IFCExternalPropertiesManage", APIIFCExternalPropertiesManage },
+    { "SchedulesAndIndexesCreate", APISchedulesAndIndexesCreate },
+    { "SchedulesAndIndexesDeleteModify", APISchedulesAndIndexesDeleteModify },
+    { "SetUpListSchemesManage", APISetUpListSchemesManage },
+    { "PublisherSetsCreate", APIPublisherSetsCreate },
+    { "PublisherSetsDeleteModify", APIPublisherSetsDeleteModify },
+    { "PublisherSetsPublish", APIPublisherSetsPublish },
+    { "ViewpointManage", APIViewpointManage },
+    { "MarkupEntryCreate", APIMarkupEntryCreate },
+    { "MarkupEntryDeleteModify", APIMarkupEntryDeleteModify },
+    { "XrefInstances", APIXrefInstances },
+    { "HotlinkInstances", APIHotlinkInstances },
+    { "HotlinkAndXrefManage", APIHotlinkAndXrefManage },
+    { "LibraryAddRemove", APILibraryAddRemove },
+    { "LibraryPartCreate", APILibraryPartCreate },
+    { "LibraryPartDeleteModify", APILibraryPartDeleteModify },
+    { "AddOnsSetupManage", APIAddOnsSetupManage },
+    { "MEPSystemCreate", APIMEPSystemCreate },
+    { "MEPSystemDeleteModify", APIMEPSystemDeleteModify },
+    { "ProjectPreviewManage", APIProjectPreviewManage },
+    { "RenovationFilterCreate", APIRenovationFilterCreate },
+    { "RenovationFilterDeleteModify", APIRenovationFilterDeleteModify },
+    { "RenovationOverrideStyleManage", APIRenovationOverrideStyleManage },
+    { "BuildingMaterialsCreate", APIBuildingMaterialsCreate },
+    { "BuildingMaterialsDeleteModify", APIBuildingMaterialsDeleteModify },
+    { "RenderingSceneCreate", APIRenderingSceneCreate },
+    { "RenderingSceneDeleteModify", APIRenderingSceneDeleteModify },
+    { "SaveAsPLNPLAMOD", APISaveAsPLNPLAMOD },
+    { "SaveAsDXFDWG", APISaveAsDXFDWG },
+    { "SaveAsIFC", APISaveAsIFC },
+    { "ViewTimeSheet", APIViewTimeSheet },
+    { "UpgradeToLaterArchiCADBuild", APIUpgradeToLaterArchiCADBuild },
+    { "ChangeCreate", APIChangeCreate },
+    { "ChangeDeleteModify", APIChangeDeleteModify },
+    { "IssueManage", APIIssueManage },
+    { "IssueModifyHistory", APIIssueModifyHistory },
+    { "PropertyAndClassificationCreate", APIPropertyAndClassificationCreate },
+    { "PropertyAndClassificationDeleteModify", APIPropertyAndClassificationDeleteModify },
+    { "GraphicOverridesCreate", APIGraphicOverridesCreate },
+    { "GraphicOverridesDeleteModify", APIGraphicOverridesDeleteModify },
+    { "ElementTransferSettingsCreate", APIElementTransferSettingsCreate },
+    { "ElementTransferSettingsDeleteModify", APIElementTransferSettingsDeleteModify },
+    { "3DStyleCreate", API3DStyleCreate },
+    { "3DStyleDeleteModify", API3DStyleDeleteModify },
+    { "IFCPreferencesManage", APIIFCPreferencesManage },
+    { "IssueCreateModify", APIIssueCreateModify },
+    { "IssueDelete", APIIssueDelete },
+    { "IssueTagManage", APIIssueTagManage },
+    { "StructuralAnalyticalToolElements", APIStructuralAnalyticalToolElements },
+    { "StructuralAnalyticalModelGenerationRulesManage", APIStructuralAnalyticalModelGenerationRulesManage },
+    { "SAFTranslatorsManage", APISAFTranslatorsManage },
+    { "SaveAsSAF", APISaveAsSAF },
+    { "SaveAsRVT", APISaveAsRVT },
+#ifdef ServerMainVers_2700
+    { "StructuralAnalyticalLoadCombinationCreate", APIStructuralAnalyticalLoadCombinationCreate },
+    { "StructuralAnalyticalLoadCombinationDeleteModify", APIStructuralAnalyticalLoadCombinationDeleteModify },
+#ifdef ServerMainVers_2800
+    { "DesignOptionsCreate", APIDesignOptionsCreate },
+    { "DesignOptionsDeleteModify", APIDesignOptionsDeleteModify },
+#else
+    { "DesignVariantsCreate", APIDesignVariantsCreate },
+    { "DesignVariantsDeleteModify", APIDesignVariantsDeleteModify },
+#endif
+    { "MEPToolElements", APIMEPToolElements },
+    { "MEPPreferences", APIMEPPreferences },
+#endif
+#ifdef ServerMainVers_2800
+    { "KeynotesCreate", APIKeynotesCreate },
+    { "KeynotesDeleteModify", APIKeynotesDeleteModify },
+#endif
+#ifdef ServerMainVers_3000
+    { "CreationInfoClear", APICreationInfoClear },
+#endif
+};
+
+}
+
+GetTeamworkAccessRightsCommand::GetTeamworkAccessRightsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTeamworkAccessRightsCommand::GetName () const
+{
+    return "GetTeamworkAccessRights";
+}
+
+GS::Optional<GS::UniString> GetTeamworkAccessRightsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "accessRights": {
+                "type": "array",
+                "description": "The names of the access rights to check, the API_TWAccessRights enumerators without the API prefix, e.g. LayersCreate or LibraryPartDeleteModify. All rights available in this Archicad version are checked when omitted.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetTeamworkAccessRightsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "accessRights": {
+                "type": "array",
+                "description": "The rights of the current user, in the requested order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "hasRight": {
+                            "type": "boolean",
+                            "description": "Whether the role of the current user has this right."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "hasRight"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "accessRights"
+        ]
+    })";
+}
+
+GS::ObjectState GetTeamworkAccessRightsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> requestedNames;
+    parameters.Get ("accessRights", requestedNames);
+
+    std::vector<const TeamworkAccessRightName*> rights;
+    if (requestedNames.IsEmpty ()) {
+        for (const TeamworkAccessRightName& item : teamworkAccessRightNames) {
+            rights.push_back (&item);
+        }
+    } else {
+        for (const GS::UniString& requestedName : requestedNames) {
+            const TeamworkAccessRightName* found = nullptr;
+            for (const TeamworkAccessRightName& item : teamworkAccessRightNames) {
+                if (requestedName == item.name) {
+                    found = &item;
+                    break;
+                }
+            }
+            if (found == nullptr) {
+                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Unknown access right: %s", requestedName.ToCStr ().Get ()));
+            }
+            rights.push_back (found);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& accessRightsOutput = response.AddList<GS::ObjectState> ("accessRights");
+    for (const TeamworkAccessRightName* item : rights) {
+        API_TWAccessRights right = item->right;
+        bool hasRight = false;
+        const GSErrCode err = ACAPI_Teamwork_GetTWAccessRight (right, &hasRight);
+        if (err != NoError) {
+            return CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the access right %s.", item->name));
+        }
+        accessRightsOutput (GS::ObjectState ("name", GS::UniString (item->name),
+                                             "hasRight", hasRight));
     }
 
     return response;
