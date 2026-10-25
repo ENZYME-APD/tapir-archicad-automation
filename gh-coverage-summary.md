@@ -1,4 +1,4 @@
-**302 of 425** applicable Tapir commands have a Grasshopper component (71 %): ✅ 287 done, 🔀 15 merged, 🚧 9 in progress, 🙋 2 claimed, ⬜ 112 open, ➖ 1 not applicable.
+**302 of 425** applicable Tapir commands have a Grasshopper component (71 %): ✅ 287 done, 🔀 15 merged, 🚧 11 in progress, ⬜ 112 open, ➖ 1 not applicable.
 
 Parameters of the 302 used commands: 🟢 238 every parameter has an input, 🟡 45 the rest through a JSON input, 🟠 19 some parameters missing.
 
@@ -15,7 +15,7 @@ Parameters of the 302 used commands: 🟢 238 every parameter has an input, 🟡
 | IFC Commands | 70 % | 10 | 7 |  |  |  | 3 |  |  | 7 |  |  |
 | Library Commands | 70 % | 10 | 7 |  |  |  | 3 |  |  | 7 |  |  |
 | Teamwork Commands | 91 % | 12 | 9 | 2 |  |  | 1 |  |  | 11 |  |  |
-| Navigator Commands | 56 % | 46 | 26 |  |  | 2 | 18 |  |  | 24 | 2 |  |
+| Navigator Commands | 56 % | 46 | 26 |  | 2 |  | 18 |  |  | 24 | 2 |  |
 | Graphic Override Commands | 0 % | 3 |  |  |  |  | 3 |  |  |  |  |  |
 | Issue Management Commands | 100 % | 11 | 10 | 1 |  |  |  |  |  | 11 |  |  |
 | Revision Management Commands | 83 % | 6 | 5 |  |  |  | 1 |  |  | 5 |  |  |
@@ -28,4 +28,4 @@ Parameters of the 302 used commands: 🟢 238 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-25 02:04 UTC.
+Updated 2026-10-25 02:39 UTC.

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 02:04 UTC",
+ "generatedAt": "2026-10-25 02:39 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 115,
-  "claimed": 722,
-  "in progress": 323,
+  "claimed": 717,
+  "in progress": 328,
   "done": 743
  },
  "items": [
@@ -8583,6 +8583,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1453,
+     "title": "[3/3] Grasshopper components for the active override combination and element override styles"
+    },
+    {
      "number": 1450,
      "title": "[2/3] GetGraphicalOverrideStyleOfElements"
     }
@@ -13982,10 +13986,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1405,
-     "title": "SetGDLParametersOfElements: take Angle parameters in radians, as Get returns them"
-    },
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
@@ -21258,9 +21258,14 @@
    "olderNames": [
     "APIDb_GetTWOwnerID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1454,
+     "title": "[4/5] Add GetTeamworkOwnersOfDatabases command"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -21408,9 +21413,14 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasCreateRight"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1452,
+     "title": "[3/5] Add GetTeamworkRightsOfObjects command"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -21436,9 +21446,14 @@
    "olderNames": [
     "ACAPI_TeamworkControl_HasDeleteModifyRight"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1452,
+     "title": "[3/5] Add GetTeamworkRightsOfObjects command"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -21646,9 +21661,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1455,
+     "title": "[5/5] Add UploadLibrariesToBIMcloud and RemoveLibrariesFromBIMcloud"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -21783,9 +21803,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1455,
+     "title": "[5/5] Add UploadLibrariesToBIMcloud and RemoveLibrariesFromBIMcloud"
+    }
+   ],
    "issues": [
     {
      "number": 1322,
@@ -24379,6 +24404,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1454,
+     "title": "[4/5] Add GetTeamworkOwnersOfDatabases command"
+    },
     {
      "number": 1417,
      "title": "Application: hide/show Archicad, run the Action Center hotlink check, redraw the current database"
