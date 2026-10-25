@@ -1866,7 +1866,12 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
                 } else {
                     ACAPI::Result<void> result = pipingPort->Modify ([&](PipingPort::Modifier& modifier) {
                         if (flowDirection.has_value ()) {
+#ifdef ServerMainVers_2900
                             settersSucceeded &= modifier.SetFlowDirection (flowDirection.value ()).IsOk ();
+#else
+                            // Returns void in Archicad 28.
+                            modifier.SetFlowDirection (flowDirection.value ());
+#endif
                         }
                         if (hasOuterDiameter) {
                             settersSucceeded &= modifier.SetOuterDiameter (outerDiameter).IsOk ();
@@ -1886,7 +1891,12 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
                 } else {
                     ACAPI::Result<void> result = ventilationPort->Modify ([&](VentilationPort::Modifier& modifier) {
                         if (flowDirection.has_value ()) {
+#ifdef ServerMainVers_2900
                             settersSucceeded &= modifier.SetFlowDirection (flowDirection.value ()).IsOk ();
+#else
+                            // Returns void in Archicad 28.
+                            modifier.SetFlowDirection (flowDirection.value ());
+#endif
                         }
                     }, "Modify MEP Ventilation Port");
                     success &= result.IsOk () && settersSucceeded;
