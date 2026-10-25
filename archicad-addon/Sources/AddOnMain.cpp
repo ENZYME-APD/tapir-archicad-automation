@@ -347,6 +347,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteHotlinkNodesCommand> (
             projectCommands, "1.7.3",
             "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
+        );
         err |= RegisterCommand<GetHotlinkProxyElementTableCommand> (
             projectCommands, "1.7.3",
             "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element."

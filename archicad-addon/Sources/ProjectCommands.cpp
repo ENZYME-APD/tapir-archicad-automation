@@ -4954,6 +4954,8 @@ GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () c
 GS::ObjectState DeleteHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Delete);
+}
+
 // The elements inside a placed instance are proxies: copies made in this
 // project with guids of their own. Archicad keeps, per instance, which element
 // of the source file each proxy was made from.
