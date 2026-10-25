@@ -373,6 +373,8 @@ GS::ObjectState ShowElementsIn3DCommand::Execute (const GS::ObjectState& paramet
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to show the selected elements in 3D.");
+}
+
 // Both commands mirror API_3DWindowInfo: the pixel size of the 3D window (hSize, vSize) and
 // the zoom of its projection (zoomScaleX/Y, zoomDispX/Y). Archicad applies the size only
 // when setWindowSize is true and the zoom only when setZoom is true.

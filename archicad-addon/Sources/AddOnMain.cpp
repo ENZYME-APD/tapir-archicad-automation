@@ -1555,6 +1555,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ShowElementsIn3DCommand> (
             navigatorCommands, "1.7.3",
             "Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does."
+        );
         err |= RegisterCommand<Get3DWindowSettingsCommand> (
             navigatorCommands, "1.7.3",
             "Gets the 3D window settings: the pixel size of the 3D window and the zoom (scale and displacement) of its projection."

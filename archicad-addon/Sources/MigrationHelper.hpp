@@ -290,6 +290,8 @@ inline GSErrCode ACAPI_View_Get3DStyleList (GS::Array<GS::UniString>* styles, GS
 inline GSErrCode ACAPI_View_SetCurrent3DStyle (GS::UniString* name)
 {
     return ACAPI_Environment (APIEnv_SetCurrent3DStyleID, (void*) name);
+}
+
 inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
 {
     return ACAPI_Database (APIDb_SetZoomID, (void*) zoomBox, (void*) tranmat);
