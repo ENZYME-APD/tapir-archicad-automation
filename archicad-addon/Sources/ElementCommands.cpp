@@ -6382,11 +6382,11 @@ GS::Optional<GS::UniString> GetRoofPlanesCommand::GetRawResponseSchema () const
                                                 "properties": {
                                                     "main": {
                                                         "type": "number",
-                                                        "description": "Identifies the pivot polygon edge the plane belongs to (by its vertex id)."
+                                                        "description": "The main part of Archicad's identifier of the plane (API_ElemPartId main)."
                                                     },
                                                     "sub": {
                                                         "type": "number",
-                                                        "description": "Identifies the roof level the plane belongs to."
+                                                        "description": "The sub part of Archicad's identifier of the plane (API_ElemPartId sub)."
                                                     }
                                                 },
                                                 "additionalProperties": false,
