@@ -1401,6 +1401,10 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.7.3",
             "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false."
         );
+        err |= RegisterCommand<GetTeamworkRightsOfObjectsCommand> (
+            teamworkCommands, "1.7.3",
+            "Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it."
+        );
         AddCommandGroup (teamworkCommands);
     }
 
