@@ -1626,6 +1626,24 @@ static GSErrCode FindFavoriteFolderByPath (const ACAPI::Favorite::FavoriteManage
     return NoError;
 }
 
+// Fails with APIERR_NAMEALREADYUSED if the folder already has a subfolder with
+// the given name, so folders stay unique by path.
+static GSErrCode CheckNoFavoriteSubFolderNamed (const ACAPI::Favorite::FavoriteFolder& folder, const GS::UniString& name, GS::UniString& errorMessage)
+{
+    for (const ACAPI::Favorite::FavoriteFolder& subFolder : folder.GetSubFolders ()) {
+        const auto subFolderName = subFolder.GetName ();
+        if (subFolderName.IsErr ()) {
+            errorMessage = "Failed to get the name of a Favorite folder.";
+            return subFolderName.UnwrapErr ().kind;
+        }
+        if (subFolderName.Unwrap () == name) {
+            errorMessage = GS::UniString::Printf ("A Favorite folder named '%T' already exists in the same folder.", name.ToPrintf ());
+            return APIERR_NAMEALREADYUSED;
+        }
+    }
+    return NoError;
+}
+
 // Adds the folder to the response as "folder", with its path built from the
 // parent path and the folder's name read back from Archicad.
 static GSErrCode AddFavoriteFolderToResponse (const ACAPI::Favorite::FavoriteFolder& folder, const GS::Array<GS::UniString>& parentPath, GS::ObjectState& response, GS::UniString& errorMessage)
@@ -1673,7 +1691,7 @@ GS::Optional<GS::UniString> CreateFavoriteFolderCommand::GetInputParametersSchem
             },
             "name": {
                 "type": "string",
-                "description": "The name of the new folder.",
+                "description": "The name of the new folder. The parent folder must not have a subfolder with this name yet.",
                 "minLength": 1
             }
         },
@@ -1721,6 +1739,13 @@ GS::ObjectState CreateFavoriteFolderCommand::Execute (const GS::ObjectState& par
         const GSErrCode findErr = FindFavoriteFolderByPath (manager, parentPath, parentFolder, errorMessage);
         if (findErr != NoError) {
             return findErr;
+        }
+
+        // Folders are found by their path, so a second folder with the same
+        // name in the same parent could not be reached.
+        const GSErrCode nameErr = CheckNoFavoriteSubFolderNamed (*parentFolder, name, errorMessage);
+        if (nameErr != NoError) {
+            return nameErr;
         }
 
         const auto newFolder = manager.CreateFolder (*parentFolder, name);
@@ -1834,16 +1859,9 @@ GS::ObjectState RenameFavoriteFolderCommand::Execute (const GS::ObjectState& par
         // The folder is looked up by its new path after the rename, so a
         // sibling with the new name would be found instead of it.
         if (newName != path.GetLast ()) {
-            for (const ACAPI::Favorite::FavoriteFolder& sibling : parentFolder->GetSubFolders ()) {
-                const auto siblingName = sibling.GetName ();
-                if (siblingName.IsErr ()) {
-                    errorMessage = "Failed to get the name of a Favorite folder.";
-                    return siblingName.UnwrapErr ().kind;
-                }
-                if (siblingName.Unwrap () == newName) {
-                    errorMessage = GS::UniString::Printf ("A Favorite folder named '%T' already exists in the same folder.", newName.ToPrintf ());
-                    return APIERR_NAMEALREADYUSED;
-                }
+            const GSErrCode nameErr = CheckNoFavoriteSubFolderNamed (*parentFolder, newName, errorMessage);
+            if (nameErr != NoError) {
+                return nameErr;
             }
         }
 
