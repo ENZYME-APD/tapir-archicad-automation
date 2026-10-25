@@ -1,5 +1,7 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using System;
+using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.Generic;
@@ -43,9 +45,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryCreateFromList(
+            ElementsObject input;
+
+            // An unconnected or empty input sends no elements: Show All in 3D.
+            if (!da.TryGetList(
                     0,
-                    out ElementsObject input))
+                    out List<GH_ObjectWrapper> wrappers) ||
+                wrappers.Count == 0)
+            {
+                input = new ElementsObject
+                {
+                    Elements = new List<ElementGuidWrapper>()
+                };
+            }
+            else if (!wrappers.TryBuildObject(out input))
             {
                 return;
             }
