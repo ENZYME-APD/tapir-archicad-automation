@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <map>
 #include <optional>
@@ -5033,6 +5034,26 @@ static const char* OpeningExtrusionParametersResponseSchema = R"({
     "type": "object",
     "description": "The size and extrusion settings. A size Archicad does not give for the opening's shape is left out.",
     "properties": {
+        "constraint": {
+            "type": "string",
+            "enum": ["ForcedVertical", "ForcedHorizontal", "Aligned", "Free"],
+            "description": "How the opening's orientation is constrained."
+        },
+        "limitType": {
+            "type": "string",
+            "enum": ["Infinite", "Finite", "HalfInfinite"],
+            "description": "How far the opening's extrusion reaches."
+        },
+        "linkedStatus": {
+            "type": "string",
+            "enum": ["Linked", "NotLinked"],
+            "description": "Whether the opening is linked to its parent element. Left out when Archicad gives none."
+        },
+        "shapeType": {
+            "type": "string",
+            "enum": ["Rectangular", "Circular", "Polygonal"],
+            "description": "The shape of the opening's polygon."
+        },
         "width": { "type": "number" },
         "height": { "type": "number" },
         "anchor": {
@@ -5074,6 +5095,10 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
                             "type": "object",
                             "properties": {
                                 "elementId": { "$ref": "#/ElementId" },
+                                "exists": {
+                                    "type": "boolean",
+                                    "description": "Whether the opening still exists in the project."
+                                },
                                 "parentElementId": {
                                     "$ref": "#/ElementId",
                                     "description": "The element the opening was placed in. Left out when the opening has none."
@@ -5107,7 +5132,7 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
                                 "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(
                             },
                             "additionalProperties": false,
-                            "required": ["elementId", "cutElements", "geometry", "extrusionParameters"]
+                            "required": ["elementId", "exists", "cutElements", "geometry", "extrusionParameters"]
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5139,9 +5164,98 @@ static void AddOptionalNumber (GS::ObjectState& os, const char* name, const std:
     }
 }
 
+// The enums of the opening settings, taken from the getters' return types so that only their
+// values, and not where the DevKit declares them, are named here. They go over JSON as the
+// names of their values.
+using OpeningConstraint = decltype (std::declval<const ACAPI::Element::OpeningExtrusionParameters&> ().GetConstraint ());
+using OpeningLimitType = decltype (std::declval<const ACAPI::Element::OpeningExtrusionParameters&> ().GetLimitType ());
+using OpeningLinkedStatus = decltype (std::declval<const ACAPI::Element::OpeningExtrusionParameters&> ().GetLinkedStatus ())::value_type;
+using OpeningShapeType = decltype (std::declval<const ACAPI::Element::OpeningExtrusionParameters&> ().GetShapeType ());
+using OpeningDividedMode = decltype (std::declval<const ACAPI::Element::OpeningFloorPlanParameters&> ().GetDividedOpeningMode ());
+using OpeningDisplayMode = decltype (std::declval<const ACAPI::Element::OpeningFloorPlanParameters&> ().GetFloorPlanDisplayMode ());
+using OpeningEdgeStyle = decltype (std::declval<const ACAPI::Element::OpeningFloorPlanParameters&> ().GetOpenEdgeStyle ());
+
+static const std::pair<OpeningConstraint, const char*> OpeningConstraintNames[] = {
+    { OpeningConstraint::ForcedVertical, "ForcedVertical" },
+    { OpeningConstraint::ForcedHorizontal, "ForcedHorizontal" },
+    { OpeningConstraint::Aligned, "Aligned" },
+    { OpeningConstraint::Free, "Free" }
+};
+
+static const std::pair<OpeningLimitType, const char*> OpeningLimitTypeNames[] = {
+    { OpeningLimitType::Infinite, "Infinite" },
+    { OpeningLimitType::Finite, "Finite" },
+    { OpeningLimitType::HalfInfinite, "HalfInfinite" }
+};
+
+static const std::pair<OpeningLinkedStatus, const char*> OpeningLinkedStatusNames[] = {
+    { OpeningLinkedStatus::Linked, "Linked" },
+    { OpeningLinkedStatus::NotLinked, "NotLinked" }
+};
+
+static const std::pair<OpeningShapeType, const char*> OpeningShapeTypeNames[] = {
+    { OpeningShapeType::Rectangular, "Rectangular" },
+    { OpeningShapeType::Circular, "Circular" },
+    { OpeningShapeType::Polygonal, "Polygonal" }
+};
+
+static const std::pair<OpeningDividedMode, const char*> OpeningDividedModeNames[] = {
+    { OpeningDividedMode::Disconnected, "Disconnected" },
+    { OpeningDividedMode::Connected, "Connected" }
+};
+
+static const std::pair<OpeningDisplayMode, const char*> OpeningDisplayModeNames[] = {
+    { OpeningDisplayMode::Symbolic, "Symbolic" },
+    { OpeningDisplayMode::SymbolicCut, "SymbolicCut" },
+    { OpeningDisplayMode::SymbolicOverhead, "SymbolicOverhead" },
+    { OpeningDisplayMode::Projected, "Projected" }
+};
+
+static const std::pair<OpeningEdgeStyle, const char*> OpeningEdgeStyleNames[] = {
+    { OpeningEdgeStyle::Hide, "Hide" },
+    { OpeningEdgeStyle::ShowUncut, "ShowUncut" },
+    { OpeningEdgeStyle::ShowOverhead, "ShowOverhead" }
+};
+
+// Adds the name of the value; a value without a name (one added by a later Archicad) is left out.
+template <typename EnumType, std::size_t N>
+static void AddOpeningEnum (GS::ObjectState& os, const char* name, EnumType value, const std::pair<EnumType, const char*> (&names)[N])
+{
+    for (const auto& entry : names) {
+        if (entry.first == value) {
+            os.Add (name, GS::UniString (entry.second));
+            return;
+        }
+    }
+}
+
+// Returns an error message when the given name is not one of the names.
+template <typename EnumType, std::size_t N>
+static GS::Optional<GS::UniString> GetOpeningEnum (const GS::ObjectState& os, const char* name, const std::pair<EnumType, const char*> (&names)[N], std::optional<EnumType>& value)
+{
+    GS::UniString text;
+    if (!os.Get (name, text)) {
+        return GS::NoValue;
+    }
+    for (const auto& entry : names) {
+        if (text == entry.second) {
+            value = entry.first;
+            return GS::NoValue;
+        }
+    }
+    return GS::UniString::Printf ("The '%s' has no value '", name) + text + GS::UniString ("'.");
+}
+
 static GS::ObjectState CreateOpeningExtrusionParametersObjectState (const ACAPI::Element::OpeningExtrusionParameters& extrusionParameters)
 {
     GS::ObjectState extrusionOs;
+    AddOpeningEnum (extrusionOs, "constraint", extrusionParameters.GetConstraint (), OpeningConstraintNames);
+    AddOpeningEnum (extrusionOs, "limitType", extrusionParameters.GetLimitType (), OpeningLimitTypeNames);
+    const std::optional<OpeningLinkedStatus> linkedStatus = extrusionParameters.GetLinkedStatus ();
+    if (linkedStatus.has_value ()) {
+        AddOpeningEnum (extrusionOs, "linkedStatus", *linkedStatus, OpeningLinkedStatusNames);
+    }
+    AddOpeningEnum (extrusionOs, "shapeType", extrusionParameters.GetShapeType (), OpeningShapeTypeNames);
     AddOptionalNumber (extrusionOs, "width", extrusionParameters.GetWidth ());
     AddOptionalNumber (extrusionOs, "height", extrusionParameters.GetHeight ());
     extrusionOs.Add ("anchor", AnchorIdToString (extrusionParameters.GetAnchor ()));
@@ -5173,7 +5287,8 @@ static GS::ObjectState GetOpeningDetails (const API_Guid& openingGuid)
     }
 
     GS::ObjectState details;
-    details.Add ("elementId", CreateGuidObjectState (openingGuid));
+    details.Add ("elementId", CreateGuidObjectState (GSGuid2APIGuid (opening->GetElemId ().GetGuid ())));
+    details.Add ("exists", opening->Exists ());
 
     ACAPI::Result<ACAPI::UniqueID> parent = opening->GetParentElement ();
     if (parent.IsOk ()) {
@@ -5286,6 +5401,26 @@ GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema (
                             "type": "object",
                             "description": "The size and extrusion settings to change, with the same names GetOpeningDetails returns.",
                             "properties": {
+                                "constraint": {
+                                    "type": "string",
+                                    "enum": ["ForcedVertical", "ForcedHorizontal", "Aligned", "Free"],
+                                    "description": "How the opening's orientation is constrained."
+                                },
+                                "limitType": {
+                                    "type": "string",
+                                    "enum": ["Infinite", "Finite", "HalfInfinite"],
+                                    "description": "How far the opening's extrusion reaches."
+                                },
+                                "linkedStatus": {
+                                    "type": "string",
+                                    "enum": ["Linked", "NotLinked"],
+                                    "description": "Whether the opening is linked to its parent element."
+                                },
+                                "shapeType": {
+                                    "type": "string",
+                                    "enum": ["Rectangular", "Circular", "Polygonal"],
+                                    "description": "The shape of the opening's polygon."
+                                },
                                 "width": { "type": "number", "exclusiveMinimum": 0.0 },
                                 "height": { "type": "number", "exclusiveMinimum": 0.0 },
                                 "anchor": {
@@ -5428,13 +5563,29 @@ static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
     const bool hasExtrusionData = data.Get ("extrusionParameters", extrusionData);
     std::optional<API_AttributeIndex> extrusionSurfaceIndex;
     std::optional<API_AttributeIndex> endSurfaceIndex;
+    std::optional<OpeningConstraint> constraint;
+    std::optional<OpeningLimitType> limitType;
+    std::optional<OpeningLinkedStatus> linkedStatus;
+    std::optional<OpeningShapeType> shapeType;
     if (hasExtrusionData) {
-        GS::Optional<GS::UniString> surfaceError = GetSurfaceIndex (extrusionData, "extrusionSurfaceId", extrusionSurfaceIndex);
-        if (!surfaceError.HasValue ()) {
-            surfaceError = GetSurfaceIndex (extrusionData, "endSurfaceId", endSurfaceIndex);
+        GS::Optional<GS::UniString> inputError = GetSurfaceIndex (extrusionData, "extrusionSurfaceId", extrusionSurfaceIndex);
+        if (!inputError.HasValue ()) {
+            inputError = GetSurfaceIndex (extrusionData, "endSurfaceId", endSurfaceIndex);
         }
-        if (surfaceError.HasValue ()) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ());
+        if (!inputError.HasValue ()) {
+            inputError = GetOpeningEnum (extrusionData, "constraint", OpeningConstraintNames, constraint);
+        }
+        if (!inputError.HasValue ()) {
+            inputError = GetOpeningEnum (extrusionData, "limitType", OpeningLimitTypeNames, limitType);
+        }
+        if (!inputError.HasValue ()) {
+            inputError = GetOpeningEnum (extrusionData, "linkedStatus", OpeningLinkedStatusNames, linkedStatus);
+        }
+        if (!inputError.HasValue ()) {
+            inputError = GetOpeningEnum (extrusionData, "shapeType", OpeningShapeTypeNames, shapeType);
+        }
+        if (inputError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, inputError.Get ());
         }
     }
 
@@ -5467,6 +5618,19 @@ static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
 
         if (hasExtrusionData) {
             auto&& extrusionParameters = modifier.GetExtrusionParameters ();
+            // The switches first, so the sizes and offsets below apply to the new constraint, limit and shape.
+            if (constraint.has_value () && !check (extrusionParameters.SetConstraint (*constraint), "the constraint")) {
+                return;
+            }
+            if (limitType.has_value ()) {
+                extrusionParameters.SetLimitType (*limitType);
+            }
+            if (linkedStatus.has_value () && !check (extrusionParameters.SetLinkedStatus (*linkedStatus), "the linked status")) {
+                return;
+            }
+            if (shapeType.has_value ()) {
+                extrusionParameters.SetShapeType (*shapeType);
+            }
             double value = 0.0;
             if (extrusionData.Get ("width", value) && !check (extrusionParameters.SetWidth (value), "the width")) {
                 return;
@@ -8728,6 +8892,21 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
 // The floor plan parameters of an opening, read by GetOpeningFloorPlanParameters and
 // GetOpeningDefault and changed by SetOpeningFloorPlanParameters with the same names.
 static const char* OpeningFloorPlanParametersSchemaProperties = R"(
+    "floorPlanDisplayMode": {
+        "type": "string",
+        "enum": ["Symbolic", "SymbolicCut", "SymbolicOverhead", "Projected"],
+        "description": "How the opening is shown on the floor plan."
+    },
+    "dividedOpeningMode": {
+        "type": "string",
+        "enum": ["Disconnected", "Connected"],
+        "description": "How the parts of an opening divided by the floor plan cut are shown."
+    },
+    "openEdgeStyle": {
+        "type": "string",
+        "enum": ["Hide", "ShowUncut", "ShowOverhead"],
+        "description": "How the open edges of the opening are shown on the floor plan."
+    },
     "showReferenceAxis": { "type": "boolean", "description": "Whether the reference axis of the opening is shown on the floor plan." },
     "referenceAxisPen": { "type": "integer", "minimum": 1, "maximum": 255 },
     "referenceAxisLineTypeId": { "$ref": "#/AttributeId", "description": "The line type of the reference axis." },
@@ -8763,6 +8942,9 @@ static const char* OpeningFloorPlanParametersSchemaProperties = R"(
 static GS::ObjectState CreateOpeningFloorPlanParametersObjectState (const ACAPI::Element::OpeningFloorPlanParameters& floorPlanParameters)
 {
     GS::ObjectState os;
+    AddOpeningEnum (os, "floorPlanDisplayMode", floorPlanParameters.GetFloorPlanDisplayMode (), OpeningDisplayModeNames);
+    AddOpeningEnum (os, "dividedOpeningMode", floorPlanParameters.GetDividedOpeningMode (), OpeningDividedModeNames);
+    AddOpeningEnum (os, "openEdgeStyle", floorPlanParameters.GetOpenEdgeStyle (), OpeningEdgeStyleNames);
     os.Add ("showReferenceAxis", floorPlanParameters.IsShowReferenceAxis ());
     os.Add ("referenceAxisPen", floorPlanParameters.GetReferenceAxisPenIndex ());
     os.Add ("referenceAxisLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, floorPlanParameters.GetReferenceAxisLineTypeIndex ())));
@@ -8804,6 +8986,9 @@ static GS::ObjectState CreateOpeningFloorPlanParametersObjectState (const ACAPI:
 // touched, so an input checked here changes nothing. A value only Archicad can refuse (such as
 // a library part that is not a symbol) is found while applying, after the earlier changes.
 struct OpeningFloorPlanParametersChange {
+    std::optional<OpeningDisplayMode>           floorPlanDisplayMode;
+    std::optional<OpeningDividedMode>           dividedOpeningMode;
+    std::optional<OpeningEdgeStyle>             openEdgeStyle;
     std::optional<bool>                         showReferenceAxis;
     std::optional<short>                        referenceAxisPen;
     std::optional<API_AttributeIndex>           referenceAxisLineType;
@@ -8863,6 +9048,17 @@ static GS::Optional<GS::UniString> GetOptionalAttributeIndex (const GS::ObjectSt
 
 static GS::Optional<GS::UniString> GetOpeningFloorPlanParametersChange (const GS::ObjectState& os, OpeningFloorPlanParametersChange& change)
 {
+    GS::Optional<GS::UniString> enumError = GetOpeningEnum (os, "floorPlanDisplayMode", OpeningDisplayModeNames, change.floorPlanDisplayMode);
+    if (!enumError.HasValue ()) {
+        enumError = GetOpeningEnum (os, "dividedOpeningMode", OpeningDividedModeNames, change.dividedOpeningMode);
+    }
+    if (!enumError.HasValue ()) {
+        enumError = GetOpeningEnum (os, "openEdgeStyle", OpeningEdgeStyleNames, change.openEdgeStyle);
+    }
+    if (enumError.HasValue ()) {
+        return enumError;
+    }
+
     GetOptionalBool (os, "showReferenceAxis", change.showReferenceAxis);
     GetOptionalPen (os, "referenceAxisPen", change.referenceAxisPen);
     double overhang = 0.0;
@@ -8940,6 +9136,16 @@ static GS::Optional<GS::UniString> ApplyOpeningFloorPlanParametersChange (ACAPI:
         }
         return GS::NoValue;
     };
+
+    if (change.floorPlanDisplayMode.has_value ()) {
+        floorPlanParameters.SetFloorPlanDisplayMode (*change.floorPlanDisplayMode);
+    }
+    if (change.dividedOpeningMode.has_value ()) {
+        floorPlanParameters.SetDividedOpeningMode (*change.dividedOpeningMode);
+    }
+    if (change.openEdgeStyle.has_value ()) {
+        floorPlanParameters.SetOpenEdgeStyle (*change.openEdgeStyle);
+    }
 
     if (change.showReferenceAxis.has_value ()) {
         if (*change.showReferenceAxis) {

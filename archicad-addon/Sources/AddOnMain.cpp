@@ -263,7 +263,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetProductVersionInfoCommand> (
             applicationCommands, "1.7.3",
-            "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type and main/update/hotfix versions from Archicad 29. Requires Archicad 28 or later."
+            "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type, main/update/hotfix versions, the available domains (Architecture, MEP) and the CEIP project identifier of the open project from Archicad 29. Requires Archicad 28 or later."
         );
         err |= RegisterCommand<Get3DCutawayStatusCommand> (
             applicationCommands, "1.7.3",
@@ -652,7 +652,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetOpeningFloorPlanParametersCommand> (
             elementCommands, "1.7.3",
-            "Returns the floor plan parameters of Opening elements: the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29."
+            "Returns the floor plan parameters of Opening elements: the floor plan display mode, the divided opening mode, the open edge style, the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29."
         );
         err |= RegisterCommand<SetOpeningFloorPlanParametersCommand> (
             elementCommands, "1.7.3",
@@ -660,11 +660,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetOpeningDetailsCommand> (
             elementCommands, "1.7.3",
-            "Returns the details of Opening elements: the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (size, anchor, offsets, surface overrides). Available from Archicad 29."
+            "Returns the details of Opening elements: whether they exist, the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides). Available from Archicad 29."
         );
         err |= RegisterCommand<SetOpeningDetailsCommand> (
             elementCommands, "1.7.3",
-            "Changes the details of Opening elements: the parent element, the cut elements, the polygon, a transformation of the geometry and the extrusion parameters (size, anchor, offsets, surface overrides) returned by GetOpeningDetails. Available from Archicad 29."
+            "Changes the details of Opening elements: the parent element, the cut elements, the polygon, a transformation of the geometry and the extrusion parameters (constraint, limit type, linked status, shape type, size, anchor, offsets, surface overrides) returned by GetOpeningDetails. Available from Archicad 29."
         );
         err |= RegisterCommand<CreateMorphsCommand> (
             elementCommands, "1.4.0",
