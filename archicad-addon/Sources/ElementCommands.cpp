@@ -4339,6 +4339,8 @@ static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (cons
     }
 
     return GS::NoValue;
+}
+
 GetZoneReductionsCommand::GetZoneReductionsCommand () :
     CommandBase (CommonSchema::Used)
 {
