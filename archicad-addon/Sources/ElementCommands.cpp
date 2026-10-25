@@ -2355,6 +2355,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             }
             short drwIndexTarget = -1;
             GetIndexValue (*details, "drawIndex", drwIndexTarget);
+            GS::Optional<double> requestedDrawingScale;
 
             API_ElementMemo clipMemo = {};
             UInt64 memoMask = 0;
@@ -2512,6 +2513,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
+                            requestedDrawingScale = elem.drawing.drawingScale;
                         }
                         if (typeSpecificDetails->Get ("ratio", elem.drawing.ratio)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, ratio);
@@ -2949,6 +2951,22 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else if (drwIndexTarget != 0 || !IsResetOrderReliable (elem.header)) {
                     const short resolvedTarget = (drwIndexTarget == 0) ? (short) GetDefaultDrwIndex (elem.header) : drwIndexTarget;
                     ApplyDrawIndexStrategy (guids, elem.header, (Int32) resolvedTarget, (Int32) elem.header.drwIndex);
+                }
+            }
+
+            // Reported live (#1476): ACAPI_Element_Change can return NoError on a placed
+            // Drawing and still keep its old drawingScale, while the rest of the change
+            // (ratio, name, ...) is applied. Read it back so an ignored scale is not
+            // reported as a success.
+            if (requestedDrawingScale.HasValue ()) {
+                API_Element changedElem = {};
+                changedElem.header.guid = elem.header.guid;
+                if (ACAPI_Element_Get (&changedElem) == NoError &&
+                    GS::Abs (changedElem.drawing.drawingScale - *requestedDrawingScale) > 1e-9 * GS::Max (1.0, GS::Abs (*requestedDrawingScale))) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf (
+                        "Archicad did not apply drawingScale: it stayed %g instead of %g. The other details given were applied.",
+                        changedElem.drawing.drawingScale, *requestedDrawingScale)));
+                    continue;
                 }
             }
 

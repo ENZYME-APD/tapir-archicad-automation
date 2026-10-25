@@ -10421,7 +10421,7 @@
             },
             "drawingScale": {
                 "type": "number",
-                "description": "The nominal scale of the drawing."
+                "description": "The nominal scale of the drawing. Archicad may keep the existing value of a placed Drawing; the element's execution result is then a failure that names the value kept, although the other settings given were applied."
             },
             "modelOffset": {
                 "$ref": "#/Coordinate2D",
