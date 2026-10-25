@@ -10261,6 +10261,7 @@
                 "type": "number",
                 "minimum": 0.0,
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
+            },
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
