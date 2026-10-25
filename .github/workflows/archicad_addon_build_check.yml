@@ -19,6 +19,16 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  test_creation_transaction:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Check compiler and transaction error handling
+      run: |
+        c++ --version
+        python3 archicad-addon/Test/test_creation_transaction.py -v
+
   generate_docs:
     # The weekly release regenerates docs/archicad-addon with this script;
     # running it here reports schema code it cannot evaluate on the PR that

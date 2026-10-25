@@ -959,7 +959,7 @@ GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&&
     notification.notifID = APINotifyElement_BeginEvents;
     AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
-    ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
+    const GSErrCode err = ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
         createFunc (results);
         return NoError;
     });
@@ -968,6 +968,9 @@ GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&&
     notification.notifID = APINotifyElement_EndEvents;
     AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to complete the creation transaction.");
+    }
     return CreateElementListResponse (results);
 }
 
