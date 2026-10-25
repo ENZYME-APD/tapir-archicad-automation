@@ -119,7 +119,7 @@ GS::ObjectState GetTeamworkProjectInfoCommand::Execute (const GS::ObjectState& /
         return response;
     }
 
-    response.Add ("isOnline", ACAPI_Teamwork_IsOnline ());
+    response.Add ("isOnline", ACAPI_Teamwork_HasConnection ());
     response.Add ("userId", projectInfo.userId);
 
     GS::UniString serverUrl;
