@@ -146,10 +146,11 @@ GSErrCode StoreElementUserData (API_Elem_Head& elemHead, const UserDataPairs& pa
     API_UserData userData = {};
     userData.dataVersion = ElementUserDataLayoutVersion;
     userData.platformSign = GS::Act_Platform_Sign;
-    // Undoable, so Edit > Undo reverts the stored pairs. Not FillWith or Pickup: the data is script
-    // state (ids, timestamps), not a setting of the element, so it must not travel with parameter
-    // pick-up or injection into the tool defaults.
-    userData.flags = APIUserDataFlag_UndoAble;
+    // No flags. The API has no undo flag for user data (the build rejects APIUserDataFlag_UndoAble on
+    // every Archicad version); Edit > Undo relies on the ACAPI_CallUndoableCommand scope of the caller.
+    // Not FillWith or Pickup: the data is script state (ids, timestamps), not a setting of the element,
+    // so it must not travel with parameter pick-up or injection into the tool defaults.
+    userData.flags = 0;
     userData.dataHdl = SerializeElementUserData (pairs);
     if (userData.dataHdl == nullptr) {
         return APIERR_MEMFULL;
