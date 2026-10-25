@@ -10604,7 +10604,8 @@
         "type": "boolean"
             },
             "defaultValue": {
-        "$ref": "#/PropertyDefaultValue"
+        "$ref": "#/PropertyDefaultValue",
+        "description": "The default value of the new property. Optional; when omitted, the default value is Undefined."
             },
             "possibleEnumValues": {
         "$ref": "#/PossibleEnumValues"
