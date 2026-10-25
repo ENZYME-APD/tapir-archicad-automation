@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 01:36 UTC",
+ "generatedAt": "2026-10-25 01:55 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 106,
-  "claimed": 733,
+  "open": 115,
+  "claimed": 724,
   "in progress": 321,
   "done": 743
  },
@@ -6878,15 +6878,10 @@
    "olderNames": [
     "APIDb_DisposeCreationOrderTableID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1159,
-     "title": "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderGetNext",
@@ -6929,15 +6924,10 @@
    "olderNames": [
     "APIDb_DrawOrderInitID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1074,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_DrawOrderTerm",
@@ -6957,15 +6947,10 @@
    "olderNames": [
     "APIDb_DrawOrderTermID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1073,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderTerm"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawOrder_InitCreationOrderTable",
@@ -6985,15 +6970,10 @@
    "olderNames": [
     "APIDb_InitCreationOrderTableID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1072,
-     "title": "Expose ACAPI_DrawOrder_InitCreationOrderTable"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DrawingPrimitive_DrawStoryControl",
@@ -7041,14 +7021,6 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
-    {
-     "number": 1164,
-     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
-    },
-    {
-     "number": 1163,
-     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
-    },
     {
      "number": 1069,
      "title": "Expose ACAPI_DrawingPrimitive_ShapePrims"
@@ -11967,15 +11939,10 @@
    "olderNames": [
     "APIAny_EnableRenovationOverrideID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1163,
-     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_EnableVisualOverride",
@@ -11995,15 +11962,10 @@
    "olderNames": [
     "APIAny_EnableVisualOverrideID"
    ],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1164,
-     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_GraphicalOverride_GetActualOverrideCombination",
@@ -24018,15 +23980,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1067,
-     "title": "Expose ACAPI_3D_GetNum"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnIntegration_InstallAttrManagerImportMethod",
@@ -24483,24 +24440,8 @@
      "title": "Expose ACAPI_Window_AddTextWindowContent"
     },
     {
-     "number": 1159,
-     "title": "Expose ACAPI_DrawOrder_DisposeCreationOrderTable"
-    },
-    {
      "number": 1158,
      "title": "Expose ACAPI_DrawOrder_CreationOrderGetNext"
-    },
-    {
-     "number": 1074,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderInit"
-    },
-    {
-     "number": 1073,
-     "title": "Expose ACAPI_DrawOrder_DrawOrderTerm"
-    },
-    {
-     "number": 1072,
-     "title": "Expose ACAPI_DrawOrder_InitCreationOrderTable"
     },
     {
      "number": 1070,
@@ -25347,14 +25288,6 @@
     {
      "number": 1312,
      "title": "Expose element info strings and library part / creator tool IDs"
-    },
-    {
-     "number": 1164,
-     "title": "Expose ACAPI_GraphicalOverride_EnableVisualOverride"
-    },
-    {
-     "number": 1163,
-     "title": "Expose ACAPI_GraphicalOverride_EnableRenovationOverride"
     },
     {
      "number": 1092,
@@ -26237,15 +26170,10 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1059,
-     "title": "Expose ACAPI_Override_GetOverrideRule"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Preferences_OldVersion",
@@ -27457,15 +27385,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1177,
-     "title": "Expose ACAPI::CreatePropertyOperationManager"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::CreateZoneBoundaryQuery",
