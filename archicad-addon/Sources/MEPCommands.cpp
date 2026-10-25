@@ -2708,7 +2708,8 @@ static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<d
         angles.push_back (*found);
     }
     std::optional<GSErrCode> deleteError;
-    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (typename std::decay_t<decltype (*angleSet)>::Modifier& modifier) {
+    // Like the reference set, the modifier is the base class's: PipeAngleSet::Modifier and DuctAngleSet::Modifier are incomplete types.
+    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (AngleSetBase::Modifier& modifier) {
         for (double angle : angles) {
             if (!deleteError.has_value ()) {
                 deleteError = GetErrorOfCall ([&] () { return modifier.Delete (angle); });
