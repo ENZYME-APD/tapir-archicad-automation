@@ -8,6 +8,8 @@
 #include "ACAPI/MEPEnums.hpp"
 #include "ACAPI/MEPElement.hpp"
 #include "ACAPI/MEPPort.hpp"
+#include "ACAPI/MEPPipingPort.hpp"
+#include "ACAPI/MEPVentilationPort.hpp"
 #include "ACAPI/MEPRoutingElement.hpp"
 #include "ACAPI/MEPRoutingElementDefault.hpp"
 #include "ACAPI/MEPRoutingSegment.hpp"
@@ -240,6 +242,12 @@ static const MEPEnumName<ConnectionStyle> ConnectionStyleNames[] = {
 static const MEPEnumName<PreferredTransitionPlacement> PreferredTransitionPlacementNames[] = {
     { PreferredTransitionPlacement::SmallToLarge, "SmallToLarge" },
     { PreferredTransitionPlacement::LargeToSmall, "LargeToSmall" }
+};
+
+static const MEPEnumName<FlowDirection> FlowDirectionNames[] = {
+    { FlowDirection::FlowNotDefined, "FlowNotDefined" },
+    { FlowDirection::FlowIn,         "FlowIn" },
+    { FlowDirection::FlowOut,        "FlowOut" }
 };
 
 #ifdef ServerMainVers_2900
@@ -704,9 +712,29 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
             portOs.Add ("shape", ConnectorShapeToString (port->GetShape ()));
             portOs.Add ("width", port->GetWidth ());
             portOs.Add ("height", port->GetHeight ());
-            portOs.Add ("domain", DomainToString (port->GetDomain ()));
+            const Domain portDomain = port->GetDomain ();
+            portOs.Add ("domain", DomainToString (portDomain));
             portOs.Add ("mepSystemId", CreateMEPSystemIdObjectState (port->GetMEPSystem ()));
             portOs.Add ("isPhysicallyConnected", port->IsPhysicallyConnected ());
+#ifdef ServerMainVers_3000
+            AddMEPEnumName (portOs, "connectionStyle", ConnectionStyleNames, port->GetConnectionStyle ());
+#endif
+
+            // The settings of the domain specific port classes. Cable carrier ports have none.
+            if (portDomain == Domain::Piping) {
+                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+                if (pipingPort.IsOk ()) {
+                    AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, pipingPort->GetFlowDirection ());
+#ifdef ServerMainVers_3000
+                    portOs.Add ("nominalSize", pipingPort->GetNominalSize ());
+#endif
+                }
+            } else if (portDomain == Domain::Ventilation) {
+                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+                if (ventilationPort.IsOk ()) {
+                    AddMEPEnumName (portOs, "flowDirection", FlowDirectionNames, ventilationPort->GetFlowDirection ());
+                }
+            }
 
             const std::optional<ACAPI::MEP::UniqueID> connectedPortId = port->GetConnectedPortId ();
             if (connectedPortId.has_value ()) {
@@ -1539,6 +1567,208 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         executionResults (success
             ? CreateSuccessfulExecutionResult ()
             : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify the routing element."));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+ModifyMEPPortsCommand::ModifyMEPPortsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPPortsCommand::GetName () const
+{
+    return "ModifyMEPPorts";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "portsData": {
+                "type": "array",
+                "description": "Array of data to modify MEP ports. Only provided fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "portId": {
+                            "$ref": "#/Guid",
+                            "description": "The port to modify, as returned by GetMEPPorts."
+                        },
+                        "shape": {
+                            "$ref": "#/MEPCrossSectionShape",
+                            "description": "New shape of the port."
+                        },
+                        "connectionStyle": {
+                            "$ref": "#/MEPConnectionStyle",
+                            "description": "New connection style of the port. Available from Archicad 30."
+                        },
+                        "flowDirection": {
+                            "$ref": "#/MEPFlowDirection",
+                            "description": "New flow direction of a piping or ventilation port."
+                        },
+                        "outerDiameter": {
+                            "type": "number",
+                            "description": "New outer diameter of a piping port."
+                        },
+                        "nominalSize": {
+                            "type": "string",
+                            "description": "New nominal size of a piping port. Available from Archicad 30."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "portId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "portsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> portsData;
+    if (!parameters.Get ("portsData", portsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'portsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& portData : portsData) {
+        GS::UniString portIdStr;
+        if (!portData.Get ("portId", portIdStr)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'portId' parameter."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID portId = Adapter::UniqueID (APIGuidFromString (portIdStr.ToCStr ()));
+        ACAPI::Result<Port> port = Port::Get (portId);
+        if (port.IsErr ()) {
+            executionResults (CreateFailedExecutionResult (port.UnwrapErr ().kind, "Failed to get the MEP port."));
+            continue;
+        }
+
+        // The values are checked before anything is changed.
+        GS::UniString shapeStr;
+        GS::UniString connectionStyleStr;
+        GS::UniString flowDirectionStr;
+        GS::UniString nominalSize;
+        double outerDiameter = 0.0;
+        const bool hasShape = portData.Get ("shape", shapeStr);
+        const bool hasConnectionStyle = portData.Get ("connectionStyle", connectionStyleStr);
+        const bool hasFlowDirection = portData.Get ("flowDirection", flowDirectionStr);
+        const bool hasNominalSize = portData.Get ("nominalSize", nominalSize);
+        const bool hasOuterDiameter = portData.Get ("outerDiameter", outerDiameter);
+        const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
+        const std::optional<ConnectionStyle> connectionStyle = MEPEnumFromString (ConnectionStyleNames, connectionStyleStr);
+        const std::optional<FlowDirection> flowDirection = MEPEnumFromString (FlowDirectionNames, flowDirectionStr);
+        if ((hasShape && !shape.has_value ()) ||
+            (hasConnectionStyle && !connectionStyle.has_value ()) ||
+            (hasFlowDirection && !flowDirection.has_value ())) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'shape', 'connectionStyle' or 'flowDirection' value."));
+            continue;
+        }
+#ifndef ServerMainVers_3000
+        if (hasConnectionStyle || hasNominalSize) {
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'connectionStyle' and 'nominalSize' require Archicad 30 or newer."));
+            continue;
+        }
+#endif
+
+        // Flow direction, outer diameter and nominal size live on the domain specific port classes.
+        const Domain domain = port->GetDomain ();
+        if ((hasFlowDirection && domain == Domain::CableCarrier) ||
+            ((hasOuterDiameter || hasNominalSize) && domain != Domain::Piping)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'flowDirection' needs a piping or ventilation port, 'outerDiameter' and 'nominalSize' need a piping port."));
+            continue;
+        }
+
+        bool success = true;
+
+        if (hasShape || hasConnectionStyle) {
+            bool settersSucceeded = true;
+            ACAPI::Result<void> result = port->Modify ([&](PortBase::Modifier& modifier) {
+                if (shape.has_value ()) {
+                    settersSucceeded &= modifier.SetShape (shape.value ()).IsOk ();
+                }
+#ifdef ServerMainVers_3000
+                if (connectionStyle.has_value ()) {
+                    settersSucceeded &= modifier.SetConnectionStyle (connectionStyle.value ()).IsOk ();
+                }
+#endif
+            }, "Modify MEP Port");
+            success &= result.IsOk () && settersSucceeded;
+        }
+
+        if (hasFlowDirection || hasOuterDiameter || hasNominalSize) {
+            bool settersSucceeded = true;
+            if (domain == Domain::Piping) {
+                ACAPI::Result<PipingPort> pipingPort = PipingPort::Get (portId);
+                if (pipingPort.IsErr ()) {
+                    success = false;
+                } else {
+                    ACAPI::Result<void> result = pipingPort->Modify ([&](PipingPort::Modifier& modifier) {
+                        if (flowDirection.has_value ()) {
+                            settersSucceeded &= modifier.SetFlowDirection (flowDirection.value ()).IsOk ();
+                        }
+                        if (hasOuterDiameter) {
+                            settersSucceeded &= modifier.SetOuterDiameter (outerDiameter).IsOk ();
+                        }
+#ifdef ServerMainVers_3000
+                        if (hasNominalSize) {
+                            settersSucceeded &= modifier.SetNominalSize (nominalSize).IsOk ();
+                        }
+#endif
+                    }, "Modify MEP Piping Port");
+                    success &= result.IsOk () && settersSucceeded;
+                }
+            } else {
+                ACAPI::Result<VentilationPort> ventilationPort = VentilationPort::Get (portId);
+                if (ventilationPort.IsErr ()) {
+                    success = false;
+                } else {
+                    ACAPI::Result<void> result = ventilationPort->Modify ([&](VentilationPort::Modifier& modifier) {
+                        if (flowDirection.has_value ()) {
+                            settersSucceeded &= modifier.SetFlowDirection (flowDirection.value ()).IsOk ();
+                        }
+                    }, "Modify MEP Ventilation Port");
+                    success &= result.IsOk () && settersSucceeded;
+                }
+            }
+        }
+
+        executionResults (success
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify the MEP port."));
     }
 
     return response;
