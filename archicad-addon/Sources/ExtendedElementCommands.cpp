@@ -8500,12 +8500,28 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
             GS::Array<GS::ObjectState> polygonArcs;
             GS::Array<GS::ObjectState> holes;
             GS::Array<GS::ObjectState> sublines;
-            const bool hasPolyGeom        = meshData->Get ("polygonCoordinates", polygonCoordinates);
+            const bool hasOutline         = meshData->Get ("polygonCoordinates", polygonCoordinates);
+            const bool hasPolygonArcs     = meshData->Get ("polygonArcs", polygonArcs);
+            const bool hasHoles           = meshData->Get ("holes", holes);
+            const bool hasPolyGeom        = hasOutline || hasPolygonArcs || hasHoles;
             const bool hasSublines        = meshData->Get ("sublines", sublines);
             const bool isClearingSublines = hasSublines && sublines.IsEmpty ();
-            if (hasPolyGeom) {
-                meshData->Get ("polygonArcs", polygonArcs);
-                meshData->Get ("holes", holes);
+            if (hasPolyGeom && !(hasOutline && hasHoles)) {
+                // The polygon memo is rebuilt as a whole, so the part not given in the request is
+                // taken from the current mesh, in the same format GetDetailsOfElements returns it:
+                // omitted holes are kept, and holes or arcs given alone apply to the current outline.
+                // Arcs of the current outline are only kept when the outline itself is kept.
+                GS::ObjectState currentGeometry;
+                AddPolygonWithHolesFromMemoCoords (elem.header.guid, currentGeometry, "polygonCoordinates", "polygonArcs", "holes", "polygonCoordinates", "polygonArcs", true);
+                if (!hasOutline) {
+                    currentGeometry.Get ("polygonCoordinates", polygonCoordinates);
+                    if (!hasPolygonArcs) {
+                        currentGeometry.Get ("polygonArcs", polygonArcs);
+                    }
+                }
+                if (!hasHoles) {
+                    currentGeometry.Get ("holes", holes);
+                }
             }
 
             API_ElementMemo memo = {};
