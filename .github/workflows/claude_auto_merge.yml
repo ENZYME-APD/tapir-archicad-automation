@@ -17,7 +17,10 @@ name: Auto Merge
 #   - the commit status `claude-review` on that head is a success, and has been
 #     for BOT_AUTO_MERGE_DELAY_HOURS (repository variable, default 72) - the
 #     time people get to look. claude_pr_review.yml sets it from its verdict,
-#     in a job that runs no model; no other job holds statuses: write;
+#     in a job that runs no model; only jobs that run no model hold
+#     statuses: write (claude_bot_pr_steward.yml's sweep and restart, which
+#     set their own `steward-fix` status - pending while a pull request
+#     waits for an earlier one, which holds the merge back like any check);
 #   - no review thread a person opened is unresolved, and no reviewer's latest
 #     review requests changes;
 #   - gates 2 and 3 hold, as for everyone: the release critical paths below
@@ -119,8 +122,9 @@ jobs:
           # candidates off the event. The event payloads carry no pull requests
           # for forks, and a sweep costs a handful of API calls - so this is
           # both simpler and the only version that works for outside
-          # contributions.
-          candidates=$(gh pr list --repo "$REPO" --state open --base main \
+          # contributions. `gh pr list` returns only the newest 30 without
+          # --limit, which left every older pull request unevaluated.
+          candidates=$(gh pr list --repo "$REPO" --state open --base main --limit 1000 \
             --json number --jq '.[].number')
 
           if [ -z "${candidates:-}" ]; then
@@ -265,8 +269,12 @@ jobs:
             # request with no checks at all is not merged either.
             # The latest run of each check counts: a build started again
             # replaces the run it superseded (cancelled) on the same commit.
+            # API Coverage is left out: it runs on pull_request_target only to
+            # refresh the checklist, never tests the pull request's code, and
+            # cancels itself on every newer event, so its check on a head is
+            # cancelled more often than not.
             raw=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket,workflow,startedAt 2>/dev/null || true)
-            checks=$(jq 'group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
+            checks=$(jq '[.[] | select(.workflow != "API Coverage")] | group_by([.workflow, .name]) | map(max_by(.startedAt // ""))' <<<"${raw:-[]}" 2>/dev/null || echo '[]')
             total=$(printf '%s' "$checks" | jq 'length')
             if [ "$total" -eq 0 ]; then
               echo "skip: no checks have reported yet"
@@ -292,7 +300,14 @@ jobs:
               echo "::endgroup::"; continue
             fi
 
-            # Conflicts, or a base branch that has moved on.
+            # Conflicts, or a base branch that has moved on. GitHub computes
+            # mergeability in the background and resets it whenever main moves,
+            # so the first read after a merge is often UNKNOWN: ask again.
+            for attempt in 1 2 3; do
+              [ "$mergeable" = "UNKNOWN" ] || break
+              sleep 5
+              mergeable=$(gh pr view "$pr" --repo "$REPO" --json mergeable --jq '.mergeable' 2>/dev/null || echo UNKNOWN)
+            done
             if [ "$mergeable" != "MERGEABLE" ]; then
               echo "skip: not mergeable (mergeable=$mergeable)"
               echo "::endgroup::"; continue

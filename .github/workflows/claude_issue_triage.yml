@@ -86,7 +86,7 @@ name: Claude Issue Triage
 # (claude_bot_pr_steward.yml) - draw on the one subscription, and a burst of
 # about 40 issues once spent it within the hour, after which every run failed
 # on its first turn and nothing ever started them again. So:
-# - At most CLAUDE_MAX_RUNS (repository variable, default 4) of them call the
+# - At most CLAUDE_MAX_RUNS (repository variable, default 8) of them call the
 #   model at a time. Each waits in its "Wait for a model slot" step, oldest
 #   first, until fewer than that many runs started before it are in progress,
 #   for at most two hours. It is a soft limit: runs that start in the same
@@ -242,10 +242,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do
@@ -690,10 +690,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do

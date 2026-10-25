@@ -72,7 +72,11 @@ name: Claude PR Review
 # Pull requests opened by the issue bot (claude_issue_triage.yml) are reviewed
 # too, through workflow_dispatch: the bot pushes with GITHUB_TOKEN, which starts
 # no pull_request_target run, so claude_bot_pr_steward.yml dispatches this
-# workflow for them. For those pull requests the review ends with a verdict for
+# workflow for them. The steward pushes a merge of main with its GitHub App
+# token, which does start one; that run is skipped (a bot's push to a bot pull
+# request), since the steward dispatches the review once the builds of the new
+# head are green. A person's push to such a pull request is still reviewed
+# here. For those pull requests the review ends with a verdict for
 # the reviewed commit, which the `verdict` job records as the commit status
 # `claude-review` (success = nothing blocking, failure = something to fix).
 # claude_bot_pr_steward.yml acts on a failure; claude_auto_merge.yml requires a
@@ -111,11 +115,16 @@ jobs:
     # cannot re-review itself in a loop. A person's comment on a bot pull
     # request does - that is how a tester's report reaches the verdict.
     # Pull requests of the Claude GitHub App (claude[bot]) stay excluded.
+    # A bot's push to the issue bot's pull request (the steward's merge of
+    # main, see the header) starts no review here: the steward starts it.
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.draft == false &&
-       github.event.pull_request.user.login != 'claude[bot]') ||
+       github.event.pull_request.user.login != 'claude[bot]' &&
+       !(github.event.sender.type == 'Bot' &&
+         github.event.pull_request.user.login == 'github-actions[bot]' &&
+         startsWith(github.event.pull_request.head.ref, 'claude/'))) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        github.event.issue.state == 'open' &&
@@ -291,10 +300,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '4' }}
+          MAX_RUNS: ${{ vars.CLAUDE_MAX_RUNS || '8' }}
         run: |
           set -euo pipefail
-          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=4 ;; esac
+          case "$MAX_RUNS" in ''|*[!0-9]*|0) MAX_RUNS=8 ;; esac
           me=$(gh api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq '.created_at')
           deadline=$((SECONDS + 7200))
           while :; do
@@ -400,6 +409,13 @@ jobs:
             finding in the summary instead, one line each, starting with its
             file:line.
 
+            Post the summary this way and no other: write it with the Write
+            tool to .review-context/summary.md, then run
+            `gh pr comment <PR NUMBER> --body-file .review-context/summary.md`.
+            Never pass it with --body, a heredoc or $(...): those are refused.
+            If that command fails, leave the file as it is - it is posted for
+            you after you finish.
+
             KEEP IT SHORT. A maintainer reads this between other work, and a
             review nobody finishes reading is a review that did not happen.
 
@@ -433,16 +449,28 @@ jobs:
             - A thread is SETTLED when the current diff fixes what it
               raised, or when a reply shows convincingly, against the code,
               that it was not a problem. A reply merely saying "fixed" or
-              "not an issue" is a claim to check, not proof. List every
+              "not an issue" is a claim to check, not proof. On a pull
+              request of the issue bot, the comment of its steward's fix run
+              (it ends with a `steward-fix-outcome` marker; read the
+              conversation with `gh pr view <PR NUMBER> --comments`) counts
+              as a reply on each finding it answers - check its reasons
+              against the code and main's tools/package_info.json like any
+              reply; a dispatched review may follow one that disputed your
+              findings, so judge them afresh. List every
               settled thread that is not yet resolved in the marker below;
               it is resolved automatically after you finish.
             - Do not post an inline comment again for a finding whose thread
               is still open - the summary line points to it instead.
             - If the triggering comment asks you something, answer it in the
               summary, briefly.
-            - If a comment started this run and there is nothing new - no
-              settled thread, no new finding, no question to answer - post
-              nothing at all.
+            - If a comment started this run (trigger.json has a comment)
+              and there is nothing new - no settled thread, no new finding,
+              no question to answer - post nothing at all.
+            - Any other run - a push, or a dispatched run with no comment -
+              ALWAYS posts the summary with both markers below, even when
+              nothing changed since the last review: the verdict is recorded
+              per commit, and without one the pull request is never merged
+              and the review is started again.
 
             End the summary comment with this line, listing the settled
             thread ids (or none):
@@ -480,7 +508,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model ${{ steps.pr.outputs.re_review == 'true' && (vars.CLAUDE_LIGHT_MODEL || 'sonnet') || (vars.CLAUDE_MODEL || 'opus') }}
-            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
+            --allowedTools "Read,Grep,Glob,Edit(./.review-context/summary.md),mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
 
       # What the run came to, in the job summary: the result message of its
       # execution file, with the error text of a failed run, so a failure can be
@@ -516,6 +544,13 @@ jobs:
             refused=true
           fi
           echo "Turns: $turns, refused: $refused"
+          # The action hides the model's output. A run that ends after a few
+          # turns without a summary is otherwise impossible to diagnose, so
+          # log which model ran and its final message.
+          jq -r '"subtype: \(.subtype // "none"), cost: \(.total_cost_usd // 0) USD, models: \((.modelUsage // {}) | keys | join(", ")), permission denials: \(.permission_denials_count // 0)"' <<<"$result"
+          echo "Final message (first 1500 characters):"
+          jq -r '.result // "(none)" | tostring' <<<"$result" | head -c 1500 | sed -E 's/sk-ant-[A-Za-z0-9_-]+/[redacted]/g'
+          echo
           echo "turns=$turns" >> "$GITHUB_OUTPUT"
           echo "refused=$refused" >> "$GITHUB_OUTPUT"
 
@@ -524,6 +559,34 @@ jobs:
         run: |
           echo "::error::The Claude API refused the run on its first turn (a used-up usage limit or an API error, see the job summary). It did nothing and posted nothing."
           exit 1
+
+      # Posts the summary the review wrote to its file, when the review did
+      # not post it itself: about a third of the dispatched reviews (38 of 98
+      # on 2026-10-19/20, on both models) posted no summary, and those runs
+      # had more refused commands than the ones that did; the steward counted
+      # each against the pull request. Only a file carrying this run's nonce
+      # counts, and only once.
+      - name: Post the summary the review wrote
+        if: always() && steps.pr.outputs.skip != 'true' && steps.result.outputs.refused != 'true'
+        env:
+          STARTED_AT: ${{ steps.pr.outputs.started_at }}
+          NONCE: ${{ steps.pr.outputs.nonce }}
+        run: |
+          set -euo pipefail
+          file=.review-context/summary.md
+          if [ ! -s "$file" ] || ! grep -qE "claude-review-verdict: (clean|blocking) $NONCE" "$file"; then
+            echo "No summary file with this run's verdict."
+            exit 0
+          fi
+          posted=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq "[.[] | select(.user.login == \"github-actions[bot]\" and .created_at >= \"$STARTED_AT\" and (.body | contains(\"$NONCE\")))] | length" \
+            | jq -s 'add // 0')
+          if [ "$posted" -gt 0 ]; then
+            echo "The review posted its summary itself."
+            exit 0
+          fi
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$file"
+          echo "Posted the summary the review left in $file."
 
       # Resolves what the review listed as settled - in shell, and only threads
       # this bot opened on this pull request, whatever the marker says.

@@ -41,8 +41,9 @@ name: Weekly Release
 #      which misses the version and docs commits this workflow pushed, and
 #      SignPath evaluates only a limited number of re-runs.
 #   6. When all artifacts are built, publish the draft release with
-#      auto-generated notes.
-#   7. Announce the published release in the project's Discord channel.
+#      auto-generated notes, led by the download links of the installers.
+#   7. Announce the published release in the project's Discord channel,
+#      also starting with the installer download links.
 #   8. Increment the patch version (tools/update_version.py) and commit, so
 #      development of the next version starts - the wiki's final step.
 #
@@ -568,6 +569,19 @@ jobs:
           fi
           NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
             -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          # Most users only want the installer, so the notes start with it.
+          # The links name this release's tag, not releases/latest, so they
+          # stay right after the next release. The asset names are the ones
+          # archicad_addon.yml uploads.
+          DOWNLOAD="$GITHUB_SERVER_URL/${{ github.repository }}/releases/download/$VERSION"
+          NOTES="## Download the Tapir Installer
+
+          - Windows: [TapirInstaller_Win.exe]($DOWNLOAD/TapirInstaller_Win.exe)
+          - macOS: [TapirInstaller_Mac.zip]($DOWNLOAD/TapirInstaller_Mac.zip)
+
+          The installer finds the installed Archicad versions and installs the matching Add-On.
+
+          $NOTES"
           # The Add-On pipeline releases the unsigned Windows installer when
           # signing fails (see archicad_addon.yml); its run on this commit
           # keeps the signed file as an artifact only when signing worked.
@@ -626,6 +640,7 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           VERSION: ${{ steps.plan.outputs.version }}
           RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.plan.outputs.version }}
+          DOWNLOAD_URL: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.plan.outputs.version }}
         run: |
           set -eu
           if [ -z "${DISCORD_BOT_TOKEN:-}" ]; then
@@ -645,10 +660,16 @@ jobs:
           CHANNEL = os.environ['DISCORD_RELEASE_CHANNEL_ID']
           VERSION = os.environ['VERSION']
           RELEASE_URL = os.environ['RELEASE_URL']
+          DOWNLOAD_URL = os.environ['DOWNLOAD_URL']
+          # The installer links come first, as in the release notes. The
+          # angle brackets keep Discord from adding a preview per link.
           CONTENT = (
               '**Tapir {} is out!** 🎉'
+              '\nDownload the Tapir Installer:'
+              '\n- Windows: <{}/TapirInstaller_Win.exe>'
+              '\n- macOS: <{}/TapirInstaller_Mac.zip>'
               '\nRelease notes and downloads for the Archicad Add-On and the '
-              'Grasshopper plugin: {}'.format(VERSION, RELEASE_URL)
+              'Grasshopper plugin: {}'.format(VERSION, DOWNLOAD_URL, DOWNLOAD_URL, RELEASE_URL)
           )
 
 
