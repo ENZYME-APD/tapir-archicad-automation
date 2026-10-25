@@ -4940,9 +4940,45 @@ GS::Optional<GS::UniString> MoveElementsCommand::GetRawResponseSchema () const
     })";
 }
 
+// ACAPI_Element_Edit also reports NoError and leaves the element untouched when
+// the element lives in a 2D database (worksheet, detail, layout, ...) that is
+// not the current one (#1473). Returns the name of that database, or nothing
+// when the element is in the current database, on the floor plan (model
+// elements are edited from the 3D, section, ... windows too, so they are left
+// as they were), or when its database cannot be determined.
+static GS::Optional<GS::UniString> GetOtherDatabaseOfElement (const API_Guid& elemGuid)
+{
+    API_DatabaseInfo currentDb = {};
+    if (ACAPI_Database_GetCurrentDatabase (&currentDb) != NoError) {
+        return GS::NoValue;
+    }
+
+    API_DatabaseInfo elemDb = {};
+    if (ACAPI_Database_GetContainingDatabase (&elemGuid, &elemDb) != NoError) {
+        return GS::NoValue;
+    }
+
+    // Fills in the type and the name of the database from its id, as
+    // GetContainingDatabases does.
+    if (ACAPI_Window_GetDatabaseInfo (&elemDb) != NoError) {
+        return GS::NoValue;
+    }
+
+    if (elemDb.typeID == APIWind_FloorPlanID) {
+        return GS::NoValue;
+    }
+
+    const DatabaseIdResolver& resolver = DatabaseIdResolver::Instance ();
+    if (resolver.GetIdOfDatabase (elemDb) == resolver.GetIdOfDatabase (currentDb)) {
+        return GS::NoValue;
+    }
+
+    return GS::UniString (elemDb.name);
+}
+
 // ACAPI_Element_Edit reports NoError for an element it is not allowed to edit
-// (hidden or locked layer, locked element, teamwork access) and leaves it
-// untouched, so the element is checked before the edit. Returns the failed
+// (hidden or locked layer, locked element, teamwork access, another database)
+// and leaves it untouched, so the element is checked before the edit. Returns the failed
 // execution result for an element that cannot be edited, and nothing when the
 // edit may go ahead. operation is the past participle of the edit ("moved").
 static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (const API_Guid& elemGuid, const char* operation)
@@ -4966,6 +5002,13 @@ static GS::Optional<GS::ObjectState> GetFailedExecutionResultIfNotEditable (cons
 
     if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
         return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The element was not %s, because it is not editable.", operation));
+    }
+
+    const GS::Optional<GS::UniString> otherDatabase = GetOtherDatabaseOfElement (elemGuid);
+    if (otherDatabase.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE,
+            GS::UniString::Printf ("The element was not %s, because it is in another database (%T) than the current one. Activate its window first (see GetContainingDatabases and ChangeWindow).",
+                operation, otherDatabase->ToPrintf ()));
     }
 
     return GS::NoValue;
