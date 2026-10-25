@@ -1401,6 +1401,14 @@ GSErrCode Initialize (void)
             teamworkCommands, "1.7.3",
             "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false."
         );
+        err |= RegisterCommand<UploadLibrariesToBIMcloudCommand> (
+            teamworkCommands, "1.7.3",
+            "Uploads local library folders or container files (.lcf) to a folder of a BIMcloud or Teamwork server, as BIMcloud libraries. Returns a result per library. Available from Archicad 29."
+        );
+        err |= RegisterCommand<RemoveLibrariesFromBIMcloudCommand> (
+            teamworkCommands, "1.7.3",
+            "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29."
+        );
         AddCommandGroup (teamworkCommands);
     }
 
