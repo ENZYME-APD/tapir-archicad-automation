@@ -1915,6 +1915,9 @@ GS::ObjectState SetMarkerLibraryPartOfElementsCommand::Execute (const GS::Object
             API_AddParType** addPars = nullptr;
             err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
             if (err != NoError || addPars == nullptr) {
+                if (addPars != nullptr) {
+                    ACAPI_DisposeAddParHdl (&addPars);
+                }
                 executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, GS::UniString::Printf ("Failed to get the parameters of library part '%T'", libName.ToPrintf ())));
                 continue;
             }
