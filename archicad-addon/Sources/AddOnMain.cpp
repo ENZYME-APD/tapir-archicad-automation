@@ -550,7 +550,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetZoneLabelingSettingsCommand> (
             elementCommands, "1.7.3",
-            "Turns the automatic labeling of Zones on or off. Available from Archicad 28."
+            "Turns the automatic labeling of Zones on or off and selects the Label Favorite it places. Only the given settings are changed. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetZoneLabelingSettingsCommand> (
+            elementCommands, "1.7.3",
+            "Returns whether the automatic labeling of Zones is on and the name of the Label Favorite it places. Available from Archicad 28."
         );
         err |= RegisterCommand<GetCollisionsCommand> (
             elementCommands, "1.2.2",

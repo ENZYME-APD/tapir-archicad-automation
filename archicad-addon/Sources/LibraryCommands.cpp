@@ -9,6 +9,7 @@
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Library/LibraryManager.hpp"
+#include "ACAPI/Library/LibPart.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
 
 #include <functional>
@@ -837,7 +838,12 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetRawResponseSchem
                         "index": { "type": "integer" },
                         "documentName": { "type": "string" },
                         "fileName": { "type": "string" },
-                        "typeId": { "$ref": "#/LibraryPartType" }
+                        "typeId": { "$ref": "#/LibraryPartType" },
+                        "type": {
+                            "type": "string",
+                            "enum": ["Object", "Image", "Text", "BinaryListCrit", "Other"],
+                            "description": "The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read."
+                        }
                     }
                 }
             },
@@ -888,6 +894,19 @@ static GS::UniString LibPartTypeIdToString (Int32 typeID)
     }
 }
 
+#ifdef ServerMainVers_2800
+static GS::UniString LibPartTypeToString (ACAPI::Library::LibPartType type)
+{
+    switch (type) {
+        case ACAPI::Library::LibPartType::Object:         return "Object";
+        case ACAPI::Library::LibPartType::Image:          return "Image";
+        case ACAPI::Library::LibPartType::Text:           return "Text";
+        case ACAPI::Library::LibPartType::BinaryListCrit: return "BinaryListCrit";
+        default:                                          return "Other";
+    }
+}
+#endif
+
 GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString filterTypeId;
@@ -912,6 +931,10 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
 
     Int32 skippedCount = 0;
     constexpr Int32 maxSkippedSample = 5;
+
+#ifdef ServerMainVers_2800
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+#endif
 
     for (Int32 i = 1; i <= partCount; ++i) {
         API_LibPart libPart = {};
@@ -939,6 +962,17 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
             entry.Add ("documentName", GS::UniString (libPart.docu_UName));
             entry.Add ("fileName", GS::UniString (libPart.file_UName));
             entry.Add ("typeId", typeId);
+#ifdef ServerMainVers_2800
+            if (libraryManager.IsOk ()) {
+                auto acLibPart = libraryManager->GetLibPartByName (GS::UniString (libPart.file_UName));
+                if (acLibPart.IsOk ()) {
+                    auto libPartType = acLibPart->GetType ();
+                    if (libPartType.IsOk ()) {
+                        entry.Add ("type", LibPartTypeToString (libPartType.Unwrap ()));
+                    }
+                }
+            }
+#endif
             libpartAdder (entry);
         }
 
