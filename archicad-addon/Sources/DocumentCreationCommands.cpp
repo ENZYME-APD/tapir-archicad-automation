@@ -1048,7 +1048,12 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "$ref": "#/Coordinate2D",
                             "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
                         },
-                        "clipPolygon": { "type": "array", "items": { "$ref": "#/Coordinate2D" }, "minItems": 3 }
+                        "clipPolygon": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3,
+                            "description": "Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["navigatorItemId", "position"]
