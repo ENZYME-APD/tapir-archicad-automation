@@ -392,10 +392,10 @@ static GS::ObjectState CreateOverriddenPenOrColorObjectState (const API_Overridd
 {
     GS::ObjectState os ("overridden", penOrColor.hasValue);
     if (penOrColor.hasValue) {
-        if (std::holds_alternative<API_PenIndex> (penOrColor.value)) {
-            os.Add ("penIndex", static_cast<Int32> (std::get<API_PenIndex> (penOrColor.value)));
+        if (penOrColor.value.IsType<API_PenIndex> ()) {
+            os.Add ("penIndex", static_cast<Int32> (penOrColor.value.Get<API_PenIndex> ()));
         } else {
-            os.Add ("color", CreateColorObjectState (std::get<API_RGBColor> (penOrColor.value)));
+            os.Add ("color", CreateColorObjectState (penOrColor.value.Get<API_RGBColor> ()));
         }
     }
     return os;
@@ -405,10 +405,10 @@ static GS::ObjectState CreateOverriddenSurfaceObjectState (const API_OverriddenA
 {
     GS::ObjectState os ("overridden", surface.hasValue);
     if (surface.hasValue) {
-        if (std::holds_alternative<API_AttributeIndex> (surface.value)) {
-            os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, std::get<API_AttributeIndex> (surface.value))));
+        if (surface.value.IsType<API_AttributeIndex> ()) {
+            os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, surface.value.Get<API_AttributeIndex> ())));
         } else {
-            os.Add ("color", CreateColorObjectState (std::get<API_RGBColor> (surface.value)));
+            os.Add ("color", CreateColorObjectState (surface.value.Get<API_RGBColor> ()));
         }
     }
     return os;

@@ -2,6 +2,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
