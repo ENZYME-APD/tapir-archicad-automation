@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 04:58 UTC",
+ "generatedAt": "2026-10-25 05:17 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 115,
-  "claimed": 717,
-  "in progress": 328,
+  "claimed": 675,
+  "in progress": 370,
   "done": 743
  },
  "items": [
@@ -37786,6 +37786,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -37813,6 +37821,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -37860,7 +37872,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -37997,6 +38018,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     },
@@ -38088,6 +38113,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
@@ -38252,7 +38285,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -38346,6 +38388,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -38441,6 +38491,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -38575,7 +38629,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -40142,6 +40205,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -40627,6 +40698,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -41268,7 +41343,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -41310,6 +41394,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -41523,6 +41615,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -42102,7 +42198,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -42144,6 +42249,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -42330,6 +42443,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -42876,7 +42993,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -43321,6 +43447,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -43566,6 +43700,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -43938,7 +44076,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -43960,6 +44107,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -43990,6 +44145,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -44386,6 +44545,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -44842,7 +45009,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -44859,6 +45035,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -45048,7 +45232,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -45150,6 +45343,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -45499,7 +45700,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -45622,6 +45832,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -45869,7 +46087,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -45889,6 +46116,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
@@ -46414,6 +46649,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -46840,7 +47079,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -46897,6 +47145,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -46951,7 +47207,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -47051,6 +47316,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -47078,6 +47351,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -47125,7 +47402,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -47225,6 +47511,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -47281,6 +47575,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -47484,7 +47782,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -48706,7 +49013,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -48769,6 +49085,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -48794,6 +49118,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -48926,7 +49254,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -48968,6 +49305,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -49454,6 +49799,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -50095,7 +50444,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -50137,6 +50495,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -50323,6 +50689,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -50869,7 +51239,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -50911,6 +51290,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -51124,6 +51511,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -51703,7 +52094,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -51743,6 +52143,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -51989,6 +52397,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -52361,7 +52773,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -52381,6 +52802,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -52427,9 +52852,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52448,9 +52878,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52535,9 +52970,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52556,9 +52996,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52580,9 +53025,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52623,9 +53073,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52775,9 +53230,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52843,6 +53303,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -52937,9 +53405,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52961,9 +53434,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53078,9 +53556,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53283,9 +53766,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53350,9 +53842,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53398,9 +53895,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53555,9 +54057,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53596,9 +54107,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54059,6 +54575,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     },
@@ -54172,6 +54692,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
@@ -54339,7 +54867,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -54377,6 +54914,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -54404,6 +54949,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -54660,6 +55209,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -54705,9 +55262,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54733,6 +55299,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -54751,9 +55321,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54847,9 +55426,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54916,7 +55504,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -54974,9 +55571,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55077,9 +55683,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55099,9 +55714,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55140,9 +55764,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55210,9 +55843,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55236,7 +55878,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -55293,9 +55944,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55321,6 +55981,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -55339,9 +56003,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55380,9 +56053,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55445,9 +56127,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55485,9 +56176,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55507,9 +56207,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55548,9 +56257,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55613,9 +56331,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55639,7 +56366,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -55715,6 +56451,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -55786,6 +56530,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -55903,9 +56651,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56081,9 +56838,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56131,7 +56897,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -56332,9 +57107,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56444,6 +57228,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -56509,9 +57301,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56611,6 +57412,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -56864,9 +57669,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57080,7 +57894,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -57138,9 +57961,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57240,6 +58072,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -57407,9 +58243,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57623,7 +58468,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -57729,6 +58583,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -57754,6 +58616,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -57819,6 +58685,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
@@ -57978,7 +58852,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -57997,6 +58880,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -58024,6 +58915,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -58110,7 +59005,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -58213,6 +59117,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -58240,6 +59152,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -58287,7 +59203,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -58387,6 +59312,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -58433,6 +59366,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
     {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
@@ -58681,7 +59618,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
+     "number": 1457,
+     "title": "[1/6] MEP routing elements: floor plan display settings, connection style, transition placement"
+    }
+   ],
    "issues": []
   },
   {
@@ -58926,6 +59872,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    },
+    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -58971,9 +59921,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -59034,9 +59989,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -59077,9 +60037,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -59206,9 +60171,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1458,
+     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
