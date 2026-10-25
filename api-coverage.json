@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 10:07 UTC",
+ "generatedAt": "2026-10-25 11:12 UTC",
  "versions": [
   25,
   26,
@@ -4616,6 +4616,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1470,
+     "title": "Report failed creation transactions instead of returning element results"
+    },
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
