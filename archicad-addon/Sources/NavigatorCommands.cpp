@@ -2036,7 +2036,10 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "navigatorItemId": { "$ref": "#/NavigatorItemId" },
-            "newName":         { "type": "string" },
+            "newName": {
+                "type": "string",
+                "description": "The new name of the item. On the Layout Book item of a placed Drawing it is also set as the custom name of the Drawing (nameType CustomName)."
+            },
             "newId": {
                 "type": "string",
                 "description": "The new ID of the item. On a layout it is the custom layout number (customLayoutNumbering is switched on); on any other item it is the custom ID of the navigator item (customUiId becomes true)."
@@ -2089,6 +2092,72 @@ static bool IsProjectMapItem (const API_Guid& guid)
         return false;
     }
     return ContainsNavigatorItem (rootItem, API_ProjectMap, guid);
+}
+
+// Renames the Drawing element of a placed Drawing's Layout Book item in the current database.
+// Sets found to false when the item's guid is not a Drawing element of that database.
+static GSErrCode RenameDrawingElementInCurrentDatabase (const API_Guid& guid, const char* drawingName, bool& found)
+{
+    found = false;
+    API_Element elem = {};
+    elem.header.guid = guid;
+    if (ACAPI_Element_Get (&elem) != NoError || GetElemTypeId (elem.header) != API_DrawingID) {
+        return NoError;
+    }
+    found = true;
+
+    CHTruncate (drawingName, elem.drawing.name, GS::ArraySize (elem.drawing.name));
+    elem.drawing.nameType = APIName_CustomName;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, name);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, nameType);
+    GSErrCode err = ACAPI_Element_Change (&elem, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element changedElem = {};
+    changedElem.header.guid = guid;
+    err = ACAPI_Element_Get (&changedElem);
+    if (err != NoError) {
+        return err;
+    }
+    if (changedElem.drawing.nameType != APIName_CustomName || GS::UniString (changedElem.drawing.name) != GS::UniString (elem.drawing.name)) {
+        return APIERR_REFUSEDPAR;
+    }
+    return NoError;
+}
+
+// A Drawing placed on a layout has its own name (API_DrawingType::name and nameType), which
+// GetDetailsOfElements, the Drawing Settings and the Drawing's title read, while
+// ACAPI_Navigator_ChangeNavigatorItem only renames its Layout Book item (#1479). So the new name
+// is written to the Drawing too, as a custom name, as renaming it in the Navigator does in Archicad.
+// The Drawing is looked up by the item's guid, first in the current database and then in the
+// database of the item.
+static GSErrCode RenameDrawingOfNavigatorItem (const API_NavigatorItem& navItem, const GS::UniString& newName, bool& found)
+{
+    const GS::UniString::CStr drawingName = newName.ToCStr ();
+    found = false;
+    GSErrCode err = NoError;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
+        err = RenameDrawingElementInCurrentDatabase (navItem.guid, drawingName.Get (), found);
+        if (found) {
+            return err;
+        }
+
+        API_DatabaseInfo startDb  = {};
+        API_DatabaseInfo targetDb = navItem.db;
+        if (ACAPI_Database_GetCurrentDatabase (&startDb) == NoError &&
+            ACAPI_Window_GetDatabaseInfo      (&targetDb) == NoError &&
+            ACAPI_Database_ChangeCurrentDatabase (&targetDb) == NoError)
+        {
+            err = RenameDrawingElementInCurrentDatabase (navItem.guid, drawingName.Get (), found);
+            ACAPI_Database_ChangeCurrentDatabase (&startDb);
+        }
+        return err;
+    });
+    return undoErr != NoError ? undoErr : err;
 }
 
 GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -2173,6 +2242,19 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (hasNewItemId && GS::UniString (changedItem.uiId) != GS::UniString (navItem.uiId)) {
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not apply the new ID. The ID of this navigator item cannot be changed by this command.");
+        }
+    }
+
+    if (hasNewName && navItem.itemType == API_DrawingNavItem) {
+        bool drawingFound = false;
+        err = RenameDrawingOfNavigatorItem (navItem, newName, drawingFound);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err,
+                "The Layout Book item was renamed, but Archicad did not apply the new name to its Drawing. Set the Drawing's customName with SetDetailsOfElements.");
+        }
+        if (!drawingFound) {
+            return CreateFailedExecutionResult (APIERR_BADID,
+                "The Layout Book item was renamed, but its Drawing element was not found, so the Drawing keeps its old name. Set the Drawing's customName with SetDetailsOfElements.");
         }
     }
 
