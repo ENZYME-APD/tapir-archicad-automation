@@ -3661,7 +3661,8 @@
             "FlexibleSegment",
             "TakeOff",
             "ElectricalPanel",
-            "ElectricalDevice"
+            "ElectricalDevice",
+            "ElectricalCircuit"
         ]
     },
     "DrawingNameType": {
@@ -6808,12 +6809,61 @@
             },
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "physicalSystemIds": {
+                "type": "array",
+                "description": "The physical systems of the distribution system. From Archicad 29; missing when Archicad could not tell.",
+                "items": {
+                    "$ref": "#/MEPPhysicalSystemId"
+                }
+            },
+            "tree": {
+                "type": "array",
+                "description": "The elements of the system from its root element on, in the order Archicad traverses them. Only returned when includeTree is true, and missing when Archicad could not traverse the system.",
+                "items": {
+                    "$ref": "#/MEPDistributionSystemTreeNode"
+                }
             }
         },
         "additionalProperties": false,
         "required": [
             "domain",
             "elements"
+        ]
+    },
+    "MEPDistributionSystemTreeNode": {
+        "type": "object",
+        "description": "An element of a distribution system tree.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "depth": {
+                "type": "integer",
+                "description": "The number of steps from the root element; 0 for the root element."
+            },
+            "previousElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element before this one on the way from the root element. Missing for the root element."
+            },
+            "connectedPortIdOfPreviousElement": {
+                "type": "string",
+                "description": "The port of the previous element this element is connected to (see GetMEPPorts). Missing when Archicad gives none."
+            },
+            "connectedPortIdOfThisElement": {
+                "type": "string",
+                "description": "The port of this element that is connected to the previous element (see GetMEPPorts). Missing when Archicad gives none."
+            },
+            "nextElements": {
+                "$ref": "#/Elements",
+                "description": "The elements after this one, away from the root element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "depth",
+            "nextElements"
         ]
     },
     "MEPPreferenceTable": {
