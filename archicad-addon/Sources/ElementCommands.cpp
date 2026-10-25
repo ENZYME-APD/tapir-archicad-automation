@@ -1884,6 +1884,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
                 typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
                 typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                // Not the source view: once the Drawing exists Archicad reports its own link id
+                // here, which navigator commands do not accept (#1480).
                 typeSpecificDetails.Add ("navigatorItemId", CreateGuidObjectState (elem.drawing.drawingGuid));
                 typeSpecificDetails.Add ("bounds", GS::ObjectState (
                     "xMin", elem.drawing.bounds.xMin,
