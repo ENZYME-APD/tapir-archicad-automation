@@ -471,8 +471,8 @@ static GS::Optional<GS::UniString> FindProjectInfoAutoTextKey (const GS::Array<G
 }
 
 // The name a project info field shows on the UI, by its autotext key: the way back from the key
-// to the field of the Project Info API (see FindProjectInfoAutoTextKey). The key is the caller's
-// choice, so no filter: the key of another kind of autotext matches no field afterwards.
+// to the field of the Project Info API (see FindProjectInfoAutoTextKey). The caller checks the key
+// with IsProjectInfoOrCustomAutoTextId first, as another autotext may share a field's name.
 static GS::Optional<GS::UniString> FindProjectInfoAutoTextName (const GS::Array<GS::ArrayFB<GS::UniString, 3>>& autoTexts, const GS::UniString& autoTextKey)
 {
     for (const auto& autoText : autoTexts) {
@@ -752,6 +752,9 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             if (!projectInfoValue.IsEmpty ()) {
                 err = ACAPI_ProjectInfo_SetFieldValue (fieldGuid, projectInfoValue);
                 if (err != NoError) {
+                    // The item is reported as an error, so the field it created is removed again
+                    // rather than left behind empty with no id for the caller to find it by.
+                    ACAPI_ProjectInfo_DeleteField (fieldGuid);
                     fieldsAdder (CreateProjectInfoErrorResponse (err, "Failed to set the initial value of the project information field"));
                     continue;
                 }
@@ -888,6 +891,13 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
 #ifdef ServerMainVers_3000
             if (autoTextsErr != NoError) {
                 executionResults (CreateFailedExecutionResult (autoTextsErr, "Failed to retrieve the project info fields."));
+                continue;
+            }
+
+            // Only the key of a project info or custom autotext may lead to a field: another
+            // autotext (a date or story one, say) could share a custom field's name.
+            if (!IsProjectInfoOrCustomAutoTextId (projectInfoId)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The id is not the id of a project info field."));
                 continue;
             }
 
