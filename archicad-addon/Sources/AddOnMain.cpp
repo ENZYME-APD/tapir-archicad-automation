@@ -1495,6 +1495,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetActiveRenovationFilterCommand> (
             navigatorCommands, "1.7.3",
             "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings."
+        );
         err |= RegisterCommand<GetStructureDisplayCommand> (
             navigatorCommands, "1.7.2",
             "Gets the Partial Structure Display (EntireStructure, CoreOnly, WithoutFinishes or StructureOnly) of the current window, and whether it is the 3D window. This is the setting of the window itself, not the one stored in a saved view (see GetViewSettings). Available from Archicad 27."
