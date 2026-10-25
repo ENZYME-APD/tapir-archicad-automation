@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 14:34 UTC",
+ "generatedAt": "2026-10-25 16:54 UTC",
  "versions": [
   25,
   26,
@@ -6931,7 +6931,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1471,
+     "title": "Leave sub-element objects out of GetAllElements, as GetElementsByType does"
+    }
+   ],
    "issues": []
   },
   {
@@ -8529,6 +8534,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1471,
+     "title": "Leave sub-element objects out of GetAllElements, as GetElementsByType does"
+    },
+    {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
     },
@@ -9217,6 +9226,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1471,
+     "title": "Leave sub-element objects out of GetAllElements, as GetElementsByType does"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
