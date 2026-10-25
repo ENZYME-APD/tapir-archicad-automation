@@ -5358,9 +5358,59 @@ GS::String SetOpeningDetailsCommand::GetName () const
     return "SetOpeningDetails";
 }
 
+// The extrusion parameters accepted by SetOpeningDetails, SetOpeningDefault and PlaceOpenings.
+static const char* OpeningExtrusionParametersInputSchema = R"({
+    "type": "object",
+    "description": "The size and extrusion settings to change, with the names GetOpeningDetails returns. The ones left out are not changed.",
+    "properties": {
+        "constraint": {
+            "type": "string",
+            "enum": ["ForcedVertical", "ForcedHorizontal", "Aligned", "Free"],
+            "description": "How the opening's orientation is constrained."
+        },
+        "limitType": {
+            "type": "string",
+            "enum": ["Infinite", "Finite", "HalfInfinite"],
+            "description": "How far the opening's extrusion reaches."
+        },
+        "linkedStatus": {
+            "type": "string",
+            "enum": ["Linked", "NotLinked"],
+            "description": "Whether the opening is linked to its parent element."
+        },
+        "shapeType": {
+            "type": "string",
+            "enum": ["Rectangular", "Circular", "Polygonal"],
+            "description": "The shape of the opening's polygon."
+        },
+        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "anchor": {
+            "type": "string",
+            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
+            "description": "The anchor point of the opening's polygon."
+        },
+        "anchorAltitude": { "type": "number" },
+        "extrusionStartOffset": { "type": "number" },
+        "finiteBodyLength": { "type": "number" },
+        "isExtrusionSurfaceOverridden": { "type": "boolean" },
+        "extrusionSurfaceId": {
+            "$ref": "#/AttributeId",
+            "description": "The surface of the extrusion faces. Only used when the surface is overridden."
+        },
+        "isEndSurfaceOverridden": { "type": "boolean" },
+        "endSurfaceId": {
+            "$ref": "#/AttributeId",
+            "description": "The surface of the end faces. Only used when the surface is overridden."
+        },
+        "areOverriddenSurfacesLinked": { "type": "boolean" }
+    },
+    "additionalProperties": false
+})";
+
 GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "openingsWithDetails": {
@@ -5397,54 +5447,7 @@ GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema (
                             "minItems": 12,
                             "maxItems": 12
                         },
-                        "extrusionParameters": {
-                            "type": "object",
-                            "description": "The size and extrusion settings to change, with the same names GetOpeningDetails returns.",
-                            "properties": {
-                                "constraint": {
-                                    "type": "string",
-                                    "enum": ["ForcedVertical", "ForcedHorizontal", "Aligned", "Free"],
-                                    "description": "How the opening's orientation is constrained."
-                                },
-                                "limitType": {
-                                    "type": "string",
-                                    "enum": ["Infinite", "Finite", "HalfInfinite"],
-                                    "description": "How far the opening's extrusion reaches."
-                                },
-                                "linkedStatus": {
-                                    "type": "string",
-                                    "enum": ["Linked", "NotLinked"],
-                                    "description": "Whether the opening is linked to its parent element."
-                                },
-                                "shapeType": {
-                                    "type": "string",
-                                    "enum": ["Rectangular", "Circular", "Polygonal"],
-                                    "description": "The shape of the opening's polygon."
-                                },
-                                "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                                "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                                "anchor": {
-                                    "type": "string",
-                                    "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
-                                    "description": "The anchor point of the opening's polygon."
-                                },
-                                "anchorAltitude": { "type": "number" },
-                                "extrusionStartOffset": { "type": "number" },
-                                "finiteBodyLength": { "type": "number" },
-                                "isExtrusionSurfaceOverridden": { "type": "boolean" },
-                                "extrusionSurfaceId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The surface of the extrusion faces. Only used when the surface is overridden."
-                                },
-                                "isEndSurfaceOverridden": { "type": "boolean" },
-                                "endSurfaceId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The surface of the end faces. Only used when the surface is overridden."
-                                },
-                                "areOverriddenSurfacesLinked": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
-                        }
+                        "extrusionParameters": )") + OpeningExtrusionParametersInputSchema + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -5501,6 +5504,108 @@ static GS::Optional<GS::UniString> GetSurfaceIndex (const GS::ObjectState& os, c
     }
     index = surfaceIndex;
     return GS::NoValue;
+}
+
+// The extrusion parameters to change, with the names GetOpeningDetails returns. Used by
+// SetOpeningDetails, SetOpeningDefault and PlaceOpenings, so all three accept the same keys.
+// The surfaces and enums are read and checked before anything is touched; the numbers and
+// flags are read from data while applying.
+struct OpeningExtrusionParametersChange {
+    GS::ObjectState                     data;
+    std::optional<API_AttributeIndex>   extrusionSurfaceIndex;
+    std::optional<API_AttributeIndex>   endSurfaceIndex;
+    std::optional<OpeningConstraint>    constraint;
+    std::optional<OpeningLimitType>     limitType;
+    std::optional<OpeningLinkedStatus>  linkedStatus;
+    std::optional<OpeningShapeType>     shapeType;
+};
+
+static GS::Optional<GS::UniString> GetOpeningExtrusionParametersChange (const GS::ObjectState& os, OpeningExtrusionParametersChange& change)
+{
+    change.data = os;
+    GS::Optional<GS::UniString> inputError = GetSurfaceIndex (os, "extrusionSurfaceId", change.extrusionSurfaceIndex);
+    if (!inputError.HasValue ()) {
+        inputError = GetSurfaceIndex (os, "endSurfaceId", change.endSurfaceIndex);
+    }
+    if (!inputError.HasValue ()) {
+        inputError = GetOpeningEnum (os, "constraint", OpeningConstraintNames, change.constraint);
+    }
+    if (!inputError.HasValue ()) {
+        inputError = GetOpeningEnum (os, "limitType", OpeningLimitTypeNames, change.limitType);
+    }
+    if (!inputError.HasValue ()) {
+        inputError = GetOpeningEnum (os, "linkedStatus", OpeningLinkedStatusNames, change.linkedStatus);
+    }
+    if (!inputError.HasValue ()) {
+        inputError = GetOpeningEnum (os, "shapeType", OpeningShapeTypeNames, change.shapeType);
+    }
+    return inputError;
+}
+
+// Applies the switches first, so the sizes and offsets after them apply to the new constraint,
+// limit and shape. The first change that Archicad refuses stops the rest; the ones made before it stay.
+static GS::Optional<GS::UniString> ApplyOpeningExtrusionParametersChange (ACAPI::Element::ModifiableOpeningExtrusionParameters& extrusionParameters, const OpeningExtrusionParametersChange& change, GSErrCode& error)
+{
+    const GS::ObjectState& extrusionData = change.data;
+    GS::Optional<GS::UniString> failure;
+    const auto check = [&] (ACAPI::Result<void> result, const char* what) -> bool {
+        if (result.IsErr ()) {
+            error = result.UnwrapErr ().kind;
+            failure = GS::UniString::Printf ("Failed to set %s of the opening: ", what) + GS::UniString (result.UnwrapErr ().text.c_str ());
+            return false;
+        }
+        return true;
+    };
+
+    if (change.constraint.has_value () && !check (extrusionParameters.SetConstraint (*change.constraint), "the constraint")) {
+        return failure;
+    }
+    if (change.limitType.has_value ()) {
+        extrusionParameters.SetLimitType (*change.limitType);
+    }
+    if (change.linkedStatus.has_value () && !check (extrusionParameters.SetLinkedStatus (*change.linkedStatus), "the linked status")) {
+        return failure;
+    }
+    if (change.shapeType.has_value ()) {
+        extrusionParameters.SetShapeType (*change.shapeType);
+    }
+    double value = 0.0;
+    if (extrusionData.Get ("width", value) && !check (extrusionParameters.SetWidth (value), "the width")) {
+        return failure;
+    }
+    if (extrusionData.Get ("height", value) && !check (extrusionParameters.SetHeight (value), "the height")) {
+        return failure;
+    }
+    GS::UniString anchor;
+    if (extrusionData.Get ("anchor", anchor)) {
+        extrusionParameters.SetAnchor (AnchorIdFromString (anchor));
+    }
+    if (extrusionData.Get ("anchorAltitude", value) && !check (extrusionParameters.SetAnchorAltitude (value), "the anchor altitude")) {
+        return failure;
+    }
+    if (extrusionData.Get ("extrusionStartOffset", value) && !check (extrusionParameters.SetExtrusionStartOffset (value), "the extrusion start offset")) {
+        return failure;
+    }
+    if (extrusionData.Get ("finiteBodyLength", value) && !check (extrusionParameters.SetFiniteBodyLength (value), "the finite body length")) {
+        return failure;
+    }
+    bool flag = false;
+    if (extrusionData.Get ("isExtrusionSurfaceOverridden", flag)) {
+        extrusionParameters.SetExtrusionSurfaceAttributeOverridden (flag);
+    }
+    if (change.extrusionSurfaceIndex.has_value ()) {
+        extrusionParameters.SetOverriddenExtrusionSurfaceAttributeIndex (*change.extrusionSurfaceIndex);
+    }
+    if (extrusionData.Get ("isEndSurfaceOverridden", flag)) {
+        extrusionParameters.SetEndSurfaceAttributeOverridden (flag);
+    }
+    if (change.endSurfaceIndex.has_value ()) {
+        extrusionParameters.SetOverriddenEndSurfaceAttributeIndex (*change.endSurfaceIndex);
+    }
+    if (extrusionData.Get ("areOverriddenSurfacesLinked", flag)) {
+        extrusionParameters.SetOverriddenSurfaceAttributesLinked (flag);
+    }
+    return failure;
 }
 
 static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
@@ -5561,29 +5666,9 @@ static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
 
     GS::ObjectState extrusionData;
     const bool hasExtrusionData = data.Get ("extrusionParameters", extrusionData);
-    std::optional<API_AttributeIndex> extrusionSurfaceIndex;
-    std::optional<API_AttributeIndex> endSurfaceIndex;
-    std::optional<OpeningConstraint> constraint;
-    std::optional<OpeningLimitType> limitType;
-    std::optional<OpeningLinkedStatus> linkedStatus;
-    std::optional<OpeningShapeType> shapeType;
+    OpeningExtrusionParametersChange extrusionChange;
     if (hasExtrusionData) {
-        GS::Optional<GS::UniString> inputError = GetSurfaceIndex (extrusionData, "extrusionSurfaceId", extrusionSurfaceIndex);
-        if (!inputError.HasValue ()) {
-            inputError = GetSurfaceIndex (extrusionData, "endSurfaceId", endSurfaceIndex);
-        }
-        if (!inputError.HasValue ()) {
-            inputError = GetOpeningEnum (extrusionData, "constraint", OpeningConstraintNames, constraint);
-        }
-        if (!inputError.HasValue ()) {
-            inputError = GetOpeningEnum (extrusionData, "limitType", OpeningLimitTypeNames, limitType);
-        }
-        if (!inputError.HasValue ()) {
-            inputError = GetOpeningEnum (extrusionData, "linkedStatus", OpeningLinkedStatusNames, linkedStatus);
-        }
-        if (!inputError.HasValue ()) {
-            inputError = GetOpeningEnum (extrusionData, "shapeType", OpeningShapeTypeNames, shapeType);
-        }
+        const GS::Optional<GS::UniString> inputError = GetOpeningExtrusionParametersChange (extrusionData, extrusionChange);
         if (inputError.HasValue ()) {
             return CreateFailedExecutionResult (APIERR_BADPARS, inputError.Get ());
         }
@@ -5618,54 +5703,10 @@ static GS::ObjectState SetOpeningDetails (const GS::ObjectState& data)
 
         if (hasExtrusionData) {
             auto&& extrusionParameters = modifier.GetExtrusionParameters ();
-            // The switches first, so the sizes and offsets below apply to the new constraint, limit and shape.
-            if (constraint.has_value () && !check (extrusionParameters.SetConstraint (*constraint), "the constraint")) {
+            const GS::Optional<GS::UniString> extrusionFailure = ApplyOpeningExtrusionParametersChange (extrusionParameters, extrusionChange, failedError);
+            if (extrusionFailure.HasValue ()) {
+                failedMessage = extrusionFailure.Get ();
                 return;
-            }
-            if (limitType.has_value ()) {
-                extrusionParameters.SetLimitType (*limitType);
-            }
-            if (linkedStatus.has_value () && !check (extrusionParameters.SetLinkedStatus (*linkedStatus), "the linked status")) {
-                return;
-            }
-            if (shapeType.has_value ()) {
-                extrusionParameters.SetShapeType (*shapeType);
-            }
-            double value = 0.0;
-            if (extrusionData.Get ("width", value) && !check (extrusionParameters.SetWidth (value), "the width")) {
-                return;
-            }
-            if (extrusionData.Get ("height", value) && !check (extrusionParameters.SetHeight (value), "the height")) {
-                return;
-            }
-            GS::UniString anchor;
-            if (extrusionData.Get ("anchor", anchor)) {
-                extrusionParameters.SetAnchor (AnchorIdFromString (anchor));
-            }
-            if (extrusionData.Get ("anchorAltitude", value) && !check (extrusionParameters.SetAnchorAltitude (value), "the anchor altitude")) {
-                return;
-            }
-            if (extrusionData.Get ("extrusionStartOffset", value) && !check (extrusionParameters.SetExtrusionStartOffset (value), "the extrusion start offset")) {
-                return;
-            }
-            if (extrusionData.Get ("finiteBodyLength", value) && !check (extrusionParameters.SetFiniteBodyLength (value), "the finite body length")) {
-                return;
-            }
-            bool flag = false;
-            if (extrusionData.Get ("isExtrusionSurfaceOverridden", flag)) {
-                extrusionParameters.SetExtrusionSurfaceAttributeOverridden (flag);
-            }
-            if (extrusionSurfaceIndex.has_value ()) {
-                extrusionParameters.SetOverriddenExtrusionSurfaceAttributeIndex (*extrusionSurfaceIndex);
-            }
-            if (extrusionData.Get ("isEndSurfaceOverridden", flag)) {
-                extrusionParameters.SetEndSurfaceAttributeOverridden (flag);
-            }
-            if (endSurfaceIndex.has_value ()) {
-                extrusionParameters.SetOverriddenEndSurfaceAttributeIndex (*endSurfaceIndex);
-            }
-            if (extrusionData.Get ("areOverriddenSurfacesLinked", flag)) {
-                extrusionParameters.SetOverriddenSurfaceAttributesLinked (flag);
             }
         }
 
@@ -9509,6 +9550,273 @@ GS::ObjectState GetOpeningDefaultCommand::Execute (const GS::ObjectState& /*para
     response.Add ("floorPlanParameters", CreateOpeningFloorPlanParametersObjectState (openingDefault->GetFloorPlanParameters ()));
     return response;
 #else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+// The Opening tool settings taken by SetOpeningDefault and by each opening of PlaceOpenings,
+// with the names GetOpeningDefault returns.
+static GS::UniString GetOpeningSettingsInputSchemaProperties ()
+{
+    return GS::UniString (R"(
+        "extrusionParameters": )") + OpeningExtrusionParametersInputSchema + R"(,
+        "floorPlanParameters": {
+            "type": "object",
+            "description": "The floor plan settings to change, with the names GetOpeningDefault returns. The ones left out are not changed.",
+            "properties": {)" + OpeningFloorPlanParametersSchemaProperties + R"(,
+                "clearCutSymbol": { "type": "boolean", "description": "Removes the cut symbol. Cannot be given together with cutSymbolLibPartId." },
+                "clearUnCutSymbol": { "type": "boolean", "description": "Removes the uncut symbol. Cannot be given together with unCutSymbolLibPartId." }
+            },
+            "additionalProperties": false
+        })";
+}
+
+#ifdef ServerMainVers_2900
+struct OpeningSettingsChange {
+    bool                                hasExtrusionParameters = false;
+    OpeningExtrusionParametersChange    extrusionParameters;
+    bool                                hasFloorPlanParameters = false;
+    OpeningFloorPlanParametersChange    floorPlanParameters;
+};
+
+// Returns an error message when a setting is not valid. Nothing is changed by reading them.
+static GS::Optional<GS::UniString> GetOpeningSettingsChange (const GS::ObjectState& os, OpeningSettingsChange& change)
+{
+    GS::ObjectState extrusionData;
+    if (os.Get ("extrusionParameters", extrusionData)) {
+        change.hasExtrusionParameters = true;
+        const GS::Optional<GS::UniString> error = GetOpeningExtrusionParametersChange (extrusionData, change.extrusionParameters);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    GS::ObjectState floorPlanData;
+    if (os.Get ("floorPlanParameters", floorPlanData)) {
+        change.hasFloorPlanParameters = true;
+        return GetOpeningFloorPlanParametersChange (floorPlanData, change.floorPlanParameters);
+    }
+    return GS::NoValue;
+}
+
+// Changes the given in-memory copy of the Opening tool settings, not the tool's settings
+// themselves (OpeningDefault::Modify does not touch the project). Returns an error response
+// when Archicad refuses a setting.
+static GS::Optional<GS::ObjectState> ApplyOpeningSettingsChange (ACAPI::Result<ACAPI::Element::OpeningDefault>& openingDefault, const OpeningSettingsChange& change)
+{
+    using ACAPI::Element::OpeningDefault;
+
+    if (!change.hasExtrusionParameters && !change.hasFloorPlanParameters) {
+        return GS::NoValue;
+    }
+
+    GSErrCode failedError = NoError;
+    GS::Optional<GS::UniString> failedMessage;
+    ACAPI::Result<void> modifyResult = openingDefault->Modify ([&] (OpeningDefault::Modifier& modifier) {
+        if (change.hasExtrusionParameters) {
+            auto&& extrusionParameters = modifier.GetExtrusionParameters ();
+            failedMessage = ApplyOpeningExtrusionParametersChange (extrusionParameters, change.extrusionParameters, failedError);
+            if (failedMessage.HasValue ()) {
+                return;
+            }
+        }
+        if (change.hasFloorPlanParameters) {
+            auto&& floorPlanParameters = modifier.GetFloorPlanParameters ();
+            failedMessage = ApplyOpeningFloorPlanParametersChange (floorPlanParameters, change.floorPlanParameters, failedError);
+        }
+    });
+
+    if (failedMessage.HasValue ()) {
+        return CreateErrorResponse (failedError, failedMessage.Get ());
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateErrorResponse (modifyResult.UnwrapErr ().kind, "Failed to change the Opening tool settings: " + GS::UniString (modifyResult.UnwrapErr ().text.c_str ()));
+    }
+    return GS::NoValue;
+}
+#endif
+
+SetOpeningDefaultCommand::SetOpeningDefaultCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetOpeningDefaultCommand::GetName () const
+{
+    return "SetOpeningDefault";
+}
+
+GS::Optional<GS::UniString> SetOpeningDefaultCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {)") + GetOpeningSettingsInputSchemaProperties () + R"(
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> SetOpeningDefaultCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The type of the elements the changed settings are the defaults of."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elementType"]
+    })";
+}
+
+GS::ObjectState SetOpeningDefaultCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    // Everything is checked before the settings are touched, so a bad input changes nothing.
+    OpeningSettingsChange change;
+    const GS::Optional<GS::UniString> inputError = GetOpeningSettingsChange (parameters, change);
+    if (inputError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, inputError.Get ());
+    }
+
+    ACAPI::Result<ACAPI::Element::OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
+    if (openingDefault.IsErr ()) {
+        return CreateErrorResponse (openingDefault.UnwrapErr ().kind, GS::UniString (openingDefault.UnwrapErr ().text.c_str ()));
+    }
+
+    const GS::Optional<GS::ObjectState> applyError = ApplyOpeningSettingsChange (openingDefault, change);
+    if (applyError.HasValue ()) {
+        return applyError.Get ();
+    }
+
+    // Modify only changed the copy made by CreateOpeningDefault; this makes it the Opening tool's settings.
+    ACAPI::Result<void> setResult = openingDefault->SetAsArchicadDefault ();
+    if (setResult.IsErr ()) {
+        return CreateErrorResponse (setResult.UnwrapErr ().kind, "Failed to make the settings the Opening tool's settings: " + GS::UniString (setResult.UnwrapErr ().text.c_str ()));
+    }
+
+    GS::ObjectState response;
+    response.Add ("elementType", GetElementTypeNonLocalizedName (openingDefault->GetElemType ().typeID));
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
+PlaceOpeningsCommand::PlaceOpeningsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String PlaceOpeningsCommand::GetName () const
+{
+    return "PlaceOpenings";
+}
+
+GS::Optional<GS::UniString> PlaceOpeningsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "openingsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "parentElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The element to place the opening in."
+                        },
+                        "point": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "Where to place the opening. A point off the parent element's surface is moved to the closest point of the surface."
+                        },)") + GetOpeningSettingsInputSchemaProperties () + R"(
+                    },
+                    "additionalProperties": false,
+                    "required": ["parentElementId", "point"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> PlaceOpeningsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::ObjectState> openingsData;
+    parameters.Get ("openingsData", openingsData);
+
+    GS::Array<GS::ObjectState> results;
+
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    // OpeningDefault::Place opens and closes its own undoable command, so unlike the other
+    // creation commands this one is not run inside ACAPI_CallUndoableCommand.
+    for (const GS::ObjectState& data : openingsData) {
+        const GS::ObjectState* parentElementId = data.Get ("parentElementId");
+        const GS::ObjectState* point = data.Get ("point");
+        if (parentElementId == nullptr || point == nullptr) {
+            results.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'parentElementId' or 'point' field."));
+            continue;
+        }
+
+        OpeningSettingsChange change;
+        const GS::Optional<GS::UniString> inputError = GetOpeningSettingsChange (data, change);
+        if (inputError.HasValue ()) {
+            results.Push (CreateErrorResponse (APIERR_BADPARS, inputError.Get ()));
+            continue;
+        }
+
+        // A fresh copy of the Opening tool settings for each opening, so the settings given for
+        // one opening do not carry over to the next, and the tool's own settings stay as they are.
+        ACAPI::Result<ACAPI::Element::OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
+        if (openingDefault.IsErr ()) {
+            results.Push (CreateErrorResponse (openingDefault.UnwrapErr ().kind, GS::UniString (openingDefault.UnwrapErr ().text.c_str ())));
+            continue;
+        }
+
+        const GS::Optional<GS::ObjectState> applyError = ApplyOpeningSettingsChange (openingDefault, change);
+        if (applyError.HasValue ()) {
+            results.Push (applyError.Get ());
+            continue;
+        }
+
+        const ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*parentElementId)), ACAPI_GetToken ());
+        ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->Place (parentElemId, Get3DCoordinateFromObjectState (*point));
+        if (resultId.IsErr ()) {
+            results.Push (CreateErrorResponse (resultId.UnwrapErr ().kind, "Failed to place the opening: " + GS::UniString (resultId.UnwrapErr ().text.c_str ())));
+            continue;
+        }
+        results.Push (CreateElementIdObjectState (GSGuid2APIGuid (resultId.Unwrap ().GetGuid ())));
+    }
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    return CreateElementListResponse (results);
+#else
+    UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
 }

@@ -650,6 +650,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Returns the settings of the Opening tool defaults: the extrusion parameters (as GetOpeningDetails returns them) and the floor plan parameters (as GetOpeningFloorPlanParameters returns them). Available from Archicad 29."
         );
+        err |= RegisterCommand<SetOpeningDefaultCommand> (
+            elementCommands, "1.7.3",
+            "Changes the settings of the Opening tool defaults, with the names GetOpeningDefault returns. Only the given settings change. Available from Archicad 29."
+        );
+        err |= RegisterCommand<PlaceOpeningsCommand> (
+            elementCommands, "1.7.3",
+            "Places openings with the Opening tool settings at points of their parent elements. A point off the parent element's surface is moved to the closest point of the surface. Each opening can be given its own extrusion and floor plan settings, which change only that opening and not the tool's settings. Available from Archicad 29."
+        );
         err |= RegisterCommand<GetOpeningFloorPlanParametersCommand> (
             elementCommands, "1.7.3",
             "Returns the floor plan parameters of Opening elements: the floor plan display mode, the divided opening mode, the open edge style, the reference axis, the cut surface and outline lines, the cover fills and the cut and uncut symbols. Available from Archicad 29."
