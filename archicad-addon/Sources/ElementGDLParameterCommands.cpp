@@ -1992,6 +1992,10 @@ GS::ObjectState GetCalculatedParametersOfCurtainWallSubElementsCommand::Execute 
 
         calculatedParametersListAdder (calculatedParameters);
     }
+
+    return response;
+}
+
 RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
