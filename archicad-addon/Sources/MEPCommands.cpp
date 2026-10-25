@@ -2671,7 +2671,8 @@ static GS::ObjectState DeleteReferenceIds (ReferenceSetResultT referenceSet, con
         }
     }
     std::optional<GSErrCode> deleteError;
-    ACAPI::Result<void> modifyResult = referenceSet->Modify ([&] (auto& modifier) {
+    // The modifier type is named, a generic lambda here crashes MSVC 14.44 (C1001).
+    ACAPI::Result<void> modifyResult = referenceSet->Modify ([&] (ReferenceSetBase::Modifier& modifier) {
         for (Int32 referenceId : referenceIdsToDelete) {
             if (!deleteError.has_value ()) {
                 deleteError = GetErrorOfCall ([&] () { return modifier.Delete (static_cast<uint32_t> (referenceId)); });
@@ -2707,7 +2708,7 @@ static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<d
         angles.push_back (*found);
     }
     std::optional<GSErrCode> deleteError;
-    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (auto& modifier) {
+    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (typename std::decay_t<decltype (*angleSet)>::Modifier& modifier) {
         for (double angle : angles) {
             if (!deleteError.has_value ()) {
                 deleteError = GetErrorOfCall ([&] () { return modifier.Delete (angle); });
