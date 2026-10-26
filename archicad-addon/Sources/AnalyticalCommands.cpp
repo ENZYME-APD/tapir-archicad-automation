@@ -788,6 +788,436 @@ GS::ObjectState CreateCoordinateSystemObjectState (const API_CoordinateSystem& c
         "xVector", CreateVector3DObjectState (coordinateSystem.xVector),
         "yVector", CreateVector3DObjectState (coordinateSystem.yVector));
 }
+
+// Supports and links are read from and written to their API_Element with the *FromElement and
+// SetElementFrom* functions, which Archicad 25 does not have, and refer to member parts, so they
+// start with Archicad 26 as the part references do.
+GSErrCode TAPIR_GetAnalyticalSupportGeometry (const API_Guid& amGuid, const API_Guid& elemGuid, API_AnalyticalSupportGeometry& geometry)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetAnalyticalSupportGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#else
+    return ACAPI_AnalyticalModel_GetAnalyticalSupportGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#endif
+}
+
+GSErrCode TAPIR_GetSupportFromElement (const API_Element& element, API_AnalyticalSupportType& support)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetSupportFromElement (ACAPI_GetToken (), element, support);
+#else
+    return ACAPI_AnalyticalModel_GetSupportFromElement (ACAPI_GetToken (), element, support);
+#endif
+}
+
+GSErrCode TAPIR_SetElementFromSupport (const API_AnalyticalSupportType& support, API_Element& element)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetElementFromSupport (ACAPI_GetToken (), support, element);
+#else
+    return ACAPI_AnalyticalModel_SetElementFromSupport (ACAPI_GetToken (), support, element);
+#endif
+}
+
+GSErrCode TAPIR_GetAnalyticalLinkGeometry (const API_Guid& amGuid, const API_Guid& elemGuid, API_AnalyticalLinkGeometry& geometry)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetAnalyticalLinkGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#else
+    return ACAPI_AnalyticalModel_GetAnalyticalLinkGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#endif
+}
+
+GSErrCode TAPIR_GetLinkFromElement (const API_Element& element, API_AnalyticalLinkType& link)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetLinkFromElement (ACAPI_GetToken (), element, link);
+#else
+    return ACAPI_AnalyticalModel_GetLinkFromElement (ACAPI_GetToken (), element, link);
+#endif
+}
+
+GSErrCode TAPIR_SetElementFromLink (const API_AnalyticalLinkType& link, API_Element& element)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetElementFromLink (ACAPI_GetToken (), link, element);
+#else
+    return ACAPI_AnalyticalModel_SetElementFromLink (ACAPI_GetToken (), link, element);
+#endif
+}
+
+GSErrCode TAPIR_ConvertAnalyticalLinkToNonShortest (const API_Guid& amGuid, const API_Guid& elemGuid, API_AnalyticalLinkType& link)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_ConvertAnalyticalLinkToNonShortest (ACAPI_GetToken (), amGuid, elemGuid, link);
+#else
+    return ACAPI_AnalyticalModel_ConvertAnalyticalLinkToNonShortest (ACAPI_GetToken (), amGuid, elemGuid, link);
+#endif
+}
+
+const EnumName<API_AnalyticalSupport_SupportType> AnalyticalSupportTypeNames[] = {
+    { API_SimplePoint, "SimplePoint" },
+    { API_SingleLine,  "SingleLine" },
+    { API_Surface,     "Surface" }
+};
+
+const EnumName<API_AnalyticalCoordSysDirection> AnalyticalCoordSysDirectionNames[] = {
+    { API_Global, "Global" },
+    { API_Local,  "Local" }
+};
+
+const EnumName<API_AnalyticalLink_LinkGeometry> AnalyticalLinkGeometryNames[] = {
+    { API_Link1D, "Link1D" },
+    { API_Link2D, "Link2D" }
+};
+
+const EnumName<API_AnalyticalLink_LinkType> AnalyticalLinkTypeNames[] = {
+    { API_Rigid,  "Rigid" },
+    { API_Spring, "Spring" }
+};
+
+const EnumName<API_AnalyticalLink_RigidLinkConnectionType> AnalyticalRigidLinkConnectionTypeNames[] = {
+    { API_RigidConnection, "RigidConnection" },
+    { API_HingeConnection, "HingeConnection" }
+};
+
+template <typename Settings>
+struct RigidityComponent
+{
+    API_AnalyticalRigidityType Settings::* type;
+    double Settings::* value;
+    const char* typeName;
+    const char* valueName;
+};
+
+template <typename Settings>
+struct ResistanceComponent
+{
+    bool Settings::* resistance;
+    double Settings::* value;
+    const char* resistanceName;
+    const char* valueName;
+};
+
+const RigidityComponent<API_AnalyticalSupport_SupportValues> AnalyticalSupportValueComponents[] = {
+    { &API_AnalyticalSupport_SupportValues::xType,  &API_AnalyticalSupport_SupportValues::xValue,  "xType",  "xValue" },
+    { &API_AnalyticalSupport_SupportValues::yType,  &API_AnalyticalSupport_SupportValues::yValue,  "yType",  "yValue" },
+    { &API_AnalyticalSupport_SupportValues::zType,  &API_AnalyticalSupport_SupportValues::zValue,  "zType",  "zValue" },
+    { &API_AnalyticalSupport_SupportValues::rxType, &API_AnalyticalSupport_SupportValues::rxValue, "rxType", "rxValue" },
+    { &API_AnalyticalSupport_SupportValues::ryType, &API_AnalyticalSupport_SupportValues::ryValue, "ryType", "ryValue" },
+    { &API_AnalyticalSupport_SupportValues::rzType, &API_AnalyticalSupport_SupportValues::rzValue, "rzType", "rzValue" }
+};
+
+const RigidityComponent<API_AnalyticalLink_Translation> AnalyticalLinkTranslationRigidities[] = {
+    { &API_AnalyticalLink_Translation::kxType, &API_AnalyticalLink_Translation::kxValue, "kxType", "kxValue" },
+    { &API_AnalyticalLink_Translation::kyType, &API_AnalyticalLink_Translation::kyValue, "kyType", "kyValue" },
+    { &API_AnalyticalLink_Translation::kzType, &API_AnalyticalLink_Translation::kzValue, "kzType", "kzValue" }
+};
+
+const ResistanceComponent<API_AnalyticalLink_Translation> AnalyticalLinkTranslationResistances[] = {
+    { &API_AnalyticalLink_Translation::resistanceFx, &API_AnalyticalLink_Translation::fxValue, "resistanceFx", "fxValue" },
+    { &API_AnalyticalLink_Translation::resistanceFy, &API_AnalyticalLink_Translation::fyValue, "resistanceFy", "fyValue" },
+    { &API_AnalyticalLink_Translation::resistanceFz, &API_AnalyticalLink_Translation::fzValue, "resistanceFz", "fzValue" }
+};
+
+const RigidityComponent<API_AnalyticalLink_Rotation> AnalyticalLinkRotationRigidities[] = {
+    { &API_AnalyticalLink_Rotation::kxxType, &API_AnalyticalLink_Rotation::kxxValue, "kxxType", "kxxValue" },
+    { &API_AnalyticalLink_Rotation::kyyType, &API_AnalyticalLink_Rotation::kyyValue, "kyyType", "kyyValue" },
+    { &API_AnalyticalLink_Rotation::kzzType, &API_AnalyticalLink_Rotation::kzzValue, "kzzType", "kzzValue" }
+};
+
+const ResistanceComponent<API_AnalyticalLink_Rotation> AnalyticalLinkRotationResistances[] = {
+    { &API_AnalyticalLink_Rotation::resistanceMx, &API_AnalyticalLink_Rotation::mxValue, "resistanceMx", "mxValue" },
+    { &API_AnalyticalLink_Rotation::resistanceMy, &API_AnalyticalLink_Rotation::myValue, "resistanceMy", "myValue" },
+    { &API_AnalyticalLink_Rotation::resistanceMz, &API_AnalyticalLink_Rotation::mzValue, "resistanceMz", "mzValue" }
+};
+
+// Reads a required enum field by its name. Returns an error response on failure.
+template <typename EnumType, size_t N>
+GS::Optional<GS::ObjectState> GetEnumField (const GS::ObjectState& os, const char* objectName, const char* fieldName, const EnumName<EnumType> (&names)[N], EnumType& value)
+{
+    GS::UniString name;
+    if (!os.Get (fieldName, name)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("%s has no %s.", objectName, fieldName));
+    }
+    if (!EnumFromString (names, name, value)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Unknown %s.%s '%T'.", objectName, fieldName, name.ToPrintf ()));
+    }
+    return GS::NoValue;
+}
+
+// Reads a required JSON object field. Returns an error response when it is missing.
+GS::Optional<GS::ObjectState> GetObjectField (const GS::ObjectState& os, const char* objectName, const char* fieldName, const GS::ObjectState*& field)
+{
+    field = os.Get (fieldName);
+    if (field == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("%s has no %s.", objectName, fieldName));
+    }
+    return GS::NoValue;
+}
+
+template <typename Settings, size_t N>
+GS::ObjectState CreateRigiditiesObjectState (const Settings& settings, const RigidityComponent<Settings> (&rigidities)[N])
+{
+    GS::ObjectState os;
+    for (const RigidityComponent<Settings>& component : rigidities) {
+        AddEnumName (os, component.typeName, AnalyticalRigidityTypeNames, settings.*(component.type));
+        os.Add (component.valueName, settings.*(component.value));
+    }
+    return os;
+}
+
+// Every rigidity type is required; a value left out is 0. Returns an error response on failure.
+template <typename Settings, size_t N>
+GS::Optional<GS::ObjectState> GetRigiditiesFromObjectState (const GS::ObjectState& os, const char* objectName, const RigidityComponent<Settings> (&rigidities)[N], Settings& settings)
+{
+    for (const RigidityComponent<Settings>& component : rigidities) {
+        const GS::Optional<GS::ObjectState> typeError = GetEnumField (os, objectName, component.typeName, AnalyticalRigidityTypeNames, settings.*(component.type));
+        if (typeError.HasValue ()) {
+            return typeError;
+        }
+        settings.*(component.value) = 0.0;
+        os.Get (component.valueName, settings.*(component.value));
+    }
+    return GS::NoValue;
+}
+
+template <typename Settings, size_t R, size_t S>
+GS::ObjectState CreateSpringComponentObjectState (const Settings& settings, const RigidityComponent<Settings> (&rigidities)[R], const ResistanceComponent<Settings> (&resistances)[S])
+{
+    GS::ObjectState os = CreateRigiditiesObjectState (settings, rigidities);
+    for (const ResistanceComponent<Settings>& component : resistances) {
+        os.Add (component.resistanceName, settings.*(component.resistance));
+        os.Add (component.valueName, settings.*(component.value));
+    }
+    return os;
+}
+
+// A resistance left out is false and its value 0. Returns an error response on failure.
+template <typename Settings, size_t R, size_t S>
+GS::Optional<GS::ObjectState> GetSpringComponentFromObjectState (const GS::ObjectState& os, const char* objectName, const RigidityComponent<Settings> (&rigidities)[R], const ResistanceComponent<Settings> (&resistances)[S], Settings& settings)
+{
+    const GS::Optional<GS::ObjectState> error = GetRigiditiesFromObjectState (os, objectName, rigidities, settings);
+    if (error.HasValue ()) {
+        return error;
+    }
+    for (const ResistanceComponent<Settings>& component : resistances) {
+        settings.*(component.resistance) = false;
+        os.Get (component.resistanceName, settings.*(component.resistance));
+        settings.*(component.value) = 0.0;
+        os.Get (component.valueName, settings.*(component.value));
+    }
+    return GS::NoValue;
+}
+
+GS::ObjectState CreateAnalyticalSupportObjectState (const API_AnalyticalSupportType& support)
+{
+    const API_AnalyticalSupport_Settings& settings = support.supportSettings;
+    GS::ObjectState settingsOS;
+    AddEnumName (settingsOS, "supportType", AnalyticalSupportTypeNames, settings.supportType);
+    settingsOS.Add ("supportValues", CreateRigiditiesObjectState (settings.supportValues, AnalyticalSupportValueComponents));
+    AddEnumName (settingsOS, "coordinateSystem", AnalyticalCoordSysDirectionNames, settings.coordinateSystem);
+    return GS::ObjectState (
+        "supportSettings", settingsOS,
+        "supportedMemberPartRef", CreateAnalyticalMemberPartRefObjectState (support.supportedMemberPartRef));
+}
+
+// Fills the support from its JSON form, as GetAnalyticalSupports returns it. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalSupportFromObjectState (const GS::ObjectState& supportOS, API_AnalyticalSupportType& support)
+{
+    const GS::ObjectState* settingsOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetObjectField (supportOS, "The support", "supportSettings", settingsOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    API_AnalyticalSupport_Settings& settings = support.supportSettings;
+    error = GetEnumField (*settingsOS, "supportSettings", "supportType", AnalyticalSupportTypeNames, settings.supportType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* supportValuesOS = nullptr;
+    error = GetObjectField (*settingsOS, "supportSettings", "supportValues", supportValuesOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetRigiditiesFromObjectState (*supportValuesOS, "supportValues", AnalyticalSupportValueComponents, settings.supportValues);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "supportSettings", "coordinateSystem", AnalyticalCoordSysDirectionNames, settings.coordinateSystem);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    const GS::ObjectState* memberPartRefOS = nullptr;
+    error = GetObjectField (supportOS, "The support", "supportedMemberPartRef", memberPartRefOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    return GetAnalyticalMemberPartRefFromObjectState (*memberPartRefOS, support.supportedMemberPartRef);
+}
+
+GS::ObjectState CreateAnalyticalLinkObjectState (const API_AnalyticalLinkType& link)
+{
+    const API_AnalyticalLink_Settings& settings = link.linkSettings;
+    GS::ObjectState settingsOS;
+    AddEnumName (settingsOS, "geometry", AnalyticalLinkGeometryNames, settings.geometry);
+    AddEnumName (settingsOS, "type", AnalyticalLinkTypeNames, settings.type);
+
+    GS::ObjectState rigidSettingsOS;
+    AddEnumName (rigidSettingsOS, "startConnectionType", AnalyticalRigidLinkConnectionTypeNames, settings.rigidSettings.startConnectionType);
+    AddEnumName (rigidSettingsOS, "endConnectionType", AnalyticalRigidLinkConnectionTypeNames, settings.rigidSettings.endConnectionType);
+    settingsOS.Add ("rigidSettings", rigidSettingsOS);
+
+    GS::ObjectState springSettingsOS;
+    AddEnumName (springSettingsOS, "direction", AnalyticalCoordSysDirectionNames, settings.springSettings.direction);
+    springSettingsOS.Add ("translation", CreateSpringComponentObjectState (settings.springSettings.translation, AnalyticalLinkTranslationRigidities, AnalyticalLinkTranslationResistances));
+    springSettingsOS.Add ("rotation", CreateSpringComponentObjectState (settings.springSettings.rotation, AnalyticalLinkRotationRigidities, AnalyticalLinkRotationResistances));
+    settingsOS.Add ("springSettings", springSettingsOS);
+
+    return GS::ObjectState (
+        "linkSettings", settingsOS,
+        "startElementPartRef", CreateAnalyticalMemberPartRefObjectState (link.startElementPartRef),
+        "endElementPartRef", CreateAnalyticalMemberPartRefObjectState (link.endElementPartRef));
+}
+
+// Fills the link from its JSON form, as GetAnalyticalLinks returns it. Both the rigid and the spring
+// settings are required, whichever type the link has. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalLinkFromObjectState (const GS::ObjectState& linkOS, API_AnalyticalLinkType& link)
+{
+    const GS::ObjectState* settingsOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetObjectField (linkOS, "The link", "linkSettings", settingsOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    API_AnalyticalLink_Settings& settings = link.linkSettings;
+    error = GetEnumField (*settingsOS, "linkSettings", "geometry", AnalyticalLinkGeometryNames, settings.geometry);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "linkSettings", "type", AnalyticalLinkTypeNames, settings.type);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    const GS::ObjectState* rigidSettingsOS = nullptr;
+    error = GetObjectField (*settingsOS, "linkSettings", "rigidSettings", rigidSettingsOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*rigidSettingsOS, "rigidSettings", "startConnectionType", AnalyticalRigidLinkConnectionTypeNames, settings.rigidSettings.startConnectionType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*rigidSettingsOS, "rigidSettings", "endConnectionType", AnalyticalRigidLinkConnectionTypeNames, settings.rigidSettings.endConnectionType);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    const GS::ObjectState* springSettingsOS = nullptr;
+    error = GetObjectField (*settingsOS, "linkSettings", "springSettings", springSettingsOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*springSettingsOS, "springSettings", "direction", AnalyticalCoordSysDirectionNames, settings.springSettings.direction);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* translationOS = nullptr;
+    error = GetObjectField (*springSettingsOS, "springSettings", "translation", translationOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetSpringComponentFromObjectState (*translationOS, "translation", AnalyticalLinkTranslationRigidities, AnalyticalLinkTranslationResistances, settings.springSettings.translation);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* rotationOS = nullptr;
+    error = GetObjectField (*springSettingsOS, "springSettings", "rotation", rotationOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetSpringComponentFromObjectState (*rotationOS, "rotation", AnalyticalLinkRotationRigidities, AnalyticalLinkRotationResistances, settings.springSettings.rotation);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    const GS::ObjectState* startElementPartRefOS = nullptr;
+    error = GetObjectField (linkOS, "The link", "startElementPartRef", startElementPartRefOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetAnalyticalMemberPartRefFromObjectState (*startElementPartRefOS, link.startElementPartRef);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* endElementPartRefOS = nullptr;
+    error = GetObjectField (linkOS, "The link", "endElementPartRef", endElementPartRefOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    return GetAnalyticalMemberPartRefFromObjectState (*endElementPartRefOS, link.endElementPartRef);
+}
+
+template <typename Geometry>
+GS::ObjectState CreateStiffnessGeometryObjectState (const Geometry& geometry)
+{
+    GS::ObjectState geometryOS;
+    const auto& coordinates = geometryOS.AddList<GS::ObjectState> ("coordinates");
+    for (const API_Coord3D& coord : geometry.coordinates) {
+        coordinates (Create3DCoordinateObjectState (coord));
+    }
+    geometryOS.Add ("translationStiffnessVector", CreateVector3DObjectState (geometry.translationStiffnessVector));
+    geometryOS.Add ("rotationStiffnessVector", CreateVector3DObjectState (geometry.rotationStiffnessVector));
+    return geometryOS;
+}
+
+GS::ObjectState CreateAnalyticalLinkGeometryObjectState (const API_AnalyticalLinkGeometry& geometry)
+{
+    GS::ObjectState geometryOS = CreateStiffnessGeometryObjectState (geometry);
+    AddAnalyticalCurves (geometryOS, "curves", geometry.curves);
+    return geometryOS;
+}
+
+// Reads the element and checks its type. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_ElemTypeID typeID, const char* typeName, API_Element& element)
+{
+    element = {};
+    element.header.guid = elemGuid;
+    const GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the element.");
+    }
+    if (GetElemTypeId (element.header) != typeID) {
+        return CreateErrorResponse (APIERR_BADID, GS::UniString::Printf ("The element is not an %s.", typeName));
+    }
+    return GS::NoValue;
+}
+
+// Creates one element of the given type from the tool defaults; setElement fills it from the support
+// or link (SetElementFromSupport and SetElementFromLink set the type and the external element data).
+template <typename SetElement>
+GS::ObjectState CreateAnalyticalElement (API_ElemTypeID typeID, const char* typeName, const SetElement& setElement)
+{
+    API_Element element = {};
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+
+    element.header.type = typeID;
+    GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the defaults of the %s.", typeName));
+    }
+    err = setElement (element);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to fill the %s element.", typeName));
+    }
+    err = ACAPI_Element_Create (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to create the %s.", typeName));
+    }
+    return CreateElementIdObjectState (element.header.guid);
+}
 #endif
 
 GS::HashSet<API_Guid> CreateGuidSet (const GS::Array<API_Guid>& guids)
@@ -2289,6 +2719,531 @@ GS::ObjectState GetAnalyticalMemberPartGeometriesCommand::Execute (const GS::Obj
                 geometries (CreateErrorResponse (APIERR_BADPARS, "Only vertices and edges have a node or a curve."));
                 break;
         }
+    }
+
+    return response;
+#else
+    UNUSED_VARIABLE (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer.");
+#endif
+}
+
+GetAnalyticalSupportsCommand::GetAnalyticalSupportsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAnalyticalSupportsCommand::GetName () const
+{
+    return "GetAnalyticalSupports";
+}
+
+GS::Optional<GS::UniString> GetAnalyticalSupportsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "analyticalModelId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the Structural Analytical Model the geometry is read from. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAnalyticalSupportsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "supports": {
+                "type": "array",
+                "description": "The support and its geometry for each element, in the order of the input. An element that is not an analytical support, or whose support cannot be got, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "support": {
+                                    "$ref": "#/AnalyticalSupport"
+                                },
+                                "geometry": {
+                                    "$ref": "#/AnalyticalSupportGeometry"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "support",
+                                "geometry"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "supports"
+        ]
+    })";
+}
+
+GS::ObjectState GetAnalyticalSupportsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    API_Guid analyticalModelGuid = APINULLGuid;
+    const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
+    if (modelError.HasValue ()) {
+        return *modelError;
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& supports = response.AddList<GS::ObjectState> ("supports");
+
+    for (const GS::ObjectState& item : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (item);
+        if (elemGuid == APINULLGuid) {
+            supports (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Element element;
+        const GS::Optional<GS::ObjectState> elementError = GetElementOfType (elemGuid, API_AnalyticalSupportID, "analytical support", element);
+        if (elementError.HasValue ()) {
+            supports (*elementError);
+            continue;
+        }
+
+        API_AnalyticalSupportType support {};
+        GSErrCode err = TAPIR_GetSupportFromElement (element, support);
+        if (err != NoError) {
+            supports (CreateErrorResponse (err, "Failed to get the support of the element."));
+            continue;
+        }
+
+        API_AnalyticalSupportGeometry geometry;
+        err = TAPIR_GetAnalyticalSupportGeometry (analyticalModelGuid, elemGuid, geometry);
+        if (err != NoError) {
+            supports (CreateErrorResponse (err, "Failed to get the geometry of the support in the Structural Analytical Model."));
+            continue;
+        }
+
+        supports (GS::ObjectState (
+            "support", CreateAnalyticalSupportObjectState (support),
+            "geometry", CreateStiffnessGeometryObjectState (geometry)));
+    }
+
+    return response;
+#else
+    UNUSED_VARIABLE (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer.");
+#endif
+}
+
+GetAnalyticalLinksCommand::GetAnalyticalLinksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAnalyticalLinksCommand::GetName () const
+{
+    return "GetAnalyticalLinks";
+}
+
+GS::Optional<GS::UniString> GetAnalyticalLinksCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "analyticalModelId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the Structural Analytical Model the geometry is read from. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAnalyticalLinksCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "links": {
+                "type": "array",
+                "description": "The link and its geometry for each element, in the order of the input. An element that is not an analytical link, or whose link cannot be got, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "link": {
+                                    "$ref": "#/AnalyticalLink"
+                                },
+                                "geometry": {
+                                    "$ref": "#/AnalyticalLinkGeometry"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "link",
+                                "geometry"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "links"
+        ]
+    })";
+}
+
+GS::ObjectState GetAnalyticalLinksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    API_Guid analyticalModelGuid = APINULLGuid;
+    const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
+    if (modelError.HasValue ()) {
+        return *modelError;
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& links = response.AddList<GS::ObjectState> ("links");
+
+    for (const GS::ObjectState& item : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (item);
+        if (elemGuid == APINULLGuid) {
+            links (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Element element;
+        const GS::Optional<GS::ObjectState> elementError = GetElementOfType (elemGuid, API_AnalyticalLinkID, "analytical link", element);
+        if (elementError.HasValue ()) {
+            links (*elementError);
+            continue;
+        }
+
+        API_AnalyticalLinkType link {};
+        GSErrCode err = TAPIR_GetLinkFromElement (element, link);
+        if (err != NoError) {
+            links (CreateErrorResponse (err, "Failed to get the link of the element."));
+            continue;
+        }
+
+        API_AnalyticalLinkGeometry geometry;
+        err = TAPIR_GetAnalyticalLinkGeometry (analyticalModelGuid, elemGuid, geometry);
+        if (err != NoError) {
+            links (CreateErrorResponse (err, "Failed to get the geometry of the link in the Structural Analytical Model."));
+            continue;
+        }
+
+        links (GS::ObjectState (
+            "link", CreateAnalyticalLinkObjectState (link),
+            "geometry", CreateAnalyticalLinkGeometryObjectState (geometry)));
+    }
+
+    return response;
+#else
+    UNUSED_VARIABLE (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer.");
+#endif
+}
+
+CreateAnalyticalSupportsCommand::CreateAnalyticalSupportsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateAnalyticalSupportsCommand::GetName () const
+{
+    return "CreateAnalyticalSupports";
+}
+
+GS::Optional<GS::UniString> CreateAnalyticalSupportsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "supports": {
+                "type": "array",
+                "description": "The supports to create, as GetAnalyticalSupports returns them. Each is created from the defaults of the Analytical Support tool.",
+                "items": {
+                    "$ref": "#/AnalyticalSupport"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "supports"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateAnalyticalSupportsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateAnalyticalSupportsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> supports;
+    parameters.Get ("supports", supports);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+#ifdef ServerMainVers_2600
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Create Analytical Supports", [&] () -> GSErrCode {
+        for (const GS::ObjectState& supportOS : supports) {
+            API_AnalyticalSupportType support {};
+            const GS::Optional<GS::ObjectState> supportError = GetAnalyticalSupportFromObjectState (supportOS, support);
+            if (supportError.HasValue ()) {
+                elements (*supportError);
+                continue;
+            }
+            elements (CreateAnalyticalElement (API_AnalyticalSupportID, "analytical support", [&] (API_Element& element) {
+                return TAPIR_SetElementFromSupport (support, element);
+            }));
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to create the supports.");
+    }
+#else
+    for (UIndex i = 0; i < supports.GetSize (); ++i) {
+        elements (CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer."));
+    }
+#endif
+
+    return response;
+}
+
+CreateAnalyticalLinksCommand::CreateAnalyticalLinksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateAnalyticalLinksCommand::GetName () const
+{
+    return "CreateAnalyticalLinks";
+}
+
+GS::Optional<GS::UniString> CreateAnalyticalLinksCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "links": {
+                "type": "array",
+                "description": "The links to create, as GetAnalyticalLinks returns them. Each is created from the defaults of the Analytical Link tool.",
+                "items": {
+                    "$ref": "#/AnalyticalLink"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "links"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateAnalyticalLinksCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateAnalyticalLinksCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> links;
+    parameters.Get ("links", links);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+#ifdef ServerMainVers_2600
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Create Analytical Links", [&] () -> GSErrCode {
+        for (const GS::ObjectState& linkOS : links) {
+            API_AnalyticalLinkType link {};
+            const GS::Optional<GS::ObjectState> linkError = GetAnalyticalLinkFromObjectState (linkOS, link);
+            if (linkError.HasValue ()) {
+                elements (*linkError);
+                continue;
+            }
+            elements (CreateAnalyticalElement (API_AnalyticalLinkID, "analytical link", [&] (API_Element& element) {
+                return TAPIR_SetElementFromLink (link, element);
+            }));
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to create the links.");
+    }
+#else
+    for (UIndex i = 0; i < links.GetSize (); ++i) {
+        elements (CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer."));
+    }
+#endif
+
+    return response;
+}
+
+ConvertAnalyticalLinksToNonShortestCommand::ConvertAnalyticalLinksToNonShortestCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ConvertAnalyticalLinksToNonShortestCommand::GetName () const
+{
+    return "ConvertAnalyticalLinksToNonShortest";
+}
+
+GS::Optional<GS::UniString> ConvertAnalyticalLinksToNonShortestCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "analyticalModelId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ConvertAnalyticalLinksToNonShortestCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "links": {
+                "type": "array",
+                "description": "The link the API returns for each element after the conversion, in the order of the input. An element that cannot be converted is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "link": {
+                                    "$ref": "#/AnalyticalLink"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "link"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "links"
+        ]
+    })";
+}
+
+GS::ObjectState ConvertAnalyticalLinksToNonShortestCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    API_Guid analyticalModelGuid = APINULLGuid;
+    const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
+    if (modelError.HasValue ()) {
+        return *modelError;
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& links = response.AddList<GS::ObjectState> ("links");
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Convert Analytical Links to Non-Shortest", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : elements) {
+            const API_Guid elemGuid = GetGuidFromElementsArrayItem (item);
+            if (elemGuid == APINULLGuid) {
+                links (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_AnalyticalLinkType link {};
+            const GSErrCode err = TAPIR_ConvertAnalyticalLinkToNonShortest (analyticalModelGuid, elemGuid, link);
+            if (err != NoError) {
+                links (CreateErrorResponse (err, "Failed to convert the link."));
+                continue;
+            }
+            links (GS::ObjectState ("link", CreateAnalyticalLinkObjectState (link)));
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to convert the links.");
     }
 
     return response;

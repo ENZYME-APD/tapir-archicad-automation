@@ -15211,5 +15211,259 @@
             "xVector",
             "yVector"
         ]
+    },
+    "AnalyticalCoordSysDirection": {
+        "type": "string",
+        "description": "Whether the values are in the global or in the local coordinate system.",
+        "enum": [
+            "Global",
+            "Local"
+        ]
+    },
+    "AnalyticalSupport": {
+        "type": "object",
+        "description": "An analytical support: its settings and the member part it supports. Every rigidity type is required; a value left out is 0.",
+        "properties": {
+            "supportSettings": {
+                "type": "object",
+                "properties": {
+                    "supportType": {
+                        "type": "string",
+                        "enum": [
+                            "SimplePoint",
+                            "SingleLine",
+                            "Surface"
+                        ]
+                    },
+                    "supportValues": {
+                        "type": "object",
+                        "description": "The rigidity and the value of the three translations and the three rotations.",
+                        "properties": {
+                            "xType": { "$ref": "#/AnalyticalRigidityType" },
+                            "xValue": { "type": "number" },
+                            "yType": { "$ref": "#/AnalyticalRigidityType" },
+                            "yValue": { "type": "number" },
+                            "zType": { "$ref": "#/AnalyticalRigidityType" },
+                            "zValue": { "type": "number" },
+                            "rxType": { "$ref": "#/AnalyticalRigidityType" },
+                            "rxValue": { "type": "number" },
+                            "ryType": { "$ref": "#/AnalyticalRigidityType" },
+                            "ryValue": { "type": "number" },
+                            "rzType": { "$ref": "#/AnalyticalRigidityType" },
+                            "rzValue": { "type": "number" }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "xType",
+                            "yType",
+                            "zType",
+                            "rxType",
+                            "ryType",
+                            "rzType"
+                        ]
+                    },
+                    "coordinateSystem": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "supportType",
+                    "supportValues",
+                    "coordinateSystem"
+                ]
+            },
+            "supportedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "supportSettings",
+            "supportedMemberPartRef"
+        ]
+    },
+    "AnalyticalSupportGeometry": {
+        "type": "object",
+        "description": "The geometry of an analytical support in a Structural Analytical Model.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "translationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "translationStiffnessVector",
+            "rotationStiffnessVector"
+        ]
+    },
+    "AnalyticalLink": {
+        "type": "object",
+        "description": "An analytical link: its settings and the member parts it connects. The rigid and the spring settings are both required, whichever type the link has. Every rigidity type is required; a value left out is 0 and a resistance left out is false.",
+        "properties": {
+            "linkSettings": {
+                "type": "object",
+                "properties": {
+                    "geometry": {
+                        "type": "string",
+                        "enum": [
+                            "Link1D",
+                            "Link2D"
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Rigid",
+                            "Spring"
+                        ]
+                    },
+                    "rigidSettings": {
+                        "type": "object",
+                        "properties": {
+                            "startConnectionType": {
+                                "type": "string",
+                                "enum": [
+                                    "RigidConnection",
+                                    "HingeConnection"
+                                ]
+                            },
+                            "endConnectionType": {
+                                "type": "string",
+                                "enum": [
+                                    "RigidConnection",
+                                    "HingeConnection"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "startConnectionType",
+                            "endConnectionType"
+                        ]
+                    },
+                    "springSettings": {
+                        "type": "object",
+                        "properties": {
+                            "direction": {
+                                "$ref": "#/AnalyticalCoordSysDirection"
+                            },
+                            "translation": {
+                                "type": "object",
+                                "properties": {
+                                    "kxType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kxValue": { "type": "number" },
+                                    "kyType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kyValue": { "type": "number" },
+                                    "kzType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kzValue": { "type": "number" },
+                                    "resistanceFx": { "type": "boolean" },
+                                    "fxValue": { "type": "number" },
+                                    "resistanceFy": { "type": "boolean" },
+                                    "fyValue": { "type": "number" },
+                                    "resistanceFz": { "type": "boolean" },
+                                    "fzValue": { "type": "number" }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "kxType",
+                                    "kyType",
+                                    "kzType"
+                                ]
+                            },
+                            "rotation": {
+                                "type": "object",
+                                "properties": {
+                                    "kxxType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kxxValue": { "type": "number" },
+                                    "kyyType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kyyValue": { "type": "number" },
+                                    "kzzType": { "$ref": "#/AnalyticalRigidityType" },
+                                    "kzzValue": { "type": "number" },
+                                    "resistanceMx": { "type": "boolean" },
+                                    "mxValue": { "type": "number" },
+                                    "resistanceMy": { "type": "boolean" },
+                                    "myValue": { "type": "number" },
+                                    "resistanceMz": { "type": "boolean" },
+                                    "mzValue": { "type": "number" }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "kxxType",
+                                    "kyyType",
+                                    "kzzType"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "direction",
+                            "translation",
+                            "rotation"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "geometry",
+                    "type",
+                    "rigidSettings",
+                    "springSettings"
+                ]
+            },
+            "startElementPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            },
+            "endElementPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkSettings",
+            "startElementPartRef",
+            "endElementPartRef"
+        ]
+    },
+    "AnalyticalLinkGeometry": {
+        "type": "object",
+        "description": "The geometry of an analytical link in a Structural Analytical Model.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "translationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationStiffnessVector": {
+                "$ref": "#/Coordinate3D"
+            },
+            "curves": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "translationStiffnessVector",
+            "rotationStiffnessVector",
+            "curves"
+        ]
     }
 }

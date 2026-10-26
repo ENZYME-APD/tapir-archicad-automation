@@ -2043,6 +2043,26 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26."
         );
+        err |= RegisterCommand<GetAnalyticalSupportsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the settings, the supported member part and the geometry of the given analytical supports. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalLinksCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the settings, the connected member parts and the geometry of the given analytical links. Available from Archicad 26."
+        );
+        err |= RegisterCommand<CreateAnalyticalSupportsCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates analytical supports from their settings and supported member part, as GetAnalyticalSupports returns them, in one undo step. Available from Archicad 26."
+        );
+        err |= RegisterCommand<CreateAnalyticalLinksCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates analytical links from their settings and connected member parts, as GetAnalyticalLinks returns them, in one undo step. Available from Archicad 26."
+        );
+        err |= RegisterCommand<ConvertAnalyticalLinksToNonShortestCommand> (
+            analyticalCommands, "1.7.3",
+            "Converts the given shortest analytical links (associative to a curve member or a surface member edge) to links connected to a fixed coordinate, in one undo step, and returns the converted links. Available from Archicad 26."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
