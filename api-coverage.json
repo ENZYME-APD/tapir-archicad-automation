@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 07:04 UTC",
+ "generatedAt": "2026-10-26 07:14 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 890,
-  "claimed": 170,
+  "in progress": 905,
+  "claimed": 155,
   "done": 743
  },
  "items": [
@@ -4508,7 +4508,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5101,6 +5106,18 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    },
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1519,
      "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
@@ -6376,6 +6393,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    },
     {
      "number": 1514,
      "title": "[5/6] Add GetStoryControlPrimitives"
@@ -12206,9 +12227,14 @@
    "olderNames": [
     "APIEnv_CanChangePlaceSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -12238,9 +12264,14 @@
    "olderNames": [
     "APIEnv_ChangePlaceSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -12301,6 +12332,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    },
     {
      "number": 967,
      "title": "[1/3] Add GetSunSettings and CalculateSunPosition"
@@ -12522,6 +12557,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
@@ -17719,9 +17758,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -23741,9 +23785,14 @@
    "olderNames": [
     "APIEnv_Change3DImageSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -24155,9 +24204,14 @@
    "olderNames": [
     "APIEnv_Get3DImageSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -25036,9 +25090,14 @@
    "olderNames": [
     "APIDb_ChangeGridSettingsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -25262,9 +25321,14 @@
    "olderNames": [
     "APIDb_GetGridSettingsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1532,
+     "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -31649,6 +31713,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     }
@@ -31917,6 +31985,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
@@ -32189,6 +32261,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -32320,6 +32396,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -32445,6 +32525,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -32510,6 +32594,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -32571,6 +32659,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -32623,6 +32715,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -32648,6 +32744,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
@@ -33180,6 +33280,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     }
@@ -33439,6 +33543,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
@@ -36115,9 +36223,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -36182,9 +36295,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -36753,6 +36871,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
     },
@@ -37319,9 +37445,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -37503,9 +37634,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -37529,9 +37665,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -37611,9 +37752,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -37852,9 +37998,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -37935,9 +38086,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -38017,6 +38173,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
     },
@@ -38043,6 +38207,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
@@ -38289,6 +38461,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1516,
      "title": "[5/6] User data of attributes and groups as key/value pairs"
@@ -38946,6 +39126,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -39087,6 +39275,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
@@ -40343,6 +40539,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
@@ -50987,6 +51187,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1529,
      "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
@@ -62266,6 +62470,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
+    {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
     },
@@ -67127,6 +67335,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1528,
      "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
@@ -75943,6 +76155,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1531,
+     "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
+    },
+    {
+     "number": 1530,
+     "title": "[2/6] SetLibraryPartParameters"
+    },
     {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
