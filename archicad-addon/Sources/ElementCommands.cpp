@@ -46,7 +46,10 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 // the way CalculateStairBounds and GetSubelementsOfHierarchicalElements already read the
 // Stair's memo in this file. The arcs come back with the same 0-based indices as the
 // polygon arcs of the other element types.
-static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
+// On a placed stair the coords are relative to the stair's basePlane.basePoint (a stair
+// created at (110, 0) reads its baseline from (0, 0), #1561), so they are moved by origin
+// to report them in the same coordinates as CreateStairs takes them.
+static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
 {
     const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
 
@@ -63,7 +66,8 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, GS::ObjectState& os)
         last = (*baseLine.pends)[1];
     }
     for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
-        coords (Create2DCoordinateObjectState ((*baseLine.coords)[i]));
+        const API_Coord& coord = (*baseLine.coords)[i];
+        coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
     }
 
     if (baseLine.parcs == nullptr) {
@@ -1979,17 +1983,21 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // The fields CreateStairs writes, read back (#823). The finishes and the
                 // structure are modeled by the Stair's subelements (risers, treads and
                 // structures, see GetSubelementsOfHierarchicalElements), not by the Stair
-                // element itself. basePlane.basePoint.z is the base's offset from the home
-                // story, the way CreateStairs sets it from the resolved floor index.
+                // element itself. On a placed stair basePlane.basePoint is in model
+                // coordinates: its z is the absolute elevation of the base, not the offset
+                // from the home story CreateStairs writes (a stair created on the 6.4 story
+                // reads 6.4, and read 12.8 as zCoordinate when the story level was added
+                // again, #1561), and its x and y are the origin of the baseline's coords.
+                const API_Coord3D& basePoint = elem.stair.basePlane.basePoint;
                 typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
                 typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
                 typeSpecificDetails.Add ("treadDepth", elem.stair.treadDepth);
                 typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
                 typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
-                typeSpecificDetails.Add ("level", elem.stair.basePlane.basePoint.z);
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.stair.basePlane.basePoint.z, stories));
+                typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
+                typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
-                AddStairBaseLineFromMemo (elem.header.guid, typeSpecificDetails);
+                AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
             } break;
 
             default:
