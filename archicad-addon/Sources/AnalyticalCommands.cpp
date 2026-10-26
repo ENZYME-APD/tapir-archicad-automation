@@ -1179,8 +1179,9 @@ GS::ObjectState CreateAnalyticalLinkGeometryObjectState (const API_AnalyticalLin
     return geometryOS;
 }
 
-// Reads the element and checks its type. Returns an error response on failure.
-GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_ElemTypeID typeID, const char* typeName, API_Element& element)
+// Reads the element and checks its type. Analytical supports and links are external elements,
+// identified by their classID. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, const API_Guid& classID, const char* typeName, API_Element& element)
 {
     element = {};
     element.header.guid = elemGuid;
@@ -1188,7 +1189,7 @@ GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_El
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the element.");
     }
-    if (GetElemTypeId (element.header) != typeID) {
+    if (element.header.type.classID != classID) {
         return CreateErrorResponse (APIERR_BADID, GS::UniString::Printf ("The element is not an %s.", typeName));
     }
     return GS::NoValue;
@@ -1197,13 +1198,14 @@ GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_El
 // Creates one element of the given type from the tool defaults; setElement fills it from the support
 // or link (SetElementFromSupport and SetElementFromLink set the type and the external element data).
 template <typename SetElement>
-GS::ObjectState CreateAnalyticalElement (API_ElemTypeID typeID, const char* typeName, const SetElement& setElement)
+GS::ObjectState CreateAnalyticalElement (const API_Guid& classID, const char* typeName, const SetElement& setElement)
 {
     API_Element element = {};
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
 
-    element.header.type = typeID;
+    element.header.type = API_ElemType (API_ExternalElemID);
+    element.header.type.classID = classID;
     GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
     if (err != NoError) {
         return CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the defaults of the %s.", typeName));
