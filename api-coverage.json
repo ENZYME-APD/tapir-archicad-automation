@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 07:34 UTC",
+ "generatedAt": "2026-10-26 07:45 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 914,
-  "claimed": 146,
+  "in progress": 919,
+  "claimed": 141,
   "done": 743
  },
  "items": [
@@ -5132,6 +5132,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
+    {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
     },
@@ -9507,7 +9511,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": []
   },
   {
@@ -21044,6 +21053,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1354,
      "title": "[2/4] Status of attribute properties in GetPropertyValuesOfAttributes"
@@ -34069,9 +34082,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -34095,9 +34113,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -34214,6 +34237,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1467,
      "title": "[4/6] Zone labeling settings and library part types"
@@ -34334,9 +34361,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -34379,7 +34411,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": []
   },
   {
@@ -34397,6 +34434,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1286,
      "title": "[4/4] Add DeleteFavoriteFolder command"
@@ -34436,6 +34477,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
@@ -34515,9 +34560,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -34544,6 +34594,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
@@ -34613,7 +34667,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": []
   },
   {
@@ -34717,9 +34776,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -34825,6 +34889,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
+    {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
     },
@@ -34872,6 +34940,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
@@ -35107,6 +35179,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
@@ -36326,6 +36402,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
+    {
      "number": 1530,
      "title": "[2/6] SetLibraryPartParameters"
     }
@@ -36397,6 +36477,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1530,
      "title": "[2/6] SetLibraryPartParameters"
@@ -38307,6 +38391,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
+    {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
@@ -38560,6 +38648,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
@@ -39229,6 +39321,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
+    {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
@@ -39378,6 +39474,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
@@ -40642,6 +40742,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
@@ -62589,6 +62693,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
+    {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
     },
@@ -67458,6 +67566,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
@@ -76303,6 +76415,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1537,
+     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
+    },
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
