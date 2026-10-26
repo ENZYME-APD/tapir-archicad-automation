@@ -1,9 +1,8 @@
 {
- "generatedAt": "2026-10-26 09:05 UTC",
+ "generatedAt": "2026-10-26 12:20 UTC",
  "counts": {
-  "done": 287,
+  "done": 302,
   "open": 112,
-  "merged": 15,
   "in progress": 11,
   "not applicable": 1
  },
@@ -742,7 +741,7 @@
    "group": "Project Commands",
    "version": "1.7.2",
    "brief": "Starts a new, untitled project from the template set in Archicad's New Project settings, as File > New does; with newAndReset also the working environment is reset, as New and Reset All does. The unsaved changes of the open project are discarded, as with OpenProject.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -881,7 +880,7 @@
    "group": "Project Commands",
    "version": "1.7.2",
    "brief": "Returns what the 3D window, or the PhotoRendering window, shows as a base64 encoded png or jpg image with its size in pixels, without writing a file. Available from Archicad 30.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -1455,7 +1454,7 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a coordinate of the floor plan of the current database, the way a click there would. Use the optional filters parameter (the values of FilterElements) to consider only, for example, the elements visible by layer, and the optional z parameter to give the elevation of the point. Returns found: false when there is no such element. Useful together with GetPointFromUser.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -1520,7 +1519,7 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the exposed surface areas of the given elements calculated by Archicad: for each element one item per surface attribute and building material pair with the area that is not covered by the covering elements (for example the wall area behind a slab is taken off the wall's surface). The covering elements are the optional coverElements; by default every construction element of the project. The output is aligned with the input array of elements.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -1747,7 +1746,7 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Gets the area reductions of the given Zones, as the Zone Stamp's area calculation uses them: the polygons of the Zone covered by Walls, Columns, reducing Fills, sloping Roofs and low ceilings, each with its type, the percentage it is reduced by, its area and its outline with holes. Area calculations by local standards need these parts, which GetQuantitiesOfElements only gives as totals. The output is aligned with the input array of elements.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -1921,7 +1920,7 @@
    "group": "Element Commands",
    "version": "1.7.2",
    "brief": "Mirrors elements across an axis given by two points on the floor plan, optionally as a copy. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -4053,7 +4052,7 @@
    "group": "Element grouping Commands",
    "version": "1.7.2",
    "brief": "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. A group nested in another group is reported as failed; ungroup the containing group first. Returns an execution result per group.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -4884,7 +4883,7 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Returns the classification of the tool defaults (the settings new elements get) of the given element types in the given classification systems.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -4907,7 +4906,7 @@
    "group": "Classification Commands",
    "version": "1.7.3",
    "brief": "Sets the classifications of the tool defaults (the settings new elements get) of the given element types. In order to set a default to unclassified, omit the classificationItemId field.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -6631,7 +6630,7 @@
    "group": "Teamwork Commands",
    "version": "1.7.2",
    "brief": "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user and the element's owner.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -6653,7 +6652,7 @@
    "group": "Teamwork Commands",
    "version": "1.7.2",
    "brief": "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog. Available from Archicad 27.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -8056,7 +8055,7 @@
    "group": "Issue Management Commands",
    "version": "1.7.2",
    "brief": "Imports the markups of the specified PDF file as issues, like Issue Manager > Import PDF markups, without any dialog and without opening the Issue Manager palette, and reports the issues it created. Available from Archicad 29.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -9174,7 +9173,7 @@
    "group": "MEP Commands",
    "version": "1.7.2",
    "brief": "Gets the MEP system groups of the project with their physical systems: name, editable flag, root element and MEP system. Available from Archicad 29.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -9194,7 +9193,7 @@
    "group": "MEP Commands",
    "version": "1.7.2",
    "brief": "Creates MEP system groups. Available from Archicad 29.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
@@ -9217,7 +9216,7 @@
    "group": "MEP Commands",
    "version": "1.7.2",
    "brief": "Creates physical systems in MEP system groups, optionally with a root element and an MEP system as their category. Available from Archicad 29.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
