@@ -468,6 +468,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.2",
             "Gets the category values (Structural Function, Position, Renovation Status ...) of the given elements, optionally only for the given category types. An element that has none of the requested categories (an annotation, for example) gets an error item. The names are localized: use the type and the categoryValueId in scripts."
         );
+        err |= RegisterCommand<GetCategoryValuesOfDefaultsCommand> (
+            elementCommands, "1.7.3",
+            "Gets the category values (Structural Function, Position, Renovation Status ...) of the tool defaults of the given element types, the values new elements of the type get, optionally only for the given category types. A category the default has no value in is listed without categoryValueId; an element type without any of the requested categories gets an error item. The names are localized: use the type and the categoryValueId in scripts."
+        );
         err |= RegisterCommand<SetCategoryValuesOfElementsCommand> (
             elementCommands, "1.7.2",
             "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts."
