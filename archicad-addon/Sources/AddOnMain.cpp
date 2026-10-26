@@ -1310,7 +1310,7 @@ GSErrCode Initialize (void)
         CommandGroup libraryCommands ("Library Commands");
         err |= RegisterCommand<GetLibrariesCommand> (
             libraryCommands, "1.0.1",
-            "Gets the list of loaded libraries."
+            "Gets the list of loaded libraries. From Archicad 28 a library package also gets its package information (ID, versions, minimum Archicad version and dependencies)."
         );
         err |= RegisterCommand<ReloadLibrariesCommand> (
             libraryCommands, "1.0.0",

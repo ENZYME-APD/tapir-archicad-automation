@@ -4407,6 +4407,9 @@
             "urlWebLibrary": {
                 "type": "string",
                 "description": "URL of the downloaded Internet library."
+            },
+            "package": {
+                "$ref": "#/LibraryPackage"
             }
         },
         "additionalProperties": false,
@@ -4415,6 +4418,61 @@
             "type",
             "path"
         ]
+    },
+    "LibraryPackage": {
+        "type": "object",
+        "description": "Package information of a library that is a library package. Only given for packages, from Archicad 28. A value Archicad cannot read is left out.",
+        "properties": {
+            "packageId": {
+                "type": "string",
+                "description": "The GUID of the package."
+            },
+            "mainVersion": {
+                "type": "integer",
+                "description": "The main version of the package."
+            },
+            "subVersion": {
+                "type": "integer",
+                "description": "The sub version of the package."
+            },
+            "minArchicadVersion": {
+                "type": "integer",
+                "description": "The minimum Archicad version the package needs."
+            },
+            "minArchicadBuildNumber": {
+                "type": "integer",
+                "description": "The minimum Archicad build number the package needs."
+            },
+            "dependencies": {
+                "type": "array",
+                "description": "The packages this package depends on.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the package."
+                        },
+                        "packageId": {
+                            "type": "string",
+                            "description": "The GUID of the package."
+                        },
+                        "version": {
+                            "type": "integer",
+                            "description": "The version of the package that is needed."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "packageId",
+                        "version"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     },
     "LibraryLocation": {
         "type": "object",
