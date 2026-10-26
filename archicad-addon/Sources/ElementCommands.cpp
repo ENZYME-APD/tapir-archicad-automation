@@ -2961,6 +2961,109 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+SetElementInfoStringsCommand::SetElementInfoStringsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetElementInfoStringsCommand::GetName () const
+{
+    return "SetElementInfoStrings";
+}
+
+GS::Optional<GS::UniString> SetElementInfoStringsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "infoString": {
+                            "type": "string",
+                            "description": "The new Element ID, as the Info Box shows it (GetDetailsOfElements returns it as id)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "infoString"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetElementInfoStringsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetElementInfoStrings", [&]() -> GSErrCode {
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            GS::UniString infoString;
+            if (!element.Get ("infoString", infoString)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "infoString is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+#ifdef ServerMainVers_2700
+            const GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elemGuid, &infoString);
+#else
+            // ACAPI_Element_ChangeElementInfoString is available from AC27, before that the
+            // info string memo part is written, as SetDetailsOfElements writes the id.
+            const GSErrCode err = ChangeElementId (elemGuid, infoString);
+#endif
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change the info string of the element"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 GetSelectedElementsCommand::GetSelectedElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

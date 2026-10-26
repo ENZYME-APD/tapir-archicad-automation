@@ -1517,6 +1517,108 @@ GS::ObjectState GetCurrentPenTableCommand::Execute (const GS::ObjectState& /*par
     return response;
 }
 
+GetPensCommand::GetPensCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPensCommand::GetName () const
+{
+    return "GetPens";
+}
+
+GS::Optional<GS::UniString> GetPensCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "indices": {
+                "type": "array",
+                "description": "The indices of the pens to return, from 1 to the number of pens (GetCurrentPenTable returns penCount). If omitted, every pen is returned.",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetPensCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "pens": {
+                "type": "array",
+                "description": "The pens in effect in the current window, or errors. The order is that of the given indices.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/PenTablePen"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pens"
+        ]
+    })";
+}
+
+GS::ObjectState GetPensCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    UInt32 penCount = 0;
+    GSErrCode err = ACAPI_Attribute_GetPenNum (penCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of pens.");
+    }
+
+    GS::Array<Int32> indices;
+    if (!parameters.Get ("indices", indices)) {
+        for (UInt32 i = 1; i <= penCount; ++i) {
+            indices.Push ((Int32) i);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& pens = response.AddList<GS::ObjectState> ("pens");
+
+    for (const Int32 index : indices) {
+        if (index < 1 || (UInt32) index > penCount) {
+            pens (CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("Invalid pen index %d, it must be between 1 and %u.", index, penCount)));
+            continue;
+        }
+
+        API_Pen pen = {};
+        pen.index = (short) index;
+        err = ACAPI_Attribute_GetPen (pen);
+        if (err != NoError) {
+            pens (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the pen %d.", index)));
+            continue;
+        }
+
+        pens (GS::ObjectState (
+            "index", (Int32) pen.index,
+            "color", GS::ObjectState ("red", pen.rgb.f_red, "green", pen.rgb.f_green, "blue", pen.rgb.f_blue),
+            "width", pen.width,
+            "description", GS::UniString (pen.description)));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GetProfilesCommand::GetProfilesCommand () :
     CommandBase (CommonSchema::Used)
 {
