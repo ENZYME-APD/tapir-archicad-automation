@@ -51,6 +51,7 @@
 #include "GridElementCommands.hpp"
 #include "GraphicalOverrideCommands.hpp"
 #include "PolygonCommands.hpp"
+#include "ViewAndPlaceSettingsCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -406,6 +407,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetGeoLocationCommand> (
             projectCommands, "1.2.9",
             "Sets the project location details: the project location, and the survey point's position, geo-referencing parameters, visibility and lock state (the lock from Archicad 26). Omitted fields stay unchanged."
+        );
+        err |= RegisterCommand<SetPlaceSettingsCommand> (
+            projectCommands, "1.7.3",
+            "Changes the place settings of the project: location (longitude, latitude, altitude, north), date, time, summer time and time zone. Only the given fields change. Returns the settings read back, with the sun position Archicad calculated for them. Available from Archicad 27."
+        );
+        err |= RegisterCommand<FindDimensionStandardCommand> (
+            projectCommands, "1.7.3",
+            "Finds a dimension standard (Options > Project Preferences > Dimensions) by its name and returns its index, name and guid. Available from Archicad 27."
         );
         err |= RegisterCommand<GetProjectNotesCommand> (
             projectCommands, "1.7.3",
@@ -1558,6 +1567,22 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<Set3DWindowSettingsCommand> (
             navigatorCommands, "1.7.3",
             "Changes the pixel size of the 3D window and/or the zoom (scale and displacement) of its projection; the values not given are kept. Returns the settings read back after the change. Archicad may need a rebuild of the 3D window (RebuildView) before it shows the change, e.g. before SaveCurrentWindowAsImage."
+        );
+        err |= RegisterCommand<Get3DFilterAndCutSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the 'Filter and Cut Elements in 3D' settings of the 3D window: the stories shown, the filter mode and which element types are shown. Available from Archicad 27."
+        );
+        err |= RegisterCommand<Set3DFilterAndCutSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Changes the 'Filter and Cut Elements in 3D' settings of the 3D window; only the given fields and the listed element types change. Returns the settings read back after the change. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetGridSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the grid and snap grid settings of the database of the current window, and which database that is. Each database has its own grid settings. Available from Archicad 27."
+        );
+        err |= RegisterCommand<SetGridSettingsCommand> (
+            navigatorCommands, "1.7.3",
+            "Changes the grid and snap grid settings of the database of the current window; only the given fields change. Returns the settings read back after the change. Available from Archicad 27."
         );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.1",

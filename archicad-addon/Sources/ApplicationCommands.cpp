@@ -325,7 +325,7 @@ GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetRawResponseSchema ()
     })";
 }
 
-static GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
+GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
 {
     switch (type) {
         case APIWind_FloorPlanID: return "FloorPlan";
