@@ -2137,7 +2137,7 @@ static GSErrCode RenameDrawingElementInCurrentDatabase (const API_Guid& guid, co
 // database of the item.
 static GSErrCode RenameDrawingOfNavigatorItem (const API_NavigatorItem& navItem, const GS::UniString& newName, bool& found)
 {
-    const GS::UniString::CStr drawingName = newName.ToCStr ();
+    const auto drawingName = newName.ToCStr ();
     found = false;
     GSErrCode err = NoError;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RenameNavigatorItemCommand", [&]() -> GSErrCode {
