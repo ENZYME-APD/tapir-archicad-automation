@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 06:50 UTC",
+ "generatedAt": "2026-10-26 06:57 UTC",
  "versions": [
   25,
   26,
@@ -3800,6 +3800,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1255,
      "title": "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read"
     }
@@ -4054,6 +4058,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 951,
      "title": "Add ModifyPens: change single pens of the active pen table"
@@ -4523,6 +4531,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1318,
      "title": "Expose property definitions and availability of attributes, and batch property changes"
@@ -5307,6 +5319,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1526,
      "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
@@ -8712,6 +8728,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 371,
      "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
     }
@@ -9447,6 +9467,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 944,
      "title": "Get and set property values and classifications of tool defaults"
@@ -10257,6 +10281,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 944,
      "title": "Get and set property values and classifications of tool defaults"
     }
@@ -10347,6 +10375,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1319,
      "title": "Expose property values of element defaults, property availability and batch property changes of elements"
@@ -11603,6 +11635,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1328,
      "title": "Expose solid operations that create elements, more quantities, external hierarchical sub-elements and delete-selected"
     }
@@ -12175,6 +12211,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 939,
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
     }
@@ -12202,6 +12242,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 939,
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
@@ -12263,6 +12307,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 939,
      "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
@@ -13972,7 +14020,12 @@
      "title": "Add BreakHotlinkNodes and DeleteHotlinkNodes, report hotlink source status"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_GetHotlinkNodeTree",
@@ -14087,6 +14140,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 924,
      "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
@@ -17653,6 +17710,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1206,
      "title": "Expose ACAPI_Navigator_DimStand_* (read dimension standards)"
@@ -23672,6 +23733,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 876,
      "title": "Feature request: Get/Set view commands"
     }
@@ -24081,6 +24146,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 876,
      "title": "Feature request: Get/Set view commands"
@@ -24959,6 +25028,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 935,
      "title": "Get and set snap grid and auto-intersect settings"
     }
@@ -25180,6 +25253,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 935,
      "title": "Get and set snap grid and auto-intersect settings"
@@ -25822,6 +25899,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1492,
      "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
@@ -26575,6 +26656,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
@@ -30689,6 +30774,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
     }
@@ -30710,6 +30799,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
@@ -30733,6 +30826,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
     }
@@ -30754,6 +30851,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
@@ -30777,6 +30878,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
     }
@@ -30799,6 +30904,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
     }
@@ -30820,6 +30929,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1109,
      "title": "Expose the design option table of hotlinks (which options a hotlinked module shows)"
@@ -33630,6 +33743,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1232,
      "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
     }
@@ -33651,6 +33768,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1232,
      "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
@@ -33887,6 +34008,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1232,
      "title": "Expose ACAPI::Favorite::Favorite::GetProperties / GetClassifications (audit favorites)"
     }
@@ -34063,6 +34188,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1231,
      "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
@@ -34261,6 +34390,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1231,
      "title": "Expose ACAPI::Favorite folder functions (list, create, move favorites between folders)"
@@ -35863,6 +35996,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
+    {
      "number": 1223,
      "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
     }
@@ -35925,6 +36062,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1527,
+     "title": "Build what the stuck PRs of 17 API issues left out: hotlink status and design option tables, grid/3D filter/place settings, tool default classifications and properties, pens, favorites, solid operations (with the DevKit declarations)"
+    },
     {
      "number": 1223,
      "title": "Expose ACAPI::Library::GSMObject::GetParameters / GetParameterDescriptions (defaults of a library part)"
