@@ -6321,7 +6321,7 @@ GS::Optional<GS::UniString> GetElementAtCoordinateCommand::GetInputParametersSch
             },
             "z": {
                 "type": "number",
-                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0."
+                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0; without z a point 1 mm higher is also tried, so an element whose top is at 0 (for example a slab at the story level) is found."
             },
             "filters": {
                 "type": "array",
@@ -6386,7 +6386,7 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
 #endif
     searchPars.loc = Get2DCoordinateFromObjectState (*coordinate);
     searchPars.z = 0.0;
-    parameters.Get ("z", searchPars.z);
+    const bool zGiven = parameters.Get ("z", searchPars.z);
 
     GS::Array<GS::UniString> filters;
     if (parameters.Get ("filters", filters)) {
@@ -6398,17 +6398,25 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
     }
 
     API_Guid elemGuid = APINULLGuid;
-    const GSErrCode err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    GSErrCode err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    if (err == APIERR_BADPARS && !zGiven) {
+        // Archicad 27 and later miss an element whose top is exactly at the default elevation
+        // (a slab with its top at the story level), so the search is repeated slightly above it.
+        searchPars.z = 0.001;
+        elemGuid = APINULLGuid;
+        err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    }
     if (err == APIERR_REFUSEDPAR) {
         return CreateErrorResponse (err, "Only polygonal element types can be searched by coordinate (for example Slab, Roof, Mesh, Zone or Hatch).");
     }
-    if (err != NoError) {
+    // Both pointers are valid here, so APIERR_BADPARS is Archicad's way of saying that there
+    // is no element at the point.
+    if (err != NoError && err != APIERR_BADPARS) {
         return CreateErrorResponse (err, "Failed to search for an element at the coordinate.");
     }
 
-    // A successful search leaves the guid null when there is nothing at the point.
     GS::ObjectState response;
-    const bool found = (elemGuid != APINULLGuid);
+    const bool found = (err == NoError && elemGuid != APINULLGuid);
     response.Add ("found", found);
     if (found) {
         response.Add ("elementId", CreateGuidObjectState (elemGuid));
