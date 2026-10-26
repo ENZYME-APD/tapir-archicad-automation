@@ -1542,7 +1542,7 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     }
 
     if (err != NoError) {
-        return CreateUserInputErrorResponse ("ACAPI_UserInput_GetPoint", err);
+        return CreateErrorResponse (err, "Failed to retrieve start point");
     }
 
     API_GetLineType lineInfo = {};
@@ -1558,7 +1558,7 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     }
 
     if (err != NoError) {
-        return CreateUserInputErrorResponse ("ACAPI_UserInput_GetLine", err);
+        return CreateErrorResponse (err, "Failed to retrieve end point");
     }
 
     return GS::ObjectState (
@@ -1677,7 +1677,7 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
             return GS::ObjectState ("cancelled", true);
         }
         if (err != NoError) {
-            return CreateUserInputErrorResponse ("ACAPI_UserInput_GetPoint", err);
+            return CreateErrorResponse (err,"Failed to retrieve start point");
         }
 
         API_GetPolyType polyInfo = {};
@@ -1690,10 +1690,10 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
             return GS::ObjectState ("cancelled", true);
         }
         if (err != NoError) {
-            return CreateUserInputErrorResponse ("ACAPI_UserInput_GetPoly", err);
+            return CreateErrorResponse (err,"Failed to retrieve polygon points");
         }
         if (polyInfo.coords == nullptr) {
-            return CreateErrorResponse (APIERR_GENERAL, "Polygon input did not return coordinate handle.");
+            return CreateErrorResponse (APIERR_GENERAL, "Failed: Polygon input did not return coordinate handle.");
         }
 
         const GS::OnExit disposePolyHandles ([&polyInfo]() {
