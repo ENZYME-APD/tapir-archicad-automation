@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 08:18 UTC",
+ "generatedAt": "2026-10-26 09:05 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "claimed": 125,
-  "in progress": 919,
+  "claimed": 71,
+  "in progress": 973,
   "open": 116,
   "done": 743
  },
@@ -4528,6 +4528,18 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1544,
+     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
+    },
+    {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -6190,9 +6202,14 @@
    "olderNames": [
     "APIDb_RebuildCurrentDatabaseID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1544,
+     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -9214,6 +9231,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    },
+    {
      "number": 1535,
      "title": "[6/6] Add DeleteUserDataOfElements"
     },
@@ -10774,9 +10795,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1544,
+     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -14728,6 +14754,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    },
+    {
      "number": 1364,
      "title": "[3/4] Add GetLibraryPartSections and GetLibraryPartSection"
     }
@@ -15034,6 +15064,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    },
+    {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
     },
@@ -15135,9 +15169,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -15163,9 +15202,14 @@
    "olderNames": [
     "ACAPI_LibPart_UpdateSection"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -23741,9 +23785,14 @@
    "olderNames": [
     "APIDb_CloseWindowID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1544,
+     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -23818,6 +23867,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1544,
+     "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
+    },
     {
      "number": 1514,
      "title": "[5/6] Add GetStoryControlPrimitives"
@@ -25900,9 +25953,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -31860,6 +31918,14 @@
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1506,
      "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
     },
@@ -32022,9 +32088,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -32156,7 +32227,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": []
   },
   {
@@ -32193,9 +32269,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -32716,6 +32797,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -32926,9 +33011,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -32986,6 +33076,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -36150,6 +36244,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1543,
+     "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
+    },
+    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -37701,6 +37799,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -37813,6 +37919,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -37881,6 +37995,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -37935,9 +38053,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -37990,6 +38113,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -38126,6 +38253,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -38393,6 +38532,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -38426,9 +38573,18 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -38506,6 +38662,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -38735,9 +38899,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -38757,9 +38926,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -38784,6 +38958,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -39562,6 +39744,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -39830,6 +40016,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -40153,6 +40343,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -40353,9 +40547,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -40559,6 +40758,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -40585,6 +40788,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -41215,6 +41426,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -42075,6 +42290,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -42126,6 +42349,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -42152,6 +42379,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -42431,6 +42666,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -43184,6 +43423,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -43231,6 +43478,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -43257,6 +43508,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -43538,6 +43797,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -44279,6 +44542,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -44862,6 +45133,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -44887,6 +45162,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -45185,6 +45468,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -45668,6 +45955,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -45717,6 +46012,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -45818,6 +46125,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -45851,6 +46162,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -45906,6 +46221,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -45988,6 +46307,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46017,6 +46340,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46078,6 +46405,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46107,6 +46438,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46133,9 +46468,18 @@
    "olderNames": [
     "ACAPI::MEP::BendDefault::Modifier::SetFactorRadius"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -46158,9 +46502,18 @@
    "olderNames": [
     "ACAPI::MEP::BendDefault::Modifier::SetPreferenceTable"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -46187,6 +46540,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46246,6 +46607,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46724,6 +47093,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46760,6 +47137,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46975,6 +47360,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47085,6 +47478,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -47105,6 +47502,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -47480,6 +47885,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47611,6 +48024,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -47631,6 +48048,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -47691,7 +48116,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": []
   },
   {
@@ -47739,7 +48169,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": []
   },
   {
@@ -47814,9 +48249,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -47835,9 +48275,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -47908,6 +48353,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47947,6 +48400,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
@@ -48292,9 +48757,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -48465,9 +48935,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -48913,9 +49388,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -48953,9 +49433,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -49048,6 +49533,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -49123,6 +49616,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49204,6 +49705,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -49272,6 +49781,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -49331,6 +49844,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49444,6 +49965,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -49512,6 +50041,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -49571,6 +50104,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49708,9 +50249,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -49894,6 +50440,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -50371,9 +50925,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -51227,6 +51786,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -51309,6 +51876,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -51354,6 +51929,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -51521,6 +52100,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -51560,6 +52147,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -51586,6 +52177,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -52216,6 +52815,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -53076,6 +53679,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -53127,6 +53738,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -53153,6 +53768,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -53434,6 +54057,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -54175,6 +54802,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -54226,6 +54861,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -54252,6 +54891,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -54531,6 +55178,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -55284,6 +55935,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -55330,6 +55989,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -55355,6 +56018,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -55632,6 +56303,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -56122,6 +56797,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -56731,6 +57414,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -58072,9 +58763,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -58098,6 +58794,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -58261,6 +58961,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -58531,6 +59243,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -58587,6 +59307,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -58817,9 +59545,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -58839,9 +59572,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -58861,9 +59599,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -58924,6 +59667,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -59241,9 +59996,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -59301,9 +60061,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -59375,9 +60140,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -59584,9 +60354,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -59608,9 +60383,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -59669,6 +60449,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -59931,6 +60723,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60156,9 +60952,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -60237,6 +61038,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60276,6 +61085,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -60336,6 +61149,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -60459,9 +61284,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -60561,6 +61391,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60593,9 +61427,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -60617,9 +61456,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -60708,9 +61552,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -60787,9 +61636,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -60814,6 +61668,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -60931,6 +61797,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60959,6 +61833,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -60986,6 +61864,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61031,9 +61917,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61091,9 +61986,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61118,6 +62022,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61183,6 +62095,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61235,6 +62159,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61281,6 +62209,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61317,6 +62249,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61343,6 +62279,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61372,6 +62312,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61399,6 +62343,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61482,6 +62430,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61514,6 +62466,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61540,6 +62496,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61568,6 +62528,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61592,9 +62556,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61635,9 +62604,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61661,6 +62635,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61790,7 +62768,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -61808,7 +62791,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -61827,7 +62815,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -61846,7 +62839,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -61883,7 +62881,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -61982,6 +62985,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62049,6 +63064,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62075,6 +63094,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62112,6 +63135,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62138,6 +63165,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62167,6 +63198,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62194,6 +63229,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62258,6 +63297,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62290,6 +63333,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62317,6 +63364,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62343,6 +63394,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62394,6 +63449,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62495,7 +63554,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -62513,7 +63577,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -62532,7 +63601,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -62551,7 +63625,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -62588,7 +63667,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -62686,6 +63770,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62812,6 +63908,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62857,6 +63961,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -62950,6 +64058,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -63208,6 +64328,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -63246,6 +64374,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -63401,6 +64537,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -63527,6 +64671,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -63639,6 +64791,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -63707,6 +64867,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
@@ -63767,6 +64931,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -63822,6 +64998,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -63966,6 +65146,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -63998,6 +65182,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -64027,6 +65215,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -64148,6 +65340,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -64224,6 +65428,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -64251,6 +65459,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -64280,6 +65492,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -64305,6 +65521,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -64352,9 +65572,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -64379,6 +65608,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -65176,6 +66413,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
     {
      "number": 1467,
      "title": "[4/6] Zone labeling settings and library part types"
@@ -69867,6 +71108,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
+     "number": 1540,
+     "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -70263,9 +71512,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -70286,9 +71540,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -70309,9 +71568,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -70335,6 +71599,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
     {
      "number": 1536,
      "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
@@ -70995,6 +72263,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
@@ -71431,6 +72703,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
+    {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
@@ -71466,9 +72742,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -71507,9 +72788,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -71530,9 +72816,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -71573,7 +72864,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": []
   },
   {
@@ -71589,9 +72885,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -71632,7 +72933,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": []
   },
   {
@@ -71650,7 +72956,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": []
   },
   {
@@ -71666,9 +72977,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -71707,9 +73023,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -71733,6 +73054,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    },
     {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
@@ -71933,7 +73258,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": []
   },
   {
@@ -72340,9 +73670,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1542,
+     "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
