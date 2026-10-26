@@ -489,6 +489,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Gets the connections among the given elements: each pair of touching elements once, with the polygons of the surface where they touch, in world coordinates. The 3D model of the elements is generated with separate components in a temporary sight, so the 3D window is not changed. Also returns, aligned with the input array of elements, whether each element was found. Available from Archicad 28."
         );
+        err |= RegisterCommand<GetBodyMaterialsOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Gets the building material of each body of the 3D model of the given elements. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28."
+        );
         err |= RegisterCommand<GetElementAtCoordinateCommand> (
             elementCommands, "1.7.2",
             "Finds the element of the given polygonal type (for example Slab, Roof, Mesh, Zone or Hatch) at a coordinate of the floor plan of the current database, the way a click there would. Use the optional filters parameter (the values of FilterElements) to consider only, for example, the elements visible by layer, and the optional z parameter to give the elevation of the point. Returns found: false when there is no such element. Useful together with GetPointFromUser."

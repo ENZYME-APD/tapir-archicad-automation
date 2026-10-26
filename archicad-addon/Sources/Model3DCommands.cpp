@@ -2,6 +2,10 @@
 #include "MigrationHelper.hpp"
 
 #ifdef ServerMainVers_2800
+#include "Model.hpp"
+#include "ModelElement.hpp"
+
+#include <optional>
 
 // Creates a sight and selects it, so that ACAPI_ModelAccess_GenerateModelWithSeparateComponents
 // builds its model there instead of in the sight of the 3D window (which it refuses). The user's
@@ -57,6 +61,32 @@ static API_Coord3D PlaneToWorld (const API_Plane3D& plane, const API_Coord& coor
     world.y += coord.x * plane.axisX.y + coord.y * plane.axisY.y;
     world.z += coord.x * plane.axisX.z + coord.y * plane.axisY.z;
     return world;
+}
+
+// The building material of one body of the separated-components model. elemIdx is the API index
+// of the element (its ModelerAPI index minus 1, as the DevKit's ThermalBridge example says).
+static GSErrCode CreateBodyMaterialObjectState (Int32 elemIdx, UInt32 bodyIdx, GS::ObjectState& bodyOS)
+{
+    API_AttributeIndex materialIdx;
+    const GSErrCode err = ACAPI_ModelAccess_GetBuildingMaterial (elemIdx, bodyIdx, &materialIdx);
+    if (err != NoError) {
+        return err;
+    }
+
+    bodyOS.Add ("bodyIndex", static_cast<Int32> (bodyIdx));
+
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = API_BuildingMaterialID;
+    attr.header.index = materialIdx;
+    attr.header.uniStringNamePtr = &name;
+    if (ACAPI_Attribute_Get (&attr) == NoError) {
+        bodyOS.Add ("buildingMaterialId", CreateAttributeIdObjectState (attr.header.guid));
+        bodyOS.Add ("buildingMaterialName", name);
+    }
+    DisposeAttribute (attr);
+
+    return NoError;
 }
 
 #endif
@@ -232,6 +262,199 @@ GS::ObjectState GetElementConnectionsCommand::Execute (const GS::ObjectState& pa
         }
 
         connections (connection);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
+}
+
+GetBodyMaterialsOfElementsCommand::GetBodyMaterialsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetBodyMaterialsOfElementsCommand::GetName () const
+{
+    return "GetBodyMaterialsOfElements";
+}
+
+GS::Optional<GS::UniString> GetBodyMaterialsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetBodyMaterialsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "bodyMaterials": {
+                "type": "array",
+                "description": "The bodies of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "bodies": {
+                                    "type": "array",
+                                    "description": "The bodies of the element's 3D model generated with separate components: a composite structure has one body per skin. Empty when the element has no 3D model.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "bodyIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the body in the element, starting from 0."
+                                            },
+                                            "buildingMaterialId": {
+                                                "$ref": "#/AttributeId",
+                                                "description": "The building material of the body. Left out when it cannot be found among the attributes of the project."
+                                            },
+                                            "buildingMaterialName": {
+                                                "type": "string",
+                                                "description": "The name of the building material. Left out together with buildingMaterialId."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "bodyIndex"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "bodies"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodyMaterials"
+        ]
+    })";
+}
+
+GS::ObjectState GetBodyMaterialsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    // The model is generated once for all found elements, so the elements are checked first.
+    // An unknown guid would make GenerateModelWithSeparateComponents fail for all of them
+    // (APIERR_BADID); a failed input keeps APINULLGuid and its error.
+    GS::Array<API_Guid> inputGuids;
+    GS::Array<GS::ObjectState> inputErrors;
+    GS::Array<API_Guid> elementGuids;
+    GS::HashSet<API_Guid> elementGuidSet;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            inputGuids.Push (APINULLGuid);
+            inputErrors.Push (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        const GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            inputGuids.Push (APINULLGuid);
+            inputErrors.Push (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        inputGuids.Push (elemHead.guid);
+        inputErrors.Push (GS::ObjectState ());
+        if (!elementGuidSet.Contains (elemHead.guid)) {
+            elementGuidSet.Add (elemHead.guid);
+            elementGuids.Push (elemHead.guid);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& bodyMaterials = response.AddList<GS::ObjectState> ("bodyMaterials");
+    if (elementGuids.IsEmpty ()) {
+        for (const GS::ObjectState& inputError : inputErrors) {
+            bodyMaterials (inputError);
+        }
+        return response;
+    }
+
+    const TemporarySight temporarySight;
+    if (temporarySight.GetError () != NoError) {
+        return CreateErrorResponse (temporarySight.GetError (), "Failed to create a temporary sight for the 3D model");
+    }
+
+    GSErrCode err = ACAPI_ModelAccess_GenerateModelWithSeparateComponents (elementGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to generate the 3D model of the elements");
+    }
+
+    ModelerAPI::Model model;
+    err = ACAPI_Sight_GetSelectedSightModel (model);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the 3D model of the elements");
+    }
+
+    for (UIndex i = 0; i < inputGuids.GetSize (); ++i) {
+        if (inputGuids[i] == APINULLGuid) {
+            bodyMaterials (inputErrors[i]);
+            continue;
+        }
+
+        GS::ObjectState result;
+        const auto& bodies = result.AddList<GS::ObjectState> ("bodies");
+
+        const std::optional<Int32> modelIndex = model.GetElementIndex (APIGuid2GSGuid (inputGuids[i]));
+        if (!modelIndex.has_value ()) {
+            bodyMaterials (result);
+            continue;
+        }
+
+        ModelerAPI::Element modelElement;
+        model.GetElement (*modelIndex, &modelElement);
+
+        // ModelerAPI indexes the elements from 1, ACAPI_ModelAccess_GetBuildingMaterial from 0.
+        const Int32 elemIdx = *modelIndex - 1;
+        const Int32 bodyCount = modelElement.GetTessellatedBodyCount ();
+
+        GSErrCode bodyErr = NoError;
+        for (Int32 bodyIdx = 0; bodyIdx < bodyCount; ++bodyIdx) {
+            GS::ObjectState bodyOS;
+            bodyErr = CreateBodyMaterialObjectState (elemIdx, static_cast<UInt32> (bodyIdx), bodyOS);
+            if (bodyErr != NoError) {
+                break;
+            }
+            bodies (bodyOS);
+        }
+
+        if (bodyErr != NoError) {
+            bodyMaterials (CreateErrorResponse (bodyErr, "Failed to get the building material of a body of the element"));
+        } else {
+            bodyMaterials (result);
+        }
     }
 
     return response;
