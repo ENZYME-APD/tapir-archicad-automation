@@ -1352,6 +1352,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Gets the master, parameter, 2D, 3D and properties scripts of loaded library parts, given by name or by an element placed from them, with the unique ID of each part. A script section the part does not have is reported as not present. Password protected parts need their password. Available from Archicad 28."
         );
+        err |= RegisterCommand<CopyLibraryPartsCommand> (
+            libraryCommands, "1.7.3",
+            "Copies loaded library parts, given by name or by an element placed from them, under a new file name into a folder, by default the embedded library. The copy gets a new unique ID unless the main GUID is kept. An existing file is never overwritten. The libraries are reloaded once afterwards, so the copies can be found by name. Available from Archicad 28."
+        );
         AddCommandGroup (libraryCommands);
     }
 

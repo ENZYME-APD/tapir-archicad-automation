@@ -1456,3 +1456,242 @@ GS::ObjectState GetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }
+
+CopyLibraryPartsCommand::CopyLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CopyLibraryPartsCommand::GetName () const
+{
+    return "CopyLibraryParts";
+}
+
+GS::Optional<GS::UniString> CopyLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to copy, each given by its name or by an element placed from it, with the name of the copy.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "libraryPartName": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). Give this or elementId."
+                        },
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "An object, lamp, window, door, skylight, zone or curtain wall frame, panel, junction or accessory; the library part it is placed from is copied. Give this or libraryPartName."
+                        },
+                        "newName": {
+                            "type": "string",
+                            "description": "The file name of the copy with its extension (e.g. 'My Door copy.gsm'). It must not contain a folder.",
+                            "minLength": 1
+                        },
+                        "targetFolder": {
+                            "type": "string",
+                            "description": "Optional. The absolute path of an existing folder to put the copy into. By default the folder of the embedded library. The copy can only be found by name after the reload when the folder belongs to a loaded library."
+                        },
+                        "keepMainGuid": {
+                            "type": "boolean",
+                            "description": "Optional. When true, the copy keeps the main GUID of the original. By default false: the copy gets a new unique ID."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "newName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CopyLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The copies in the order of the input, or an error for a library part that was not copied.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "libraryPartName": {
+                                    "type": "string",
+                                    "description": "The file name of the copy with its extension."
+                                },
+                                "unID": {
+                                    "type": "string",
+                                    "description": "The unique ID of the copy, its main and revision GUID."
+                                },
+                                "path": {
+                                    "type": "string",
+                                    "description": "The absolute path of the copy."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "libraryPartName",
+                                "path"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            },
+            "librariesReloaded": {
+                "type": "boolean",
+                "description": "Whether the libraries were reloaded after copying. False when nothing was copied or the reload failed; then the copies are not found by name until the libraries are reloaded."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts",
+            "librariesReloaded"
+        ]
+    })";
+}
+
+GS::ObjectState CopyLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    // The folder of the embedded library, read once when an item has no targetFolder.
+    std::optional<IO::Location> embeddedLibraryFolder;
+    GS::ObjectState embeddedLibraryError;
+    bool embeddedLibraryFailed = false;
+    const auto GetEmbeddedLibraryLocation = [&] () -> bool {
+        if (embeddedLibraryFolder.has_value ()) {
+            return true;
+        }
+        if (embeddedLibraryFailed) {
+            return false;
+        }
+        embeddedLibraryFailed = true;
+        auto embeddedLibrary = libraryManager->GetEmbeddedLibrary ();
+        if (embeddedLibrary.IsErr ()) {
+            embeddedLibraryError = CreateErrorResponse (embeddedLibrary.UnwrapErr ().kind, "Failed to get the embedded library" + GetResultErrorText (embeddedLibrary.UnwrapErr ()) + ".");
+            return false;
+        }
+        auto location = embeddedLibrary->GetLocation ();
+        if (location.IsErr ()) {
+            embeddedLibraryError = CreateErrorResponse (location.UnwrapErr ().kind, "Failed to get the folder of the embedded library" + GetResultErrorText (location.UnwrapErr ()) + ".");
+            return false;
+        }
+        embeddedLibraryFolder = location.Unwrap ();
+        embeddedLibraryFailed = false;
+        return true;
+    };
+
+    GS::ObjectState response;
+    const auto& libraryPartsOut = response.AddList<GS::ObjectState> ("libraryParts");
+
+    bool anyCopied = false;
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::UniString newName;
+        if (!libraryPart.Get ("newName", newName) || newName.IsEmpty ()) {
+            libraryPartsOut (CreateErrorResponse (APIERR_BADPARS, "Missing 'newName' parameter."));
+            continue;
+        }
+        if (newName.Contains ("/") || newName.Contains ("\\") || newName.Contains (":") || newName == "." || newName == "..") {
+            libraryPartsOut (CreateErrorResponse (APIERR_BADPARS, "The newName '" + newName + "' must be a file name without a folder."));
+            continue;
+        }
+
+        GS::ObjectState error;
+        const std::optional<ACAPI::Library::LibPart> libPart = FindLibPartOfItem (libraryManager.Unwrap (), libraryPart, error);
+        if (!libPart.has_value ()) {
+            libraryPartsOut (error);
+            continue;
+        }
+
+        GS::UniString name;
+        auto libPartName = libPart->GetName ();
+        if (!libPartName.IsErr ()) {
+            name = libPartName.Unwrap ();
+        }
+
+        IO::Location targetLocation;
+        GS::UniString targetFolder;
+        if (libraryPart.Get ("targetFolder", targetFolder) && !targetFolder.IsEmpty ()) {
+            targetLocation = IO::Location (targetFolder);
+        } else if (GetEmbeddedLibraryLocation ()) {
+            targetLocation = *embeddedLibraryFolder;
+        } else {
+            libraryPartsOut (embeddedLibraryError);
+            continue;
+        }
+        if (IO::Folder (targetLocation).GetStatus () != NoError) {
+            libraryPartsOut (CreateErrorResponse (APIERR_BADPARS, "The target folder '" + targetLocation.ToDisplayText () + "' does not exist or is not a folder."));
+            continue;
+        }
+
+        targetLocation.AppendToLocal (IO::Name (newName));
+        bool exists = false;
+        if (IO::fileSystem.Contains (targetLocation, &exists) != NoError || exists) {
+            libraryPartsOut (CreateErrorResponse (APIERR_BADPARS, "The file '" + targetLocation.ToDisplayText () + "' already exists, nothing was copied."));
+            continue;
+        }
+
+        auto gsmObject = libraryManager->GetGSMObjectOfLibPart (*libPart);
+        if (gsmObject.IsErr ()) {
+            libraryPartsOut (CreateErrorResponse (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "', it may not be a GSM object" + GetResultErrorText (gsmObject.UnwrapErr ()) + "."));
+            continue;
+        }
+
+        bool keepMainGuid = false;
+        libraryPart.Get ("keepMainGuid", keepMainGuid);
+        const GSMObject::CopyMethod copyMethod = keepMainGuid ? GSMObject::CopyMethod::KeepMainGuid : GSMObject::CopyMethod::GenerateNewUnID;
+
+        ACAPI::Result<void> copyResult = gsmObject->CopyTo (targetLocation, copyMethod);
+        if (copyResult.IsErr ()) {
+            libraryPartsOut (CreateErrorResponse (copyResult.UnwrapErr ().kind, "Failed to copy the library part '" + name + "' to '" + targetLocation.ToDisplayText () + "'" + GetResultErrorText (copyResult.UnwrapErr ()) + "."));
+            continue;
+        }
+        anyCopied = true;
+
+        GS::ObjectState libraryPartOut;
+        libraryPartOut.Add ("libraryPartName", newName);
+        auto copy = libraryManager->LoadGSMObjectFromFile (targetLocation);
+        if (!copy.IsErr ()) {
+            auto unID = copy->GetUnID ();
+            if (!unID.IsErr ()) {
+                libraryPartOut.Add ("unID", unID.Unwrap ().ToUniString ());
+            }
+        }
+        libraryPartOut.Add ("path", targetLocation.ToDisplayText ());
+        libraryPartsOut (libraryPartOut);
+    }
+
+    // One reload for the whole call, so the copies can be found by name.
+    response.Add ("librariesReloaded", anyCopied && ACAPI_ProjectOperation_ReloadLibraries () == NoError);
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
