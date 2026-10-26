@@ -12,6 +12,7 @@
 #include "ACAPI/Library/GSMObject.hpp"
 
 #include <functional>
+#include <optional>
 
 using ACAPI::Library::GSMObject;
 
@@ -28,6 +29,82 @@ static const LibraryPartScriptSection libraryPartScriptSections[] = {
     { "3d",         [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set3DScript (script); } },
     { "properties", [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetPropertiesScript (script); } }
 };
+
+struct LibraryPartScriptReader
+{
+    const char* key;
+    std::function<bool (const GSMObject&)> has;
+    std::function<ACAPI::Result<GS::UniString> (const GSMObject&, const GS::UniString&)> get;
+};
+
+static const LibraryPartScriptReader libraryPartScriptReaders[] = {
+    { "master",     [] (const GSMObject& gsmObject) { return gsmObject.HasMasterScript (); },     [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetMasterScript (password); } },
+    { "parameter",  [] (const GSMObject& gsmObject) { return gsmObject.HasParameterScript (); },  [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetParameterScript (password); } },
+    { "2d",         [] (const GSMObject& gsmObject) { return gsmObject.Has2DScript (); },         [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.Get2DScript (password); } },
+    { "3d",         [] (const GSMObject& gsmObject) { return gsmObject.Has3DScript (); },         [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.Get3DScript (password); } },
+    { "properties", [] (const GSMObject& gsmObject) { return gsmObject.HasPropertiesScript (); }, [] (const GSMObject& gsmObject, const GS::UniString& password) { return gsmObject.GetPropertiesScript (password); } }
+};
+
+static Int32 GetLibIndOfElement (const API_Element& element)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_ObjectID:                return element.object.libInd;
+        case API_LampID:                  return element.lamp.libInd;
+        case API_WindowID:                return element.window.openingBase.libInd;
+        case API_DoorID:                  return element.door.openingBase.libInd;
+        case API_SkylightID:              return element.skylight.openingBase.libInd;
+        case API_ZoneID:                  return element.zone.libInd;
+        case API_CurtainWallFrameID:      return element.cwFrame.libInd;
+        case API_CurtainWallPanelID:      return element.cwPanel.libInd;
+        case API_CurtainWallJunctionID:   return element.cwJunction.libInd;
+        case API_CurtainWallAccessoryID:  return element.cwAccessory.libInd;
+        default:                          return 0;
+    }
+}
+
+static GS::UniString GetResultErrorText (const ACAPI::Error& error)
+{
+    GS::UniString text (error.text.c_str ());
+    return text.IsEmpty () ? GS::UniString () : " (" + text + ")";
+}
+
+// Finds the library part given by 'libraryPartName' or by the element in 'elementId'.
+static std::optional<ACAPI::Library::LibPart> FindLibPartOfItem (const ACAPI::Library::LibraryManager& libraryManager, const GS::ObjectState& item, GS::ObjectState& error)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        GS::UniString name;
+        if (!item.Get ("libraryPartName", name) || name.IsEmpty ()) {
+            error = CreateErrorResponse (APIERR_BADPARS, "Missing 'libraryPartName' or 'elementId' parameter.");
+            return std::nullopt;
+        }
+        auto libPart = libraryManager.GetLibPartByName (name);
+        if (libPart.IsErr ()) {
+            error = CreateErrorResponse (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
+            return std::nullopt;
+        }
+        return libPart.Unwrap ();
+    }
+
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    const GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        error = CreateErrorResponse (err, "Not found element with guid " + APIGuidToString (element.header.guid) + ".");
+        return std::nullopt;
+    }
+    const Int32 libInd = GetLibIndOfElement (element);
+    if (libInd <= 0) {
+        error = CreateErrorResponse (APIERR_BADPARS, "The element with guid " + APIGuidToString (element.header.guid) + " is not placed from a library part.");
+        return std::nullopt;
+    }
+    auto libPart = libraryManager.GetLibPartByLibInd (libInd);
+    if (libPart.IsErr ()) {
+        error = CreateErrorResponse (libPart.UnwrapErr ().kind, "Failed to get the library part of the element with guid " + APIGuidToString (element.header.guid) + GetResultErrorText (libPart.UnwrapErr ()) + ".");
+        return std::nullopt;
+    }
+    return libPart.Unwrap ();
+}
 #endif
 
 AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
@@ -1128,6 +1205,250 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
         }
         return NoError;
     });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetLibraryPartScriptsCommand::GetLibraryPartScriptsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartScriptsCommand::GetName () const
+{
+    return "GetLibraryPartScripts";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartScriptsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to read, each given by its name or by an element placed from it.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "libraryPartName": {
+                                    "type": "string",
+                                    "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "libraryPartName"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "An object, lamp, window, door, skylight, zone or curtain wall frame, panel, junction or accessory; the library part it is placed from is read."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "scripts": {
+                "type": "array",
+                "description": "The scripts to read. All five by default.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "master",
+                        "parameter",
+                        "2d",
+                        "3d",
+                        "properties"
+                    ]
+                },
+                "minItems": 1
+            },
+            "password": {
+                "type": "string",
+                "description": "The password of password protected library parts. Reading a script of a protected part without the right password is an error for that part."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartScriptsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The scripts of the library parts in the order of the input, or an error for a library part that cannot be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "libraryPartName": {
+                                    "type": "string",
+                                    "description": "The name of the library part file with its extension."
+                                },
+                                "unID": {
+                                    "type": "string",
+                                    "description": "The unique ID of the library part, its main and revision GUID."
+                                },
+                                "scripts": {
+                                    "type": "object",
+                                    "description": "The requested scripts, by the keys used in the input.",
+                                    "additionalProperties": {
+                                        "type": "object",
+                                        "properties": {
+                                            "present": {
+                                                "type": "boolean",
+                                                "description": "Whether the library part has this script section."
+                                            },
+                                            "script": {
+                                                "type": "string",
+                                                "description": "The script text. Left out when the section is not present."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "present"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "libraryPartName",
+                                "scripts"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartScriptsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    GS::Array<const LibraryPartScriptReader*> readers;
+    GS::Array<GS::UniString> scriptKeys;
+    if (parameters.Get ("scripts", scriptKeys)) {
+        for (const GS::UniString& scriptKey : scriptKeys) {
+            const LibraryPartScriptReader* found = nullptr;
+            for (const LibraryPartScriptReader& reader : libraryPartScriptReaders) {
+                if (scriptKey == GS::UniString (reader.key)) {
+                    found = &reader;
+                    break;
+                }
+            }
+            if (found == nullptr) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown script '" + scriptKey + "'. Use master, parameter, 2d, 3d or properties.");
+            }
+            if (!readers.Contains (found)) {
+                readers.Push (found);
+            }
+        }
+    } else {
+        for (const LibraryPartScriptReader& reader : libraryPartScriptReaders) {
+            readers.Push (&reader);
+        }
+    }
+
+    GS::UniString password;
+    parameters.Get ("password", password);
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& libraryPartsOut = response.AddList<GS::ObjectState> ("libraryParts");
+
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::ObjectState error;
+        const std::optional<ACAPI::Library::LibPart> libPart = FindLibPartOfItem (libraryManager.Unwrap (), libraryPart, error);
+        if (!libPart.has_value ()) {
+            libraryPartsOut (error);
+            continue;
+        }
+
+        GS::UniString name;
+        auto libPartName = libPart->GetName ();
+        if (!libPartName.IsErr ()) {
+            name = libPartName.Unwrap ();
+        }
+
+        auto gsmObject = libraryManager->GetGSMObjectOfLibPart (*libPart);
+        if (gsmObject.IsErr ()) {
+            libraryPartsOut (CreateErrorResponse (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "', it may not be a GSM object" + GetResultErrorText (gsmObject.UnwrapErr ()) + "."));
+            continue;
+        }
+        const GSMObject& object = gsmObject.Unwrap ();
+
+        GS::ObjectState scriptsOut;
+        bool scriptFailed = false;
+        for (const LibraryPartScriptReader* reader : readers) {
+            GS::ObjectState scriptOut;
+            const bool present = reader->has (object);
+            scriptOut.Add ("present", present);
+            if (present) {
+                ACAPI::Result<GS::UniString> script = reader->get (object, password);
+                if (script.IsErr ()) {
+                    error = CreateErrorResponse (script.UnwrapErr ().kind, "Failed to read the '" + GS::UniString (reader->key) + "' script of the library part '" + name + "', check the password" + GetResultErrorText (script.UnwrapErr ()) + ".");
+                    scriptFailed = true;
+                    break;
+                }
+                scriptOut.Add ("script", script.Unwrap ());
+            }
+            scriptsOut.Add (reader->key, scriptOut);
+        }
+        if (scriptFailed) {
+            libraryPartsOut (error);
+            continue;
+        }
+
+        GS::ObjectState libraryPartOut;
+        libraryPartOut.Add ("libraryPartName", name);
+        auto unID = object.GetUnID ();
+        if (!unID.IsErr ()) {
+            libraryPartOut.Add ("unID", unID.Unwrap ().ToUniString ());
+        }
+        libraryPartOut.Add ("scripts", scriptsOut);
+        libraryPartsOut (libraryPartOut);
+    }
 
     return response;
 #else
