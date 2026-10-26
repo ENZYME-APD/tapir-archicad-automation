@@ -2,6 +2,11 @@
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 
+#ifdef ServerMainVers_2800
+#include "ACAPI/Library/LibraryManager.hpp"
+#include "ACAPI/Library/GSMObject.hpp"
+#endif
+
 // The section functions are ACAPI_LibraryPart_* from Archicad 27 (ACAPinc.h) and ACAPI_LibPart_*
 // with the same parameters before, the split ElementCommands.cpp makes for TAPIR_Polygon_TriangulatePoly.
 static GSErrCode TAPIR_LibraryPart_GetSection (Int32 libInd, API_LibPartSection* section, GSHandle* sectionHdl, GS::UniString* sectionStr)
@@ -33,8 +38,9 @@ static GSErrCode TAPIR_LibraryPart_ShapePrims (Int32 libInd, const API_Guid& ins
 
 // Finds a loaded library part by its name, as ResolveLibraryPartName in ElementCreationCommands.cpp
 // does, but placeable or not. The name is the one without the file extension; a trailing ".gsm"
-// is dropped when the full name finds nothing.
-static GSErrCode FindLibraryPartIndexByName (const GS::UniString& name, Int32& libInd)
+// is dropped when the full name finds nothing. fileName, when given, gets the file name of the
+// part (with extension), the name the Library Manager of Archicad 28 finds it by.
+static GSErrCode FindLibraryPartIndexByName (const GS::UniString& name, Int32& libInd, GS::UniString* fileName = nullptr)
 {
     GS::Array<GS::UniString> candidates;
     candidates.Push (name);
@@ -48,6 +54,12 @@ static GSErrCode FindLibraryPartIndexByName (const GS::UniString& name, Int32& l
         API_LibPart libPart = {};
         GS::ucscpy (libPart.docu_UName, candidate.ToUStr ());
         err = ACAPI_LibraryPart_Search (&libPart, false, false);
+        if (err == NoError && fileName != nullptr && libPart.location != nullptr) {
+            IO::Name lastLocalName;
+            if (libPart.location->GetLastLocalName (&lastLocalName) == NoError) {
+                *fileName = lastLocalName.ToString ();
+            }
+        }
         delete libPart.location;
         if (err == NoError) {
             libInd = libPart.index;
@@ -86,6 +98,49 @@ static bool GetLibraryPartTextSectionType (const GS::UniString& name, GSType& se
         }
     }
     return false;
+}
+
+// Archicad may store a script with other line endings than it was given, so the read-back
+// compares the texts with the line endings normalized, as ElementCreationCommands.cpp does.
+static GS::UniString NormalizeLineEndings (const GS::UniString& text)
+{
+    GS::UniString normalized = text;
+    normalized.ReplaceAll ("\r\n", "\n");
+    normalized.ReplaceAll ("\r", "\n");
+    return normalized;
+}
+
+// Refuses a part that is not editable (from a library package or a read-only library), as
+// SetLibraryPartScripts does. The check needs the Library Manager of Archicad 28; before that
+// the section functions themselves report such parts.
+static GSErrCode CheckLibraryPartIsEditable (const GS::UniString& name, const GS::UniString& fileName, GS::UniString& errorMessage)
+{
+#ifdef ServerMainVers_2800
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        errorMessage = "Failed to get the Library Manager.";
+        return libraryManager.UnwrapErr ().kind;
+    }
+    auto libPart = libraryManager->GetLibPartByName (fileName);
+    if (libPart.IsErr ()) {
+        errorMessage = "Failed to check whether the library part '" + name + "' is editable, nothing was changed.";
+        return libPart.UnwrapErr ().kind;
+    }
+    auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    if (gsmObject.IsErr ()) {
+        errorMessage = "Failed to get the GSM object of the library part '" + name + "', nothing was changed.";
+        return gsmObject.UnwrapErr ().kind;
+    }
+    if (!gsmObject->IsEditable ()) {
+        errorMessage = "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library.";
+        return APIERR_GENERAL;
+    }
+#else
+    UNUSED_PARAMETER (name);
+    UNUSED_PARAMETER (fileName);
+    UNUSED_PARAMETER (errorMessage);
+#endif
+    return NoError;
 }
 
 UpdateLibraryPartSectionsCommand::UpdateLibraryPartSectionsCommand () :
@@ -180,15 +235,22 @@ GS::ObjectState UpdateLibraryPartSectionsCommand::Execute (const GS::ObjectState
     }
 
     Int32 libInd = 0;
-    const GSErrCode searchErr = FindLibraryPartIndexByName (name, libInd);
+    GS::UniString fileName;
+    GSErrCode partErr = FindLibraryPartIndexByName (name, libInd, &fileName);
+    GS::UniString partErrorMessage = "No loaded library part with the name '" + name + "'.";
+    if (partErr == NoError) {
+        partErr = CheckLibraryPartIsEditable (name, fileName, partErrorMessage);
+    }
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The section functions modify the project's library, so they run in a command scope, as
+    // SetLibraryPartScripts does; undoing it does not restore the library part file.
     ACAPI_CallUndoableCommand ("Update Library Part Sections", [&]() -> GSErrCode {
         for (const GS::ObjectState& sectionOS : sections) {
-            if (searchErr != NoError) {
-                executionResults (CreateFailedExecutionResult (searchErr, "No loaded library part with the name '" + name + "'."));
+            if (partErr != NoError) {
+                executionResults (CreateFailedExecutionResult (partErr, partErrorMessage));
                 continue;
             }
 
@@ -234,7 +296,7 @@ GS::ObjectState UpdateLibraryPartSectionsCommand::Execute (const GS::ObjectState
             if (updatedHdl != nullptr) {
                 BMKillHandle (&updatedHdl);
             }
-            if (err != NoError || updatedText != text) {
+            if (err != NoError || NormalizeLineEndings (updatedText) != NormalizeLineEndings (text)) {
                 executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "The '" + typeName + "' section of the library part '" + name + "' does not have the new text after the update."));
                 continue;
             }
@@ -369,6 +431,8 @@ GS::Optional<GS::UniString> GetLibraryPart2DPrimitivesCommand::GetInputParameter
             },
             "gdlContext": {
                 "type": "integer",
+                "minimum": -32768,
+                "maximum": 32767,
                 "description": "Optional. The GDL context the 2D symbol is drawn in, the value of the GLOB_CONTEXT GDL global (2 is the floor plan). Default value is 2."
             }
         },
@@ -497,6 +561,9 @@ GS::ObjectState GetLibraryPart2DPrimitivesCommand::Execute (const GS::ObjectStat
 
     Int32 gdlContext = 2;
     parameters.Get ("gdlContext", gdlContext);
+    if (gdlContext < -32768 || gdlContext > 32767) {
+        return CreateErrorResponse (APIERR_BADPARS, "The 'gdlContext' parameter is out of range.");
+    }
 
     LibraryPart2DPrimitivesContext ctx;
     tl_libPartPrimsCtx = &ctx;
