@@ -324,7 +324,7 @@ static double GetExactPreferenceTableRowAngle (const TableT& table, const Prefer
 #endif
 
 // What the …ByKey functions and AddNewRow of the table take: its Key struct, or the reference id for the
-// segment tables. Archicad 28 has the Key struct only for adding branch rows, without an angle.
+// segment tables. From Archicad 29; Archicad 28 finds the rows by their reference ids.
 template <typename TableT>
 static auto MakePreferenceTableRowKey (const PreferenceTableRowKey& key)
 {
@@ -894,7 +894,9 @@ static GS::ObjectState WithAC27PreferenceTable (const GS::ObjectState& parameter
     if (table.IsErr ()) {
         return CreateErrorResponse (APIERR_BADID, "The tableId is not a preference table.");
     }
-    return func (*table);
+    // The Result of Archicad 27 gives its value by value, so it is kept in a local for the reference.
+    PreferenceTableBase tableValue = *table;
+    return func (tableValue);
 }
 
 // Runs change on the rows that have no result yet, in the given order, inside one Modify of the table, so
@@ -946,7 +948,8 @@ static GS::ObjectState WithAC27PreferenceTableContainer (const GS::UniString& do
         if (container.IsErr ()) {
             return CreateErrorResponse (container.UnwrapErr ().kind, AC27PreferenceTableErrorText (GS::UniString ("get the ") + name + " preference table container", container.UnwrapErr ()));
         }
-        return func (*container);
+        auto containerValue = *container;
+        return func (containerValue);
     };
     if (domain == "Piping") {
         return callWith (GetPipePreferenceTableContainer (), "pipe");
@@ -1363,7 +1366,12 @@ GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
         else {
             std::vector<PreferenceTableRowInput> inputs = ParsePreferenceTableRowInputs (table, rowsData, true);
             return ModifyPreferenceTableRows (table, inputs, "Add MEP Preference Table Rows", [] (typename TableT::Modifier& modifier, const PreferenceTableRowInput& input) {
+#ifdef ServerMainVers_2900
                 ACAPI::Result<uint32_t> index = modifier.AddNewRow (MakePreferenceTableRowKey<TableT> (input.key));
+#else
+                // Archicad 28 adds the branch rows by their reference ids.
+                ACAPI::Result<uint32_t> index = modifier.AddNewRow (input.key.mainAxisReferenceId, input.key.branchAxisReferenceId);
+#endif
                 if (index.IsErr ()) {
                     return CreateFailedExecutionResult (index.UnwrapErr ().kind, PreferenceTableRowErrorText ("add the row", index.UnwrapErr ()));
                 }
