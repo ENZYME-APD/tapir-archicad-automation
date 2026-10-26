@@ -4930,8 +4930,8 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "properties": {
                         "text": { "type": "string", "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF." },
-                        "fontIndex": { "type": "integer", "description": "The index of the font, as GetDetailsOfElements reports it in fontIndex." },
-                        "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it and GetDetailsOfElements reports it in fontName, e.g. 'Arial'. Resolved to the font's index (exact match first, then case-insensitive); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
+                        "fontIndex": { "type": "integer", "description": "The index of the font, as GetDetailsOfElements and GetFontsByName report it in fontIndex. One of fontName and fontIndex is required." },
+                        "fontName": { "type": "string", "description": "Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
                         "height": { "type": "number", "description": "The character height in millimetres, as a Text's height." },
                         "bold": { "type": "boolean", "description": "Bold style. Optional, default false." },
                         "italic": { "type": "boolean", "description": "Italic style. Optional, default false." },
@@ -4940,7 +4940,11 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetInputParametersSchema () con
                         "inModelUnits": { "type": "boolean", "description": "When true, Archicad applies the drawing scale correction and the lengths are model distances at the current drawing scale; when false (the default), they are lengths on paper in millimetres." }
                     },
                     "additionalProperties": false,
-                    "required": ["text", "height"]
+                    "required": ["text", "height"],
+                    "anyOf": [
+                        { "required": ["fontIndex"] },
+                        { "required": ["fontName"] }
+                    ]
                 }
             }
         },
