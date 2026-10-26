@@ -4942,3 +4942,145 @@ GS::ObjectState GetHotlinkProxyElementTableCommand::Execute (const GS::ObjectSta
 
     return response;
 }
+
+GetHotlinkSourceStatusCommand::GetHotlinkSourceStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetHotlinkSourceStatusCommand::GetName () const
+{
+    return "GetHotlinkSourceStatus";
+}
+
+GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinks": {
+                "type": "array",
+                "description": "The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "Absolute path of the hotlink's source file."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "location"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinks"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkSourceStatuses": {
+                "type": "array",
+                "description": "One item per requested hotlink, in order: the availability of its source file, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "AuthCanceld",
+                                        "SourceMissing",
+                                        "SourceAvailable",
+                                        "SourceNotAccessible",
+                                        "SourceIncompatible",
+                                        "SourceOffline"
+                                    ],
+                                    "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "status"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkSourceStatuses"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static const char* GetHotlinkSourceStatusName (API_HotlinkSourceStatus status)
+{
+    switch (status) {
+        case API_HotlinkSource_AuthCanceld:         return "AuthCanceld";
+        case API_HotlinkSource_SourceMissing:       return "SourceMissing";
+        case API_HotlinkSource_SourceAvailable:     return "SourceAvailable";
+        case API_HotlinkSource_SourceNotAccessible: return "SourceNotAccessible";
+        case API_HotlinkSource_SourceIncompatible:  return "SourceIncompatible";
+        case API_HotlinkSource_SourceOffline:       return "SourceOffline";
+        default:                                    return nullptr;
+    }
+}
+#endif
+
+GS::ObjectState GetHotlinkSourceStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> hotlinks;
+    parameters.Get ("hotlinks", hotlinks);
+
+    GS::ObjectState response;
+    const auto& hotlinkSourceStatuses = response.AddList<GS::ObjectState> ("hotlinkSourceStatuses");
+
+    for (const GS::ObjectState& hotlinkData : hotlinks) {
+        GS::UniString sourcePath;
+        if (!hotlinkData.Get ("location", sourcePath) || sourcePath.IsEmpty ()) {
+            hotlinkSourceStatuses (CreateErrorResponse (APIERR_BADPARS, "location is missing"));
+            continue;
+        }
+        const IO::Location sourceLocation (sourcePath);
+
+        API_HotlinkSourceStatus status = API_HotlinkSource_SourceMissing;
+        const GSErrCode err = ACAPI_Hotlink_GetHotlinkSourceStatus (&sourceLocation, &status);
+        if (err != NoError) {
+            hotlinkSourceStatuses (CreateErrorResponse (err, "Failed to get the status of the hotlink source " + sourcePath));
+            continue;
+        }
+        const char* statusName = GetHotlinkSourceStatusName (status);
+        if (statusName == nullptr) {
+            hotlinkSourceStatuses (CreateErrorResponse (APIERR_GENERAL, "Unknown hotlink source status of " + sourcePath));
+            continue;
+        }
+
+        GS::ObjectState item;
+        item.Add ("status", GS::UniString (statusName));
+        hotlinkSourceStatuses (item);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}

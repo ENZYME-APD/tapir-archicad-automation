@@ -351,6 +351,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.3",
             "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element."
         );
+        err |= RegisterCommand<GetHotlinkSourceStatusCommand> (
+            projectCommands, "1.7.3",
+            "Tells for each hotlink source file whether it is available, missing, not accessible, incompatible or offline. Available from Archicad 27."
+        );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
             "Opens the given project."
@@ -1774,6 +1778,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DuplicateDesignOptionCombinationsCommand> (
             designOptionsCommands, "1.7.3",
             "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetHotlinkDesignOptionTableDetailsCommand> (
+            designOptionsCommands, "1.7.3",
+            "Reads the design option table of hotlink nodes: the design option sets, options and combinations of the hotlinked source file, and which of them the node shows. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
     }
