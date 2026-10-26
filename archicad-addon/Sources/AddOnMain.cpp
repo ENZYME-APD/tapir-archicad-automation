@@ -44,6 +44,7 @@
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
+#include "MEPRoutingParameterCommands.hpp"
 #include "AnalyticalCommands.hpp"
 #include "KeynoteCommands.hpp"
 #include "ProjectDataCommands.hpp"
@@ -1917,6 +1918,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteMEPPhysicalSystemsCommand> (
             mepCommands, "1.7.3",
             "Removes MEP physical systems from their system groups. Their member elements are not deleted. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetMEPRoutingParametersCommand> (
+            mepCommands, "1.7.3",
+            "Gets the routing parameters of placed MEP elements: of a routing element its routing node parameters (preferred transition placement, elbow from Archicad 29, transition) and routing segment parameters (cross section, preference table, anchor, reference line offsets, wall thickness, flange size, connection style); of a routing node its elbow (from Archicad 29) and transition parameters; of a routing segment its rigid segment parameters (Archicad 28 only). Available from Archicad 28."
+        );
+        err |= RegisterCommand<SetMEPRoutingParametersCommand> (
+            mepCommands, "1.7.3",
+            "Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, in one undo step with one execution result per element. Available from Archicad 28."
         );
         err |= RegisterCommand<GetElectricalPanelsCommand> (
             mepCommands, "1.7.2",
