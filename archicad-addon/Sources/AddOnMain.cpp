@@ -496,6 +496,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item."
         );
+        err |= RegisterCommand<DeleteUserDataOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements."
+        );
         err |= RegisterCommand<GetSurfaceQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
             "Gets the exposed surface areas of the given elements calculated by Archicad: for each element one item per surface attribute and building material pair with the area that is not covered by the covering elements (for example the wall area behind a slab is taken off the wall's surface). The covering elements are the optional coverElements; by default every construction element of the project. The output is aligned with the input array of elements."
