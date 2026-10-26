@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 07:45 UTC",
+ "generatedAt": "2026-10-26 07:55 UTC",
  "counts": {
   "done": 287,
   "open": 112,
@@ -480,12 +480,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 936,
-     "title": "Get and set ghost story settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetStories",
@@ -586,12 +581,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateHotlinkNodes",
@@ -617,12 +607,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateHotlinkInstances",
@@ -644,12 +629,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ChangeHotlinkInstances",
@@ -694,12 +674,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ChangeHotlinkNodes",
@@ -723,12 +698,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 924,
-     "title": "Hotlinks: break and delete hotlink nodes, report missing sources"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetHotlinkProxyElementTable",
@@ -904,12 +874,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetCurrentViewImage",
@@ -1012,12 +977,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetSurveyPointTransformation",
@@ -1055,12 +1015,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetProjectNotes",
@@ -1250,16 +1205,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 984,
-     "title": "Add ZoomToElements (2D and 3D)"
-    },
-    {
-     "number": 921,
-     "title": "Add 3D style commands and show selection / all in 3D"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "FilterElements",
@@ -1354,10 +1300,6 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 913,
-     "title": "Add ModifyCurtainWalls command"
-    },
-    {
      "number": 639,
      "title": "Feature request for GetDetailsOfElements"
     }
@@ -1402,12 +1344,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 913,
-     "title": "Add ModifyCurtainWalls command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetElementCategories",
@@ -2527,12 +2464,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 911,
-     "title": "Add ModifyOpenings command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetOpeningDefault",
@@ -2734,12 +2666,7 @@
     "curtainWallsData.id"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 913,
-     "title": "Add ModifyCurtainWalls command"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateAssociativeDimensions",
@@ -4342,12 +4269,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateFavoritesFromElements",
@@ -4627,12 +4549,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetPropertyValuesOfAttributes",
@@ -4655,12 +4572,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetPropertyValuesOfAttributes",
@@ -4682,12 +4594,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetPropertyDefinitionsOfAttributes",
@@ -4948,12 +4855,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetClassificationsOfElements",
@@ -4975,16 +4877,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 985,
-     "title": "Classifications of attributes: get, add and remove"
-    },
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetClassificationsOfElementDefaults",
@@ -5007,12 +4900,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetClassificationsOfElementDefaults",
@@ -5036,12 +4924,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 944,
-     "title": "Get and set property values and classifications of tool defaults"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateClassificationSystems",
@@ -5401,12 +5284,7 @@
     "layerCombinationDataArray.index"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 910,
-     "title": "Add command to activate a layer combination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateLines",
@@ -5583,12 +5461,7 @@
     "penTableDataArray.sourceAttributeId"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 951,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateProfiles",
@@ -5799,12 +5672,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 910,
-     "title": "Add command to activate a layer combination"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetCurrentLayerCombination",
@@ -5939,12 +5807,7 @@
     "fields"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 951,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetCurrentPenTable",
@@ -6828,12 +6691,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 951,
-     "title": "Add ModifyPens: change single pens of the active pen table"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ReleaseLockableObjectSet",
@@ -7384,12 +7242,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 942,
-     "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetActiveGraphicalOverrideCombination",
@@ -7409,12 +7262,7 @@
      "title": "[3/3] Grasshopper components for the active override combination and element override styles"
     }
    ],
-   "issues": [
-    {
-     "number": 942,
-     "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetActiveGraphicalOverrideCombination",
@@ -7434,12 +7282,7 @@
      "title": "[3/3] Grasshopper components for the active override combination and element override styles"
     }
    ],
-   "issues": [
-    {
-     "number": 942,
-     "title": "Graphic overrides: get and set the current window's override combination, read an element's effective override style"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetStructureDisplay",
@@ -7708,12 +7551,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 939,
-     "title": "Sun studies: get and set the project date/time, calculate the sun position, read sun settings"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "Get3DWindowSettings",
@@ -7770,12 +7608,7 @@
      "title": "Add ZoomToElements to zoom the current 2D or 3D window to elements"
     }
    ],
-   "issues": [
-    {
-     "number": 984,
-     "title": "Add ZoomToElements (2D and 3D)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetZoom",
@@ -8258,12 +8091,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 937,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetRevisionChanges",
@@ -8283,12 +8111,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 937,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetRevisionChangeCustomScheme",
@@ -8323,12 +8146,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 937,
-     "title": "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetCurrentRevisionChangesOfLayouts",

@@ -32,7 +32,7 @@ Parameters of the 302 used commands: 🟢 238 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-26 07:45 UTC.
+Updated 2026-10-26 07:55 UTC.
 
 | | Status |
 |---|---|
@@ -78,17 +78,17 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `SetProjectInfoField` 🟢 2/2 parameters – `SetProjectInfoFieldsComponent`
 - ✅ `CreateProjectInfoFields` 🟢 1/1 parameters – `CreateProjectInfoFieldsComponent`
 - ✅ `DeleteProjectInfoFields` 🟢 1/1 parameters – `DeleteProjectInfoFieldsComponent`
-- ✅ `GetStories` 🟢 0/0 parameters – `GetStoriesComponent` — [#936](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/936 "Get and set ghost story settings")
+- ✅ `GetStories` 🟢 0/0 parameters – `GetStoriesComponent`
 - ✅ `SetStories` 🟢 1/1 parameters – `SetStoriesComponent`
 - ✅ `GetAutoTextKeys` 🟢 1/1 parameters – `GetAutoTextKeysComponent`
 - ✅ `GetAutoTextName` 🟢 1/1 parameters – `GetAutoTextNameComponent`
 - ⬜ `GetNoteAutoTextKeywords`
-- ✅ `GetHotlinks` 🟢 0/0 parameters – `GetHotLinksComponent` — [#924](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/924 "Hotlinks: break and delete hotlink nodes, report missing sources")
-- ✅ `CreateHotlinkNodes` 🟢 5/5 parameters – `CreateHotlinkNodesComponent` — [#924](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/924 "Hotlinks: break and delete hotlink nodes, report missing sources")
-- ✅ `CreateHotlinkInstances` 🟢 1/1 parameters – `CreateHotlinkInstancesComponent` — [#924](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/924 "Hotlinks: break and delete hotlink nodes, report missing sources")
+- ✅ `GetHotlinks` 🟢 0/0 parameters – `GetHotLinksComponent`
+- ✅ `CreateHotlinkNodes` 🟢 5/5 parameters – `CreateHotlinkNodesComponent`
+- ✅ `CreateHotlinkInstances` 🟢 1/1 parameters – `CreateHotlinkInstancesComponent`
 - ✅ `ChangeHotlinkInstances` 🟢 1/1 parameters – `ChangeHotlinkInstancesComponent`
-- ✅ `UpdateHotlinks` 🟢 2/2 parameters – `UpdateHotlinksComponent` — [#924](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/924 "Hotlinks: break and delete hotlink nodes, report missing sources")
-- ✅ `ChangeHotlinkNodes` 🟢 3/3 parameters – `ChangeHotlinkNodesComponent` — [#924](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/924 "Hotlinks: break and delete hotlink nodes, report missing sources")
+- ✅ `UpdateHotlinks` 🟢 2/2 parameters – `UpdateHotlinksComponent`
+- ✅ `ChangeHotlinkNodes` 🟢 3/3 parameters – `ChangeHotlinkNodesComponent`
 - ⬜ `GetHotlinkProxyElementTable`
 - ✅ `OpenProject` 🟢 1/1 parameters – `OpenProjectComponent`
 - 🔀 `NewProject` 🟢 1/1 parameters – `NewProjectComponent`
@@ -96,14 +96,14 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `SaveProject` 🟢 1/1 parameters – `SaveProjectComponent`
 - ✅ `SaveAsModuleFile` 🟢 2/2 parameters – `SaveAsModuleFileComponent`
 - ✅ `SaveProjectAsArchive` 🟢 5/5 parameters – `SaveProjectAsArchiveComponent`
-- ✅ `SaveCurrentWindowAsImage` 🟢 5/5 parameters – `SaveCurrentWindowAsImageComponent` — [#939](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/939 "Sun studies: get and set the project date/time, calculate the sun position, read sun settings")
+- ✅ `SaveCurrentWindowAsImage` 🟢 5/5 parameters – `SaveCurrentWindowAsImageComponent`
 - 🔀 `GetCurrentViewImage` 🟢 2/2 parameters – `GetCurrentViewImageComponent`
 - ✅ `GetCalculationUnits` 🟢 0/0 parameters – `GetCalculationUnitsComponent`
 - 🚧 `GetProjectPreferences` — [#1030](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1030 "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components")
 - 🚧 `SetProjectPreferences` — [#1030](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1030 "[4/4] Add the GetProjectPreferences and SetProjectPreferences Grasshopper components")
-- ✅ `GetGeoLocation` 🟢 0/0 parameters – `GetProjectLocationComponent` — [#939](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/939 "Sun studies: get and set the project date/time, calculate the sun position, read sun settings")
+- ✅ `GetGeoLocation` 🟢 0/0 parameters – `GetProjectLocationComponent`
 - ⬜ `GetSurveyPointTransformation`
-- ✅ `SetGeoLocation` 🟢 2/2 parameters – `SetProjectLocationComponent` — [#939](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/939 "Sun studies: get and set the project date/time, calculate the sun position, read sun settings")
+- ✅ `SetGeoLocation` 🟢 2/2 parameters – `SetProjectLocationComponent`
 - ⬜ `GetProjectNotes`
 - ⬜ `SetProjectNotes`
 - ✅ `PrintView` 🟢 4/4 parameters – `PrintViewComponent`
@@ -115,10 +115,10 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetElementsByType` 🟢 3/3 parameters – `GetElementsByTypeComponent`
 - ✅ `GetAllElements` 🟢 2/2 parameters – `ElementMetadata`, `GetAllElementsComponent`
 - ⬜ `GetElementTypeNames`
-- ✅ `ChangeSelectionOfElements` 🟢 2/2 parameters – `ChangeSelectionComponent` — [#984](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/984 "Add ZoomToElements (2D and 3D)"), [#921](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/921 "Add 3D style commands and show selection / all in 3D")
+- ✅ `ChangeSelectionOfElements` 🟢 2/2 parameters – `ChangeSelectionComponent`
 - ✅ `FilterElements` 🟢 5/5 parameters – `FilterElementsComponent`
-- ✅ `GetDetailsOfElements` 🟢 2/2 parameters – `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `WallsApiComponent`, `WallsComponent` — [#913](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/913 "Add ModifyCurtainWalls command"), [#639](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/639 "Feature request for GetDetailsOfElements")
-- ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `WallsApiComponent`, `WallsComponent` — [#913](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/913 "Add ModifyCurtainWalls command")
+- ✅ `GetDetailsOfElements` 🟢 2/2 parameters – `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `WallsApiComponent`, `WallsComponent` — [#639](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/639 "Feature request for GetDetailsOfElements")
+- ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `WallsApiComponent`, `WallsComponent`
 - ⬜ `GetElementCategories`
 - ⬜ `GetCategoryValuesOfElements`
 - ⬜ `SetCategoryValuesOfElements`
@@ -164,7 +164,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateSlabs` 🟡 12/13 parameters – `CreateSlabsComponent`<br><sub>no input: `slabsData.id`</sub>
 - ✅ `CreateWindows` 🟡 10/11 parameters – `CreateWindowsComponent`<br><sub>no input: `windowsData.libraryPartName`</sub>
 - ✅ `CreateDoors` 🟡 10/11 parameters – `CreateDoorsComponent`<br><sub>no input: `doorsData.libraryPartName`</sub>
-- ✅ `CreateOpenings` 🟢 5/5 parameters – `CreateOpeningsComponent` — [#911](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/911 "Add ModifyOpenings command")
+- ✅ `CreateOpenings` 🟢 5/5 parameters – `CreateOpeningsComponent`
 - ⬜ `GetOpeningDefault`
 - ⬜ `GetOpeningFloorPlanParameters`
 - ⬜ `SetOpeningFloorPlanParameters`
@@ -172,7 +172,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ⬜ `SetOpeningDetails`
 - ✅ `CreateMorphs` 🟡 9/38 parameters – `CreateMorphsComponent`<br><sub>no input: `morphsData.body`, `morphsData.coverFillBGPen`, `morphsData.coverFillOrientation`, `morphsData.coverFillPen`, `morphsData.coverFillType`, `morphsData.cutFillBackgroundPen`, `morphsData.cutFillPen`, `morphsData.cutLinePen`, `morphsData.cutLineType`, `morphsData.displayOption`, `morphsData.isAutoOnStoryVisibility`, `morphsData.linkToSettings`, `morphsData.outlineContourDisplay`, `morphsData.overheadLinePen`, `morphsData.overheadLineType`, `morphsData.showContour`, `morphsData.showFill`, `morphsData.textureProjectionCoords`, `morphsData.textureProjectionType`, `morphsData.topExpansion`, `morphsData.uncutLinePen`, `morphsData.uncutLineType`, `morphsData.use3DHatching`, `morphsData.useCoverFillType`, `morphsData.useDistortedCoverFill`, `morphsData.viewDepthLimitation`, `morphsData.xAxis`, `morphsData.yAxis`, `morphsData.zAxis`</sub>
 - ✅ `CreateRoofs` 🟢 14/14 parameters – `CreateRoofsComponent`
-- ✅ `CreateCurtainWalls` 🟡 9/10 parameters – `CreateCurtainWallsComponent` — [#913](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/913 "Add ModifyCurtainWalls command")<br><sub>no input: `curtainWallsData.id`</sub>
+- ✅ `CreateCurtainWalls` 🟡 9/10 parameters – `CreateCurtainWallsComponent`<br><sub>no input: `curtainWallsData.id`</sub>
 - ✅ `CreateAssociativeDimensions` 🟡 4/5 parameters – `CreateAssociativeDimensionsComponent`<br><sub>no input: `dimensionsData.floorIndex`</sub>
 - ✅ `CreateAssociativeDimensionsOnSection` 🟡 5/10 parameters – `CreateAssociativeDimensionsOnSectionComponent`<br><sub>no input: `dimensionsData.beginPlane`, `dimensionsData.placeOnTop`, `dimensionsData.sectionElementIds`, `dimensionsData.skinBorderIndices`, `dimensionsData.totalSizePlane`</sub>
 - ✅ `CreateWallThicknessDimensions` 🟢 4/4 parameters – `CreateWallThicknessDimensionsComponent`
@@ -232,7 +232,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetFavoritesByType` 🟢 1/1 parameters – `GetFavoritesByTypeComponent`
 - ⬜ `GetAllFavorites`
 - ✅ `GetFavoritePreviewImage` 🟢 5/5 parameters – `GetFavoritePreviewImageComponent`
-- ✅ `ApplyFavoritesToElementDefaults` 🟢 1/1 parameters – `ApplyFavoritesComponent` — [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
+- ✅ `ApplyFavoritesToElementDefaults` 🟢 1/1 parameters – `ApplyFavoritesComponent`
 - ✅ `CreateFavoritesFromElements` 🟢 4/4 parameters – `CreateFavoritesComponent`
 - ✅ `ImportFavorites` 🟢 4/4 parameters – `ImportFavoritesComponent`
 - ✅ `ExportFavorites` 🟠 2/3 parameters – `ExportFavoritesComponent`<br><sub>no input: `format`</sub>
@@ -246,9 +246,9 @@ A parameter counts as covered when the component's code names it (a static check
 
 - ✅ `GetAllProperties` 🟢 0/0 parameters – `ElementMetadata`, `FindPropertyByGuidComponent`, `FindPropertyByName`, `GetAllPropertiesComponent`
 - ✅ `GetPropertyValuesOfElements` 🟠 2/3 parameters – `ElementMetadata`, `GetPropertyValuesOfElementsComponent`<br><sub>no input: `includeAvailability`</sub>
-- ✅ `SetPropertyValuesOfElements` 🟢 1/1 parameters – `ElementMetadata`, `SetPropertyValuesOfElementsComponent`, `WallsApiComponent`, `WallsComponent` — [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
-- ✅ `GetPropertyValuesOfAttributes` 🟢 2/2 parameters – `GetPropertyValuesOfAttributesComponent` — [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove")
-- ✅ `SetPropertyValuesOfAttributes` 🟢 1/1 parameters – `SetPropertyValuesOfAttributesComponent` — [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove")
+- ✅ `SetPropertyValuesOfElements` 🟢 1/1 parameters – `ElementMetadata`, `SetPropertyValuesOfElementsComponent`, `WallsApiComponent`, `WallsComponent`
+- ✅ `GetPropertyValuesOfAttributes` 🟢 2/2 parameters – `GetPropertyValuesOfAttributesComponent`
+- ✅ `SetPropertyValuesOfAttributes` 🟢 1/1 parameters – `SetPropertyValuesOfAttributesComponent`
 - ⬜ `GetPropertyDefinitionsOfAttributes`
 - ⬜ `AddPropertyToAttributes`
 - ⬜ `RemovePropertyFromAttributes`
@@ -264,10 +264,10 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Classification Commands
 
-- ✅ `GetClassificationsOfElements` 🟢 2/2 parameters – `GetClassificationsOfElementsComponent` — [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove")
-- ✅ `SetClassificationsOfElements` 🟢 1/1 parameters – `SetClassificationsOfElementsComponent` — [#985](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/985 "Classifications of attributes: get, add and remove"), [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
-- 🔀 `GetClassificationsOfElementDefaults` 🟢 2/2 parameters – `GetClassificationsOfElementDefaultsComponent` — [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
-- 🔀 `SetClassificationsOfElementDefaults` 🟢 3/3 parameters – `SetClassificationsOfElementDefaultsComponent` — [#944](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/944 "Get and set property values and classifications of tool defaults")
+- ✅ `GetClassificationsOfElements` 🟢 2/2 parameters – `GetClassificationsOfElementsComponent`
+- ✅ `SetClassificationsOfElements` 🟢 1/1 parameters – `SetClassificationsOfElementsComponent`
+- 🔀 `GetClassificationsOfElementDefaults` 🟢 2/2 parameters – `GetClassificationsOfElementDefaultsComponent`
+- 🔀 `SetClassificationsOfElementDefaults` 🟢 3/3 parameters – `SetClassificationsOfElementDefaultsComponent`
 - ✅ `CreateClassificationSystems` 🟢 1/1 parameters – `CreateClassificationSystemsComponent`
 - ✅ `CreateClassificationItems` 🟢 1/1 parameters – `CreateClassificationItemsComponent`
 - ✅ `DeleteClassificationSystems` 🟢 1/1 parameters – `DeleteClassificationSystemsComponent`
@@ -286,24 +286,24 @@ A parameter counts as covered when the component's code names it (a static check
 - 🚧 `RenameAttributeFolders` — [#1029](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1029 "[4/4] Grasshopper components for the attribute folder commands")
 - 🚧 `MoveAttributesAndFolders` — [#1029](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1029 "[4/4] Grasshopper components for the attribute folder commands")
 - ✅ `CreateLayers` 🟠 8/9 parameters – `CreateLayersComponent`, `SetLayersComponent`<br><sub>no input: `layerDataArray.index`</sub>
-- ✅ `CreateLayerCombinations` 🟠 5/6 parameters – `SetLayerCombinationsComponent` — [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination")<br><sub>no input: `layerCombinationDataArray.index`</sub>
+- ✅ `CreateLayerCombinations` 🟠 5/6 parameters – `SetLayerCombinationsComponent`<br><sub>no input: `layerCombinationDataArray.index`</sub>
 - ✅ `CreateLines` 🟡 5/12 parameters – `CreateLinesComponent`<br><sub>no input: `lineDataArray.dashItems`, `lineDataArray.defineScale`, `lineDataArray.index`, `lineDataArray.lineItems`, `lineDataArray.lineType`, `lineDataArray.period`, `lineDataArray.scaleWithPlan`</sub>
 - ✅ `CreateFills` 🟡 5/22 parameters – `CreateFillsComponent`<br><sub>no input: `fillDataArray.bitPattern`, `fillDataArray.gradientEnd`, `fillDataArray.gradientStart`, `fillDataArray.horizontalSpacing`, `fillDataArray.index`, `fillDataArray.lineItems`, `fillDataArray.percent`, `fillDataArray.scaleWithPlan`, `fillDataArray.subType`, `fillDataArray.symbolArcs`, `fillDataArray.symbolHotspots`, `fillDataArray.symbolLines`, `fillDataArray.texture`, `fillDataArray.useForCover`, `fillDataArray.useForDraft`, `fillDataArray.useForWalls`, `fillDataArray.verticalSpacing`</sub>
 - ✅ `CreateZoneCategories` 🟡 4/10 parameters – `CreateZoneCategoriesComponent`<br><sub>no input: `zoneCategoryDataArray.categoryCode`, `zoneCategoryDataArray.color`, `zoneCategoryDataArray.index`, `zoneCategoryDataArray.stampMainGuid`, `zoneCategoryDataArray.stampName`, `zoneCategoryDataArray.stampRevGuid`</sub>
 - ✅ `CreateMEPSystems` 🟡 4/14 parameters – `CreateMEPSystemsComponent`<br><sub>no input: `mepSystemDataArray.centerLinePen`, `mepSystemDataArray.centerLineTypeId`, `mepSystemDataArray.contourPen`, `mepSystemDataArray.domain`, `mepSystemDataArray.fillBackgroundPen`, `mepSystemDataArray.fillId`, `mepSystemDataArray.fillPen`, `mepSystemDataArray.index`, `mepSystemDataArray.insulationMaterialId`, `mepSystemDataArray.materialId`</sub>
-- ✅ `CreatePenTables` 🟡 4/9 parameters – `CreatePenTablesComponent` — [#951](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/951 "Add ModifyPens: change single pens of the active pen table")<br><sub>no input: `penTableDataArray.index`, `penTableDataArray.isActiveForLayout`, `penTableDataArray.isActiveForModel`, `penTableDataArray.pens`, `penTableDataArray.sourceAttributeId`</sub>
+- ✅ `CreatePenTables` 🟡 4/9 parameters – `CreatePenTablesComponent`<br><sub>no input: `penTableDataArray.index`, `penTableDataArray.isActiveForLayout`, `penTableDataArray.isActiveForModel`, `penTableDataArray.pens`, `penTableDataArray.sourceAttributeId`</sub>
 - ✅ `CreateProfiles` 🟡 5/26 parameters – `CreateProfilesComponent`<br><sub>no input: `profileDataArray.beamType`, `profileDataArray.coluType`, `profileDataArray.handrailType`, `profileDataArray.index`, `profileDataArray.newSkins`, `profileDataArray.otherGDLObjectType`, `profileDataArray.replaceSkins`, `profileDataArray.skinOverrides`, `profileDataArray.skinOverrides.contourLineTypeId`, `profileDataArray.skinOverrides.contourPen`, `profileDataArray.skinOverrides.cutEndLinePen`, `profileDataArray.skinOverrides.cutEndLineTypeId`, `profileDataArray.skinOverrides.edgeOverrides`, `profileDataArray.skinOverrides.fillId`, `profileDataArray.skinOverrides.isCore`, `profileDataArray.skinOverrides.isFinish`, `profileDataArray.skinOverrides.skinId`, `profileDataArray.skinOverrides.surfaceId`, `profileDataArray.skinOverrides.visibleCutEndLines`, `profileDataArray.sourceAttributeId`, `profileDataArray.wallType`</sub>
 - ✅ `CreateBuildingMaterials` 🟡 5/21 parameters – `CreateBuildingMaterialsComponent`<br><sub>no input: `buildingMaterialDataArray.collisionDetection`, `buildingMaterialDataArray.connPriority`, `buildingMaterialDataArray.cutFillBackgroundPen`, `buildingMaterialDataArray.cutFillIndex`, `buildingMaterialDataArray.cutFillOrientation`, `buildingMaterialDataArray.cutFillPen`, `buildingMaterialDataArray.cutSurfaceIndex`, `buildingMaterialDataArray.density`, `buildingMaterialDataArray.embodiedCarbon`, `buildingMaterialDataArray.embodiedEnergy`, `buildingMaterialDataArray.heatCapacity`, `buildingMaterialDataArray.id`, `buildingMaterialDataArray.index`, `buildingMaterialDataArray.manufacturer`, `buildingMaterialDataArray.showUncutLines`, `buildingMaterialDataArray.thermalConductivity`</sub>
 - ✅ `CreateComposites` 🟡 6/14 parameters – `CreateCompositesComponent`<br><sub>no input: `compositeDataArray.index`, `compositeDataArray.separators`, `compositeDataArray.separators.linePen`, `compositeDataArray.separators.lineTypeId`, `compositeDataArray.skins`, `compositeDataArray.skins.framePen`, `compositeDataArray.skins.type`, `compositeDataArray.useWith`</sub>
 - ✅ `CreateSurfaces` 🟡 4/18 parameters – `CreateSurfacesComponent`<br><sub>no input: `surfaceDataArray.ambientReflection`, `surfaceDataArray.diffuseReflection`, `surfaceDataArray.emissionAttenuation`, `surfaceDataArray.emissionColor`, `surfaceDataArray.fillId`, `surfaceDataArray.index`, `surfaceDataArray.materialType`, `surfaceDataArray.shine`, `surfaceDataArray.specularColor`, `surfaceDataArray.specularReflection`, `surfaceDataArray.surfaceColor`, `surfaceDataArray.texture`, `surfaceDataArray.transparency`, `surfaceDataArray.transparencyAttenuation`</sub>
 - ✅ `GetBuildingMaterialPhysicalProperties` 🟢 1/1 parameters – `GetBuildingMaterialPhysicalPropertiesComponent`
-- ✅ `GetLayerCombinations` 🟢 1/1 parameters – `GetLayerCombinationsComponent` — [#910](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/910 "Add command to activate a layer combination")
+- ✅ `GetLayerCombinations` 🟢 1/1 parameters – `GetLayerCombinationsComponent`
 - ⬜ `GetCurrentLayerCombination`
 - ✅ `GetLines` 🟠 1/2 parameters – `GetLinesComponent`<br><sub>no input: `fields`</sub>
 - ✅ `GetFills` 🟠 1/2 parameters – `GetFillsComponent`<br><sub>no input: `fields`</sub>
 - ✅ `GetZoneCategories` 🟠 1/2 parameters – `GetZoneCategoriesComponent`<br><sub>no input: `fields`</sub>
 - ✅ `GetMEPSystems` 🟠 1/2 parameters – `GetMEPSystemsComponent`<br><sub>no input: `fields`</sub>
-- ✅ `GetPenTables` 🟠 1/2 parameters – `GetPenTablesComponent` — [#951](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/951 "Add ModifyPens: change single pens of the active pen table")<br><sub>no input: `fields`</sub>
+- ✅ `GetPenTables` 🟠 1/2 parameters – `GetPenTablesComponent`<br><sub>no input: `fields`</sub>
 - ⬜ `GetCurrentPenTable`
 - ✅ `GetProfiles` 🟠 1/2 parameters – `GetProfilesComponent`<br><sub>no input: `fields`</sub>
 - ✅ `GetComposites` 🟠 1/2 parameters – `GetCompositesComponent`<br><sub>no input: `fields`</sub>
@@ -358,7 +358,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ReleaseElements` 🟢 1/1 parameters – `ReleaseElementsComponent`
 - 🔀 `GetReservationStatusOfElements` 🟢 1/1 parameters – `GetReservationStatusOfElementsComponent`
 - 🔀 `GrantElements` 🟢 2/2 parameters – `GrantElementsComponent`
-- ✅ `ReserveLockableObjectSet` 🟢 1/1 parameters – `ReserveLockableObjectSetComponent` — [#951](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/951 "Add ModifyPens: change single pens of the active pen table")
+- ✅ `ReserveLockableObjectSet` 🟢 1/1 parameters – `ReserveLockableObjectSetComponent`
 - ✅ `ReleaseLockableObjectSet` 🟢 1/1 parameters – `ReleaseLockableObjectSetComponent`
 - ✅ `GetLockableObjectSetStatus` 🟢 1/1 parameters – `GetLockableObjectSetStatusComponent`
 - ✅ `ReserveHotlinkCacheManagement` 🟢 0/0 parameters – `ReserveHotlinkCacheManagementComponent`
@@ -384,9 +384,9 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetLayoutCustomScheme` 🟢 0/0 parameters – `GetLayoutCustomSchemeComponent`
 - ✅ `GetModelViewOptions` 🟢 0/0 parameters – `GetModelViewOptionsComponent` — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
 - ✅ `GetViewSettings` 🟢 1/1 parameters – `GetViewSettingsComponent`
-- ✅ `SetViewSettings` 🟢 3/3 parameters – `SetViewSettingsComponent` — [#942](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/942 "Graphic overrides: get and set the current window's override combination, read an element's effective override style")
-- 🚧 `GetActiveGraphicalOverrideCombination` — [#1453](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1453 "[3/3] Grasshopper components for the active override combination and element override styles"), [#942](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/942 "Graphic overrides: get and set the current window's override combination, read an element's effective override style")
-- 🚧 `SetActiveGraphicalOverrideCombination` — [#1453](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1453 "[3/3] Grasshopper components for the active override combination and element override styles"), [#942](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/942 "Graphic overrides: get and set the current window's override combination, read an element's effective override style")
+- ✅ `SetViewSettings` 🟢 3/3 parameters – `SetViewSettingsComponent`
+- 🚧 `GetActiveGraphicalOverrideCombination` — [#1453](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1453 "[3/3] Grasshopper components for the active override combination and element override styles")
+- 🚧 `SetActiveGraphicalOverrideCombination` — [#1453](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1453 "[3/3] Grasshopper components for the active override combination and element override styles")
 - ⬜ `GetStructureDisplay`
 - ⬜ `SetStructureDisplay`
 - ✅ `GetView2DTransformations` 🟢 2/2 parameters – `GetView2DTransformationsComponent`
@@ -400,10 +400,10 @@ A parameter counts as covered when the component's code names it (a static check
 - ⬜ `Create3DStyles`
 - ⬜ `Change3DStyles`
 - ✅ `Get3DProjectionSettings` 🟢 0/0 parameters – `Get3DProjectionSettingsComponent`
-- ✅ `Set3DProjectionSettings` 🟢 1/1 parameters – `Set3DProjectionSettingsComponent` — [#939](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/939 "Sun studies: get and set the project date/time, calculate the sun position, read sun settings")
+- ✅ `Set3DProjectionSettings` 🟢 1/1 parameters – `Set3DProjectionSettingsComponent`
 - ⬜ `Get3DWindowSettings`
 - ⬜ `Set3DWindowSettings`
-- ✅ `FitInWindow` 🟢 1/1 parameters – `ZoomToElementsComponent` — [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements"), [#984](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/984 "Add ZoomToElements (2D and 3D)")
+- ✅ `FitInWindow` 🟢 1/1 parameters – `ZoomToElementsComponent` — [#1001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1001 "Add ZoomToElements to zoom the current 2D or 3D window to elements")
 - ⬜ `SetZoom`
 - ⬜ `ResetZoom`
 - ✅ `CreateSections` 🟢 6/6 parameters – `CreateSectionsComponent`
@@ -436,10 +436,10 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Revision Management Commands
 
-- ✅ `GetRevisionIssues` 🟢 0/0 parameters – `GetRevisionIssuesComponent` — [#937](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/937 "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data")
-- ✅ `GetRevisionChanges` 🟢 0/0 parameters – `GetRevisionChangesComponent` — [#937](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/937 "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data")
+- ✅ `GetRevisionIssues` 🟢 0/0 parameters – `GetRevisionIssuesComponent`
+- ✅ `GetRevisionChanges` 🟢 0/0 parameters – `GetRevisionChangesComponent`
 - ⬜ `GetRevisionChangeCustomScheme`
-- ✅ `GetDocumentRevisions` 🟢 0/0 parameters – `GetDocumentRevisionsComponent` — [#937](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/937 "Add ModifyRevisionIssues: change a revision issue's ID, description and custom data")
+- ✅ `GetDocumentRevisions` 🟢 0/0 parameters – `GetDocumentRevisionsComponent`
 - ✅ `GetCurrentRevisionChangesOfLayouts` 🟢 1/1 parameters – `GetCurrentRevisionChangesOfLayoutsComponent`
 - ✅ `GetRevisionChangesOfElements` 🟢 1/1 parameters – `GetRevisionChangesOfElementsComponent`
 
