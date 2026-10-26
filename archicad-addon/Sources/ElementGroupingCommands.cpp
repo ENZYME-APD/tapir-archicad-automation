@@ -1512,39 +1512,7 @@ GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetRawResponseSchem
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementSets": {
-                                    "type": "array",
-                                    "description": "The element sets that contain the element. Empty if the element is not part of any element set.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "elementSetId": {
-                                                "type": "object",
-                                                "description": "The identifier of an element set.",
-                                                "properties": {
-                                                    "guid": {
-                                                        "$ref": "#/Guid"
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "guid"
-                                                ]
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "elementSetId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementSets"
-                            ]
+                            "$ref": "#/ElementSetsOfElement"
                         },
                         {
                             "$ref": "#/ErrorItem"

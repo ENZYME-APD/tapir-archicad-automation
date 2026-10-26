@@ -428,31 +428,7 @@ GS::Optional<GS::UniString> RegularizePolygonsCommand::GetInputParametersSchema 
             "type": "array",
             "description": "The polygons to regularize, in the format of CreateSlabs (polygonCoordinates, polygonArcs, holes). For CreateHatches, pass the outline of a result as its coordinates and arcs.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "polygonCoordinates": {
-                        "type": "array",
-                        "description": "The 2D coordinates of the outline. A last coordinate equal to the first is ignored.",
-                        "items": {
-                            "$ref": "#/Coordinate2D"
-                        },
-                        "minItems": 3
-                    },
-                    "polygonArcs": {
-                        "type": "array",
-                        "description": "Arcs of the outline.",
-                        "items": {
-                            "$ref": "#/PolyArc"
-                        }
-                    },
-                    "holes": {
-                        "$ref": "#/Holes2D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "polygonCoordinates"
-                ]
+                "$ref": "#/PolygonRegularizationData"
             }
         },
         "withAncestry": {
@@ -479,94 +455,7 @@ GS::Optional<GS::UniString> RegularizePolygonsCommand::GetRawResponseSchema () c
                 "type": "object",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "polygons": {
-                                "type": "array",
-                                "description": "The valid polygons Archicad made of the input: none, one or more.",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "polygonCoordinates": {
-                                            "type": "array",
-                                            "description": "The 2D coordinates of the outline, without a closing coordinate.",
-                                            "items": {
-                                                "$ref": "#/Coordinate2D"
-                                            }
-                                        },
-                                        "polygonArcs": {
-                                            "type": "array",
-                                            "description": "Arcs of the outline.",
-                                            "items": {
-                                                "$ref": "#/PolyArc"
-                                            }
-                                        },
-                                        "holes": {
-                                            "$ref": "#/Holes2D"
-                                        },
-                                        "ancestry": {
-                                            "type": "object",
-                                            "description": "Only with withAncestry. Read from the vertexAncestry and edgeAncestry of Archicad's API_RegularizedPoly; -1 marks a vertex or edge that Archicad created (for example at a self-intersection).",
-                                            "properties": {
-                                                "contours": {
-                                                    "type": "array",
-                                                    "description": "One item per contour of this result: the outline first, then the holes in order.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "vertices": {
-                                                                "type": "array",
-                                                                "description": "For each vertex of the contour, the input vertex it came from.",
-                                                                "items": {
-                                                                    "type": "object",
-                                                                    "description": "An input vertex or edge: the contour (0 is the outline, k the hole at index k-1 of the request) and the vertex or edge in it (edge i runs from vertex i to the next one). Both are -1 when Archicad created it.",
-                                                                    "properties": {
-                                                                        "contourIndex": {
-                                                                            "type": "integer"
-                                                                        },
-                                                                        "index": {
-                                                                            "type": "integer"
-                                                                        }
-                                                                    },
-                                                                    "additionalProperties": false,
-                                                                    "required": ["contourIndex", "index"]
-                                                                }
-                                                            },
-                                                            "edges": {
-                                                                "type": "array",
-                                                                "description": "For each edge of the contour (edge i runs from vertex i to the next one), the input edge it came from.",
-                                                                "items": {
-                                                                    "type": "object",
-                                                                    "description": "An input vertex or edge: the contour (0 is the outline, k the hole at index k-1 of the request) and the vertex or edge in it (edge i runs from vertex i to the next one). Both are -1 when Archicad created it.",
-                                                                    "properties": {
-                                                                        "contourIndex": {
-                                                                            "type": "integer"
-                                                                        },
-                                                                        "index": {
-                                                                            "type": "integer"
-                                                                        }
-                                                                    },
-                                                                    "additionalProperties": false,
-                                                                    "required": ["contourIndex", "index"]
-                                                                }
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": ["vertices", "edges"]
-                                                    }
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["contours"]
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["polygonCoordinates", "holes"]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": ["polygons"]
+                        "$ref": "#/RegularizedPolygons"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -618,28 +507,7 @@ GS::Optional<GS::UniString> RegularizePolylinesCommand::GetInputParametersSchema
             "type": "array",
             "description": "The polylines to regularize, in the format of CreatePolylines.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "coordinates": {
-                        "type": "array",
-                        "description": "The 2D coordinates of the polyline.",
-                        "items": {
-                            "$ref": "#/Coordinate2D"
-                        },
-                        "minItems": 2
-                    },
-                    "arcs": {
-                        "type": "array",
-                        "description": "The arcs of the polyline.",
-                        "items": {
-                            "$ref": "#/PolyArc"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "coordinates"
-                ]
+                "$ref": "#/PolylineRegularizationData"
             }
         },
         "withAncestry": {
@@ -666,63 +534,7 @@ GS::Optional<GS::UniString> RegularizePolylinesCommand::GetRawResponseSchema () 
                 "type": "object",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "coordinates": {
-                                "type": "array",
-                                "description": "The 2D coordinates of the regularized polyline. Empty when nothing valid is left of it.",
-                                "items": {
-                                    "$ref": "#/Coordinate2D"
-                                }
-                            },
-                            "arcs": {
-                                "type": "array",
-                                "description": "The arcs of the regularized polyline.",
-                                "items": {
-                                    "$ref": "#/PolyArc"
-                                }
-                            },
-                            "ancestry": {
-                                "type": "object",
-                                "description": "Only with withAncestry. Read from the vertexAncestry and edgeAncestry of Archicad's API_RegularizedPoly; -1 marks a vertex or edge that Archicad created (for example at a self-intersection).",
-                                "properties": {
-                                    "vertices": {
-                                        "type": "array",
-                                        "description": "For each point of the result, the index of the input point it came from.",
-                                        "items": {
-                                            "type": "object",
-                                            "description": "An input point or segment by its index (segment i runs from point i to point i+1); -1 when Archicad created it.",
-                                            "properties": {
-                                                "index": {
-                                                    "type": "integer"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["index"]
-                                        }
-                                    },
-                                    "edges": {
-                                        "type": "array",
-                                        "description": "For each segment of the result (segment i runs from point i to point i+1), the index of the input segment it came from.",
-                                        "items": {
-                                            "type": "object",
-                                            "description": "An input point or segment by its index (segment i runs from point i to point i+1); -1 when Archicad created it.",
-                                            "properties": {
-                                                "index": {
-                                                    "type": "integer"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": ["index"]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["vertices", "edges"]
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": ["coordinates", "arcs"]
+                        "$ref": "#/RegularizedPolyline"
                     },
                     {
                         "$ref": "#/ErrorItem"
