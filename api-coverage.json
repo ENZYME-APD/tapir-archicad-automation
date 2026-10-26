@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 04:04 UTC",
+ "generatedAt": "2026-10-26 04:07 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 107,
-  "claimed": 432,
-  "in progress": 621,
+  "open": 103,
+  "claimed": 426,
+  "in progress": 631,
   "done": 743
  },
  "items": [
@@ -5168,6 +5168,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1076,
      "title": "Expose ACAPI_Category_GetCategoryValueDefault"
     }
@@ -7582,6 +7586,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1171,
      "title": "Expose ACAPI_Drawing_GetNumberingGridLines"
     }
@@ -8867,6 +8875,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
@@ -16563,10 +16575,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModulData_Get",
@@ -16584,10 +16601,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModulData_GetInfo",
@@ -16610,6 +16632,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1077,
      "title": "Expose ACAPI_ModulData_GetInfo"
     }
@@ -16631,10 +16657,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModulData_Store",
@@ -16652,10 +16683,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_ChangeCurrLayerComb",
@@ -16855,6 +16891,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
     {
      "number": 781,
      "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
@@ -17598,6 +17638,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 781,
      "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
     }
@@ -17659,6 +17703,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
     {
      "number": 781,
      "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
@@ -25742,6 +25790,10 @@
    ],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1492,
      "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
     },
@@ -28209,6 +28261,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1330,
      "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
@@ -28230,6 +28286,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1330,
      "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
@@ -28250,6 +28310,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
     {
      "number": 1330,
      "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
@@ -28691,6 +28755,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1174,
      "title": "Expose ACAPI::DesignOptions::DesignOptionCombinationViewSettings::Modifier::SetStandardCombination"
     },
@@ -28715,6 +28783,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
     {
      "number": 1330,
      "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
@@ -29539,6 +29611,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
+    {
      "number": 1330,
      "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
     }
@@ -29560,6 +29636,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1495,
+     "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
+    },
     {
      "number": 1330,
      "title": "Expose design option combination duplicate/deactivate, view combination settings and rights checks"
@@ -32517,7 +32597,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure (undo scopes, results)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -34337,9 +34422,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34392,9 +34482,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34728,9 +34823,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34778,9 +34878,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34856,9 +34961,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34910,6 +35020,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
+    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     }
@@ -34929,9 +35043,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34979,9 +35098,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -35170,9 +35294,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -35197,9 +35326,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -35247,9 +35381,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -36541,6 +36680,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
+    {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
     },
@@ -36615,6 +36758,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
@@ -36746,6 +36893,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
@@ -37339,6 +37490,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
+    {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
     },
@@ -37430,6 +37585,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
+    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
@@ -37456,6 +37615,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
@@ -38686,6 +38849,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
@@ -57926,6 +58093,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
+    {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
     },
@@ -62743,6 +62914,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
@@ -71463,6 +71638,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1494,
+     "title": "[1/4] Add GetLibraryPartScripts"
+    },
     {
      "number": 1468,
      "title": "[5/6] SetLibraryPartMetadata, and interface/migration scripts and deleteScripts in SetLibraryPartScripts"
