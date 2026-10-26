@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 47 % | 82 | 39 |  | 20 | 4 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 47 % | 1436 | 679 |  | 692 | 46 | 19 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-26 12:20 UTC.
+Archicad 25–30 DevKits; updated 2026-10-26 12:34 UTC.
 
 | | Status |
 |---|---|
@@ -815,12 +815,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_UserInput_ClearNeigFilter` – Sets one of the neig types in the neig filter not to be filtered. <sub>(was `APIIo_ClearNeigFilterID`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_CompleteUserInput` – Finishes the user input. <sub>(was `APIIo_CompleteUserInputID`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_DrawRubberArc` – Draws graphical feedback during an input process. <sub>(was `APIIo_DrawRubberArcID`)</sub> *(interactive input from the user)*
-- ➖ `ACAPI_UserInput_DrawRubberLine` – Draws graphical feedback during an input process. <sub>(was `APIIo_DrawRubberLineID`)</sub> *(interactive input from the user)*
+- ➖ `ACAPI_UserInput_DrawRubberLine` – Draws graphical feedback during an input process. <sub>(was `APIIo_DrawRubberLineID`)</sub> — [#1545](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1545 "Feat implement GetLineFromUser and GetPolygonFromUser commands") *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_GetArc` – Performs an arc input. <sub>(was `APIIo_GetArcID`)</sub> *(interactive input from the user)*
-- ➖ `ACAPI_UserInput_GetLine` – Performs a line input. <sub>(was `APIIo_GetLineID`)</sub> *(interactive input from the user)*
+- ➖ `ACAPI_UserInput_GetLine` – Performs a line input. <sub>(was `APIIo_GetLineID`)</sub> — [#1545](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1545 "Feat implement GetLineFromUser and GetPolygonFromUser commands") *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_GetMagicWandSets` – Returns information on curve tracing parameters. <sub>(was `APIEnv_GetMagicWandSetsID`)</sub> *(interactive input from the user)*
-- ➖ `ACAPI_UserInput_GetPoint` – Performs a point input. <sub>(was `APIIo_GetPointID`)</sub> *(interactive input from the user)*
-- ➖ `ACAPI_UserInput_GetPoly` – Performs polygon input. <sub>(was `APIIo_GetPolyID`)</sub> *(interactive input from the user)*
+- ➖ `ACAPI_UserInput_GetPoint` – Performs a point input. <sub>(was `APIIo_GetPointID`)</sub> — [#1545](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1545 "Feat implement GetLineFromUser and GetPolygonFromUser commands") *(interactive input from the user)*
+- ➖ `ACAPI_UserInput_GetPoly` – Performs polygon input. <sub>(was `APIIo_GetPolyID`)</sub> — [#1545](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1545 "Feat implement GetLineFromUser and GetPolygonFromUser commands") *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_InitNeigFilter` – Initializes the neig filter for an input. <sub>(was `APIIo_InitNeigFilterID`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_ResetConstraint` – Dissolve the drawing constraint. <sub>(was `APIIo_ResetConstraintID`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_SetConstraint` – Set the drawing constraint for graphical user input. <sub>(was `APIIo_SetConstraintID`)</sub> *(interactive input from the user)*

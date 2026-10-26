@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 12:20 UTC",
+ "generatedAt": "2026-10-26 12:34 UTC",
  "versions": [
   25,
   26,
@@ -22198,7 +22198,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1545,
+     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -22244,7 +22249,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1545,
+     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -22290,7 +22300,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1545,
+     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -22313,7 +22328,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1545,
+     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
+    }
+   ],
    "issues": []
   },
   {
