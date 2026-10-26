@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 06:32 UTC",
+ "generatedAt": "2026-10-26 06:50 UTC",
  "versions": [
   25,
   26,
@@ -5307,6 +5307,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
@@ -16778,6 +16782,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
     },
@@ -17018,6 +17026,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
@@ -18982,6 +18994,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
@@ -22151,6 +22167,10 @@
    ],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
     },
@@ -23155,6 +23175,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
@@ -26690,6 +26714,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1498,
      "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
@@ -31407,6 +31435,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
     }
@@ -31428,6 +31460,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
@@ -31663,6 +31699,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
     }
@@ -31684,6 +31724,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
@@ -32910,6 +32954,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
     }
@@ -33160,6 +33208,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
@@ -37007,6 +37059,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
     }
@@ -37187,6 +37243,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
     }
@@ -37208,6 +37268,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
@@ -37286,6 +37350,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
@@ -37524,6 +37592,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
+    {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
     }
@@ -37602,6 +37674,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1526,
+     "title": "GDL parameters of opening symbols and library parts, library part pictures from PNG, surface types, element user data delete (left out of #1463 and #1498), with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
