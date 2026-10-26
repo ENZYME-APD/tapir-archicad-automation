@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 15:27 UTC",
+ "generatedAt": "2026-10-26 15:49 UTC",
  "versions": [
   25,
   26,
@@ -6909,7 +6909,12 @@
      "title": "Add GetElementsInCreationOrder (ACAPI_DrawOrder_CreationOrderGetNext)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1548,
+     "title": "GetElementsInDrawOrder crashes Archicad (AC26 and AC28), even without parameters"
+    }
+   ]
   },
   {
    "id": "ACAPI_DrawOrder_DisposeCreationOrderTable",
