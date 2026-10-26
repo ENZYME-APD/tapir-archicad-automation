@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 07:26 UTC",
+ "generatedAt": "2026-10-26 07:34 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 910,
-  "claimed": 150,
+  "in progress": 914,
+  "claimed": 146,
   "done": 743
  },
  "items": [
@@ -3795,9 +3795,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -4054,9 +4059,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -4084,7 +4094,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    }
+   ],
    "issues": []
   },
   {
@@ -4192,7 +4207,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    }
+   ],
    "issues": []
   },
   {
@@ -4532,9 +4552,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -5106,6 +5131,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
     {
      "number": 1535,
      "title": "[6/6] Add DeleteUserDataOfElements"
@@ -8748,9 +8777,14 @@
    "olderNames": [
     "APIDb_ChangeElementInfoStringID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -21193,6 +21227,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
     {
      "number": 1365,
      "title": "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes"
@@ -38523,6 +38561,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
+    {
      "number": 1531,
      "title": "[3/6] SetLibraryPartPictureImages: library part pictures from base64 PNG"
     },
@@ -51252,6 +51294,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
     {
      "number": 1535,
      "title": "[6/6] Add DeleteUserDataOfElements"
@@ -74914,6 +74960,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
+    {
      "number": 1534,
      "title": "[3/5] Classifications and properties of tool defaults"
     },
@@ -75221,6 +75271,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
     {
      "number": 1534,
      "title": "[3/5] Classifications and properties of tool defaults"
@@ -76249,6 +76303,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1536,
+     "title": "[4/5] Pens, attribute classification and built-in properties, element info strings"
+    },
     {
      "number": 1534,
      "title": "[3/5] Classifications and properties of tool defaults"
