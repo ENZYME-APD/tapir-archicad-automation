@@ -1545,16 +1545,21 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         element.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
     }
     // The hatch type decides which of fillInd and buildingMaterial Archicad uses, so a given
-    // attribute also switches the type; the building material wins when both are given.
+    // attribute alone also switches the type; when both are given the default type is kept,
+    // as SetDetailsOfElements does.
     const GS::ObjectState* fillId = parameters.Get ("fillId");
+    const GS::ObjectState* buildingMaterialId = parameters.Get ("buildingMaterialId");
     if (fillId != nullptr) {
         element.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
-        element.hatch.hatchType = API_FillHatch;
+        if (buildingMaterialId == nullptr) {
+            element.hatch.hatchType = API_FillHatch;
+        }
     }
-    const GS::ObjectState* buildingMaterialId = parameters.Get ("buildingMaterialId");
     if (buildingMaterialId != nullptr) {
         element.hatch.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialId));
-        element.hatch.hatchType = API_BuildingMaterialHatch;
+        if (fillId == nullptr) {
+            element.hatch.hatchType = API_BuildingMaterialHatch;
+        }
     }
     Int32 roomSpecial = 0;
     if (parameters.Get ("roomSpecial", roomSpecial)) {
