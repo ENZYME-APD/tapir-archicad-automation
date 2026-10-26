@@ -229,6 +229,14 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
         );
+        err |= RegisterCommand<GetUserInputLineCommand> (
+            applicationCommands, "1.7.4",
+            "Waits for the user to input a line in the active Archicad window and returns start and end coordinates."
+        );
+        err |= RegisterCommand<GetUserInputPolyCommand> (
+            applicationCommands, "1.7.4",
+            "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs."
+        );
         err |= RegisterCommand<GetCurrentWindowTypeCommand> (
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
