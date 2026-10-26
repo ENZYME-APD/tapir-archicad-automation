@@ -1,6 +1,6 @@
 import aclib
 
-line_result = aclib.RunTapirCommand("GetUserInputLine", {
+line_result = aclib.RunTapirCommand("GetLineFromUser", {
     "startPrompt": "Please specify the start point of the line",
     "endPrompt": "Please specify the end point of the line",
     "showRubberLineFeedback": True

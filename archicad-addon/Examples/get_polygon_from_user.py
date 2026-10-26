@@ -1,7 +1,7 @@
 import aclib
 
 
-result = aclib.RunTapirCommand("GetUserInputPoly", {
+result = aclib.RunTapirCommand("GetPolygonFromUser", {
     "startPrompt": "Please specify the start point of the polygon",
     "prompt": "Please specify furhter points of the polygon. Double-click or enter finishes the input",
     "method": "General"
