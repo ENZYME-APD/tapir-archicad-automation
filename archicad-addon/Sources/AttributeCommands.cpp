@@ -5,6 +5,7 @@
 #include "ProfileAdditionalInfo.hpp"
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
+#include "UserDataPairs.hpp"
 #ifdef ServerMainVers_2700
 #include "ADBAttributeIndex.hpp"
 #endif
@@ -6439,6 +6440,318 @@ GS::ObjectState GetFontsByNameCommand::Execute (const GS::ObjectState& parameter
         fontOS.Add ("fontIndex", fontIndex);
         fontOS.Add ("fontName", foundName.HasValue () ? *foundName : fontName);
         fonts (fontOS);
+    }
+
+    return response;
+}
+
+// The user data of an attribute: ACAPI_UserData_GetUserData / SetUserData from AC27, ACAPI_Attribute_GetUserData /
+// SetUserData before (see MigrationHelper.hpp). Only dataVersion, platformSign and dataHdl are used, the fields the
+// AC25-AC30 API_AttributeUserData share. Setting is a non-undoable modifier, so it runs outside an undo scope.
+
+static bool FindAttributeForUserData (const GS::ObjectState& attributeIdItem, API_Attr_Head& attrHead)
+{
+    const GS::ObjectState* attributeId = attributeIdItem.Get ("attributeId");
+    if (attributeId == nullptr) {
+        return false;
+    }
+    attrHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+    return attrHead.typeID != API_ZombieAttrID;
+}
+
+// Reads the pairs stored on the attribute: none when it has no user data. A failure fills errorMessage.
+static GSErrCode ReadAttributeUserDataPairs (API_Attr_Head& attrHead, UserDataPairs& pairs, GS::UniString& errorMessage)
+{
+    pairs.clear ();
+
+    API_AttributeUserData userData = {};
+    GSErrCode err = ACAPI_UserData_GetUserData (&attrHead, &userData);
+    if (err == APIERR_NOUSERDATA) {
+        BMKillHandle (&userData.dataHdl);
+        return NoError;
+    }
+    if (err != NoError) {
+        BMKillHandle (&userData.dataHdl);
+        errorMessage = "Failed to get the user data of the attribute.";
+        return err;
+    }
+    if (userData.dataHdl == nullptr) {
+        return NoError;
+    }
+
+    // Data in a layout these commands do not write is reported, never overwritten.
+    if (userData.dataVersion != UserDataPairsLayoutVersion) {
+        errorMessage = GS::UniString::Printf ("The attribute holds user data in another layout (version %d).", static_cast<int> (userData.dataVersion));
+        err = APIERR_BADPARS;
+    } else {
+        pairs = ParseUserDataPairs (userData.dataHdl);
+    }
+
+    BMKillHandle (&userData.dataHdl);
+    return err;
+}
+
+GetUserDataOfAttributesCommand::GetUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetUserDataOfAttributesCommand::GetName () const
+{
+    return "GetUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userDataOfAttributes": {
+                "type": "array",
+                "description": "One item per attribute, in the input order: the pairs stored on the attribute (none when it holds no user data), or an error when the attribute was not found or holds user data in another layout.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pairs": {
+                                    "$ref": "#/UserDataPairs"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "pairs"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userDataOfAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& userDataOfAttributes = response.AddList<GS::ObjectState> ("userDataOfAttributes");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            userDataOfAttributes (CreateErrorResponse (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        UserDataPairs pairs;
+        GS::UniString errorMessage;
+        const GSErrCode err = ReadAttributeUserDataPairs (attrHead, pairs, errorMessage);
+        if (err != NoError) {
+            userDataOfAttributes (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        GS::ObjectState item;
+        AddUserDataPairsList (item, "pairs", pairs);
+        userDataOfAttributes (item);
+    }
+
+    return response;
+}
+
+SetUserDataOfAttributesCommand::SetUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetUserDataOfAttributesCommand::GetName () const
+{
+    return "SetUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "pairs": {
+                "$ref": "#/UserDataPairs",
+                "description": "The key-value pairs to store on each attribute. A key the attribute already holds gets the new value; other keys are left as they are."
+            },
+            "keysToDelete": {
+                "$ref": "#/UserDataKeysToDelete"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    UserDataPairs pairsToSet;
+    GS::Array<GS::UniString> keysToDelete;
+    GS::UniString errorMessage;
+    if (!GetUserDataPairChanges (parameters, pairsToSet, keysToDelete, errorMessage)) {
+        return CreateErrorResponse (APIERR_BADPARS, errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        UserDataPairs pairs;
+        GSErrCode err = ReadAttributeUserDataPairs (attrHead, pairs, errorMessage);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, errorMessage));
+            continue;
+        }
+
+        ApplyUserDataPairChanges (pairs, pairsToSet, keysToDelete);
+
+        API_AttributeUserData userData = {};
+        userData.dataVersion = UserDataPairsLayoutVersion;
+        userData.platformSign = GS::Act_Platform_Sign;
+        userData.dataHdl = SerializeUserDataPairs (pairs);
+        if (userData.dataHdl == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to store the user data of the attribute."));
+            continue;
+        }
+
+        // The API copies the data, the handle stays ours to free.
+        err = ACAPI_UserData_SetUserData (&attrHead, &userData);
+        BMKillHandle (&userData.dataHdl);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to store the user data of the attribute."));
+    }
+
+    return response;
+}
+
+DeleteUserDataOfAttributesCommand::DeleteUserDataOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteUserDataOfAttributesCommand::GetName () const
+{
+    return "DeleteUserDataOfAttributes";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& attributeIdItem : attributeIds) {
+        API_Attr_Head attrHead = {};
+        if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        // A null dataHdl deletes the user data; the struct pointer itself must not be null (APIERR_BADPARS).
+        API_AttributeUserData userData = {};
+        userData.platformSign = GS::Act_Platform_Sign;
+        userData.dataHdl = nullptr;
+        const GSErrCode err = ACAPI_UserData_SetUserData (&attrHead, &userData);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to delete the user data of the attribute."));
     }
 
     return response;
