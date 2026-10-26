@@ -830,11 +830,51 @@ static GS::ObjectState GetAC27PreferenceTableRow (const PreferenceTableBase& tab
     return row;
 }
 
-// Sets the given values of a row inside the Modify of the table: the description first, as SetValue gives
-// the index the row has after its value is set, which index is updated to. Gives the error message of the
-// first value that could not be set, the values before it are set.
-static std::optional<std::pair<GSErrCode, GS::UniString>> SetAC27PreferenceTableRowValues (PreferenceTableBase::Modifier& modifier, PreferenceTableShape shape, uint32_t& index, const GS::ObjectState& values)
+// A row of the input whose key (and values) fit, or the failed result it gets. While the table is modified,
+// key.index follows the row when other rows of the call move it (hasIndex: the row has an index yet).
+struct AC27PreferenceTableRowInput {
+    AC27PreferenceTableRowKey key;
+    bool hasIndex = false;
+    GS::ObjectState values;
+    std::optional<GS::ObjectState> result;
+};
+
+// Updates the indices of the rows of the call when a row of the shape moves from one index to another.
+static void MoveAC27PreferenceTableRowIndices (std::vector<AC27PreferenceTableRowInput>& inputs, PreferenceTableShape shape, uint32_t from, uint32_t to)
 {
+    for (AC27PreferenceTableRowInput& input : inputs) {
+        if (!input.hasIndex || input.key.shape != shape) {
+            continue;
+        }
+        uint32_t& index = input.key.index;
+        if (index == from) {
+            index = to;
+        } else if (from < to && index > from && index <= to) {
+            --index;
+        } else if (to < from && index >= to && index < from) {
+            ++index;
+        }
+    }
+}
+
+// Updates the indices of the rows of the call when a row of the shape is inserted at the index.
+static void InsertAC27PreferenceTableRowIndex (std::vector<AC27PreferenceTableRowInput>& inputs, PreferenceTableShape shape, uint32_t at)
+{
+    for (AC27PreferenceTableRowInput& input : inputs) {
+        if (input.hasIndex && input.key.shape == shape && input.key.index >= at) {
+            ++input.key.index;
+        }
+    }
+}
+
+// Sets the given values of the row of input inside the Modify of the table: the description first, as SetValue
+// gives the index the row has after its value is set, so the rows of the call that it moves are updated.
+// Gives the error message of the first value that could not be set, the values before it are set.
+static std::optional<std::pair<GSErrCode, GS::UniString>> SetAC27PreferenceTableRowValues (PreferenceTableBase::Modifier& modifier, std::vector<AC27PreferenceTableRowInput>& inputs, const AC27PreferenceTableRowInput& input)
+{
+    const PreferenceTableShape shape = input.key.shape;
+    const uint32_t index = input.key.index;
+    const GS::ObjectState& values = input.values;
     GS::UniString description;
     if (values.Get ("description", description)) {
         ACAPI::Result<void> result = modifier.SetDescription (shape, index, description);
@@ -848,17 +888,10 @@ static std::optional<std::pair<GSErrCode, GS::UniString>> SetAC27PreferenceTable
         if (result.IsErr ()) {
             return std::make_pair (result.UnwrapErr ().kind, AC27PreferenceTableErrorText ("set the value", result.UnwrapErr ()));
         }
-        index = *result;
+        MoveAC27PreferenceTableRowIndices (inputs, shape, index, *result);
     }
     return std::nullopt;
 }
-
-// A row of the input whose key (and values) fit, or the failed result it gets.
-struct AC27PreferenceTableRowInput {
-    AC27PreferenceTableRowKey key;
-    GS::ObjectState values;
-    std::optional<GS::ObjectState> result;
-};
 
 static std::vector<AC27PreferenceTableRowInput> ParseAC27PreferenceTableRowInputs (const GS::Array<GS::ObjectState>& rowsData, bool hasKeyField, bool withIndex)
 {
@@ -878,6 +911,8 @@ static std::vector<AC27PreferenceTableRowInput> ParseAC27PreferenceTableRowInput
         }
         if (error.has_value ()) {
             input.result = CreateFailedExecutionResult (APIERR_BADPARS, *error);
+        } else {
+            input.hasIndex = withIndex;
         }
         inputs.push_back (input);
     }
@@ -900,9 +935,10 @@ static GS::ObjectState WithAC27PreferenceTable (const GS::ObjectState& parameter
 }
 
 // Runs change on the rows that have no result yet, in the given order, inside one Modify of the table, so
-// the whole call is one undo step, and gives the results in the order of the input.
+// the whole call is one undo step, and gives the results in the order of the input. With withIndex the
+// successful results get the index their row has after the whole call.
 template <typename ChangeT>
-static GS::ObjectState ModifyAC27PreferenceTableRows (PreferenceTableBase& table, std::vector<AC27PreferenceTableRowInput>& inputs, const std::vector<size_t>& order, const GS::UniString& undoString, const ChangeT& change)
+static GS::ObjectState ModifyAC27PreferenceTableRows (PreferenceTableBase& table, std::vector<AC27PreferenceTableRowInput>& inputs, const std::vector<size_t>& order, const GS::UniString& undoString, bool withIndex, const ChangeT& change)
 {
     // The rows rejected before the change keep their error; the others fail together if the Modify fails.
     std::vector<bool> isRejected;
@@ -923,7 +959,12 @@ static GS::ObjectState ModifyAC27PreferenceTableRows (PreferenceTableBase& table
         if (modifyResult.IsErr () && !isRejected[i]) {
             executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, AC27PreferenceTableErrorText ("modify the preference table", modifyResult.UnwrapErr ())));
         } else if (inputs[i].result.has_value ()) {
-            executionResults (*inputs[i].result);
+            GS::ObjectState result = *inputs[i].result;
+            bool success = false;
+            if (withIndex && result.Get ("success", success) && success) {
+                result.Add ("index", static_cast<Int32> (inputs[i].key.index));
+            }
+            executionResults (result);
         } else {
             executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The preference table was not modified."));
         }
@@ -1187,7 +1228,7 @@ GS::Optional<GS::UniString> SetMEPPreferenceTableRowsCommand::GetRawResponseSche
                                 },
                                 "index": {
                                     "type": "integer",
-                                    "description": "Archicad 27 only: the index of the row after its values were set, which can differ from the index of its key when its value was set. Later rows of the same call are found by their index at that time."
+                                    "description": "Archicad 27 only: the index of the row after the call, which can differ from the index of its key when setting a value moves rows. The keys are the indices before the call."
                                 }
                             },
                             "additionalProperties": false,
@@ -1239,15 +1280,11 @@ GS::ObjectState SetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
 
     return WithAC27PreferenceTable (parameters, [&] (PreferenceTableBase& table) -> GS::ObjectState {
         std::vector<AC27PreferenceTableRowInput> inputs = ParseAC27PreferenceTableRowInputs (rowsData, true, true);
-        return ModifyAC27PreferenceTableRows (table, inputs, GetAC27PreferenceTableRowInputOrder (inputs), "Set MEP Preference Table Rows", [] (PreferenceTableBase::Modifier& modifier, const AC27PreferenceTableRowInput& input) {
-            uint32_t index = input.key.index;
-            const auto error = SetAC27PreferenceTableRowValues (modifier, input.key.shape, index, input.values);
-            if (error.has_value ()) {
-                return CreateFailedExecutionResult (error->first, error->second + " The values before it were set.");
-            }
-            GS::ObjectState result = CreateSuccessfulExecutionResult ();
-            result.Add ("index", static_cast<Int32> (index));
-            return result;
+        return ModifyAC27PreferenceTableRows (table, inputs, GetAC27PreferenceTableRowInputOrder (inputs), "Set MEP Preference Table Rows", true, [&] (PreferenceTableBase::Modifier& modifier, const AC27PreferenceTableRowInput& input) {
+            const auto error = SetAC27PreferenceTableRowValues (modifier, inputs, input);
+            return error.has_value ()
+                ? CreateFailedExecutionResult (error->first, error->second + " The values before it were set.")
+                : CreateSuccessfulExecutionResult ();
         });
     });
 }
@@ -1318,7 +1355,7 @@ GS::Optional<GS::UniString> AddMEPPreferenceTableRowsCommand::GetRawResponseSche
                                 },
                                 "index": {
                                     "type": "integer",
-                                    "description": "The index of the new row in the table. Archicad 27: in the list of its shape, after its values were set."
+                                    "description": "The index of the new row in the table. Archicad 27: in the list of its shape, after the call."
                                 }
                             },
                             "additionalProperties": false,
@@ -1394,19 +1431,20 @@ GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
 
     return WithAC27PreferenceTable (parameters, [&] (PreferenceTableBase& table) -> GS::ObjectState {
         std::vector<AC27PreferenceTableRowInput> inputs = ParseAC27PreferenceTableRowInputs (rowsData, true, false);
-        return ModifyAC27PreferenceTableRows (table, inputs, GetAC27PreferenceTableRowInputOrder (inputs), "Add MEP Preference Table Rows", [] (PreferenceTableBase::Modifier& modifier, const AC27PreferenceTableRowInput& input) {
+        return ModifyAC27PreferenceTableRows (table, inputs, GetAC27PreferenceTableRowInputOrder (inputs), "Add MEP Preference Table Rows", true, [&] (PreferenceTableBase::Modifier& modifier, AC27PreferenceTableRowInput& input) {
             ACAPI::Result<uint32_t> newIndex = modifier.AddNewPreference (input.key.shape);
             if (newIndex.IsErr ()) {
                 return CreateFailedExecutionResult (newIndex.UnwrapErr ().kind, AC27PreferenceTableErrorText ("add the row", newIndex.UnwrapErr ()));
             }
-            uint32_t index = *newIndex;
-            const auto error = SetAC27PreferenceTableRowValues (modifier, input.key.shape, index, input.values);
-            if (error.has_value ()) {
-                return CreateFailedExecutionResult (error->first, error->second + " The row was added.");
-            }
-            GS::ObjectState result = CreateSuccessfulExecutionResult ();
-            result.Add ("index", static_cast<Int32> (index));
-            return result;
+            // A new row before the rows added earlier in the call moves them.
+            const uint32_t index = *newIndex;
+            InsertAC27PreferenceTableRowIndex (inputs, input.key.shape, index);
+            input.key.index = index;
+            input.hasIndex = true;
+            const auto error = SetAC27PreferenceTableRowValues (modifier, inputs, input);
+            return error.has_value ()
+                ? CreateFailedExecutionResult (error->first, error->second + " The row was added.")
+                : CreateSuccessfulExecutionResult ();
         });
     });
 }
@@ -1525,7 +1563,7 @@ GS::ObjectState DeleteMEPPreferenceTableRowsCommand::Execute (const GS::ObjectSt
         std::stable_sort (order.begin (), order.end (), [&] (size_t a, size_t b) {
             return inputs[a].key.index > inputs[b].key.index;
         });
-        return ModifyAC27PreferenceTableRows (table, inputs, order, "Delete MEP Preference Table Rows", [] (PreferenceTableBase::Modifier& modifier, const AC27PreferenceTableRowInput& input) {
+        return ModifyAC27PreferenceTableRows (table, inputs, order, "Delete MEP Preference Table Rows", false, [] (PreferenceTableBase::Modifier& modifier, const AC27PreferenceTableRowInput& input) {
             ACAPI::Result<void> result = modifier.Delete (input.key.shape, input.key.index);
             return result.IsErr ()
                 ? CreateFailedExecutionResult (result.UnwrapErr ().kind, AC27PreferenceTableErrorText ("delete the row", result.UnwrapErr ()))

@@ -1982,11 +1982,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetMEPPreferenceTableRowsCommand> (
             mepExtendedCommands, "1.7.3",
-            "Sets the given values of rows of a segment, branch, elbow or (from Archicad 29) transition preference table, found by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle). Only the given values are changed, in one undo step. On Archicad 27 a row is found by its shape and index, its value and description are set, and its index after that is returned. Available from Archicad 27."
+            "Sets the given values of rows of a segment, branch, elbow or (from Archicad 29) transition preference table, found by their key (the reference ids and, for branch and elbow rows from Archicad 29, the angle). Only the given values are changed, in one undo step. On Archicad 27 a row is found by its shape and index, its value and description are set, and its index after the call is returned; the keys give the indices before the call. Available from Archicad 27."
         );
         err |= RegisterCommand<AddMEPPreferenceTableRowsCommand> (
             mepExtendedCommands, "1.7.3",
-            "Adds rows with the given keys and optionally values to a branch, elbow or transition preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow and transition tables from Archicad 29; segment tables have a row for each reference id. On Archicad 27 a row is added to the list of the given shape of any preference table."
+            "Adds rows with the given keys and optionally values to a branch, elbow or transition preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow and transition tables from Archicad 29; segment tables have a row for each reference id. On Archicad 27 a row is added to the list of the given shape of any preference table, and the index of each new row after the call is returned. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteMEPPreferenceTableRowsCommand> (
             mepExtendedCommands, "1.7.3",
