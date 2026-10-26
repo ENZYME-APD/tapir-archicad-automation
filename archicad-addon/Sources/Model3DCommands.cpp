@@ -4,6 +4,7 @@
 #ifdef ServerMainVers_2800
 #include "Model.hpp"
 #include "ModelElement.hpp"
+#include "Polygon2D.hpp"
 
 #include <optional>
 
@@ -87,6 +88,37 @@ static GSErrCode CreateBodyMaterialObjectState (Int32 elemIdx, UInt32 bodyIdx, G
     DisposeAttribute (attr);
 
     return NoError;
+}
+
+// The first contour of a Geometry::Polygon2D is its outline, the others are its holes. The
+// coordinates are 2D in the cutting plane (axisX, axisY); curved edges are given by their ends.
+static GS::ObjectState CreateCutPolygonObjectState (const Geometry::Polygon2D& polygon)
+{
+    GS::ObjectState polygonOS;
+    const auto& outline = polygonOS.AddList<GS::ObjectState> ("polygonOutline");
+    const auto& holes = polygonOS.AddList<GS::ObjectState> ("holes");
+
+    bool isOutline = true;
+    for (auto contourIt = polygon.BeginContour (); contourIt != polygon.EndContour (); ++contourIt) {
+        if (isOutline) {
+            for (auto vertexIt = contourIt->BeginVertex (); vertexIt != contourIt->EndVertex (); ++vertexIt) {
+                const Point2D& coord = vertexIt->GetCoord ();
+                outline (Create2DCoordinateObjectState (API_Coord { coord.x, coord.y }));
+            }
+            isOutline = false;
+            continue;
+        }
+
+        GS::ObjectState holeOS;
+        const auto& holeOutline = holeOS.AddList<GS::ObjectState> ("polygonOutline");
+        for (auto vertexIt = contourIt->BeginVertex (); vertexIt != contourIt->EndVertex (); ++vertexIt) {
+            const Point2D& coord = vertexIt->GetCoord ();
+            holeOutline (Create2DCoordinateObjectState (API_Coord { coord.x, coord.y }));
+        }
+        holes (holeOS);
+    }
+
+    return polygonOS;
 }
 
 #endif
@@ -454,6 +486,298 @@ GS::ObjectState GetBodyMaterialsOfElementsCommand::Execute (const GS::ObjectStat
             bodyMaterials (CreateErrorResponse (bodyErr, "Failed to get the building material of a body of the element"));
         } else {
             bodyMaterials (result);
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
+}
+
+GetCutPolygonsOfElementsCommand::GetCutPolygonsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCutPolygonsOfElementsCommand::GetName () const
+{
+    return "GetCutPolygonsOfElements";
+}
+
+GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "cutPlane": {
+                "type": "object",
+                "description": "The cutting plane. axisX, axisY and axisZ should be unit vectors perpendicular to each other; axisZ is the normal of the plane.",
+                "properties": {
+                    "basePoint": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "A point of the plane, the origin of the returned 2D coordinates."
+                    },
+                    "axisX": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The direction of the x axis of the returned 2D coordinates."
+                    },
+                    "axisY": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The direction of the y axis of the returned 2D coordinates."
+                    },
+                    "axisZ": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The normal of the plane."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "basePoint",
+                    "axisX",
+                    "axisY",
+                    "axisZ"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "cutPlane"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetCutPolygonsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cutPolygons": {
+                "type": "array",
+                "description": "The cut of each body of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "bodies": {
+                                    "type": "array",
+                                    "description": "The bodies of the element's 3D model generated with separate components: a composite structure has one body per skin. Empty when the element has no 3D model.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "bodyIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the body in the element, starting from 0."
+                                            },
+                                            "buildingMaterialId": {
+                                                "$ref": "#/AttributeId",
+                                                "description": "The building material of the body. Left out when it cannot be found among the attributes of the project."
+                                            },
+                                            "buildingMaterialName": {
+                                                "type": "string",
+                                                "description": "The name of the building material. Left out together with buildingMaterialId."
+                                            },
+                                            "area": {
+                                                "type": "number",
+                                                "description": "The area of the cut surface of the body. 0 when the plane does not cut the body."
+                                            },
+                                            "polygons": {
+                                                "type": "array",
+                                                "description": "The polygons of the cut surface of the body, in 2D coordinates of the plane (basePoint, axisX, axisY). Curved edges are given by their end points. Empty when the plane does not cut the body.",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "polygonOutline": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/Coordinate2D"
+                                                            }
+                                                        },
+                                                        "holes": {
+                                                            "$ref": "#/Holes2D"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "required": [
+                                                        "polygonOutline",
+                                                        "holes"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "bodyIndex",
+                                            "area",
+                                            "polygons"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "bodies"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutPolygons"
+        ]
+    })";
+}
+
+GS::ObjectState GetCutPolygonsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    const GS::ObjectState* cutPlaneOS = parameters.Get ("cutPlane");
+    if (cutPlaneOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "cutPlane is missing");
+    }
+
+    const GS::ObjectState* basePoint = cutPlaneOS->Get ("basePoint");
+    const GS::ObjectState* axisX = cutPlaneOS->Get ("axisX");
+    const GS::ObjectState* axisY = cutPlaneOS->Get ("axisY");
+    const GS::ObjectState* axisZ = cutPlaneOS->Get ("axisZ");
+    if (basePoint == nullptr || axisX == nullptr || axisY == nullptr || axisZ == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "cutPlane needs basePoint, axisX, axisY and axisZ");
+    }
+
+    API_Plane3D cutPlane = {};
+    cutPlane.basePoint = Get3DCoordinateFromObjectState (*basePoint);
+    const API_Coord3D x = Get3DCoordinateFromObjectState (*axisX);
+    const API_Coord3D y = Get3DCoordinateFromObjectState (*axisY);
+    const API_Coord3D z = Get3DCoordinateFromObjectState (*axisZ);
+    cutPlane.axisX = { x.x, x.y, x.z };
+    cutPlane.axisY = { y.x, y.y, y.z };
+    cutPlane.axisZ = { z.x, z.y, z.z };
+
+    // The model is generated once for all found elements, so the elements are checked first.
+    // An unknown guid would make GenerateModelWithSeparateComponents fail for all of them
+    // (APIERR_BADID); a failed input keeps APINULLGuid and its error.
+    GS::Array<API_Guid> inputGuids;
+    GS::Array<GS::ObjectState> inputErrors;
+    GS::Array<API_Guid> elementGuids;
+    GS::HashSet<API_Guid> elementGuidSet;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            inputGuids.Push (APINULLGuid);
+            inputErrors.Push (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        const GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            inputGuids.Push (APINULLGuid);
+            inputErrors.Push (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        inputGuids.Push (elemHead.guid);
+        inputErrors.Push (GS::ObjectState ());
+        if (!elementGuidSet.Contains (elemHead.guid)) {
+            elementGuidSet.Add (elemHead.guid);
+            elementGuids.Push (elemHead.guid);
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& cutPolygons = response.AddList<GS::ObjectState> ("cutPolygons");
+    if (elementGuids.IsEmpty ()) {
+        for (const GS::ObjectState& inputError : inputErrors) {
+            cutPolygons (inputError);
+        }
+        return response;
+    }
+
+    const TemporarySight temporarySight;
+    if (temporarySight.GetError () != NoError) {
+        return CreateErrorResponse (temporarySight.GetError (), "Failed to create a temporary sight for the 3D model");
+    }
+
+    GSErrCode err = ACAPI_ModelAccess_GenerateModelWithSeparateComponents (elementGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to generate the 3D model of the elements");
+    }
+
+    ModelerAPI::Model model;
+    err = ACAPI_Sight_GetSelectedSightModel (model);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the 3D model of the elements");
+    }
+
+    for (UIndex i = 0; i < inputGuids.GetSize (); ++i) {
+        if (inputGuids[i] == APINULLGuid) {
+            cutPolygons (inputErrors[i]);
+            continue;
+        }
+
+        GS::ObjectState result;
+        const auto& bodies = result.AddList<GS::ObjectState> ("bodies");
+
+        const std::optional<Int32> modelIndex = model.GetElementIndex (APIGuid2GSGuid (inputGuids[i]));
+        if (!modelIndex.has_value ()) {
+            cutPolygons (result);
+            continue;
+        }
+
+        ModelerAPI::Element modelElement;
+        model.GetElement (*modelIndex, &modelElement);
+
+        // ModelerAPI indexes the elements from 1, ACAPI_CuttingPlane_GetCutPolygonInfo_New from 0.
+        const Int32 elemIdx = *modelIndex - 1;
+        const Int32 bodyCount = modelElement.GetTessellatedBodyCount ();
+
+        GSErrCode bodyErr = NoError;
+        GS::UniString bodyErrMessage;
+        for (Int32 bodyIdx = 0; bodyIdx < bodyCount; ++bodyIdx) {
+            GS::ObjectState bodyOS;
+            bodyErr = CreateBodyMaterialObjectState (elemIdx, static_cast<UInt32> (bodyIdx), bodyOS);
+            if (bodyErr != NoError) {
+                bodyErrMessage = "Failed to get the building material of a body of the element";
+                break;
+            }
+
+            GS::Array<Geometry::MultiPolygon2D> resPolygons;
+            double area = 0.0;
+            bodyErr = ACAPI_CuttingPlane_GetCutPolygonInfo_New (elemIdx, bodyIdx, cutPlane, &resPolygons, &area);
+            if (bodyErr != NoError) {
+                bodyErrMessage = "Failed to cut a body of the element with the plane";
+                break;
+            }
+
+            bodyOS.Add ("area", area);
+            const auto& polygons = bodyOS.AddList<GS::ObjectState> ("polygons");
+            for (const Geometry::MultiPolygon2D& multiPolygon : resPolygons) {
+                for (const Geometry::Polygon2D& polygon : multiPolygon) {
+                    polygons (CreateCutPolygonObjectState (polygon));
+                }
+            }
+            bodies (bodyOS);
+        }
+
+        if (bodyErr != NoError) {
+            cutPolygons (CreateErrorResponse (bodyErr, bodyErrMessage));
+        } else {
+            cutPolygons (result);
         }
     }
 
