@@ -14542,5 +14542,109 @@
                 "$ref": "#/ErrorItem"
             }
         ]
+    },
+    "AnalyticalModelVariation": {
+        "type": "object",
+        "description": "The variation a Structural Analytical Model is generated for. Its fields depend on the Archicad version: amVariationGuid from Archicad 27, renovationFilterGuid and layerConnectionClassIds before.",
+        "properties": {
+            "amVariationGuid": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the analytical model variation. Archicad 27 and newer."
+            },
+            "renovationFilterGuid": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the renovation filter of the variation. Archicad 25 and 26."
+            },
+            "layerConnectionClassIds": {
+                "type": "array",
+                "description": "The connection classes of the layers. Archicad 25: a list of integers. Archicad 26: one object per layer, with the layer's attribute index and its connection class.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "layerIndex": {
+                                    "type": "integer",
+                                    "description": "The attribute index of the layer."
+                                },
+                                "connectionClassId": {
+                                    "type": "integer",
+                                    "description": "The connection class of the layer."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "layerIndex",
+                                "connectionClassId"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalMemberType": {
+        "type": "string",
+        "description": "The analytical member type of an element.",
+        "enum": [
+            "Unknown",
+            "Beam",
+            "Column",
+            "Roof",
+            "Slab",
+            "Wall"
+        ]
+    },
+    "AnalyticalVisibilitySettings": {
+        "type": "object",
+        "description": "The visibility settings of the Structural Analytical Model. Archicad 26 and newer.",
+        "properties": {
+            "visibilityMode": {
+                "type": "string",
+                "description": "Whether only the analytical model is shown or the analytical model within the entire model.",
+                "enum": [
+                    "AnalyticalModelOnly",
+                    "AnalyticalModelWithinEntireModel"
+                ]
+            },
+            "isAnalyticalModelVisible": {
+                "type": "boolean"
+            },
+            "areMembersTransparent": {
+                "type": "boolean"
+            },
+            "areSymbolsTransparent": {
+                "type": "boolean"
+            },
+            "areNodesVisible": {
+                "type": "boolean"
+            },
+            "areReleasesVisible": {
+                "type": "boolean"
+            },
+            "areCrossSectionsVisible": {
+                "type": "boolean"
+            },
+            "areCoordinationProfilesVisible": {
+                "type": "boolean"
+            },
+            "areLocalCoordSystemsVisible": {
+                "type": "boolean"
+            },
+            "loadVisibilityMode": {
+                "type": "string",
+                "description": "Which loads are shown: filtered by the active settings, none or all.",
+                "enum": [
+                    "FilterByActive",
+                    "HideAll",
+                    "ShowAll"
+                ]
+            }
+        },
+        "additionalProperties": false
     }
 }

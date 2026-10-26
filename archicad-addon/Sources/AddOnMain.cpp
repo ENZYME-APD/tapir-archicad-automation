@@ -1991,6 +1991,26 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Retrieves the type identifier of the Structural Analytical Model check. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetAnalyticalModelVariationCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the variation of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27). The fields of the variation depend on the Archicad version."
+        );
+        err |= RegisterCommand<GetAnalyticalModelCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the Structural Analytical Model of the given variation, as returned by GetAnalyticalModelVariation."
+        );
+        err |= RegisterCommand<GetAnalyticalVisibilitySettingsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the visibility settings of the Structural Analytical Model. Available from Archicad 26."
+        );
+        err |= RegisterCommand<SetAnalyticalVisibilitySettingsCommand> (
+            analyticalCommands, "1.7.3",
+            "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalMemberTypesOfElementsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
