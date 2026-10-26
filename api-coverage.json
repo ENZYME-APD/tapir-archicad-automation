@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 05:47 UTC",
+ "generatedAt": "2026-10-26 05:58 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 865,
-  "claimed": 195,
+  "in progress": 878,
+  "claimed": 182,
   "done": 743
  },
  "items": [
@@ -37231,6 +37231,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -39999,6 +40003,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -40197,6 +40205,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -40359,6 +40371,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -40639,6 +40655,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -40870,6 +40890,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -40897,6 +40921,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -40929,6 +40957,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -41021,6 +41053,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -41055,6 +41091,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -41121,6 +41161,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -41183,6 +41227,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -41211,6 +41259,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -41238,6 +41290,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -41344,6 +41400,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -41371,6 +41431,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42485,6 +42549,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -42512,6 +42580,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42572,6 +42644,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -42621,6 +42697,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -42650,6 +42730,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42682,6 +42766,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42732,6 +42820,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -42761,6 +42853,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42816,6 +42912,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -42845,6 +42945,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42877,6 +42981,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -42913,6 +43021,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -42942,6 +43054,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -42997,6 +43113,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43026,6 +43146,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43081,6 +43205,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43110,6 +43238,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43143,6 +43275,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43169,6 +43305,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43224,6 +43364,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43330,6 +43474,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43359,6 +43507,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43391,6 +43543,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43451,6 +43607,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43480,6 +43640,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43540,6 +43704,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43569,6 +43737,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43629,6 +43801,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43658,6 +43834,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43718,6 +43898,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43747,6 +43931,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43780,6 +43968,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -43806,6 +43998,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43836,6 +44032,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43900,6 +44100,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -43929,6 +44133,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -43989,6 +44197,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -44018,6 +44230,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44074,6 +44290,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -44121,6 +44341,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -44148,6 +44372,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44205,6 +44433,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -44240,6 +44472,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -44265,6 +44501,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44325,6 +44565,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -44350,6 +44594,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44439,6 +44687,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -44490,6 +44742,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -44516,6 +44772,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44633,6 +44893,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -44658,6 +44922,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44749,6 +45017,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -44774,6 +45046,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44830,6 +45106,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -44855,6 +45135,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44888,6 +45172,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -44914,6 +45202,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -44944,6 +45236,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45004,6 +45300,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45033,6 +45333,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45165,6 +45469,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45194,6 +45502,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45226,6 +45538,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45270,6 +45586,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -45297,6 +45617,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45357,6 +45681,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45396,6 +45724,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -45431,6 +45763,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45460,6 +45796,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45524,6 +45864,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45553,6 +45897,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45585,6 +45933,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45663,6 +46015,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45692,6 +46048,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45725,6 +46085,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45755,6 +46119,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45861,6 +46229,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -45890,6 +46262,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45921,6 +46297,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -45980,6 +46360,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -46036,6 +46420,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -46068,6 +46456,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -46094,6 +46486,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46124,6 +46520,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46184,6 +46584,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -46213,6 +46617,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46296,6 +46704,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -46325,6 +46737,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46357,6 +46773,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46405,6 +46825,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -46432,6 +46856,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46464,6 +46892,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -46556,6 +46988,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -46590,6 +47026,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46656,6 +47096,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -46718,6 +47162,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -46746,6 +47194,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -46773,6 +47225,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -46879,6 +47335,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -46906,6 +47366,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -46938,6 +47402,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -46964,6 +47432,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47020,6 +47492,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -47058,6 +47534,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47108,6 +47588,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -47152,6 +47636,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -47186,6 +47674,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47236,6 +47728,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -47279,6 +47775,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47329,6 +47829,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47429,6 +47933,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -47455,6 +47963,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47514,6 +48026,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -47572,6 +48088,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -47626,6 +48146,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -47653,6 +48177,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -47679,6 +48207,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -47738,6 +48270,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -47787,6 +48323,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -47832,6 +48372,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -52332,9 +52876,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52452,9 +53001,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -52664,9 +53218,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53757,6 +54316,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -53784,6 +54347,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -53844,6 +54411,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -53893,6 +54464,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -53922,6 +54497,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -53954,6 +54533,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54004,6 +54587,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54033,6 +54620,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54088,6 +54679,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54117,6 +54712,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54149,6 +54748,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -54185,6 +54788,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54214,6 +54821,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54269,6 +54880,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54298,6 +54913,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54353,6 +54972,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54382,6 +55005,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54415,6 +55042,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54441,6 +55072,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54496,6 +55131,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54602,6 +55241,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54631,6 +55274,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54663,6 +55310,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54723,6 +55374,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54752,6 +55407,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54812,6 +55471,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54841,6 +55504,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54901,6 +55568,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -54930,6 +55601,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -54990,6 +55665,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55019,6 +55698,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55052,6 +55735,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -55078,6 +55765,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55108,6 +55799,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55172,6 +55867,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55201,6 +55900,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55261,6 +55964,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55290,6 +55997,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55346,6 +56057,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55393,6 +56108,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -55420,6 +56139,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55480,6 +56203,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55519,6 +56246,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -55554,6 +56285,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55583,6 +56318,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55647,6 +56386,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55676,6 +56419,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55708,6 +56455,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55786,6 +56537,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55815,6 +56570,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55848,6 +56607,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -55878,6 +56641,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -55984,6 +56751,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56013,6 +56784,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56044,6 +56819,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56103,6 +56882,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56159,6 +56942,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56191,6 +56978,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -56217,6 +57008,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56247,6 +57042,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56307,6 +57106,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56336,6 +57139,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56419,6 +57226,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56448,6 +57259,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56480,6 +57295,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56528,6 +57347,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -56555,6 +57378,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56612,6 +57439,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -56647,6 +57478,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -56672,6 +57507,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56732,6 +57571,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -56757,6 +57600,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -56846,6 +57693,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56897,6 +57748,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -56923,6 +57778,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57040,6 +57899,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -57065,6 +57928,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57156,6 +58023,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -57181,6 +58052,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57237,6 +58112,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -57262,6 +58141,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57295,6 +58178,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -57321,6 +58208,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57351,6 +58242,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57411,6 +58306,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -57440,6 +58339,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57572,6 +58475,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -57601,6 +58508,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57633,6 +58544,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57676,6 +58591,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -57702,6 +58621,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57780,6 +58703,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -57824,6 +58751,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -57858,6 +58789,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57907,6 +58842,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -57974,6 +58913,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -58000,6 +58943,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -58050,6 +58997,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -58150,6 +59101,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -58176,6 +59131,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -58235,6 +59194,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -58293,6 +59256,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -58320,6 +59287,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -58346,6 +59317,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -58405,6 +59380,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     }
@@ -58463,6 +59442,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -58515,6 +59498,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -60253,9 +61240,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60274,9 +61266,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60295,9 +61292,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60316,9 +61318,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60337,9 +61344,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60358,9 +61370,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60382,6 +61399,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -60409,6 +61430,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -60434,6 +61459,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -60482,6 +61511,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -60504,9 +61537,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60528,9 +61566,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60552,9 +61595,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60579,6 +61627,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -60609,6 +61661,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -60634,9 +61690,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -60852,6 +61913,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -61050,6 +62115,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -65702,6 +66771,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -66528,6 +67601,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
+    {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
@@ -66579,6 +67656,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -66905,6 +67986,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
@@ -72705,6 +73790,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1525,
+     "title": "[3/6] MEP preference table rows on Archicad 27"
+    },
     {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
