@@ -1179,8 +1179,9 @@ GS::ObjectState CreateAnalyticalLinkGeometryObjectState (const API_AnalyticalLin
     return geometryOS;
 }
 
-// Reads the element and checks its type. Returns an error response on failure.
-GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_ElemTypeID typeID, const char* typeName, API_Element& element)
+// Reads the element and checks its type, the class ID of an external element type (e.g. API_AnalyticalSupportID).
+// Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, const API_Guid& classID, const char* typeName, API_Element& element)
 {
     element = {};
     element.header.guid = elemGuid;
@@ -1188,7 +1189,7 @@ GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_El
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the element.");
     }
-    if (GetElemTypeId (element.header) != typeID) {
+    if (element.header.type.classID != classID) {
         return CreateErrorResponse (APIERR_BADID, GS::UniString::Printf ("The element is not an %s.", typeName));
     }
     return GS::NoValue;
@@ -1197,13 +1198,13 @@ GS::Optional<GS::ObjectState> GetElementOfType (const API_Guid& elemGuid, API_El
 // Creates one element of the given type from the tool defaults; setElement fills it from the support
 // or link (SetElementFromSupport and SetElementFromLink set the type and the external element data).
 template <typename SetElement>
-GS::ObjectState CreateAnalyticalElement (API_ElemTypeID typeID, const char* typeName, const SetElement& setElement)
+GS::ObjectState CreateAnalyticalElement (const API_Guid& classID, const char* typeName, const SetElement& setElement)
 {
     API_Element element = {};
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
 
-    element.header.type = typeID;
+    element.header.type = API_ElemType (classID);
     GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
     if (err != NoError) {
         return CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the defaults of the %s.", typeName));
@@ -1610,8 +1611,9 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
         return CreateErrorResponse (err, "Failed to get the element.");
     }
 
-    const API_ElemTypeID typeID = GetElemTypeId (element.header);
-    if (typeID == API_AnalyticalPointLoadID) {
+    // Loads are external elements, told apart by the class ID of their type.
+    const API_Guid classID = element.header.type.classID;
+    if (classID == API_AnalyticalPointLoadID) {
         API_AnalyticalPointLoadType pointLoad {};
         err = TAPIR_GetPointLoadFromElement (element, pointLoad);
         if (err != NoError) {
@@ -1627,7 +1629,7 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
             "geometry", GS::ObjectState ("coordinate", Create3DCoordinateObjectState (geometry.coordinate)));
     }
 
-    if (typeID != API_AnalyticalEdgeLoadID && typeID != API_AnalyticalSurfaceLoadID) {
+    if (classID != API_AnalyticalEdgeLoadID && classID != API_AnalyticalSurfaceLoadID) {
         return CreateErrorResponse (APIERR_BADID, "The element is not an analytical point, edge or surface load.");
     }
 
@@ -1638,7 +1640,7 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
         return CreateErrorResponse (err, "Failed to get the memo of the load.");
     }
 
-    if (typeID == API_AnalyticalEdgeLoadID) {
+    if (classID == API_AnalyticalEdgeLoadID) {
         API_AnalyticalEdgeLoadType edgeLoad {};
         err = TAPIR_GetEdgeLoadFromElement (element, edgeLoad);
         if (err != NoError) {
@@ -1693,13 +1695,13 @@ GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Gu
 // SetElementFrom* functions set the type and the external element data), setMemo writes the custom data
 // into the memo before ACAPI_Element_Create.
 template <typename SetElement, typename SetMemo>
-GS::ObjectState CreateAnalyticalLoadElement (API_ElemTypeID typeID, const char* typeName, const SetElement& setElement, const SetMemo& setMemo)
+GS::ObjectState CreateAnalyticalLoadElement (const API_Guid& classID, const char* typeName, const SetElement& setElement, const SetMemo& setMemo)
 {
     API_Element element = {};
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
 
-    element.header.type = typeID;
+    element.header.type = API_ElemType (classID);
     GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
     if (err != NoError) {
         return CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the defaults of the %s.", typeName));
