@@ -6,96 +6,6 @@
 // integer values: read an existing style to see the values Archicad uses.
 // The ACAPI_View_*3DStyle functions are used from Archicad 27; older versions return an error.
 
-static const char* Style3DSchemaProperties = R"(
-            "name": {
-                "type": "string",
-                "description": "The name of the 3D style, unique within the project."
-            },
-            "engineId": {
-                "type": "integer",
-                "description": "The id of the 3D rendering engine (API_3DStyle.engineId)."
-            },
-            "model3D": {
-                "type": "integer",
-                "description": "The 3D model type: Block, Wireframe, Hidden Line or Shading, as the integer value of API_3DModelTypeID."
-            },
-            "transparency": {
-                "type": "boolean",
-                "description": "Transparency in shading."
-            },
-            "monochromeEnabled": {
-                "type": "boolean",
-                "description": "The model is shown in monochrome colors."
-            },
-            "monochromeSurfaceColor": {
-                "$ref": "#/ColorRGB",
-                "description": "The surface color of the monochrome model."
-            },
-            "monochromeContourColor": {
-                "$ref": "#/ColorRGB",
-                "description": "The contour color of the monochrome model."
-            },
-            "backgroundAsInRendering": {
-                "type": "boolean",
-                "description": "The background is the same as in the rendering settings."
-            },
-            "chainBackgroundColors": {
-                "type": "boolean",
-                "description": "The sky and the ground background colors are chained."
-            },
-            "backgroundSkyColor": {
-                "$ref": "#/ColorRGB",
-                "description": "The sky color of the background (API_3DStyle.bkgSkyColor)."
-            },
-            "backgroundColor": {
-                "$ref": "#/ColorRGB",
-                "description": "The (ground) color of the background (API_3DStyle.backGroundRGB)."
-            },
-            "shadingContours": {
-                "type": "integer",
-                "description": "The contours in shaded mode, as the integer value of API_ShadingContoursID."
-            },
-            "vectorialSunShadow": {
-                "type": "integer",
-                "description": "The vectorial sun shadow options, as the integer value of API_VectorShadowID."
-            },
-            "vectorialHatching": {
-                "type": "boolean",
-                "description": "Vectorial 3D hatching is on."
-            },
-            "contourThickness": {
-                "type": "integer",
-                "description": "The thickness of the contours, in pixels."
-            },
-            "silhouetteThickness": {
-                "type": "integer",
-                "description": "The thickness of the silhouettes, in pixels."
-            },
-            "vectorialHatchingThickness": {
-                "type": "integer",
-                "description": "The thickness of the vectorial hatching, in pixels."
-            },
-            "shadowContourThickness": {
-                "type": "integer",
-                "description": "The thickness of the shadow contours, in pixels."
-            },
-            "castShadowPercent": {
-                "type": "integer",
-                "description": "The intensity of the cast shadows, in percent."
-            },
-            "shadingPercent": {
-                "type": "integer",
-                "description": "The intensity of the shading, in percent."
-            },
-            "shadowElevation": {
-                "type": "number",
-                "description": "The elevation of the shadow plane, used by the one level vectorial sun shadow options."
-            },
-            "show3DHotSpotsOnly": {
-                "type": "boolean",
-                "description": "Only the 3D hotspots are shown."
-            })";
-
 #ifdef ServerMainVers_2700
 
 static GS::ObjectState Create3DStyleColorObjectState (const API_RGBColor& color)
@@ -214,36 +124,30 @@ GS::Optional<GS::UniString> Get3DStyleDetailsCommand::GetInputParametersSchema (
 
 GS::Optional<GS::UniString> Get3DStyleDetailsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "styles": {
-            "type": "array",
-            "description": "The details of the 3D styles, in the order of the input names.",
-            "items": {
-                "type": "object",
-                "oneOf": [
-                    {
-                        "type": "object",
-                        "properties": {)") + Style3DSchemaProperties + R"(
+    return R"({
+        "type": "object",
+        "properties": {
+            "styles": {
+                "type": "array",
+                "description": "The details of the 3D styles, in the order of the input names.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/Style3DDetails"
                         },
-                        "additionalProperties": false,
-                        "required": [
-                            "name"
-                        ]
-                    },
-                    {
-                        "$ref": "#/ErrorItem"
-                    }
-                ]
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "styles"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "styles"
+        ]
+    })";
 }
 
 GS::ObjectState Get3DStyleDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -285,28 +189,22 @@ GS::String Create3DStylesCommand::GetName () const
 
 GS::Optional<GS::UniString> Create3DStylesCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "styles": {
-            "type": "array",
-            "description": "The 3D styles to create. Each starts from the current 3D style; only the given fields differ from it.",
-            "items": {
-                "type": "object",
-                "properties": {)") + Style3DSchemaProperties + R"(
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ]
+    return R"({
+        "type": "object",
+        "properties": {
+            "styles": {
+                "type": "array",
+                "description": "The 3D styles to create. Each starts from the current 3D style; only the given fields differ from it.",
+                "items": {
+                    "$ref": "#/Style3DDetails"
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "styles"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "styles"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> Create3DStylesCommand::GetRawResponseSchema () const
@@ -379,28 +277,22 @@ GS::String Change3DStylesCommand::GetName () const
 
 GS::Optional<GS::UniString> Change3DStylesCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "styles": {
-            "type": "array",
-            "description": "The 3D styles to change, identified by their name. Only the given fields change.",
-            "items": {
-                "type": "object",
-                "properties": {)") + Style3DSchemaProperties + R"(
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ]
+    return R"({
+        "type": "object",
+        "properties": {
+            "styles": {
+                "type": "array",
+                "description": "The 3D styles to change, identified by their name. Only the given fields change.",
+                "items": {
+                    "$ref": "#/Style3DDetails"
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "styles"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "styles"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> Change3DStylesCommand::GetRawResponseSchema () const

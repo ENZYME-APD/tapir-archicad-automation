@@ -197,17 +197,7 @@ GS::Optional<GS::UniString> GetDrawingContentBoxesCommand::GetRawResponseSchema 
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "contentBox": {
-                                    "$ref": "#/BoundingBox2D",
-                                    "description": "The full boundary box of the Drawing's content, independent of its frame, as returned by Archicad."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "contentBox"
-                            ]
+                            "$ref": "#/DrawingContentBox"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -397,17 +387,7 @@ GS::Optional<GS::UniString> GetDatabasesCommand::GetInputParametersSchema () con
             "type": "array",
             "description": "The types of the databases to list. Optional, by default the databases of every type are listed.",
             "items": {
-                "type": "string",
-                "enum": [
-                    "Section",
-                    "Elevation",
-                    "InteriorElevation",
-                    "Detail",
-                    "Worksheet",
-                    "DocumentFrom3D",
-                    "Layout",
-                    "MasterLayout"
-                ]
+                "$ref": "#/DatabaseType"
             }
         }
     },
@@ -424,29 +404,7 @@ GS::Optional<GS::UniString> GetDatabasesCommand::GetRawResponseSchema () const
         "databases": {
             "type": "array",
             "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The type of the database."
-                    },
-                    "databaseId": {
-                        "$ref": "#/DatabaseId"
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the database. Missing when the database info cannot be read."
-                    },
-                    "referenceId": {
-                        "type": "string",
-                        "description": "The reference id of the database. Missing when the database info cannot be read."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "databaseId"
-                ]
+                "$ref": "#/DatabaseDetails"
             }
         }
     },
@@ -1074,7 +1032,7 @@ static bool StringToStructureDisplay (const GS::UniString& str, API_StructureDis
 #endif
 
 GetStructureDisplayCommand::GetStructureDisplayCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String GetStructureDisplayCommand::GetName () const
@@ -1089,9 +1047,7 @@ GS::Optional<GS::UniString> GetStructureDisplayCommand::GetRawResponseSchema () 
         "description": "The Partial Structure Display of the current window.",
         "properties": {
             "structureDisplay": {
-                "type": "string",
-                "description": "The Partial Structure Display mode of the current window.",
-                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+                "$ref": "#/PartialStructureDisplay"
             },
             "is3D": {
                 "type": "boolean",
@@ -1138,9 +1094,7 @@ GS::Optional<GS::UniString> SetStructureDisplayCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "structureDisplay": {
-                "type": "string",
-                "description": "The Partial Structure Display mode to apply to the current window.",
-                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+                "$ref": "#/PartialStructureDisplay"
             }
         },
         "additionalProperties": false,
@@ -2741,14 +2695,7 @@ GS::Optional<GS::UniString> GetNavigatorParentItemsCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "navigatorItemId": { "$ref": "#/NavigatorItemId" },
-                                "type":            { "$ref": "#/NavigatorItemType" },
-                                "name":            { "type": "string", "description": "The name of the parent navigator item." }
-                            },
-                            "additionalProperties": false,
-                            "required": ["navigatorItemId", "type", "name"]
+                            "$ref": "#/NavigatorParentItem"
                         },
                         {
                             "$ref": "#/ErrorItem"

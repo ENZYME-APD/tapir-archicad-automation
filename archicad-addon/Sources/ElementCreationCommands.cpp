@@ -4927,20 +4927,7 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "The texts to measure, each with the font, style and height it would be placed with. Nothing is created.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "text": { "type": "string", "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF." },
-                        "fontIndex": { "type": "integer", "description": "The index of the font, as GetDetailsOfElements reports it in fontIndex." },
-                        "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it and GetDetailsOfElements reports it in fontName, e.g. 'Arial'. Resolved to the font's index (exact match first, then case-insensitive); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
-                        "height": { "type": "number", "description": "The character height in millimetres, as a Text's height." },
-                        "bold": { "type": "boolean", "description": "Bold style. Optional, default false." },
-                        "italic": { "type": "boolean", "description": "Italic style. Optional, default false." },
-                        "underline": { "type": "boolean", "description": "Underline style. Optional, default false." },
-                        "slant": { "type": "number", "description": "The slant angle of the characters in radians; pi/2 (the default) is upright text." },
-                        "inModelUnits": { "type": "boolean", "description": "When true, Archicad applies the drawing scale correction and the lengths are model distances at the current drawing scale; when false (the default), they are lengths on paper in millimetres." }
-                    },
-                    "additionalProperties": false,
-                    "required": ["text", "height"]
+                    "$ref": "#/TextMeasurementData"
                 }
             }
         },
@@ -4961,19 +4948,7 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetRawResponseSchema () const
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "length": { "type": "number", "description": "The length of the longest line." },
-                                "longestLineIndex": { "type": "integer", "description": "The zero-based index of the longest line (the first of them on a tie)." },
-                                "lineLengths": {
-                                    "type": "array",
-                                    "description": "The length of every line, in order. An empty line is 0.",
-                                    "items": { "type": "number" }
-                                },
-                                "capitalSizeFactor": { "type": "number", "description": "The ratio of the font's capital size to its typographic size. Absent when Archicad does not return it for the font." }
-                            },
-                            "additionalProperties": false,
-                            "required": ["length", "longestLineIndex", "lineLengths"]
+                            "$ref": "#/TextMeasurement"
                         },
                         {
                             "$ref": "#/ErrorItem"

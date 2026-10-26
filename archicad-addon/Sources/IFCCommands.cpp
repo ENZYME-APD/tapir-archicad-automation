@@ -893,26 +893,7 @@ GS::Optional<GS::UniString> SetIFCAttributesOfElementsCommand::GetInputParameter
                 "type": "array",
                 "description": "The IFC attribute values to set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the IFC attribute, for example Name, Description, ObjectType or Tag. It must be one of the attributes GetIFCAttributesOfElements returns for the element."
-                        },
-                        "value": {
-                            "type": "string",
-                            "description": "The new value of the IFC attribute."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "name",
-                        "value"
-                    ]
+                    "$ref": "#/ElementIFCAttributeValue"
                 }
             }
         },
@@ -1281,26 +1262,7 @@ GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetInputParame
                 "type": "array",
                 "description": "The local IFC properties to remove.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "propertySetName": {
-                            "type": "string",
-                            "description": "The name of the property set, for example Pset_DoorCommon."
-                        },
-                        "propertyName": {
-                            "type": "string",
-                            "description": "The name of the property, for example FireRating."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "propertySetName",
-                        "propertyName"
-                    ]
+                    "$ref": "#/ElementIFCPropertyRemoval"
                 }
             }
         },

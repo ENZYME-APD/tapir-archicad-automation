@@ -451,17 +451,7 @@ GS::Optional<GS::UniString> CopyFilesIntoEmbeddedLibraryCommand::GetInputParamet
                 "type": "array",
                 "description": "The files to copy. Each keeps its file name inside the target folder.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string",
-                            "description": "The absolute path of the file to copy."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "path"
-                    ]
+                    "$ref": "#/EmbeddedLibraryFile"
                 },
                 "minItems": 1
             },
@@ -973,46 +963,7 @@ GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The library parts to modify and the scripts to set in each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-                        },
-                        "scripts": {
-                            "type": "object",
-                            "description": "The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it.",
-                            "properties": {
-                                "master": {
-                                    "type": "string",
-                                    "description": "The master script."
-                                },
-                                "parameter": {
-                                    "type": "string",
-                                    "description": "The parameter script."
-                                },
-                                "2d": {
-                                    "type": "string",
-                                    "description": "The 2D script."
-                                },
-                                "3d": {
-                                    "type": "string",
-                                    "description": "The 3D script."
-                                },
-                                "properties": {
-                                    "type": "string",
-                                    "description": "The properties script."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "minProperties": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "scripts"
-                    ]
+                    "$ref": "#/LibraryPartScriptData"
                 }
             }
         },

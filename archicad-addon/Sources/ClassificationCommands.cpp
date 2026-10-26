@@ -331,20 +331,7 @@ GS::Optional<GS::UniString> SetClassificationsOfElementDefaultsCommand::GetInput
                 "type": "array",
                 "description": "The classifications to set on the tool defaults (the settings new elements get).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementType": {
-                            "$ref": "#/ElementType"
-                        },
-                        "classificationId": {
-                            "$ref": "#/ClassificationId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementType",
-                        "classificationId"
-                    ]
+                    "$ref": "#/ElementDefaultClassification"
                 }
             }
         },

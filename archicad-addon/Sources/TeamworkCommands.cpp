@@ -224,7 +224,7 @@ static GS::UniString GetTeamworkUserName (short userId)
 // is for lockable object sets only, not for elements.
 
 GetReservationStatusOfElementsCommand::GetReservationStatusOfElementsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -260,52 +260,7 @@ GS::Optional<GS::UniString> GetReservationStatusOfElementsCommand::GetRawRespons
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "description": "Free: nobody has reserved the element. Editable: the current user has reserved it. Locked: another user has reserved it (see reservedBy).",
-                                    "enum": ["Free", "Editable", "Locked"]
-                                },
-                                "reservedBy": {
-                                    "type": "object",
-                                    "description": "The user who has reserved the element. Left out when the element is free.",
-                                    "properties": {
-                                        "userId": {
-                                            "type": "number"
-                                        },
-                                        "userName": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "userId",
-                                        "userName"
-                                    ]
-                                },
-                                "owner": {
-                                    "type": "object",
-                                    "description": "The user who owns the element in Teamwork, usually the one who created it. Left out when the element has no owner.",
-                                    "properties": {
-                                        "userId": {
-                                            "type": "number"
-                                        },
-                                        "userName": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "userId",
-                                        "userName"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status"
-                            ]
+                            "$ref": "#/ElementReservationStatus"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -755,30 +710,7 @@ GS::Optional<GS::UniString> GetTeamworkStatusCommand::GetRawResponseSchema () co
                 "type": "array",
                 "description": "The members of the shared project. Only present when the project is shared.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "userId": {
-                            "type": "number"
-                        },
-                        "userName": {
-                            "type": "string",
-                            "description": "The login name of the user."
-                        },
-                        "fullName": {
-                            "type": "string"
-                        },
-                        "isConnected": {
-                            "type": "boolean",
-                            "description": "Whether the user has joined the project."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "userId",
-                        "userName",
-                        "fullName",
-                        "isConnected"
-                    ]
+                    "$ref": "#/TeamworkUser"
                 }
             },
             "hotlinkCacheManagementOwner": {

@@ -687,21 +687,7 @@ GS::Optional<GS::UniString> GetElementTypeNamesCommand::GetRawResponseSchema () 
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the element type in the language of the running Archicad (for example \"Wand\" for Wall in German Archicad)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType",
-                                "name"
-                            ]
+                            "$ref": "#/ElementTypeName"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -797,56 +783,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
-                            "properties": {
-                                "type": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "id": {
-                                    "type": "string"
-                                },
-                                "floorIndex": {
-                                    "type": "number"
-                                },
-                                "layerIndex": {
-                                    "type": "number"
-                                },
-                                "drawIndex": {
-                                    "type": "number"
-                                },
-                                "hotlinkId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
-                                },
-                                "details": {
-                                    "$ref": "#/TypeSpecificDetails"
-                                },
-                                "floorPlanPolygons": {
-                                    "type": "array",
-                                    "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "coordinates": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/Coordinate2D"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "type",
-                                "id",
-                                "floorIndex",
-                                "layerIndex",
-                                "drawIndex",
-                                "details"
-                            ]
+                            "$ref": "#/DetailsOfElement"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3369,9 +3306,8 @@ GS::Optional<GS::UniString> GetHierarchicalElementOwnersCommand::GetInputParamet
                 "description": "The elements whose owners are looked up, e.g. Curtain Wall frames or panels, Stair treads or Railing posts."
             },
             "ownerMode": {
-                "type": "string",
-                "enum": ["root", "parent"],
-                "description": "root (default): the root of the hierarchical element tree, e.g. the Curtain Wall, Stair or Railing. parent: the immediate parent, which may itself be a subelement."
+                "$ref": "#/HierarchicalOwnerMode",
+                "description": "root by default."
             }
         },
         "additionalProperties": false,
@@ -3393,23 +3329,7 @@ GS::Optional<GS::UniString> GetHierarchicalElementOwnersCommand::GetRawResponseS
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "ownerElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The owner element. For a main element (e.g. a Curtain Wall) or an element that is not part of a hierarchical element, Archicad returns the input element itself."
-                                },
-                                "hierarchicalElementType": {
-                                    "type": "string",
-                                    "enum": ["MainElement", "ChildElement", "SingleElement"],
-                                    "description": "The classification of the input element (not of its owner): MainElement is the main element of a hierarchical element (e.g. a Curtain Wall, Stair or Railing), ChildElement is a subelement of one (e.g. a frame or a tread), SingleElement is not part of a hierarchical element."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "ownerElementId",
-                                "hierarchicalElementType"
-                            ]
+                            "$ref": "#/HierarchicalElementOwner"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4359,67 +4279,7 @@ GS::Optional<GS::UniString> GetZoneReductionsCommand::GetRawResponseSchema () co
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "reductions": {
-                                    "type": "array",
-                                    "description": "The reduction polygons of the Zone, as its Zone Stamp's area calculation uses them: the parts of the Zone polygon covered by Walls, Columns and reducing Fills, and the parts under a low ceiling (for example under a sloping Roof), each with the percentage it is reduced by and its area. Empty when nothing reduces the Zone's area.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string",
-                                                "description": "What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (a low ceiling, for example the part under a sloping Roof below the low ceiling height), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name.",
-                                                "enum": [
-                                                    "Rest",
-                                                    "Wall",
-                                                    "Column",
-                                                    "Hatch",
-                                                    "Gable",
-                                                    "Unknown"
-                                                ]
-                                            },
-                                            "percent": {
-                                                "type": "number",
-                                                "description": "The percentage by which the area of the polygon reduces the Zone area, as the DevKit reports it."
-                                            },
-                                            "area": {
-                                                "type": "number",
-                                                "description": "The area of the polygon in square meters."
-                                            },
-                                            "polygonOutline": {
-                                                "type": "array",
-                                                "description": "The 2D coordinates of the outline of the polygon in meters; the last coordinate repeats the first.",
-                                                "items": {
-                                                    "$ref": "#/Coordinate2D"
-                                                }
-                                            },
-                                            "polygonArcs": {
-                                                "type": "array",
-                                                "description": "The arcs of the outline, indices into polygonOutline. Absent when the outline has no arc.",
-                                                "items": {
-                                                    "$ref": "#/PolyArc"
-                                                }
-                                            },
-                                            "holes": {
-                                                "$ref": "#/Holes2D"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "percent",
-                                            "area",
-                                            "polygonOutline",
-                                            "holes"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "reductions"
-                            ]
+                            "$ref": "#/ZoneReductions"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5216,34 +5076,7 @@ GS::Optional<GS::UniString> MirrorElementsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The elements with mirror axes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "mirrorAxis": {
-                            "type": "object",
-                            "description": "The mirror axis: the line through two points on the floor plan.",
-                            "properties": {
-                                "beginPoint": {
-                                    "$ref": "#/Coordinate2D",
-                                    "description": "First point of the mirror axis."
-                                },
-                                "endPoint": {
-                                    "$ref": "#/Coordinate2D",
-                                    "description": "Second point of the mirror axis. Must differ from beginPoint."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["beginPoint", "endPoint"]
-                        },
-                        "copy": {
-                            "type": "boolean",
-                            "description": "Optional parameter. If true, a mirrored copy of the element is created and the original is kept. By default it's false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "mirrorAxis"]
+                    "$ref": "#/ElementMirrorData"
                 }
             }
         },
@@ -5856,25 +5689,7 @@ GS::Optional<GS::UniString> ConvertRevealOffsetsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "Windows and doors placed in walls, each with exactly one of coreOffset or sideOffset.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "A window or door placed in a wall."
-                        },
-                        "coreOffset": {
-                            "type": "number",
-                            "description": "Reveal depth offset measured from the core skin of the owner wall, to convert to the wall side reference."
-                        },
-                        "sideOffset": {
-                            "type": "number",
-                            "description": "Reveal depth offset measured from the side of the owner wall, to convert to the core skin reference."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/OpeningRevealOffsetData"
                 }
             }
         },
@@ -5896,22 +5711,7 @@ GS::Optional<GS::UniString> ConvertRevealOffsetsCommand::GetRawResponseSchema ()
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "coreOffset": {
-                                    "type": "number",
-                                    "description": "Reveal depth offset measured from the core skin of the owner wall."
-                                },
-                                "sideOffset": {
-                                    "type": "number",
-                                    "description": "Reveal depth offset measured from the side of the owner wall."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "coreOffset",
-                                "sideOffset"
-                            ]
+                            "$ref": "#/OpeningRevealOffsets"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -6962,35 +6762,7 @@ GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetRawResponse
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "triangles": {
-                                    "type": "array",
-                                    "description": "The triangles covering the polygon of the element, holes excluded, as Archicad triangulates it.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "vertices": {
-                                                "type": "array",
-                                                "description": "The 2D coordinates of the three vertices of the triangle.",
-                                                "items": {
-                                                    "$ref": "#/Coordinate2D"
-                                                },
-                                                "minItems": 3,
-                                                "maxItems": 3
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "vertices"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "triangles"
-                            ]
+                            "$ref": "#/ElementTriangulation"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -7603,39 +7375,7 @@ GS::Optional<GS::UniString> GetSurfaceQuantitiesOfElementsCommand::GetRawRespons
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "surfaces": {
-                                    "type": "array",
-                                    "description": "The surfaces of the element as Archicad reports them: one item per surface attribute and building material pair of the element, so an element has as many items as it has distinct pairs (a basic wall with three different surfaces reports three items). Empty when Archicad reports no surface for the element, for example for an element without a 3D model.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "surfaceId": {
-                                                "$ref": "#/AttributeIdArrayItem",
-                                                "description": "The surface (material) attribute of the surface. Left out when the surface is not a project attribute, for example one defined by a GDL script."
-                                            },
-                                            "buildingMaterialId": {
-                                                "$ref": "#/AttributeIdArrayItem",
-                                                "description": "The building material of the part of the element the surface belongs to."
-                                            },
-                                            "exposedArea": {
-                                                "type": "number",
-                                                "description": "The area of the surface that is not covered by any of the covering elements, in square meters."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "buildingMaterialId",
-                                            "exposedArea"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "surfaces"
-                            ]
+                            "$ref": "#/ElementSurfaceQuantities"
                         },
                         {
                             "$ref": "#/ErrorItem"

@@ -843,24 +843,7 @@ GS::Optional<GS::UniString> DeactivateDesignOptionsInCombinationsCommand::GetInp
             "deactivatedDesignOptionsInCombinations": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionCombinationId": {
-                            "$ref": "#/DesignOptionCombinationId"
-                        },
-                        "designOptions": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/DesignOptionIdArrayItem"
-                            },
-                            "description": "The design options to turn off in the combination. The other options of the combination are left as they are."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionCombinationId",
-                        "designOptions"
-                    ]
+                    "$ref": "#/DesignOptionDeactivation"
                 }
             }
         },
