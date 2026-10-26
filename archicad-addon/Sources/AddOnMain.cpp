@@ -51,6 +51,7 @@
 #include "GridElementCommands.hpp"
 #include "GraphicalOverrideCommands.hpp"
 #include "PolygonCommands.hpp"
+#include "DrawingPrimitiveCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -515,6 +516,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetElementsInDrawOrderCommand> (
             elementCommands, "1.7.2",
             "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
+        );
+        err |= RegisterCommand<GetDrawingPrimitivesOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. The floor plan must be the current database. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetSectionElementsCommand> (
             elementCommands, "1.5.8",
