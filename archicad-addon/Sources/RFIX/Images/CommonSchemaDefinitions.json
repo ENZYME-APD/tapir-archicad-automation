@@ -14646,5 +14646,228 @@
             }
         },
         "additionalProperties": false
+    },
+    "AnalyticalLoadGroupType": {
+        "type": "string",
+        "description": "The type of a structural analysis load group.",
+        "enum": [
+            "PermanentLoad",
+            "VariableLoad",
+            "AccidentalLoad",
+            "SeismicLoad",
+            "MovingLoad",
+            "TensioningLoad",
+            "FireLoad"
+        ]
+    },
+    "AnalyticalLoadGroupRelation": {
+        "type": "string",
+        "description": "How the load cases of a structural analysis load group are combined.",
+        "enum": [
+            "ExclusiveRelation",
+            "StandardRelation",
+            "TogetherRelation"
+        ]
+    },
+    "AnalyticalLoadCaseActionType": {
+        "type": "string",
+        "description": "The action type of a structural analysis load case.",
+        "enum": [
+            "PermanentAction",
+            "VariableAction",
+            "AccidentalAction"
+        ]
+    },
+    "AnalyticalLoadCaseLoadType": {
+        "type": "string",
+        "description": "The load type of a structural analysis load case.",
+        "enum": [
+            "SelfWeightLoad",
+            "PrestressLoad",
+            "DynamicLoad",
+            "StaticLoad",
+            "TemperatureLoad",
+            "WindLoad",
+            "SnowLoad",
+            "MaintenanceLoad",
+            "FireLoad",
+            "MovingLoad",
+            "SeismicLoad",
+            "StandardLoad",
+            "OthersLoad"
+        ]
+    },
+    "AnalyticalLoadCaseDuration": {
+        "type": "string",
+        "description": "The duration of a structural analysis load case.",
+        "enum": [
+            "LongDuration",
+            "MediumDuration",
+            "ShortDuration",
+            "InstantaneousDuration"
+        ]
+    },
+    "AnalyticalLoadCombinationCategory": {
+        "type": "string",
+        "description": "The category of a structural analysis load combination.",
+        "enum": [
+            "ULS",
+            "SLS",
+            "ALS",
+            "ANS",
+            "NotDefined"
+        ]
+    },
+    "AnalyticalLoadCombinationNationalStandard": {
+        "type": "string",
+        "description": "The national standard of a structural analysis load combination.",
+        "enum": [
+            "ENULSSTRGEOSetB",
+            "ENULSSTRGEOSetC",
+            "ENAccidental1",
+            "ENAccidental2",
+            "ENSeismic",
+            "ENSLSCharacteristic",
+            "ENSLSFrequent",
+            "ENSLSQuasipermanent",
+            "IBCLRFDultimate",
+            "IBCASDultimate",
+            "IBCASDserviceability",
+            "IBCASDseismic",
+            "IBCLRFDseismic"
+        ]
+    },
+    "AnalyticalLoadCombinationType": {
+        "type": "string",
+        "description": "The type of a structural analysis load combination. Archicad 27 and newer.",
+        "enum": [
+            "Envelope",
+            "Linear",
+            "Nonlinear"
+        ]
+    },
+    "AnalyticalLoadFactor": {
+        "type": "object",
+        "description": "A load case of a structural analysis load combination with its factors.",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the load case."
+            },
+            "factor": {
+                "type": "number",
+                "description": "The factor of the load case. Left out when it is not set."
+            },
+            "multiplier": {
+                "type": "number",
+                "description": "The multiplier of the load case."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "multiplier"
+        ]
+    },
+    "AnalyticalLoadGroup": {
+        "type": "object",
+        "description": "A structural analysis load group.",
+        "properties": {
+            "loadGroupId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "groupType": {
+                "$ref": "#/AnalyticalLoadGroupType"
+            },
+            "relation": {
+                "$ref": "#/AnalyticalLoadGroupRelation"
+            },
+            "loadType": {
+                "type": "string",
+                "description": "The load type of the group as free text."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadGroupId",
+            "name"
+        ]
+    },
+    "AnalyticalLoadCase": {
+        "type": "object",
+        "description": "A structural analysis load case.",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "actionType": {
+                "$ref": "#/AnalyticalLoadCaseActionType"
+            },
+            "loadGroupId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the load group the load case belongs to."
+            },
+            "loadType": {
+                "$ref": "#/AnalyticalLoadCaseLoadType"
+            },
+            "duration": {
+                "$ref": "#/AnalyticalLoadCaseDuration",
+                "description": "Left out when it is not set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "name",
+            "loadGroupId"
+        ]
+    },
+    "AnalyticalLoadCombination": {
+        "type": "object",
+        "description": "A structural analysis load combination.",
+        "properties": {
+            "loadCombinationId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "category": {
+                "$ref": "#/AnalyticalLoadCombinationCategory"
+            },
+            "nationalStandard": {
+                "$ref": "#/AnalyticalLoadCombinationNationalStandard",
+                "description": "Left out when it is not set."
+            },
+            "type": {
+                "$ref": "#/AnalyticalLoadCombinationType",
+                "description": "Left out when it is not set. Archicad 27 and newer."
+            },
+            "loadFactors": {
+                "type": "array",
+                "description": "The load cases of the combination with their factors.",
+                "items": {
+                    "$ref": "#/AnalyticalLoadFactor"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCombinationId",
+            "name",
+            "loadFactors"
+        ]
     }
 }
