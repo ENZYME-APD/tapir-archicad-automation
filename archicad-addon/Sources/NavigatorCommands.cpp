@@ -2245,16 +2245,14 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         }
     }
 
+    // A Drawing whose element is not found by the item's guid keeps its old name, and the
+    // rename of the Layout Book item still succeeds, as it did before the Drawing was renamed too.
     if (hasNewName && navItem.itemType == API_DrawingNavItem) {
         bool drawingFound = false;
         err = RenameDrawingOfNavigatorItem (navItem, newName, drawingFound);
-        if (err != NoError) {
+        if (drawingFound && err != NoError) {
             return CreateFailedExecutionResult (err,
                 "The Layout Book item was renamed, but Archicad did not apply the new name to its Drawing. Set the Drawing's customName with SetDetailsOfElements.");
-        }
-        if (!drawingFound) {
-            return CreateFailedExecutionResult (APIERR_BADID,
-                "The Layout Book item was renamed, but its Drawing element was not found, so the Drawing keeps its old name. Set the Drawing's customName with SetDetailsOfElements.");
         }
     }
 
