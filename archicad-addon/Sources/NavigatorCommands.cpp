@@ -593,6 +593,308 @@ GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+namespace {
+
+// Writes every field of an API_ViewOptions into a JSON object.
+struct ViewOptionsWriter {
+    GS::ObjectState* current;
+
+    template<class F>
+    void Group (const char* name, F fill)
+    {
+        GS::ObjectState child;
+        GS::ObjectState* parent = current;
+        current = &child;
+        fill ();
+        current = parent;
+        current->Add (name, child);
+    }
+    void Number (const char* name, char& value) { current->Add (name, (Int32) value); }
+    void Number (const char* name, short& value) { current->Add (name, (Int32) value); }
+    void Flag (const char* name, bool& value) { current->Add (name, value); }
+    void Attribute (const char* name, API_AttributeIndex& value) { current->Add (name, (Int32) GetAttributeIndex (value)); }
+};
+
+// Reads the given fields of a JSON object into an API_ViewOptions, leaving the others as they are.
+struct ViewOptionsReader {
+    const GS::ObjectState* current;
+
+    template<class F>
+    void Group (const char* name, F apply)
+    {
+        const GS::ObjectState* child = current->Get (name);
+        if (child == nullptr) {
+            return;
+        }
+        const GS::ObjectState* parent = current;
+        current = child;
+        apply ();
+        current = parent;
+    }
+    void Number (const char* name, char& value)
+    {
+        Int32 number = 0;
+        if (current->Get (name, number)) {
+            value = (char) number;
+        }
+    }
+    void Number (const char* name, short& value)
+    {
+        Int32 number = 0;
+        if (current->Get (name, number)) {
+            value = (short) number;
+        }
+    }
+    void Flag (const char* name, bool& value)
+    {
+        bool flag = false;
+        if (current->Get (name, flag)) {
+            value = flag;
+        }
+    }
+    void Attribute (const char* name, API_AttributeIndex& value)
+    {
+        Int32 number = 0;
+        if (current->Get (name, number)) {
+            value = ACAPI_CreateAttributeIndex (number);
+        }
+    }
+};
+
+// The one list of fields shared by reading and writing. The gdlOptions pointer and the fillers are left out.
+template<class Visitor>
+void VisitViewOptions (Visitor& v, API_ViewOptions& viewOptions)
+{
+    API_ModelViewOptions& model = viewOptions.modelViewOpt;
+    v.Group ("modelViewOptions", [&] () {
+        v.Number ("doorMode", model.doorMode);
+        v.Number ("windowMode", model.windowMode);
+        v.Number ("skylightMode", model.skylightMode);
+        v.Number ("sectionMarker", model.sectionMarker);
+        v.Number ("beamMethod", model.beamMethod);
+        v.Number ("roofShellMode", model.roofShellMode);
+        v.Number ("showColumnSymbol", model.showColumnSymbol);
+        v.Number ("slabMethod", model.slabMethod);
+        v.Flag ("coluHiddenlineUnderSlabs", model.coluHiddenlineUnderSlabs);
+        v.Flag ("beamHiddenlineUnderSlabs", model.beamHiddenlineUnderSlabs);
+        v.Flag ("zoneHideZoneStamp", model.zoneHideZoneStamp);
+        v.Group ("curtainWall", [&] () {
+            API_CurtainWallModelViewOptions& cw = model.curtainWallModelViewOptions;
+            v.Number ("cwFrameDetailLevel", cw.cwFrameDetailLevel);
+            v.Number ("cwPanelDetailLevel", cw.cwPanelDetailLevel);
+            v.Number ("cwJunctionDetailLevel", cw.cwJunctionDetailLevel);
+            v.Number ("cwAccessoryDetailLevel", cw.cwAccessoryDetailLevel);
+        });
+        v.Group ("stair", [&] () {
+            API_StairModelViewOptions& stair = model.stairModelViewOptions;
+            v.Number ("stair3DDetailLevel", stair.stair3DDetailLevel);
+            v.Number ("stairFloorPlanVisualization", stair.stairFloorPlanVisualization);
+            v.Flag ("showStairHeadroom", stair.showStairHeadroom);
+            v.Flag ("stairFloorPlanCompWalkingLine", stair.stairFloorPlanCompWalkingLine);
+            v.Flag ("stairFloorPlanCompNumbering", stair.stairFloorPlanCompNumbering);
+            v.Flag ("stairFloorPlanCompUPDOWNText", stair.stairFloorPlanCompUPDOWNText);
+            v.Flag ("stairFloorPlanCompDescription", stair.stairFloorPlanCompDescription);
+            v.Flag ("stairFloorPlanCompTreadAccessories", stair.stairFloorPlanCompTreadAccessories);
+            v.Flag ("stairFloorPlanCompStructureBeamSupport", stair.stairFloorPlanCompStructureBeamSupport);
+            v.Flag ("stairFloorPlanCompStructureStringers", stair.stairFloorPlanCompStructureStringers);
+            v.Flag ("stairFloorPlanCompStructureCantilevered", stair.stairFloorPlanCompStructureCantilevered);
+            v.Flag ("stairReflectedCompWalkingLine", stair.stairReflectedCompWalkingLine);
+            v.Flag ("stairReflectedCompDescription", stair.stairReflectedCompDescription);
+            v.Flag ("stairReflectedCompStructureBeamSupport", stair.stairReflectedCompStructureBeamSupport);
+            v.Flag ("stairReflectedCompStructureStringers", stair.stairReflectedCompStructureStringers);
+            v.Flag ("stairReflectedCompStructureCantilevered", stair.stairReflectedCompStructureCantilevered);
+            v.Attribute ("stairSchemeSurfaceIndex", stair.stairSchemeSurfaceIndex);
+            v.Attribute ("stairSchemeCutLineIndex", stair.stairSchemeCutLineIndex);
+            v.Number ("stairSchemeCutLinePenIndex", stair.stairSchemeCutLinePenIndex);
+            v.Attribute ("stairSchemeUncutLineIndex", stair.stairSchemeUncutLineIndex);
+            v.Number ("stairSchemeUncutLinePenIndex", stair.stairSchemeUncutLinePenIndex);
+        });
+        v.Group ("railing", [&] () {
+            API_RailingModelViewOptions& railing = model.railingModelViewOptions;
+            v.Number ("railing3DDetailLevel", railing.railing3DDetailLevel);
+            v.Flag ("railing2DDisplayCompPosts", railing.railing2DDisplayCompPosts);
+            v.Flag ("railing2DDisplayCompTopRail", railing.railing2DDisplayCompTopRail);
+            v.Flag ("railing2DDisplayCompHandrails", railing.railing2DDisplayCompHandrails);
+            v.Flag ("railing2DDisplayCompRails", railing.railing2DDisplayCompRails);
+            v.Flag ("railing2DDisplayCompInnerPosts", railing.railing2DDisplayCompInnerPosts);
+            v.Flag ("railing2DDisplayCompBalusters", railing.railing2DDisplayCompBalusters);
+            v.Flag ("railing2DDisplayCompPanels", railing.railing2DDisplayCompPanels);
+            v.Attribute ("railingSchemeSurfaceIndex", railing.railingSchemeSurfaceIndex);
+            v.Attribute ("railingSchemeCutLineIndex", railing.railingSchemeCutLineIndex);
+            v.Number ("railingSchemeCutLinePenIndex", railing.railingSchemeCutLinePenIndex);
+            v.Attribute ("railingSchemeUncutLineIndex", railing.railingSchemeUncutLineIndex);
+            v.Number ("railingSchemeUncutLinePenIndex", railing.railingSchemeUncutLinePenIndex);
+        });
+    });
+
+    API_OnScreenViewOptions& screen = viewOptions.onScreenViewOpt;
+    v.Group ("onScreenViewOptions", [&] () {
+        v.Number ("wallMode", screen.wallMode);
+        v.Flag ("showRoofPivLine", screen.showRoofPivLine);
+        v.Flag ("showFillHandles", screen.showFillHandles);
+        v.Number ("lineWeight", screen.lineWeight);
+        v.Number ("textMode", screen.textMode);
+        v.Number ("figureMode", screen.figureMode);
+        v.Flag ("showExtrudedBodies", screen.showExtrudedBodies);
+        v.Number ("camPathViewMode", screen.camPathViewMode);
+        v.Number ("wallMethod", screen.wallMethod);
+        v.Flag ("showMarkerRange", screen.showMarkerRange);
+        v.Number ("filldrawingMode", screen.filldrawingMode);
+        v.Flag ("splineMode", screen.splineMode);
+        v.Flag ("showDrawingFrames", screen.showDrawingFrames);
+        v.Flag ("showMasterItems", screen.showMasterItems);
+        v.Flag ("boldCutLines", screen.boldCutLines);
+        v.Flag ("showSourceMarkerBound", screen.showSourceMarkerBound);
+        v.Flag ("showDimensionAllLines", screen.showDimensionAllLines);
+        v.Flag ("showOpeningCuttingBodies", screen.showOpeningCuttingBodies);
+        v.Flag ("showOpeningReferences", screen.showOpeningReferences);
+    });
+}
+
+}
+
+GetViewOptionsCommand::GetViewOptionsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetViewOptionsCommand::GetName () const
+{
+    return "GetViewOptions";
+}
+
+GS::Optional<GS::UniString> GetViewOptionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "modelViewOptionIndex": {
+            "type": "integer",
+            "description": "The index of the model view option combination the window applies. Matches the order of GetModelViewOptions, starting from 1."
+        },
+        "viewOptions": {
+            "type": "object",
+            "description": "The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.",
+            "properties": {
+                "modelViewOptions": {
+                    "type": "object",
+                    "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+                    "additionalProperties": true
+                },
+                "onScreenViewOptions": {
+                    "type": "object",
+                    "description": "Fields of API_OnScreenViewOptions.",
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "modelViewOptions",
+                "onScreenViewOptions"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "modelViewOptionIndex",
+        "viewOptions"
+    ]
+})";
+}
+
+GS::ObjectState GetViewOptionsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ViewOptions viewOptions = {};
+    short modelViewOptionIndex = 0;
+    const GSErrCode err = ACAPI_Navigator_GetViewOptions (&viewOptions, &modelViewOptionIndex);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
+    }
+
+    GS::ObjectState viewOptionsOS;
+    ViewOptionsWriter writer { &viewOptionsOS };
+    VisitViewOptions (writer, viewOptions);
+
+    GS::ObjectState response;
+    response.Add ("modelViewOptionIndex", (Int32) modelViewOptionIndex);
+    response.Add ("viewOptions", viewOptionsOS);
+    return response;
+}
+
+SetViewOptionsCommand::SetViewOptionsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetViewOptionsCommand::GetName () const
+{
+    return "SetViewOptions";
+}
+
+GS::Optional<GS::UniString> SetViewOptionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "modelViewOptionIndex": {
+            "type": "integer",
+            "description": "Switches the window to the model view option combination with this index (see GetModelViewOptions, starting from 1). Without viewOptions only the combination is switched.",
+            "minimum": 1
+        },
+        "viewOptions": {
+            "type": "object",
+            "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value.",
+            "properties": {
+                "modelViewOptions": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "onScreenViewOptions": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+})";
+}
+
+GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 requestedIndex = 0;
+    const bool switchCombination = parameters.Get ("modelViewOptionIndex", requestedIndex);
+    const GS::ObjectState* viewOptionsOS = parameters.Get ("viewOptions");
+
+    if (!switchCombination && viewOptionsOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give modelViewOptionIndex, viewOptions or both.");
+    }
+
+    short modelViewOptionIndex = (short) requestedIndex;
+    GSErrCode err = NoError;
+
+    if (viewOptionsOS == nullptr) {
+        err = ACAPI_Navigator_ChangeViewOptions (nullptr, &modelViewOptionIndex);
+    } else {
+        API_ViewOptions viewOptions = {};
+        short currentIndex = 0;
+        err = ACAPI_Navigator_GetViewOptions (&viewOptions, &currentIndex);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
+        }
+
+        ViewOptionsReader reader { viewOptionsOS };
+        VisitViewOptions (reader, viewOptions);
+
+        err = ACAPI_Navigator_ChangeViewOptions (&viewOptions, switchCombination ? &modelViewOptionIndex : nullptr);
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to change the view options. Check the model view option index and that a plan window is open.");
+    }
+
+    return {};
+}
+
 GetViewSettingsCommand::GetViewSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {}

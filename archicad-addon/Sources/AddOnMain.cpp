@@ -1479,6 +1479,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Gets all model view options"
         );
+        err |= RegisterCommand<GetViewOptionsCommand> (
+            navigatorCommands, "1.7.3",
+            "Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies."
+        );
+        err |= RegisterCommand<SetViewOptionsCommand> (
+            navigatorCommands, "1.7.3",
+            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options."
+        );
         err |= RegisterCommand<GetViewSettingsCommand> (
             navigatorCommands, "1.1.4",
             "Gets the view settings of navigator items"
