@@ -1472,7 +1472,7 @@ GetLineFromUserCommand::GetLineFromUserCommand () :
 
 GS::String GetLineFromUserCommand::GetName () const
 {
-    return "GetUserInputLine";
+    return "GetLineFromUser";
 }
 
 GS::Optional<GS::UniString> GetLineFromUserCommand::GetInputParametersSchema () const
@@ -1594,7 +1594,7 @@ GetPolygonFromUserCommand::GetPolygonFromUserCommand () :
 
 GS::String GetPolygonFromUserCommand::GetName () const
 {
-    return "GetUserInputPoly";
+    return "GetPolygonFromUser";
 }
 
 GS::Optional<GS::UniString> GetPolygonFromUserCommand::GetInputParametersSchema () const
@@ -1686,15 +1686,6 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
         CHTruncate (promptStr.ToCStr ().Get (), polyInfo.prompt, sizeof (polyInfo.prompt));
 
         err = ACAPI_UserInput_GetPoly (&polyInfo);
-        if (err == APIERR_CANCEL) {
-            return GS::ObjectState ("cancelled", true);
-        }
-        if (err != NoError) {
-            return CreateErrorResponse (err,"Failed to retrieve polygon points");
-        }
-        if (polyInfo.coords == nullptr) {
-            return CreateErrorResponse (APIERR_GENERAL, "Failed: Polygon input did not return coordinate handle.");
-        }
 
         const GS::OnExit disposePolyHandles ([&polyInfo]() {
             if (polyInfo.coords != nullptr) {
@@ -1704,6 +1695,16 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
                 BMKillHandle (reinterpret_cast<GSHandle*> (&polyInfo.parcs));
             }
         });
+
+        if (err == APIERR_CANCEL) {
+            return GS::ObjectState ("cancelled", true);
+        }
+        if (err != NoError) {
+            return CreateErrorResponse (err,"Failed to retrieve polygon points");
+        }
+        if (polyInfo.coords == nullptr) {
+            return CreateErrorResponse (APIERR_GENERAL, "Failed: Polygon input did not return coordinate handle.");
+        }
 
         Int32 coordCountInHandle = 0;
         if (!TryGetHandleItemCount<API_Coord> (reinterpret_cast<GSHandle> (polyInfo.coords), coordCountInHandle)) {
