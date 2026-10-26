@@ -1,3 +1,7 @@
+// GDLDefs.h MUST be included before LibraryCommands.hpp/ACAPinc.h: included afterward it fails to
+// parse ("no member named 'GS' in namespace 'GS'"), as ExtendedElementCommands.cpp notes for MeshBody.hpp.
+#include "GDLDefs.h"
+
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
@@ -11,7 +15,6 @@
 #include "ACAPI/Library/LibraryManager.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
 #include "GDLParamInterface.hpp"
-#include "GDLDefs.h"
 
 #include <functional>
 #include <vector>
