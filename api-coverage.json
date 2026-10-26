@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 12:34 UTC",
+ "generatedAt": "2026-10-26 12:44 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,9 @@
   "not applicable": 620,
   "done": 1099,
   "claimed": 72,
-  "in progress": 972,
-  "open": 116
+  "in progress": 968,
+  "open": 116,
+  "merged": 4
  },
  "items": [
   {
@@ -4619,10 +4620,6 @@
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    },
-    {
      "number": 1421,
      "title": "Add ReorderNavigatorItems command"
     },
@@ -7428,18 +7425,9 @@
    "olderNames": [
     "ACAPI_Element_GetLinkedPropertyObjects"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1438,
-     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7506,14 +7494,9 @@
    "olderNames": [
     "ACAPI_Element_SetLinkedPropertyObjects"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8939,22 +8922,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1438,
-     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1437,
-     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9270,18 +9240,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1438,
-     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1437,
-     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
-    },
-    {
      "number": 1329,
      "title": "[1/4] Add GetSkylightHolePolygons command"
     },
@@ -9544,22 +9502,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1438,
-     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1437,
-     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14165,18 +14110,6 @@
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
-    },
-    {
-     "number": 1439,
-     "title": "[3/3] Add SetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1438,
-     "title": "[2/3] Add GetLinkedPropertyObjectsOfElements"
-    },
-    {
-     "number": 1437,
-     "title": "[1/3] Add GetPropertyObjectsOfElements and GetDescriptorsOfElements"
     },
     {
      "number": 1394,
