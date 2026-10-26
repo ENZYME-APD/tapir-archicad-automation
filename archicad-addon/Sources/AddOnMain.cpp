@@ -1599,6 +1599,22 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.3",
             "Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error."
         );
+        err |= RegisterCommand<SetMasterLayoutContextCommand> (
+            navigatorCommands, "1.7.3",
+            "Sets which layout's context the master layout of the current window is drawn in: its autotexts then show the values of the given layout. The current window must be a master layout, otherwise an error is returned. It does not assign a master layout to a layout. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetAddOnViewpointRootsCommand> (
+            navigatorCommands, "1.7.3",
+            "Returns the roots of the add-on viewpoints: the Project Map items created through the Archicad API by an add-on, as Archicad lists them to Tapir. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetAddOnViewpointChildrenCommand> (
+            navigatorCommands, "1.7.3",
+            "Returns the direct children of an add-on viewpoint root or group. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetAddOnViewpointsCommand> (
+            navigatorCommands, "1.7.3",
+            "Returns the details of the given add-on viewpoint items: their parent, type (Root, Group or Leaf), ID, name, view settings flags and attached data (base64 encoded). The output is aligned with the input array; an item that cannot be read gets an error. Available from Archicad 27."
+        );
         AddCommandGroup (navigatorCommands);
     }
 

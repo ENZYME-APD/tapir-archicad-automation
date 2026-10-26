@@ -1,5 +1,6 @@
 #include "NavigatorCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Base64Converter.hpp"
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
@@ -2601,4 +2602,370 @@ GS::ObjectState GetNavigatorParentItemsCommand::Execute (const GS::ObjectState& 
     }
 
     return response;
+}
+
+// ─── SetMasterLayoutContext ───────────────────────────────────────────────────
+
+SetMasterLayoutContextCommand::SetMasterLayoutContextCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetMasterLayoutContextCommand::GetName () const
+{
+    return "SetMasterLayoutContext";
+}
+
+GS::Optional<GS::UniString> SetMasterLayoutContextCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layoutDatabaseId": {
+                "$ref": "#/DatabaseId"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["layoutDatabaseId"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetMasterLayoutContextCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+// ACAPI_Navigator_SetMasterLayoutOnLayout does not assign a master layout to a
+// layout. Its DevKit remark: when the current database is a master layout, it
+// sets the layout whose values (autotexts, etc.) the master layout shows.
+GS::ObjectState SetMasterLayoutContextCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    const API_Guid layoutDatabaseGuid = GetGuidFromArrayItem ("layoutDatabaseId", parameters);
+    if (layoutDatabaseGuid == APINULLGuid) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "layoutDatabaseId is corrupt or missing.");
+    }
+
+    API_DatabaseInfo currentDb = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&currentDb);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the current database.");
+    }
+    if (currentDb.typeID != APIWind_MasterLayoutID) {
+        return CreateFailedExecutionResult (APIERR_BADDATABASE, "The current window must be a master layout.");
+    }
+
+    API_DatabaseInfo layoutDb = DatabaseIdResolver::Instance ().GetDatabaseWithId (layoutDatabaseGuid);
+    err = ACAPI_Window_GetDatabaseInfo (&layoutDb);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get the database of layoutDatabaseId.");
+    }
+    if (layoutDb.typeID != APIWind_LayoutID) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "layoutDatabaseId is not the database of a layout.");
+    }
+
+    API_DatabaseUnId layoutDatabaseUnId = layoutDb.databaseUnId;
+    err = ACAPI_Navigator_SetMasterLayoutOnLayout (&layoutDatabaseUnId);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the layout context of the master layout.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+// ─── Add-on viewpoints ────────────────────────────────────────────────────────
+
+// The Project Map items an add-on creates through the API (roots, groups and
+// leaf nodes), read with ACAPI_Navigator_GetNavigatorVP*. They are identified
+// by their guid, given as {"viewpointId": {"guid": ...}}.
+
+static const char* AddOnViewpointIdsSchema = R"({
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "type": "object",
+                "description": "The identifier of an add-on viewpoint item.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpointId"]
+    }
+})";
+
+#ifdef ServerMainVers_2700
+static GS::ObjectState CreateViewpointIdArrayItem (const API_Guid& guid)
+{
+    return GS::ObjectState ("viewpointId", CreateGuidObjectState (guid));
+}
+
+static GS::UniString AddOnViewpointTypeToString (API_NavigatorAddOnViewPointTypeID itemType)
+{
+    switch (itemType) {
+        case API_NavigatorAddOnViewPointRootID:  return "Root";
+        case API_NavigatorAddOnViewPointGroupID: return "Group";
+        case API_NavigatorAddOnViewPointNodeID:  return "Leaf";
+        default:                                 return "Undefined";
+    }
+}
+#endif
+
+GetAddOnViewpointRootsCommand::GetAddOnViewpointRootsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetAddOnViewpointRootsCommand::GetName () const
+{
+    return "GetAddOnViewpointRoots";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointRootsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": ["viewpointIds"]
+    })";
+}
+
+GS::ObjectState GetAddOnViewpointRootsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<API_Guid> rootGuids;
+    const GSErrCode err = ACAPI_Navigator_GetNavigatorVPRootGroups (&rootGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the add-on viewpoint roots.");
+    }
+
+    GS::ObjectState response;
+    const auto& viewpointIds = response.AddList<GS::ObjectState> ("viewpointIds");
+    for (const API_Guid& rootGuid : rootGuids) {
+        viewpointIds (CreateViewpointIdArrayItem (rootGuid));
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+GetAddOnViewpointChildrenCommand::GetAddOnViewpointChildrenCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetAddOnViewpointChildrenCommand::GetName () const
+{
+    return "GetAddOnViewpointChildren";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "type": "object",
+                "description": "The add-on viewpoint root or group to list the children of.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpointId"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": ["viewpointIds"]
+    })";
+}
+
+GS::ObjectState GetAddOnViewpointChildrenCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    const API_Guid guid = GetGuidFromArrayItem ("viewpointId", parameters);
+    if (guid == APINULLGuid) {
+        return CreateErrorResponse (APIERR_BADPARS, "viewpointId is corrupt or missing.");
+    }
+
+    GS::Array<API_Guid> childrenGuids;
+    const GSErrCode err = ACAPI_Navigator_GetNavigatorVPItemChildren (&guid, &childrenGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the children of the add-on viewpoint.");
+    }
+
+    GS::ObjectState response;
+    const auto& viewpointIds = response.AddList<GS::ObjectState> ("viewpointIds");
+    for (const API_Guid& childGuid : childrenGuids) {
+        viewpointIds (CreateViewpointIdArrayItem (childGuid));
+    }
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+GetAddOnViewpointsCommand::GetAddOnViewpointsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetAddOnViewpointsCommand::GetName () const
+{
+    return "GetAddOnViewpoints";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": ["viewpointIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The details of each given add-on viewpoint item, in the order of the input, or an error for an item that cannot be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "viewpointId": {
+                                    "type": "object",
+                                    "description": "The identifier of the add-on viewpoint item.",
+                                    "properties": {
+                                        "guid": { "$ref": "#/Guid" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["guid"]
+                                },
+                                "parentViewpointId": {
+                                    "type": "object",
+                                    "description": "The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root.",
+                                    "properties": {
+                                        "guid": { "$ref": "#/Guid" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["guid"]
+                                },
+                                "itemType": {
+                                    "type": "string",
+                                    "description": "Whether the item is a root, a group or a leaf node.",
+                                    "enum": ["Root", "Group", "Leaf", "Undefined"]
+                                },
+                                "displayId": {
+                                    "type": "string",
+                                    "description": "The ID shown for the item in the Project Map."
+                                },
+                                "displayName": {
+                                    "type": "string",
+                                    "description": "The name shown for the item in the Project Map."
+                                },
+                                "viewSettingsFlags": {
+                                    "type": "integer",
+                                    "description": "The view settings flags of the item, as Archicad stores them (a bit field)."
+                                },
+                                "data": {
+                                    "type": "string",
+                                    "description": "The data the add-on attached to the item, base64 encoded. Empty when there is none."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["viewpointId", "itemType", "displayId", "displayName", "viewSettingsFlags", "data"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::ObjectState GetAddOnViewpointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> viewpointIds;
+    parameters.Get ("viewpointIds", viewpointIds);
+
+    GS::ObjectState response;
+    const auto& viewpoints = response.AddList<GS::ObjectState> ("viewpoints");
+
+    for (const GS::ObjectState& viewpointIdOS : viewpointIds) {
+        const API_Guid guid = GetGuidFromArrayItem ("viewpointId", viewpointIdOS);
+        if (guid == APINULLGuid) {
+            viewpoints (CreateErrorResponse (APIERR_BADPARS, "viewpointId is corrupt or missing."));
+            continue;
+        }
+
+        // The struct owns its data handle and disposes of it.
+        API_NavigatorAddOnViewPointData viewPointData;
+        viewPointData.guid = guid;
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorVPItem (&viewPointData);
+        if (err != NoError) {
+            viewpoints (CreateErrorResponse (err, "Failed to get the add-on viewpoint."));
+            continue;
+        }
+
+        GS::UniString data;
+        if (viewPointData.data != nullptr) {
+            data = Base64Converter::Encode (*viewPointData.data, BMGetHandleSize (viewPointData.data));
+            data.DeleteAll (GS::UniChar (char ('\n')));
+        }
+
+        GS::ObjectState viewpointOS;
+        viewpointOS.Add ("viewpointId", CreateGuidObjectState (guid));
+        if (viewPointData.parentGuid != APINULLGuid) {
+            viewpointOS.Add ("parentViewpointId", CreateGuidObjectState (viewPointData.parentGuid));
+        }
+        viewpointOS.Add ("itemType",          AddOnViewpointTypeToString (viewPointData.itemType));
+        viewpointOS.Add ("displayId",         viewPointData.displayId);
+        viewpointOS.Add ("displayName",       viewPointData.displayName);
+        viewpointOS.Add ("viewSettingsFlags", static_cast<Int64> (viewPointData.viewSettingsFlags));
+        viewpointOS.Add ("data",              data);
+        viewpoints (viewpointOS);
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
 }
