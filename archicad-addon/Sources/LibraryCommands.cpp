@@ -11,6 +11,7 @@
 #include "ACAPI/Library/LibraryManager.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
 #include "GDLParamInterface.hpp"
+#include "GDLDefs.h"
 
 #include <functional>
 #include <vector>
@@ -1142,29 +1143,6 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
 
 namespace {
 
-// The parameter type codes of GDL::Parameters::GetVarType, the ParT_ values of GDL/GDLDefs.h.
-// They differ from API_AddParID (there is no type 1), so they are listed here.
-enum class LibPartParameterType : short {
-    Integer = 0,
-    Length = 2,
-    Angle = 3,
-    RealNum = 4,
-    LightSw = 5,
-    ColRGB = 6,
-    Intens = 7,
-    LineTyp = 8,
-    Mater = 9,
-    FillPat = 10,
-    PenCol = 11,
-    CString = 12,
-    Boolean = 13,
-    Separator = 14,
-    Title = 15,
-    BuildingMaterial = 16,
-    Profile = 17,
-    Dictionary = 18
-};
-
 // Which getter of GDL::Parameters reads a value of the type, and its JSON form.
 enum class LibPartParameterValueKind {
     None,
@@ -1180,23 +1158,24 @@ enum class LibPartParameterValueKind {
 // The type name is the one GetGDLParametersOfElements uses.
 static LibPartParameterValueKind GetLibPartParameterValueKind (short type, const char** typeName)
 {
-    switch (static_cast<LibPartParameterType> (type)) {
-        case LibPartParameterType::Integer:          *typeName = "Integer";          return LibPartParameterValueKind::Integer;
-        case LibPartParameterType::Length:           *typeName = "Length";           return LibPartParameterValueKind::Number;
-        case LibPartParameterType::Angle:            *typeName = "Angle";            return LibPartParameterValueKind::Number;
-        case LibPartParameterType::RealNum:          *typeName = "RealNumber";       return LibPartParameterValueKind::Number;
-        case LibPartParameterType::LightSw:          *typeName = "LightSwitch";      return LibPartParameterValueKind::OnOff;
-        case LibPartParameterType::ColRGB:           *typeName = "RGBColor";         return LibPartParameterValueKind::Number;
-        case LibPartParameterType::Intens:           *typeName = "Intensity";        return LibPartParameterValueKind::Number;
-        case LibPartParameterType::LineTyp:          *typeName = "LineType";         return LibPartParameterValueKind::Integer;
-        case LibPartParameterType::Mater:            *typeName = "Material";         return LibPartParameterValueKind::Integer;
-        case LibPartParameterType::FillPat:          *typeName = "FillPattern";      return LibPartParameterValueKind::Integer;
-        case LibPartParameterType::PenCol:           *typeName = "PenColor";         return LibPartParameterValueKind::Integer;
-        case LibPartParameterType::CString:          *typeName = "String";           return LibPartParameterValueKind::String;
-        case LibPartParameterType::Boolean:          *typeName = "Boolean";          return LibPartParameterValueKind::Boolean;
-        case LibPartParameterType::BuildingMaterial: *typeName = "BuildingMaterial"; return LibPartParameterValueKind::Integer;
-        case LibPartParameterType::Profile:          *typeName = "Profile";          return LibPartParameterValueKind::Integer;
-        default:                                     *typeName = nullptr;            return LibPartParameterValueKind::None;
+    // GetVarType returns the ParT_ codes of GDLDefs.h, which differ from API_AddParID.
+    switch (type) {
+        case ParT_Integer:          *typeName = "Integer";          return LibPartParameterValueKind::Integer;
+        case ParT_Length:           *typeName = "Length";           return LibPartParameterValueKind::Number;
+        case ParT_Angle:            *typeName = "Angle";            return LibPartParameterValueKind::Number;
+        case ParT_RealNum:          *typeName = "RealNumber";       return LibPartParameterValueKind::Number;
+        case ParT_LightSw:          *typeName = "LightSwitch";      return LibPartParameterValueKind::OnOff;
+        case ParT_ColRGB:           *typeName = "RGBColor";         return LibPartParameterValueKind::Number;
+        case ParT_Intens:           *typeName = "Intensity";        return LibPartParameterValueKind::Number;
+        case ParT_LineTyp:          *typeName = "LineType";         return LibPartParameterValueKind::Integer;
+        case ParT_Mater:            *typeName = "Material";         return LibPartParameterValueKind::Integer;
+        case ParT_FillPat:          *typeName = "FillPattern";      return LibPartParameterValueKind::Integer;
+        case ParT_PenCol:           *typeName = "PenColor";         return LibPartParameterValueKind::Integer;
+        case ParT_CString:          *typeName = "String";           return LibPartParameterValueKind::String;
+        case ParT_Boolean:          *typeName = "Boolean";          return LibPartParameterValueKind::Boolean;
+        case ParT_BuildingMaterial: *typeName = "BuildingMaterial"; return LibPartParameterValueKind::Integer;
+        case ParT_Profile:          *typeName = "Profile";          return LibPartParameterValueKind::Integer;
+        default:                    *typeName = nullptr;            return LibPartParameterValueKind::None;
     }
 }
 
