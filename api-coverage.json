@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 06:57 UTC",
+ "generatedAt": "2026-10-26 07:04 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 878,
-  "claimed": 182,
+  "in progress": 890,
+  "claimed": 170,
   "done": 743
  },
  "items": [
@@ -12523,6 +12523,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1515,
      "title": "[4/6] Add analytical load group, load case and load combination commands"
     },
@@ -14012,6 +14016,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     },
@@ -14136,9 +14144,14 @@
    "olderNames": [
     "APIDb_GetHotlinkSourceStatusID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -28811,6 +28824,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -29066,6 +29083,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -29310,6 +29331,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -29394,6 +29419,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
@@ -29542,6 +29571,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
@@ -30244,6 +30277,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
      "number": 1115,
      "title": "Add GetHotlinkDesignOptionTables and SetHotlinkDesignOptionTables"
     }
@@ -30510,6 +30547,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -30769,9 +30810,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -30795,9 +30841,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -30821,9 +30872,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -30847,9 +30903,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -30873,9 +30934,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -30899,9 +30965,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -30925,9 +30996,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    }
+   ],
    "issues": [
     {
      "number": 1527,
@@ -31569,9 +31645,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -31833,9 +31914,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -32103,6 +32189,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
     },
@@ -32230,6 +32320,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
     }
@@ -32351,6 +32445,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
     }
@@ -32412,6 +32510,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
     },
@@ -32469,6 +32571,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
     }
@@ -32517,6 +32623,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
     }
@@ -32538,6 +32648,10 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
     {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
@@ -33062,9 +33176,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -33317,9 +33436,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    }
+   ],
    "issues": [
     {
      "number": 1526,
@@ -40219,6 +40343,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
@@ -50859,6 +50987,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1529,
+     "title": "[1/5] Add GetHotlinkSourceStatus and GetHotlinkDesignOptionTableDetails"
+    },
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
     {
      "number": 1519,
      "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
@@ -62130,6 +62266,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
+    {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
     },
@@ -66987,6 +67127,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1528,
+     "title": "[1/6] Add GetOpeningSymbolParameters and SetOpeningSymbolParameters"
+    },
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
