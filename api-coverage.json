@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 20:45 UTC",
+ "generatedAt": "2026-10-26 21:28 UTC",
  "versions": [
   25,
   26,
@@ -5585,6 +5585,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1569,
+     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
+    },
+    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -5738,6 +5742,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1569,
+     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
+    },
     {
      "number": 1532,
      "title": "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands"
@@ -7838,6 +7846,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1568,
+     "title": "ApplyFavoritesToElements: keep the target's home story"
+    },
+    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -8137,6 +8149,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1568,
+     "title": "ApplyFavoritesToElements: keep the target's home story"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -8166,6 +8182,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1560,
+     "title": "Fix SolveStairBaseline crashing Archicad: fill the baseline edge/vertex data before solving"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -8516,6 +8536,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1568,
+     "title": "ApplyFavoritesToElements: keep the target's home story"
+    },
     {
      "number": 1533,
      "title": "[4/6] Add GetSurfaceTypesOfElements"
@@ -10644,7 +10668,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1569,
+     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
+    }
+   ],
    "issues": []
   },
   {
@@ -10712,7 +10741,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1569,
+     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
+    }
+   ],
    "issues": []
   },
   {
@@ -12850,7 +12884,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1560,
+     "title": "Fix SolveStairBaseline crashing Archicad: fill the baseline edge/vertex data before solving"
+    }
+   ],
    "issues": []
   },
   {
@@ -23801,6 +23840,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1569,
+     "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
+    },
     {
      "number": 1544,
      "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
@@ -38203,6 +38246,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1564,
+     "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
+    },
     {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
@@ -58907,6 +58954,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1564,
+     "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
+    },
+    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -64003,6 +64054,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1564,
+     "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
+    },
     {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
