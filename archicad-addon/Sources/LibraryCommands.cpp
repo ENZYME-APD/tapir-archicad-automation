@@ -1,4 +1,5 @@
 #include "LibraryCommands.hpp"
+#include "ElementGDLParameterCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "Folder.hpp"
@@ -10,8 +11,10 @@
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Library/LibraryManager.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
+#include "GDLParamInterface.hpp"
 
 #include <functional>
+#include <vector>
 
 using ACAPI::Library::GSMObject;
 
@@ -1116,6 +1119,197 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
                     errorMessage += ": setting the '" + failedSection + "' script failed";
                     errorText = failedText;
                 }
+                if (!errorText.IsEmpty ()) {
+                    errorMessage += " (" + errorText + ")";
+                }
+                errorMessage += ".";
+                executionResults (CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+SetLibraryPartParametersCommand::SetLibraryPartParametersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLibraryPartParametersCommand::GetName () const
+{
+    return "SetLibraryPartParameters";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartParametersCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to modify and the parameter values to set in each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                        },
+                        "parameters": )") + SetGDLParameterValuesSchema + R"(,
+                        "descriptions": {
+                            "type": "array",
+                            "description": "The new descriptions of all parameters of the library part, one for each parameter in the order of its parameter list. Defaults to the current descriptions.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "merge": {
+                            "type": "boolean",
+                            "description": "When true, the changed parameter list is merged into the parameters of the library part (MergeParameters of the Archicad API) instead of replacing them (SetParameters). Defaults to false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "parameters"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartParametersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Library Part Parameters", [&]() -> GSErrCode {
+        for (const GS::ObjectState& libraryPart : libraryParts) {
+            GS::UniString name;
+            GS::Array<GS::ObjectState> parameterChanges;
+            if (!libraryPart.Get ("name", name) || name.IsEmpty () || !libraryPart.Get ("parameters", parameterChanges)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing 'name' or 'parameters' parameter."));
+                continue;
+            }
+
+            GS::Array<GS::UniString> givenDescriptions;
+            const bool hasDescriptions = libraryPart.Contains ("descriptions");
+            if (hasDescriptions && !libraryPart.Get ("descriptions", givenDescriptions)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'descriptions' parameter, it must be a list of strings."));
+                continue;
+            }
+
+            bool merge = false;
+            if (libraryPart.Contains ("merge") && !libraryPart.Get ("merge", merge)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'merge' parameter, it must be a boolean."));
+                continue;
+            }
+
+            auto libPart = libraryManager->GetLibPartByName (name);
+            if (libPart.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+                continue;
+            }
+
+            auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+            if (gsmObject.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
+                continue;
+            }
+
+            if (!gsmObject->IsEditable ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library."));
+                continue;
+            }
+
+            auto currentParameters = gsmObject->GetParameters ();
+            if (currentParameters.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (currentParameters.UnwrapErr ().kind, "Failed to get the parameters of the library part '" + name + "'."));
+                continue;
+            }
+
+            // The changes are made in a copy, which is only written when all of them succeed.
+            GDL::Parameters gdlParameters = currentParameters.Unwrap ();
+            GS::UniString errMessage;
+            const GSErrCode setErr = SetGDLParametersFromObjectStates (gdlParameters, parameterChanges, errMessage);
+            if (setErr != NoError) {
+                executionResults (CreateFailedExecutionResult (setErr, errMessage + " Nothing was changed in the library part '" + name + "'."));
+                continue;
+            }
+
+            std::vector<GS::UniString> descriptions;
+            if (hasDescriptions) {
+                const Int32 varNumber = gdlParameters.GetVarNumber ();
+                if (givenDescriptions.GetSize () != static_cast<USize> (varNumber)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("Invalid 'descriptions' parameter: the library part has %d parameters, give exactly one description for each. Nothing was changed.", varNumber)));
+                    continue;
+                }
+                for (const GS::UniString& description : givenDescriptions) {
+                    descriptions.push_back (description);
+                }
+            } else {
+                auto currentDescriptions = gsmObject->GetParameterDescriptions ();
+                if (currentDescriptions.IsErr ()) {
+                    executionResults (CreateFailedExecutionResult (currentDescriptions.UnwrapErr ().kind, "Failed to get the parameter descriptions of the library part '" + name + "'."));
+                    continue;
+                }
+                descriptions = currentDescriptions.Unwrap ();
+            }
+
+            GS::UniString failedText;
+            ACAPI::Result<void> modifyResult = gsmObject->Modify ([&] (GSMObject::Modifier& modifier) -> GSErrCode {
+                ACAPI::Result<void> setResult = merge ? modifier.MergeParameters (gdlParameters, descriptions) : modifier.SetParameters (gdlParameters, descriptions);
+                if (setResult.IsErr ()) {
+                    failedText = setResult.UnwrapErr ().text.c_str ();
+                    return setResult.UnwrapErr ().kind;
+                }
+                return NoError;
+            });
+
+            if (modifyResult.IsErr ()) {
+                GS::UniString errorMessage = "Failed to modify the parameters of the library part '" + name + "'";
+                GS::UniString errorText = failedText.IsEmpty () ? GS::UniString (modifyResult.UnwrapErr ().text.c_str ()) : failedText;
                 if (!errorText.IsEmpty ()) {
                     errorMessage += " (" + errorText + ")";
                 }
