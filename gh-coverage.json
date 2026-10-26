@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 16:26 UTC",
+ "generatedAt": "2026-10-26 20:45 UTC",
  "counts": {
   "done": 302,
   "open": 116,
@@ -7,9 +7,9 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 238,
+  "all": 237,
   "partial": 19,
-  "json": 45
+  "json": 46
  },
  "items": [
   {
@@ -2741,7 +2741,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 5,
+   "parameterCount": 8,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -2749,7 +2749,10 @@
     "dimensionsData.witnessPoints"
    ],
    "missingParameters": [
-    "dimensionsData.floorIndex"
+    "dimensionsData.favoriteName",
+    "dimensionsData.floorIndex",
+    "dimensionsData.textHeight",
+    "dimensionsData.textPen"
    ],
    "pullRequests": [],
    "issues": []
@@ -2768,7 +2771,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 13,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -2778,9 +2781,12 @@
    ],
    "missingParameters": [
     "dimensionsData.beginPlane",
+    "dimensionsData.favoriteName",
     "dimensionsData.placeOnTop",
     "dimensionsData.sectionElementIds",
     "dimensionsData.skinBorderIndices",
+    "dimensionsData.textHeight",
+    "dimensionsData.textPen",
     "dimensionsData.totalSizePlane"
    ],
    "pullRequests": [],
@@ -2799,15 +2805,19 @@
      "path": "Components/ElementsComponents/CreateWallThicknessDimensionsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 4,
+   "parameters": "json",
+   "parameterCount": 7,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
     "dimensionsData.referencePoint",
     "dimensionsData.wallId"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dimensionsData.favoriteName",
+    "dimensionsData.textHeight",
+    "dimensionsData.textPen"
+   ],
    "pullRequests": [],
    "issues": []
   },

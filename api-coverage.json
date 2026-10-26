@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 16:26 UTC",
+ "generatedAt": "2026-10-26 20:45 UTC",
  "versions": [
   25,
   26,
@@ -6773,10 +6773,6 @@
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
     },
     {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
-    },
-    {
      "number": 1383,
      "title": "Add SetMarkerLibraryPartOfElements to switch the marker library part of windows and doors"
     },
@@ -7956,12 +7952,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 652,
@@ -8175,10 +8166,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
-    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -8859,12 +8846,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 652,
@@ -11026,10 +11008,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -30331,10 +30309,6 @@
      "title": "[1/6] Opening enums, exists and domains/CEIP id in GetProductVersionInfo"
     },
     {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
-    },
-    {
      "number": 1052,
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
     },
@@ -48495,10 +48469,6 @@
     {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
-    },
-    {
-     "number": 1391,
-     "title": "Dimension creation commands: add favoriteName for text size and frame"
     },
     {
      "number": 1383,

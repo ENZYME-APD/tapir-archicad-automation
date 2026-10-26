@@ -4,13 +4,13 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **302 of 429** applicable Tapir commands have a Grasshopper component (70 %): ✅ 302 done, 🚧 11 in progress, ⬜ 116 open, ➖ 1 not applicable.
 
-Parameters of the 302 used commands: 🟢 238 every parameter has an input, 🟡 45 the rest through a JSON input, 🟠 19 some parameters missing.
+Parameters of the 302 used commands: 🟢 237 every parameter has an input, 🟡 46 the rest through a JSON input, 🟠 19 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 47 % | 19 | 9 |  |  |  | 10 |  |  | 9 |  |  |
 | Project Commands | 80 % | 35 | 28 |  | 2 |  | 5 |  |  | 28 |  |  |
-| Element Commands | 71 % | 108 | 77 |  | 3 |  | 28 |  |  | 40 | 34 | 3 |
+| Element Commands | 71 % | 108 | 77 |  | 3 |  | 28 |  |  | 39 | 35 | 3 |
 | Element grouping Commands | 75 % | 8 | 6 |  |  |  | 2 |  |  | 6 |  |  |
 | Favorites Commands | 83 % | 12 | 10 |  |  |  | 2 |  |  | 9 |  | 1 |
 | Property Commands | 70 % | 17 | 12 |  |  |  | 5 |  |  | 11 |  | 1 |
@@ -32,7 +32,7 @@ Parameters of the 302 used commands: 🟢 238 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-26 16:26 UTC.
+Updated 2026-10-26 20:45 UTC.
 
 | | Status |
 |---|---|
@@ -177,9 +177,9 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateMorphs` 🟡 9/38 parameters – `CreateMorphsComponent`<br><sub>no input: `morphsData.body`, `morphsData.coverFillBGPen`, `morphsData.coverFillOrientation`, `morphsData.coverFillPen`, `morphsData.coverFillType`, `morphsData.cutFillBackgroundPen`, `morphsData.cutFillPen`, `morphsData.cutLinePen`, `morphsData.cutLineType`, `morphsData.displayOption`, `morphsData.isAutoOnStoryVisibility`, `morphsData.linkToSettings`, `morphsData.outlineContourDisplay`, `morphsData.overheadLinePen`, `morphsData.overheadLineType`, `morphsData.showContour`, `morphsData.showFill`, `morphsData.textureProjectionCoords`, `morphsData.textureProjectionType`, `morphsData.topExpansion`, `morphsData.uncutLinePen`, `morphsData.uncutLineType`, `morphsData.use3DHatching`, `morphsData.useCoverFillType`, `morphsData.useDistortedCoverFill`, `morphsData.viewDepthLimitation`, `morphsData.xAxis`, `morphsData.yAxis`, `morphsData.zAxis`</sub>
 - ✅ `CreateRoofs` 🟢 14/14 parameters – `CreateRoofsComponent`
 - ✅ `CreateCurtainWalls` 🟡 9/10 parameters – `CreateCurtainWallsComponent`<br><sub>no input: `curtainWallsData.id`</sub>
-- ✅ `CreateAssociativeDimensions` 🟡 4/5 parameters – `CreateAssociativeDimensionsComponent`<br><sub>no input: `dimensionsData.floorIndex`</sub>
-- ✅ `CreateAssociativeDimensionsOnSection` 🟡 5/10 parameters – `CreateAssociativeDimensionsOnSectionComponent`<br><sub>no input: `dimensionsData.beginPlane`, `dimensionsData.placeOnTop`, `dimensionsData.sectionElementIds`, `dimensionsData.skinBorderIndices`, `dimensionsData.totalSizePlane`</sub>
-- ✅ `CreateWallThicknessDimensions` 🟢 4/4 parameters – `CreateWallThicknessDimensionsComponent`
+- ✅ `CreateAssociativeDimensions` 🟡 4/8 parameters – `CreateAssociativeDimensionsComponent`<br><sub>no input: `dimensionsData.favoriteName`, `dimensionsData.floorIndex`, `dimensionsData.textHeight`, `dimensionsData.textPen`</sub>
+- ✅ `CreateAssociativeDimensionsOnSection` 🟡 5/13 parameters – `CreateAssociativeDimensionsOnSectionComponent`<br><sub>no input: `dimensionsData.beginPlane`, `dimensionsData.favoriteName`, `dimensionsData.placeOnTop`, `dimensionsData.sectionElementIds`, `dimensionsData.skinBorderIndices`, `dimensionsData.textHeight`, `dimensionsData.textPen`, `dimensionsData.totalSizePlane`</sub>
+- ✅ `CreateWallThicknessDimensions` 🟡 4/7 parameters – `CreateWallThicknessDimensionsComponent`<br><sub>no input: `dimensionsData.favoriteName`, `dimensionsData.textHeight`, `dimensionsData.textPen`</sub>
 - ✅ `GetDimensionData` 🟢 2/2 parameters – `GetDimensionDataComponent`
 - ⬜ `GetOpeningTransformations`
 - ✅ `CreateZones` 🟡 7/11 parameters – `CreateZonesComponent`<br><sub>no input: `zonesData.fixedStampAngle`, `zonesData.floorIndex`, `zonesData.id`, `zonesData.stampAngle`</sub>
