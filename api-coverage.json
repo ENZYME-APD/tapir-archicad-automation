@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 15:49 UTC",
+ "generatedAt": "2026-10-26 16:26 UTC",
  "versions": [
   25,
   26,
@@ -10397,7 +10397,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1554,
+     "title": "GetElementAtCoordinate: no hit is found: false, default z finds a slab top at the story level"
+    }
+   ],
    "issues": []
   },
   {
@@ -12038,6 +12043,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1552,
+     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -12081,6 +12090,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1552,
+     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
+    },
+    {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
     },
@@ -12108,6 +12121,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1552,
+     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
+    },
     {
      "number": 1178,
      "title": "Add SetGraphicOverrideRuleGroupOrder command"
@@ -12140,6 +12157,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1552,
+     "title": "Fix the crash of MoveGraphicOverrideRules on a guid that is not a rule"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -48355,6 +48376,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1554,
+     "title": "GetElementAtCoordinate: no hit is found: false, default z finds a slab top at the story level"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
