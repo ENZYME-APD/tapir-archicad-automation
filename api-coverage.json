@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 05:37 UTC",
+ "generatedAt": "2026-10-26 05:47 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 822,
-  "claimed": 238,
+  "in progress": 865,
+  "claimed": 195,
   "done": 743
  },
  "items": [
@@ -39999,6 +39999,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -40356,6 +40360,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -40631,6 +40639,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -40854,9 +40866,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -40880,6 +40897,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -41000,6 +41021,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -41030,6 +41055,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -41342,6 +41371,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -42448,9 +42481,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42474,6 +42512,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42530,6 +42572,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42575,6 +42621,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42600,6 +42650,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42628,6 +42682,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42674,6 +42732,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42699,6 +42761,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42750,6 +42816,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42775,6 +42845,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42839,6 +42913,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42864,6 +42942,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42915,6 +42997,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -42940,6 +43026,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -42991,6 +43081,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43016,6 +43110,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43045,6 +43143,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43067,6 +43169,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43118,6 +43224,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43220,6 +43330,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43245,6 +43359,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43273,6 +43391,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43329,6 +43451,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43354,6 +43480,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43410,6 +43540,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43435,6 +43569,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43491,6 +43629,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43516,6 +43658,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43572,6 +43718,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43597,6 +43747,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43653,6 +43807,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43678,6 +43836,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43738,6 +43900,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43763,6 +43929,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43819,6 +43989,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -43844,6 +44018,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -43896,6 +44074,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -43935,9 +44117,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43961,6 +44148,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44045,9 +44236,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44066,9 +44262,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44120,9 +44321,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44141,9 +44347,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44228,6 +44439,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44275,6 +44490,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -44297,6 +44516,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44406,9 +44629,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44427,9 +44655,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44512,9 +44745,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44533,9 +44771,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44583,9 +44826,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44607,6 +44855,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -44663,6 +44915,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -44688,6 +44944,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -44744,6 +45004,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -44769,6 +45033,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -44897,6 +45165,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -44922,6 +45194,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -44950,6 +45226,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44986,9 +45266,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45012,6 +45297,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45067,6 +45356,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45138,6 +45431,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45163,6 +45460,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45223,6 +45524,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45248,6 +45553,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45276,6 +45585,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45350,6 +45663,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45375,6 +45692,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45404,6 +45725,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -45430,6 +45755,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45532,6 +45861,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45557,6 +45890,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45584,6 +45921,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45639,6 +45980,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45690,6 +46035,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45746,6 +46095,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45771,6 +46124,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45827,6 +46184,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45852,6 +46213,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45931,6 +46296,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -45956,6 +46325,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -45984,6 +46357,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -46024,9 +46401,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46050,6 +46432,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -46170,6 +46556,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     },
@@ -46200,6 +46590,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -46513,6 +46907,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -46536,9 +46934,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46561,6 +46964,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46613,6 +47020,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -46644,9 +47055,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46688,9 +47104,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46762,9 +47183,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46806,9 +47232,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46848,6 +47279,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46894,6 +47329,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46986,9 +47425,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -47011,6 +47455,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -47066,6 +47514,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -47116,9 +47568,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -47165,9 +47622,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -47217,6 +47679,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -47268,9 +47734,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -47316,6 +47787,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -47357,6 +47832,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53274,9 +53753,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53300,6 +53784,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53356,6 +53844,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53401,6 +53893,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53426,6 +53922,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53454,6 +53954,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53500,6 +54004,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53525,6 +54033,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53576,6 +54088,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53601,6 +54117,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53665,6 +54185,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53690,6 +54214,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53741,6 +54269,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53766,6 +54298,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53817,6 +54353,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53842,6 +54382,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53871,6 +54415,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -53893,6 +54441,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -53944,6 +54496,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54046,6 +54602,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54071,6 +54631,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54099,6 +54663,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54155,6 +54723,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54180,6 +54752,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54236,6 +54812,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54261,6 +54841,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54317,6 +54901,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54342,6 +54930,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54398,6 +54990,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54423,6 +55019,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54479,6 +55079,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54504,6 +55108,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54564,6 +55172,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54589,6 +55201,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54645,6 +55261,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54670,6 +55290,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54722,6 +55346,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -54761,9 +55389,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54787,6 +55420,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54842,6 +55479,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54913,6 +55554,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -54938,6 +55583,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -54998,6 +55647,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55023,6 +55676,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55051,6 +55708,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55125,6 +55786,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55150,6 +55815,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55179,6 +55848,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -55205,6 +55878,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55307,6 +55984,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55332,6 +56013,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55359,6 +56044,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55414,6 +56103,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55465,6 +56158,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55521,6 +56218,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55546,6 +56247,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55602,6 +56307,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55627,6 +56336,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55706,6 +56419,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -55731,6 +56448,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55759,6 +56480,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -55799,9 +56524,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55825,6 +56555,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55909,9 +56643,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55930,9 +56669,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55984,9 +56728,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56005,9 +56754,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56092,6 +56846,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -56139,6 +56897,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -56161,6 +56923,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -56270,9 +57036,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56291,9 +57062,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56376,9 +57152,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56397,9 +57178,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56447,9 +57233,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56471,6 +57262,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -56527,6 +57322,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -56552,6 +57351,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -56608,6 +57411,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -56633,6 +57440,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -56761,6 +57572,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -56786,6 +57601,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
@@ -56814,6 +57633,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -56849,9 +57672,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56874,6 +57702,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -56944,9 +57776,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57018,9 +57855,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57062,9 +57904,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57123,9 +57970,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57148,6 +58000,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -57194,6 +58050,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -57286,9 +58146,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57311,6 +58176,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -57366,6 +58235,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -57416,9 +58289,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57468,6 +58346,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -57519,9 +58401,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -57576,6 +58463,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     }
@@ -57624,6 +58515,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -59956,6 +60851,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
@@ -64803,6 +65702,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
@@ -65625,6 +66528,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -65672,6 +66579,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -65994,6 +66905,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1524,
+     "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
