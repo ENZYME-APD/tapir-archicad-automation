@@ -950,6 +950,17 @@ GSErrCode Initialize (void)
             "marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) "
             "are not returned."
         );
+        err |= RegisterCommand<GetFavoriteContentsCommand> (
+            favoritesCommands, "1.7.3",
+            "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder "
+            "is given), each with its folder path, classifications, element category values and property values, read through "
+            "the Favorite manager. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteFavoritesWithManagerCommand> (
+            favoritesCommands, "1.7.3",
+            "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. "
+            "One execution result for each. Available from Archicad 29."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -1347,6 +1358,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
             "Sets the master, parameter, 2D, 3D and properties scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartParameterValuesCommand> (
+            libraryCommands, "1.7.3",
+            "Returns the parameters of loaded library parts with their default values and descriptions, in the format of GetGDLParametersOfElements. Available from Archicad 28."
         );
         AddCommandGroup (libraryCommands);
     }
