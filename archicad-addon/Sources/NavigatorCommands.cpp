@@ -2969,3 +2969,406 @@ GS::ObjectState GetAddOnViewpointsCommand::Execute (const GS::ObjectState& param
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
 #endif
 }
+
+// ─── Creating and changing add-on viewpoints ──────────────────────────────────
+
+#ifdef ServerMainVers_2700
+static bool AddOnViewpointTypeFromString (const GS::UniString& itemTypeStr, API_NavigatorAddOnViewPointTypeID& itemType)
+{
+    if (itemTypeStr == "Root") {
+        itemType = API_NavigatorAddOnViewPointRootID;
+    } else if (itemTypeStr == "Group") {
+        itemType = API_NavigatorAddOnViewPointGroupID;
+    } else if (itemTypeStr == "Leaf") {
+        itemType = API_NavigatorAddOnViewPointNodeID;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Decodes standard base64 (padding optional, whitespace ignored) into a new
+// handle; an empty string gives nullptr. The caller owns the handle.
+static bool CreateHandleFromBase64 (const GS::UniString& base64, GSHandle& handle)
+{
+    handle = nullptr;
+
+    const auto base64CStr = base64.ToCStr (CC_UTF8);
+    const char* text = base64CStr.Get ();
+
+    GS::Array<char> bytes;
+    UInt32 buffer = 0;
+    Int32 bitCount = 0;
+    bool paddingReached = false;
+    for (const char* c = text; *c != '\0'; ++c) {
+        const char ch = *c;
+        if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+            continue;
+        }
+        if (ch == '=') {
+            paddingReached = true;
+            continue;
+        }
+        if (paddingReached) {
+            return false;
+        }
+
+        UInt32 value = 0;
+        if (ch >= 'A' && ch <= 'Z') {
+            value = static_cast<UInt32> (ch - 'A');
+        } else if (ch >= 'a' && ch <= 'z') {
+            value = static_cast<UInt32> (ch - 'a' + 26);
+        } else if (ch >= '0' && ch <= '9') {
+            value = static_cast<UInt32> (ch - '0' + 52);
+        } else if (ch == '+') {
+            value = 62;
+        } else if (ch == '/') {
+            value = 63;
+        } else {
+            return false;
+        }
+
+        buffer = ((buffer << 6) | value) & 0xFFFFFF;
+        bitCount += 6;
+        if (bitCount >= 8) {
+            bitCount -= 8;
+            bytes.Push (static_cast<char> ((buffer >> bitCount) & 0xFF));
+        }
+    }
+    // A single leftover character carries fewer than 8 bits: not valid base64.
+    if (bitCount >= 6) {
+        return false;
+    }
+
+    if (bytes.IsEmpty ()) {
+        return true;
+    }
+
+    handle = BMAllocateHandle (static_cast<GSSize> (bytes.GetSize ()), ALLOCATE_CLEAR, 0);
+    if (handle == nullptr) {
+        return false;
+    }
+    for (UIndex i = 0; i < bytes.GetSize (); ++i) {
+        (*handle)[i] = bytes[i];
+    }
+    return true;
+}
+
+// Sets the fields given in the item (displayId, displayName, viewSettingsFlags,
+// data) on viewPointData and leaves the others. Returns an error message for an
+// invalid value, an empty string otherwise.
+static GS::UniString ApplyAddOnViewpointFields (const GS::ObjectState& item, API_NavigatorAddOnViewPointData& viewPointData)
+{
+    GS::UniString displayId;
+    if (item.Get ("displayId", displayId)) {
+        viewPointData.displayId = displayId;
+    }
+
+    GS::UniString displayName;
+    if (item.Get ("displayName", displayName)) {
+        viewPointData.displayName = displayName;
+    }
+
+    Int64 viewSettingsFlags = 0;
+    if (item.Get ("viewSettingsFlags", viewSettingsFlags)) {
+        if (viewSettingsFlags < 0 || viewSettingsFlags > static_cast<Int64> (0xFFFFFFFFu)) {
+            return "viewSettingsFlags must be between 0 and 4294967295.";
+        }
+        viewPointData.viewSettingsFlags = static_cast<UInt32> (viewSettingsFlags);
+    }
+
+    GS::UniString data;
+    if (item.Get ("data", data)) {
+        GSHandle dataHandle = nullptr;
+        if (!CreateHandleFromBase64 (data, dataHandle)) {
+            return "data is not valid base64.";
+        }
+        // The struct owns its data handle and disposes of it.
+        BMKillHandle (&viewPointData.data);
+        viewPointData.data = dataHandle;
+    }
+
+    return GS::UniString ();
+}
+#endif
+
+CreateAddOnViewpointsCommand::CreateAddOnViewpointsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateAddOnViewpointsCommand::GetName () const
+{
+    return "CreateAddOnViewpoints";
+}
+
+GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The add-on viewpoint items to create. The identifier of a new root or group is only known from the response, so create the parents in an earlier call.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "itemType": {
+                            "type": "string",
+                            "description": "Whether to create a root, a group or a leaf node. Roots and groups can't be created in a Teamwork project.",
+                            "enum": ["Root", "Group", "Leaf"]
+                        },
+                        "parentViewpointId": {
+                            "type": "object",
+                            "description": "The root or group to create the item in. Required for a group or a leaf node, ignored for a root.",
+                            "properties": {
+                                "guid": { "$ref": "#/Guid" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        "displayId": {
+                            "type": "string",
+                            "description": "The ID shown for the item in the Project Map."
+                        },
+                        "displayName": {
+                            "type": "string",
+                            "description": "The name shown for the item in the Project Map."
+                        },
+                        "viewSettingsFlags": {
+                            "type": "integer",
+                            "description": "The view settings flags of a leaf node, as Archicad stores them (a bit field). Ignored for a root or a group.",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        "data": {
+                            "type": "string",
+                            "description": "Data to attach to the item, base64 encoded."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["itemType"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The identifier of each created item, in the order of the input, or an error for an item that could not be created.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "viewpointId": {
+                                    "type": "object",
+                                    "description": "The identifier of the created add-on viewpoint item.",
+                                    "properties": {
+                                        "guid": { "$ref": "#/Guid" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["guid"]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["viewpointId"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::ObjectState CreateAddOnViewpointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("viewpoints", items);
+
+    GS::ObjectState response;
+    const auto& viewpoints = response.AddList<GS::ObjectState> ("viewpoints");
+
+    for (const GS::ObjectState& item : items) {
+        GS::UniString itemTypeStr;
+        item.Get ("itemType", itemTypeStr);
+
+        // The struct owns its data handle and disposes of it. Its guid stays
+        // APINULLGuid, so Archicad generates the guid of the new item.
+        API_NavigatorAddOnViewPointData viewPointData;
+        if (!AddOnViewpointTypeFromString (itemTypeStr, viewPointData.itemType)) {
+            viewpoints (CreateErrorResponse (APIERR_BADPARS, "itemType must be Root, Group or Leaf."));
+            continue;
+        }
+
+        if (viewPointData.itemType != API_NavigatorAddOnViewPointRootID) {
+            viewPointData.parentGuid = GetGuidFromArrayItem ("parentViewpointId", item);
+            if (viewPointData.parentGuid == APINULLGuid) {
+                viewpoints (CreateErrorResponse (APIERR_BADPARS, "parentViewpointId is corrupt or missing; a group or a leaf node needs it."));
+                continue;
+            }
+        }
+
+        const GS::UniString fieldError = ApplyAddOnViewpointFields (item, viewPointData);
+        if (!fieldError.IsEmpty ()) {
+            viewpoints (CreateErrorResponse (APIERR_BADPARS, fieldError));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Navigator_CreateNavigatorVPItem (&viewPointData);
+        if (err == APIERR_NOACCESSRIGHT) {
+            viewpoints (CreateErrorResponse (err, "Roots and groups can't be created in a Teamwork project."));
+            continue;
+        }
+        if (err != NoError) {
+            viewpoints (CreateErrorResponse (err, "Failed to create the add-on viewpoint."));
+            continue;
+        }
+
+        viewpoints (CreateViewpointIdArrayItem (viewPointData.guid));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}
+
+ChangeAddOnViewpointsCommand::ChangeAddOnViewpointsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ChangeAddOnViewpointsCommand::GetName () const
+{
+    return "ChangeAddOnViewpoints";
+}
+
+GS::Optional<GS::UniString> ChangeAddOnViewpointsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewpoints": {
+                "type": "array",
+                "description": "The add-on viewpoint items to change. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "viewpointId": {
+                            "type": "object",
+                            "description": "The identifier of the add-on viewpoint item to change.",
+                            "properties": {
+                                "guid": { "$ref": "#/Guid" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        "displayId": {
+                            "type": "string",
+                            "description": "The ID shown for the item in the Project Map."
+                        },
+                        "displayName": {
+                            "type": "string",
+                            "description": "The name shown for the item in the Project Map."
+                        },
+                        "viewSettingsFlags": {
+                            "type": "integer",
+                            "description": "The view settings flags of the item, as Archicad stores them (a bit field).",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        "data": {
+                            "type": "string",
+                            "description": "Data to attach to the item, base64 encoded. It replaces the attached data; an empty string removes it."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["viewpointId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpoints"]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeAddOnViewpointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ChangeAddOnViewpointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("viewpoints", items);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : items) {
+        const API_Guid guid = GetGuidFromArrayItem ("viewpointId", item);
+        if (guid == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "viewpointId is corrupt or missing."));
+            continue;
+        }
+
+        // Read the item first, so the fields that are not given keep their
+        // values. The struct owns its data handle and disposes of it.
+        API_NavigatorAddOnViewPointData viewPointData;
+        viewPointData.guid = guid;
+        GSErrCode err = ACAPI_Navigator_GetNavigatorVPItem (&viewPointData);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get the add-on viewpoint."));
+            continue;
+        }
+
+        const GS::UniString fieldError = ApplyAddOnViewpointFields (item, viewPointData);
+        if (!fieldError.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, fieldError));
+            continue;
+        }
+
+        err = ACAPI_Navigator_ChangeNavigatorVPItem (&viewPointData);
+        if (err == APIERR_NOACCESSRIGHT) {
+            executionResults (CreateFailedExecutionResult (err, "Roots and groups can't be changed in a Teamwork project."));
+            continue;
+        }
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to change the add-on viewpoint."));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
+#endif
+}

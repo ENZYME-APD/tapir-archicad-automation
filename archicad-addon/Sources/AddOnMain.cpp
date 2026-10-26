@@ -1615,6 +1615,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.3",
             "Returns the details of the given add-on viewpoint items: their parent, type (Root, Group or Leaf), ID, name, view settings flags and attached data (base64 encoded). The output is aligned with the input array; an item that cannot be read gets an error. Available from Archicad 27."
         );
+        err |= RegisterCommand<CreateAddOnViewpointsCommand> (
+            navigatorCommands, "1.7.3",
+            "Creates add-on viewpoint roots, groups and leaf nodes in the Project Map, with their ID, name, view settings flags (leaf nodes only) and attached data (base64 encoded). A group or a leaf node is created in the given parent root or group. Returns the identifier of each new item, or an error for an item that could not be created. Roots and groups can't be created in a Teamwork project. Available from Archicad 27."
+        );
+        err |= RegisterCommand<ChangeAddOnViewpointsCommand> (
+            navigatorCommands, "1.7.3",
+            "Changes the ID, name, view settings flags or attached data (base64 encoded) of the given add-on viewpoint items; only the given fields are changed. Roots and groups can't be changed in a Teamwork project. Available from Archicad 27."
+        );
         AddCommandGroup (navigatorCommands);
     }
 
