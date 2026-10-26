@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 04:00 UTC",
+ "generatedAt": "2026-10-26 04:04 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 113,
-  "claimed": 431,
-  "in progress": 616,
+  "open": 107,
+  "claimed": 432,
+  "in progress": 621,
   "done": 743
  },
  "items": [
@@ -2086,9 +2086,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalModel"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2118,9 +2123,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalModelVariation"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2246,9 +2256,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetComplementaryProjectMemberType"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2280,7 +2295,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2797,9 +2817,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetVisibilitySettings"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -3192,9 +3217,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetVisibilitySettings"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -3483,6 +3513,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 910,
      "title": "Add command to activate a layer combination"
@@ -4845,6 +4879,10 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    },
+    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -5034,6 +5072,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1490,
      "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
@@ -5813,6 +5855,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1060,
      "title": "Expose ACAPI_CuttingPlane_GetCutPolygonInfo_New"
@@ -7052,6 +7098,10 @@
    ],
    "issues": [
     {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
+    {
      "number": 1230,
      "title": "Expose ACAPI_Favorite_Read (read the contents of a favorites file or folder)"
     }
@@ -7291,6 +7341,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
+    {
      "number": 1070,
      "title": "Expose ACAPI_DrawingPrimitive_DrawStoryControl"
     }
@@ -7314,6 +7368,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1069,
      "title": "Expose ACAPI_DrawingPrimitive_ShapePrims"
@@ -9290,7 +9348,12 @@
      "title": "CreateZones refuses an overlapping zone instead of opening the modal warning (#822)"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElemTypeName",
@@ -11760,7 +11823,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_GeoLocation_GetPlaceSets",
@@ -12000,6 +12068,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1493,
+     "title": "[1/6] Analytical model variation, visibility settings and member types"
+    },
     {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
@@ -12296,10 +12368,15 @@
    "olderNames": [
     "APIAny_EnableRenovationOverrideID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_EnableVisualOverride",
@@ -12319,10 +12396,15 @@
    "olderNames": [
     "APIAny_EnableVisualOverrideID"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_GetActualOverrideCombination",
@@ -16290,6 +16372,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
+    {
      "number": 1256,
      "title": "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)"
     }
@@ -16345,6 +16431,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
+    {
      "number": 1256,
      "title": "Expose ACAPI_ModelAccess_GetBuildingMaterial (building material of each 3D body)"
     }
@@ -16395,6 +16485,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1093,
      "title": "Expose ACAPI_ModelAccess_GetConnectionTable (contact surfaces between elements, to check wall joins)"
@@ -21287,10 +21381,15 @@
    "olderNames": [
     "ACAPI_3D_CreateSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_DeleteSight",
@@ -21310,10 +21409,15 @@
    "olderNames": [
     "ACAPI_3D_DeleteSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_GetCurrentWindowSight",
@@ -21351,10 +21455,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_SelectSight",
@@ -21374,10 +21483,15 @@
    "olderNames": [
     "ACAPI_3D_SelectSight"
    ],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Sight_Switch3DSight",
@@ -22972,6 +23086,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
+    {
      "number": 1048,
      "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
     },
@@ -23388,6 +23506,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1048,
      "title": "Get/Set3DDocumentSettings: read and write the settings of a 3D Document (split from #876)"
@@ -24418,7 +24540,12 @@
    "status": "not applicable",
    "reason": "report window of the add-on",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_3D_GetNum",
@@ -24887,6 +25014,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1413,
      "title": "Application: run the Action Center hotlink check, redraw the current database, hide and show Archicad"
@@ -25610,6 +25741,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1492,
+     "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
+    },
     {
      "number": 1413,
      "title": "Application: run the Action Center hotlink check, redraw the current database, hide and show Archicad"
