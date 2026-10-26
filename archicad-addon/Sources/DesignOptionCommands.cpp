@@ -2458,6 +2458,8 @@ GS::ObjectState SetDesignOptionCombinationOfViewsCommand::Execute (const GS::Obj
     if (allDesignOptionCombinations.IsErr ()) {
         return CreateErrorResponse (allDesignOptionCombinations.UnwrapErr ().kind, "Unable to modify the design option combination of views.");
     }
+    // A copy, because on Archicad 27 the dereferenced result is not an lvalue.
+    auto designOptionCombinations = *allDesignOptionCombinations;
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
@@ -2487,7 +2489,7 @@ GS::ObjectState SetDesignOptionCombinationOfViewsCommand::Execute (const GS::Obj
                     continue;
                 }
             }
-            auto* combinationPtr = FindDesignOptionItemByGuid (*allDesignOptionCombinations, combinationGuid);
+            auto* combinationPtr = FindDesignOptionItemByGuid (designOptionCombinations, combinationGuid);
             if (hasCombination && combinationPtr == nullptr) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option combination with the given 'designOptionCombinationId' parameter"));
                 continue;
