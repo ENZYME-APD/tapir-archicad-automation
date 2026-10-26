@@ -2,6 +2,12 @@
 
 #include "CommandBase.hpp"
 
+#ifdef ServerMainVers_2800
+// Declared in GDLParamInterface.hpp, included only where the parameters are used, as the
+// order of the GDL headers and ACAPinc.h matters (see ExtendedElementCommands.cpp).
+namespace GDL { class Parameters; }
+#endif
+
 class GetGDLParametersOfElementsCommand : public CommandBase
 {
 public:
@@ -92,3 +98,22 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+// The JSON schemas of a parameter list GDLParametersToObjectStates gives and of the changes
+// SetGDLParametersFromObjectStates takes.
+extern const char* const GDLParameterValuesSchema;
+extern const char* const SetGDLParameterValuesSchema;
+
+#ifdef ServerMainVers_2800
+// The parameters of a GDL::Parameters list (such as an opening symbol's), in the format
+// GetGDLParametersOfElements gives them: name, type, value and, for an array, dimension1 and
+// dimension2. Separators, titles and dictionaries have no value read this way, so they are
+// left out.
+GS::Array<GS::ObjectState> GDLParametersToObjectStates (const GDL::Parameters& gdlParameters);
+
+// Changes the parameters named in `parameters`, given in the format SetGDLParametersOfElements
+// takes (name, value, index1, index2), in `gdlParameters`. Returns the error of the first one
+// that cannot be set, with the ones before it already changed, so the caller works on a copy
+// and only writes it back when this succeeds.
+GSErrCode SetGDLParametersFromObjectStates (GDL::Parameters& gdlParameters, const GS::Array<GS::ObjectState>& parameters, GS::UniString& errMessage);
+#endif

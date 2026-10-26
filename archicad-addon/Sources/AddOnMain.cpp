@@ -658,6 +658,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Changes the floor plan parameters of Opening elements returned by GetOpeningFloorPlanParameters, and sets or removes their cut and uncut symbols. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetOpeningSymbolParametersCommand> (
+            elementCommands, "1.7.3",
+            "Returns the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of GetGDLParametersOfElements. A symbol the opening does not have is left out. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetOpeningSymbolParametersCommand> (
+            elementCommands, "1.7.3",
+            "Changes the GDL parameters of the cut and uncut floor plan symbols of Opening elements, in the format of SetGDLParametersOfElements. Only the given parameters are changed. Available from Archicad 29."
+        );
         err |= RegisterCommand<GetOpeningDetailsCommand> (
             elementCommands, "1.7.3",
             "Returns the details of Opening elements: the parent element, the cut and connected elements, the geometry (anchor point, extrusion direction, axes, polygon) and the extrusion parameters (size, anchor, offsets, surface overrides). Available from Archicad 29."
