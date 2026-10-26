@@ -44,6 +44,7 @@
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
+#include "MEPPreferenceTableRowCommands.hpp"
 #include "AnalyticalCommands.hpp"
 #include "KeynoteCommands.hpp"
 #include "ProjectDataCommands.hpp"
@@ -1971,6 +1972,27 @@ GSErrCode Initialize (void)
             "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30."
         );
         AddCommandGroup (mepCommands);
+    }
+
+    { // MEP Commands (extended)
+        CommandGroup mepExtendedCommands ("MEP Commands (extended)");
+        err |= RegisterCommand<GetMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Gets rows of a branch or elbow preference table by their key (the reference ids and, from Archicad 29, the angle): whether the row is valid and its values (diameters, radius, length, branch offset, connection length, description). Available from Archicad 28."
+        );
+        err |= RegisterCommand<SetMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Sets the given values of rows of a branch or elbow preference table, found by their key (the reference ids and, from Archicad 29, the angle). Only the given values are changed, in one undo step. Available from Archicad 28."
+        );
+        err |= RegisterCommand<AddMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Adds rows with the given keys and optionally values to a branch or elbow preference table and returns their index, in one undo step. Branch tables from Archicad 28, elbow tables from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteMEPPreferenceTableRowsCommand> (
+            mepExtendedCommands, "1.7.3",
+            "Deletes rows of a branch or elbow preference table by their key (the reference ids and, from Archicad 29, the angle), in one undo step. In Archicad 28 the elbow rows are emptied instead. Available from Archicad 28."
+        );
+        AddCommandGroup (mepExtendedCommands);
     }
 
     { // Analytical Commands
