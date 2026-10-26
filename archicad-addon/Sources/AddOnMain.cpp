@@ -496,6 +496,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item."
         );
+        err |= RegisterCommand<GetSurfaceTypesOfElementsCommand> (
+            elementCommands, "1.7.3",
+            "Gets the surface type of every polygon of the 3D model of the given elements, as ACAPI_Polygon_PolygonId2SurfaceType returns it: for each element its polygons with their body index, polygon index, polygon id and the numeric API_SurfaceTypeID value. The model is generated with separate components in a temporary sight, so the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28."
+        );
         err |= RegisterCommand<GetSurfaceQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
             "Gets the exposed surface areas of the given elements calculated by Archicad: for each element one item per surface attribute and building material pair with the area that is not covered by the covering elements (for example the wall area behind a slab is taken off the wall's surface). The covering elements are the optional coverElements; by default every construction element of the project. The output is aligned with the input array of elements."
