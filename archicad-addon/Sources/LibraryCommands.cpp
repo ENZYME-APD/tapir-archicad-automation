@@ -1,5 +1,11 @@
 // GDLDefs.h MUST be included before LibraryCommands.hpp/ACAPinc.h: included afterward it fails to
 // parse ("no member named 'GS' in namespace 'GS'"), as ExtendedElementCommands.cpp notes for MeshBody.hpp.
+// The standard headers come first: GSRoot.hpp, pulled in by GDLDefs.h, redefines realloc as GS_realloc,
+// which breaks libc++'s <locale> (reached through <functional>) when it is parsed afterward (AC27 Mac).
+#include <functional>
+#include <locale>
+#include <vector>
+
 #include "GDLDefs.h"
 
 #include "LibraryCommands.hpp"
@@ -15,9 +21,6 @@
 #include "ACAPI/Library/LibraryManager.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
 #include "GDLParamInterface.hpp"
-
-#include <functional>
-#include <vector>
 
 using ACAPI::Library::GSMObject;
 
