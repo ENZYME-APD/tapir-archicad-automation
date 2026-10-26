@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
 
             OutGenerics(
                 "DesignOptionCombinationGuids",
-                "Identifiers of the design option combinations the views show (given only for the Standard status, when exactly one combination has the name).");
+                "Identifiers of the design option combinations the views show (given for the Standard status and, on Archicad 27 and 28, also for Custom; on Archicad 29 and newer only when exactly one combination has the name).");
 
             OutErrorMessages(
                 "Error message of each queried view (empty when it succeeded).");
