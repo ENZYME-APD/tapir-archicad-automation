@@ -180,9 +180,8 @@ static double GetExactPreferenceTableRowAngle (const TableT& table, const Prefer
     }
     return key.angle;
 }
-#endif
 
-// The Key struct of the table. Archicad 28 has it only for adding branch rows, without an angle.
+// The Key struct of the table, from Archicad 29.
 template <typename TableT>
 static typename TableT::Key MakePreferenceTableRowKey (const PreferenceTableRowKey& key)
 {
@@ -190,15 +189,21 @@ static typename TableT::Key MakePreferenceTableRowKey (const PreferenceTableRowK
     if constexpr (IsBranchRowTable<TableT>) {
         tableKey.mainAxisReferenceId = key.mainAxisReferenceId;
         tableKey.branchAxisReferenceId = key.branchAxisReferenceId;
-#ifdef ServerMainVers_2900
         tableKey.branchAxisAngle = key.angle;
-#endif
     } else {
         tableKey.referenceId = key.referenceId;
         tableKey.angle = key.angle;
     }
     return tableKey;
 }
+#else
+// Whether the Modifier of an Archicad 28 table adds a row by the reference ids of its axes.
+template <typename ModifierT, typename = void>
+struct HasAddNewRowByReferenceIds : std::false_type {};
+
+template <typename ModifierT>
+struct HasAddNewRowByReferenceIds<ModifierT, std::void_t<decltype (std::declval<ModifierT&> ().AddNewRow (uint32_t (), uint32_t ()))>> : std::true_type {};
+#endif
 
 static const char* const BranchRowValueNames[] = { "mainAxisDiameter", "branchAxisDiameter", "length", "branchOffset", "connectionLength" };
 static const char* const ElbowRowValueNames[] = { "diameter", "radius" };
@@ -745,12 +750,16 @@ GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
     return WithBranchOrElbowPreferenceTable (parameters, [&] (auto& table) -> GS::ObjectState {
         using TableT = std::decay_t<decltype (table)>;
 #ifndef ServerMainVers_2900
-        if constexpr (!IsBranchRowTable<TableT>) {
+        if constexpr (!IsBranchRowTable<TableT> || !HasAddNewRowByReferenceIds<typename TableT::Modifier>::value) {
             // The elbow tables of Archicad 28 have a fixed row for each reference id.
+            const char* message = "Adding rows to elbow tables is available from Archicad 29; Archicad 28 has a row for each reference id, set its values with SetMEPPreferenceTableRows.";
+            if constexpr (IsBranchRowTable<TableT>) {
+                message = "Adding rows to branch tables is not supported in Archicad 28.";
+            }
             GS::ObjectState response;
             const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
             for (UIndex i = 0; i < rowsData.GetSize (); ++i) {
-                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Adding rows to elbow tables is available from Archicad 29; Archicad 28 has a row for each reference id, set its values with SetMEPPreferenceTableRows."));
+                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, message));
             }
             return response;
         } else
@@ -758,7 +767,11 @@ GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
         {
             std::vector<PreferenceTableRowInput> inputs = ParsePreferenceTableRowInputs (table, rowsData, true);
             return ModifyPreferenceTableRows (table, inputs, "Add MEP Preference Table Rows", [] (typename TableT::Modifier& modifier, const PreferenceTableRowInput& input) {
+#ifdef ServerMainVers_2900
                 ACAPI::Result<uint32_t> index = modifier.AddNewRow (MakePreferenceTableRowKey<TableT> (input.key));
+#else
+                ACAPI::Result<uint32_t> index = modifier.AddNewRow (input.key.mainAxisReferenceId, input.key.branchAxisReferenceId);
+#endif
                 if (index.IsErr ()) {
                     return CreateFailedExecutionResult (index.UnwrapErr ().kind, PreferenceTableRowErrorText ("add the row", index.UnwrapErr ()));
                 }
