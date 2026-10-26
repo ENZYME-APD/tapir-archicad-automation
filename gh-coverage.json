@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 12:54 UTC",
+ "generatedAt": "2026-10-26 12:59 UTC",
  "counts": {
   "done": 302,
   "open": 116,
@@ -7752,7 +7752,7 @@
    "id": "MoveNavigatorItem",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Moves a navigator item to a new parent in the navigator tree.",
+   "brief": "Moves a navigator item to a new parent in the navigator tree, or to a new position within its current parent. Fails when Archicad does not put the item where it was asked to.",
    "status": "open",
    "reason": "",
    "components": [],

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 12:54 UTC",
+ "generatedAt": "2026-10-26 12:59 UTC",
  "versions": [
   25,
   26,
@@ -16743,10 +16743,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1427,
-     "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
-    },
-    {
      "number": 1421,
      "title": "Add ReorderNavigatorItems command"
     },
@@ -16781,10 +16777,6 @@
     {
      "number": 1517,
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
-    },
-    {
-     "number": 1427,
-     "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
     },
     {
      "number": 1421,
@@ -16861,12 +16853,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1427,
-     "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16889,12 +16876,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1427,
-     "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17322,10 +17304,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1427,
-     "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
-    },
     {
      "number": 1421,
      "title": "Add ReorderNavigatorItems command"
