@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 04:10 UTC",
+ "generatedAt": "2026-10-26 05:18 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "claimed": 416,
-  "in progress": 644,
+  "in progress": 713,
+  "claimed": 347,
   "done": 743
  },
  "items": [
@@ -1382,9 +1382,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_AddLoadCaseToLoadCombination"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1446,9 +1451,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCase"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1478,9 +1488,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadCombination"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1510,9 +1525,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_CreateAnalyticalLoadGroup"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1638,9 +1658,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCase"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1670,9 +1695,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadCombination"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1702,9 +1732,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_DeleteAnalyticalLoadGroup"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1734,9 +1769,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAllAnalyticalLoadCases"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1798,9 +1838,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCase"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1830,9 +1875,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCases"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1862,9 +1912,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombination"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1894,9 +1949,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadCombinations"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1926,9 +1986,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroup"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1958,9 +2023,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalLoadGroups"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -1990,9 +2060,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberConnections"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2022,9 +2097,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberPartRefCoord"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2054,9 +2134,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalMemberPartRefCurve"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2089,6 +2174,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
     {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
@@ -2126,6 +2219,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
     {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
@@ -2192,9 +2293,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetAnalyticalRelease"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2260,6 +2366,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
+    {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
     }
@@ -2297,6 +2411,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
+    {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
     }
@@ -2330,9 +2452,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurveElements"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2362,9 +2489,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetCurveMember"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2388,9 +2520,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2482,9 +2619,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLCSOfAnalyticalMember"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2513,9 +2655,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetLCSOfAnalyticalMemberInIntersection"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2572,7 +2719,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -2629,9 +2781,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSegmentedSurfaceMember"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2692,9 +2849,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceElements"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2786,9 +2948,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_GetSurfaceMember"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2820,6 +2987,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
     {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
@@ -2854,9 +3029,14 @@
    "olderNames": [
     "ACAPI_AnalyticalModel_SetAnalyticalRelease"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -2880,9 +3060,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1490,
@@ -3099,7 +3284,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -3221,6 +3411,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
+    {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
     }
@@ -3256,7 +3454,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    }
+   ],
    "issues": [
     {
      "number": 1202,
@@ -3487,6 +3690,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
     {
      "number": 1398,
      "title": "Allow partial modify of Composites and Layer Combinations"
@@ -4879,6 +5090,30 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1519,
+     "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
+    },
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
+     "number": 1517,
+     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
+    },
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    },
+    {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
+    {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
     },
@@ -5167,9 +5402,14 @@
    "olderNames": [
     "ACAPI_Element_GetCategoryValueDefault"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1501,
+     "title": "[2/6] Add GetCategoryValuesOfDefaults: element category values of tool defaults"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -5419,6 +5659,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    },
+    {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
     }
@@ -5462,9 +5706,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -5492,9 +5741,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -5546,6 +5800,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    },
     {
      "number": 1052,
      "title": "Graphic override criterion: library part element types, new fields and operators (on top of #994)"
@@ -5704,9 +5962,14 @@
    "olderNames": [
     "APIEnv_GetConvertedUnitValueID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -5871,9 +6134,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -6088,6 +6356,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1514,
+     "title": "[5/6] Add GetStoryControlPrimitives"
+    },
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    },
+    {
+     "number": 1509,
+     "title": "[4/6] Add GetDrawingPrimitivesOfElements"
+    },
+    {
+     "number": 1507,
+     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
+    },
     {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
@@ -7077,6 +7361,14 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
+    {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
     },
@@ -7365,9 +7657,14 @@
    "olderNames": [
     "APIDb_DrawStoryControlID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1514,
+     "title": "[5/6] Add GetStoryControlPrimitives"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -7427,7 +7724,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1514,
+     "title": "[5/6] Add GetStoryControlPrimitives"
+    },
+    {
+     "number": 1509,
+     "title": "[4/6] Add GetDrawingPrimitivesOfElements"
+    }
+   ],
    "issues": []
   },
   {
@@ -7895,6 +8201,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1519,
+     "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
+    },
+    {
      "number": 1188,
      "title": "Add CreateElementSets command (ACAPI_ElementSet_Create)"
     }
@@ -7926,9 +8236,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1519,
+     "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -8923,6 +9238,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     },
@@ -9633,6 +9956,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1514,
+     "title": "[5/6] Add GetStoryControlPrimitives"
+    },
+    {
+     "number": 1509,
+     "title": "[4/6] Add GetDrawingPrimitivesOfElements"
+    },
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
     {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
@@ -12132,6 +12471,14 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 1515,
+     "title": "[4/6] Add analytical load group, load case and load combination commands"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
+    {
      "number": 1493,
      "title": "[1/6] Analytical model variation, visibility settings and member types"
     },
@@ -13037,7 +13384,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -13059,9 +13411,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -16447,6 +16804,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
+    {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
     }
@@ -16507,9 +16872,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -16566,6 +16940,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
+    {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
     }
@@ -16595,9 +16977,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1513,
+     "title": "[4/6] Add Get3DModelCounts"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -16886,9 +17273,14 @@
    "olderNames": [
     "APINavigator_ChangeNavigatorVPItemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -16973,9 +17365,14 @@
    "olderNames": [
     "APIEnv_ChangeViewOptionsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1508,
+     "title": "[4/6] Add GetViewOptions and SetViewOptions"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -17056,9 +17453,14 @@
    "olderNames": [
     "APINavigator_CreateNavigatorVPItemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -17405,6 +17807,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1517,
+     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
+    },
+    {
      "number": 1427,
      "title": "MoveNavigatorItem: reorder within the same folder and stop reporting false successes"
     },
@@ -17542,9 +17948,18 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPItemID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    },
+    {
+     "number": 1507,
+     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -17574,9 +17989,18 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPItemChildrenID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    },
+    {
+     "number": 1507,
+     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -17606,9 +18030,18 @@
    "olderNames": [
     "APINavigator_GetNavigatorVPRootGroupsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    },
+    {
+     "number": 1507,
+     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -17735,9 +18168,14 @@
    "olderNames": [
     "APIEnv_GetViewOptionsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1508,
+     "title": "[4/6] Add GetViewOptions and SetViewOptions"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -17765,7 +18203,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1512,
+     "title": "[5/6] Add FindModelViewOption"
+    }
+   ],
    "issues": []
   },
   {
@@ -17784,7 +18227,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1512,
+     "title": "[5/6] Add FindModelViewOption"
+    }
+   ],
    "issues": []
   },
   {
@@ -17801,9 +18249,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1512,
+     "title": "[5/6] Add FindModelViewOption"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -17902,9 +18355,18 @@
    "olderNames": [
     "APIAny_SetMasterLayoutOnLayoutID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    },
+    {
+     "number": 1507,
+     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -19352,9 +19814,14 @@
    "olderNames": [
     "APIEnv_GetMiscPlotterInfoID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -19384,9 +19851,14 @@
    "olderNames": [
     "APIEnv_GetMiscPrinterInfoID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -19526,6 +19998,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1465,
      "title": "[2/6] SetOpeningDefault and PlaceOpenings (AC29+)"
     },
@@ -19610,7 +20086,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -20906,9 +21387,14 @@
    "olderNames": [
     "APIAny_GetRenovationStatusNameID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -21555,6 +22041,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
+    {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
     }
@@ -21587,6 +22081,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
     {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
@@ -21635,9 +22137,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -21670,6 +22181,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
     {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
@@ -22660,9 +23179,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -22688,9 +23212,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -23282,9 +23811,14 @@
    "olderNames": [
     "APIEnv_ChangeDocumentFrom3DSettingsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1517,
+     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -23703,9 +24237,14 @@
    "olderNames": [
     "APIEnv_GetDocumentFrom3DSettingsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1517,
+     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -24557,6 +25096,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1514,
+     "title": "[5/6] Add GetStoryControlPrimitives"
+    },
+    {
+     "number": 1511,
+     "title": "[3/6] Add CreateAddOnViewpoints and ChangeAddOnViewpoints"
+    },
+    {
+     "number": 1507,
+     "title": "[2/6] Add SetMasterLayoutContext and commands reading add-on viewpoints"
+    },
+    {
      "number": 1489,
      "title": "RenameNavigatorItem: also rename the Drawing of a Layout Book drawing item"
     },
@@ -25025,9 +25576,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -25047,9 +25603,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -25179,6 +25740,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1514,
+     "title": "[5/6] Add GetStoryControlPrimitives"
+    },
     {
      "number": 1454,
      "title": "[4/5] Add GetTeamworkOwnersOfDatabases command"
@@ -25427,9 +25992,14 @@
     26
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    }
+   ],
    "issues": [
     {
      "number": 1498,
@@ -25891,6 +26461,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1517,
+     "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
+    },
+    {
+     "number": 1508,
+     "title": "[4/6] Add GetViewOptions and SetViewOptions"
+    },
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    },
     {
      "number": 1499,
      "title": "[1/6] Add GetDrawingNumberingGridLines command"
@@ -28116,6 +28698,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1275,
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
     },
@@ -28342,6 +28928,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28362,6 +28952,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1275,
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
@@ -28400,6 +28994,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28426,6 +29024,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28448,9 +29050,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -28473,9 +29080,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -28498,9 +29110,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -28525,7 +29142,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": []
   },
   {
@@ -28542,6 +29164,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
@@ -28570,6 +29196,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1275,
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
@@ -28609,6 +29239,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28647,6 +29281,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1275,
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
@@ -28765,6 +29403,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28787,6 +29429,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1275,
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
@@ -28871,6 +29517,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28899,6 +29549,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -28921,9 +29575,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1172,
@@ -28942,9 +29601,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -28971,9 +29635,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -29001,6 +29670,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -29027,6 +29700,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
@@ -29295,7 +29972,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": []
   },
   {
@@ -29314,6 +29996,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
@@ -29341,6 +30027,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1186,
      "title": "Add ActivateDesignOptionsInCombinations command"
@@ -29493,7 +30183,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1330,
@@ -29676,6 +30371,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -29697,6 +30396,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1275,
      "title": "Add SetDefaultDesignOption, ReorderDesignOptionSets and ReorderDesignOptionsInSet"
@@ -29778,7 +30481,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1330,
@@ -29798,9 +30506,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -29824,9 +30537,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -32791,6 +33509,14 @@
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     }
@@ -33903,6 +34629,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -34559,9 +35289,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -34617,6 +35352,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -34677,6 +35420,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -35019,6 +35770,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     }
@@ -35073,6 +35832,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -35157,6 +35924,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     }
@@ -35189,6 +35964,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     }
@@ -35211,6 +35990,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -35238,6 +36025,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -35293,6 +36088,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -35490,6 +36293,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     }
@@ -35521,6 +36332,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -35576,6 +36395,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -36872,6 +37699,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
     },
@@ -36928,6 +37763,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
@@ -36954,6 +37793,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -37063,6 +37910,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
     },
@@ -37093,6 +37944,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    },
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
@@ -37702,9 +38565,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37732,6 +38600,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -37828,6 +38704,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     },
@@ -37858,6 +38742,14 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -38017,9 +38909,18 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -39097,6 +39998,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
+     "number": 1513,
+     "title": "[4/6] Add Get3DModelCounts"
+    },
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
@@ -48361,6 +49278,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1519,
+     "title": "[6/6] Add DeleteElementSets command (ACAPI_ElementSet_Delete)"
+    },
+    {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    },
+    {
+     "number": 1505,
+     "title": "[3/6] Add GetCutPolygonsOfElements"
+    },
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    },
+    {
+     "number": 1501,
+     "title": "[2/6] Add GetCategoryValuesOfDefaults: element category values of tool defaults"
+    },
+    {
+     "number": 1500,
+     "title": "[2/6] Add GetBodyMaterialsOfElements"
+    },
     {
      "number": 1475,
      "title": "CreateHatches/SetDetailsOfElements: switch hatch type when buildingMaterialId or fillId is given"
@@ -58345,6 +59286,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
+     "number": 1513,
+     "title": "[4/6] Add Get3DModelCounts"
+    },
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
     },
@@ -63171,6 +64128,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
+     "number": 1513,
+     "title": "[4/6] Add Get3DModelCounts"
+    },
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
+    {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
     },
@@ -65370,6 +66343,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -65397,6 +66374,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
     {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
@@ -70187,6 +71168,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1518,
+     "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
+    },
+    {
      "number": 1113,
      "title": "Add Get/SetDesignOptionCombinationOfViews commands"
     }
@@ -70587,6 +71572,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1516,
+     "title": "[5/6] User data of attributes and groups as key/value pairs"
+    },
+    {
+     "number": 1508,
+     "title": "[4/6] Add GetViewOptions and SetViewOptions"
+    },
+    {
+     "number": 1503,
+     "title": "[2/6] Analytical members, releases, curve member stretch and local coordinate systems"
+    },
+    {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
@@ -70878,6 +71875,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1504,
+     "title": "[1/6] Add ConvertUnitValues, GetPrinterAndPlotterInfo, GetRenovationStatusNames and GetClassificationItemParents"
+    },
     {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
@@ -71898,6 +72899,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1506,
+     "title": "[4/4] Add GetLibraryPartFileInfo: read a .gsm file without loading it"
+    },
+    {
+     "number": 1502,
+     "title": "[3/4] Add CopyLibraryParts command"
+    },
     {
      "number": 1497,
      "title": "[2/4] GetLibraries: package information of library packages"
