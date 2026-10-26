@@ -879,6 +879,14 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards."
         );
+        err |= RegisterCommand<CreateElementSetsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing)."
+        );
+        err |= RegisterCommand<DeleteElementSetsCommand> (
+            elementGroupingCommands, "1.7.3",
+            "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed."
+        );
         err |= RegisterCommand<GetElementSetsOfElementsCommand> (
             elementGroupingCommands, "1.7.3",
             "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found."
