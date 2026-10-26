@@ -15465,5 +15465,175 @@
             "rotationStiffnessVector",
             "curves"
         ]
+    },
+    "AnalyticalLoadForceType": {
+        "type": "string",
+        "description": "Whether the load is a force or a moment.",
+        "enum": [
+            "Force",
+            "Moment"
+        ]
+    },
+    "AnalyticalPointLoad": {
+        "type": "object",
+        "description": "An analytical point load: its settings and the member part it loads.",
+        "properties": {
+            "loadSettings": {
+                "type": "object",
+                "properties": {
+                    "loadCaseId": {
+                        "$ref": "#/GuidId",
+                        "description": "The load case the load belongs to."
+                    },
+                    "loadForceType": {
+                        "$ref": "#/AnalyticalLoadForceType"
+                    },
+                    "coordinateSystemType": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    },
+                    "xValue": { "type": "number" },
+                    "yValue": { "type": "number" },
+                    "zValue": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "loadCaseId",
+                    "loadForceType",
+                    "coordinateSystemType",
+                    "xValue",
+                    "yValue",
+                    "zValue"
+                ]
+            },
+            "loadedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadSettings",
+            "loadedMemberPartRef"
+        ]
+    },
+    "AnalyticalEdgeLoad": {
+        "type": "object",
+        "description": "An analytical edge load: its settings and the member part it loads.",
+        "properties": {
+            "loadSettings": {
+                "type": "object",
+                "properties": {
+                    "loadCaseId": {
+                        "$ref": "#/GuidId",
+                        "description": "The load case the load belongs to."
+                    },
+                    "loadForceType": {
+                        "$ref": "#/AnalyticalLoadForceType"
+                    },
+                    "loadDistributionType": {
+                        "type": "string",
+                        "description": "Whether the load is the same along the edge or changes from the start value to the end value.",
+                        "enum": [
+                            "Uniform",
+                            "Trapezoid"
+                        ]
+                    },
+                    "coordinateSystemType": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    },
+                    "startValue": {
+                        "$ref": "#/Coordinate3D"
+                    },
+                    "endValue": {
+                        "$ref": "#/Coordinate3D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "loadCaseId",
+                    "loadForceType",
+                    "loadDistributionType",
+                    "coordinateSystemType",
+                    "startValue",
+                    "endValue"
+                ]
+            },
+            "loadedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadSettings",
+            "loadedMemberPartRef"
+        ]
+    },
+    "AnalyticalSurfaceLoad": {
+        "type": "object",
+        "description": "An analytical surface load: its settings and the member part it loads.",
+        "properties": {
+            "loadSettings": {
+                "type": "object",
+                "properties": {
+                    "loadCaseId": {
+                        "$ref": "#/GuidId",
+                        "description": "The load case the load belongs to."
+                    },
+                    "coordinateSystemType": {
+                        "$ref": "#/AnalyticalCoordSysDirection"
+                    },
+                    "xValue": { "type": "number" },
+                    "yValue": { "type": "number" },
+                    "zValue": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "loadCaseId",
+                    "coordinateSystemType",
+                    "xValue",
+                    "yValue",
+                    "zValue"
+                ]
+            },
+            "loadedMemberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadSettings",
+            "loadedMemberPartRef"
+        ]
+    },
+    "AnalyticalEdgeLoadCustomData": {
+        "type": "object",
+        "description": "The curve of an analytical edge load. CreateAnalyticalLoads needs at least one curve.",
+        "properties": {
+            "curve": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curve"
+        ]
+    },
+    "AnalyticalSurfaceLoadCustomData": {
+        "type": "object",
+        "description": "The contour of an analytical surface load. CreateAnalyticalLoads needs at least one curve.",
+        "properties": {
+            "contour": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "contour"
+        ]
     }
 }

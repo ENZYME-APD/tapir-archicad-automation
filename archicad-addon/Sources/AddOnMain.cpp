@@ -2063,6 +2063,14 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Converts the given shortest analytical links (associative to a curve member or a surface member edge) to links connected to a fixed coordinate, in one undo step, and returns the converted links. Available from Archicad 26."
         );
+        err |= RegisterCommand<GetAnalyticalLoadsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the settings, the loaded member part, the custom data (the curve of an edge load, the contour of a surface load) and the geometry of the given analytical point, edge and surface loads. Available from Archicad 26."
+        );
+        err |= RegisterCommand<CreateAnalyticalLoadsCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates analytical point, edge and surface loads from their settings, loaded member part and custom data, as GetAnalyticalLoads returns them, in one undo step. Available from Archicad 26."
+        );
         AddCommandGroup (analyticalCommands);
     }
 

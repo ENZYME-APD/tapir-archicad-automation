@@ -1218,6 +1218,567 @@ GS::ObjectState CreateAnalyticalElement (API_ElemTypeID typeID, const char* type
     }
     return CreateElementIdObjectState (element.header.guid);
 }
+
+// Loads are read from and written to their API_Element with the *FromElement and SetElementFrom*
+// functions, and refer to a member part, so they start with Archicad 26 as supports and links do.
+// The curve of an edge load and the contour of a surface load (their custom data) are kept in the
+// element's memo.
+GSErrCode TAPIR_GetAnalyticalPointLoadGeometry (const API_Guid& amGuid, const API_Guid& elemGuid, API_AnalyticalPointLoadGeometry& geometry)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetAnalyticalPointLoadGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#else
+    return ACAPI_AnalyticalModel_GetAnalyticalPointLoadGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#endif
+}
+
+GSErrCode TAPIR_GetPointLoadFromElement (const API_Element& element, API_AnalyticalPointLoadType& pointLoad)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetPointLoadFromElement (ACAPI_GetToken (), element, pointLoad);
+#else
+    return ACAPI_AnalyticalModel_GetPointLoadFromElement (ACAPI_GetToken (), element, pointLoad);
+#endif
+}
+
+GSErrCode TAPIR_SetElementFromPointLoad (const API_AnalyticalPointLoadType& pointLoad, API_Element& element)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetElementFromPointLoad (ACAPI_GetToken (), pointLoad, element);
+#else
+    return ACAPI_AnalyticalModel_SetElementFromPointLoad (ACAPI_GetToken (), pointLoad, element);
+#endif
+}
+
+GSErrCode TAPIR_GetEdgeLoadGeometry (const API_Guid& amGuid, const API_Guid& elemGuid, API_EdgeLoadCustomData& geometry)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetEdgeLoadGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#else
+    return ACAPI_AnalyticalModel_GetEdgeLoadGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#endif
+}
+
+GSErrCode TAPIR_GetEdgeLoadFromElement (const API_Element& element, API_AnalyticalEdgeLoadType& edgeLoad)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetEdgeLoadFromElement (ACAPI_GetToken (), element, edgeLoad);
+#else
+    return ACAPI_AnalyticalModel_GetEdgeLoadFromElement (ACAPI_GetToken (), element, edgeLoad);
+#endif
+}
+
+GSErrCode TAPIR_SetElementFromEdgeLoad (const API_AnalyticalEdgeLoadType& edgeLoad, API_Element& element)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetElementFromEdgeLoad (ACAPI_GetToken (), edgeLoad, element);
+#else
+    return ACAPI_AnalyticalModel_SetElementFromEdgeLoad (ACAPI_GetToken (), edgeLoad, element);
+#endif
+}
+
+GSErrCode TAPIR_SetEdgeLoadCustomDataFromMemo (const API_ElementMemo& memo, API_EdgeLoadCustomData& customData)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetEdgeLoadCustomDataFromMemo (ACAPI_GetToken (), memo, customData);
+#else
+    return ACAPI_AnalyticalModel_SetEdgeLoadCustomDataFromMemo (ACAPI_GetToken (), memo, customData);
+#endif
+}
+
+GSErrCode TAPIR_SetMemoFromEdgeLoadCustomData (const API_EdgeLoadCustomData& customData, API_ElementMemo& memo)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetMemoFromEdgeLoadCustomData (ACAPI_GetToken (), customData, memo);
+#else
+    return ACAPI_AnalyticalModel_SetMemoFromEdgeLoadCustomData (ACAPI_GetToken (), customData, memo);
+#endif
+}
+
+GSErrCode TAPIR_GetSurfaceLoadGeometry (const API_Guid& amGuid, const API_Guid& elemGuid, API_SurfaceLoadCustomData& geometry)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetSurfaceLoadGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#else
+    return ACAPI_AnalyticalModel_GetSurfaceLoadGeometry (ACAPI_GetToken (), amGuid, elemGuid, geometry);
+#endif
+}
+
+GSErrCode TAPIR_GetSurfaceLoadFromElement (const API_Element& element, API_AnalyticalSurfaceLoadType& surfaceLoad)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_GetSurfaceLoadFromElement (ACAPI_GetToken (), element, surfaceLoad);
+#else
+    return ACAPI_AnalyticalModel_GetSurfaceLoadFromElement (ACAPI_GetToken (), element, surfaceLoad);
+#endif
+}
+
+GSErrCode TAPIR_SetElementFromSurfaceLoad (const API_AnalyticalSurfaceLoadType& surfaceLoad, API_Element& element)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetElementFromSurfaceLoad (ACAPI_GetToken (), surfaceLoad, element);
+#else
+    return ACAPI_AnalyticalModel_SetElementFromSurfaceLoad (ACAPI_GetToken (), surfaceLoad, element);
+#endif
+}
+
+GSErrCode TAPIR_SetSurfaceLoadCustomDataFromMemo (const API_ElementMemo& memo, API_SurfaceLoadCustomData& customData)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetSurfaceLoadCustomDataFromMemo (ACAPI_GetToken (), memo, customData);
+#else
+    return ACAPI_AnalyticalModel_SetSurfaceLoadCustomDataFromMemo (ACAPI_GetToken (), memo, customData);
+#endif
+}
+
+GSErrCode TAPIR_SetMemoFromSurfaceLoadCustomData (const API_SurfaceLoadCustomData& customData, API_ElementMemo& memo)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Analytical_SetMemoFromSurfaceLoadCustomData (ACAPI_GetToken (), customData, memo);
+#else
+    return ACAPI_AnalyticalModel_SetMemoFromSurfaceLoadCustomData (ACAPI_GetToken (), customData, memo);
+#endif
+}
+
+const EnumName<API_AnalyticalLoad_LoadForceType> AnalyticalLoadForceTypeNames[] = {
+    { API_Force,  "Force" },
+    { API_Moment, "Moment" }
+};
+
+const EnumName<API_AnalyticalLoad_LoadDistributionType> AnalyticalLoadDistributionTypeNames[] = {
+    { API_Uniform,   "Uniform" },
+    { API_Trapezoid, "Trapezoid" }
+};
+
+// Reads a required {guid} object field. Returns an error response when it is missing or invalid.
+GS::Optional<GS::ObjectState> GetGuidIdField (const GS::ObjectState& os, const char* objectName, const char* fieldName, API_Guid& guid)
+{
+    const GS::ObjectState* idOS = nullptr;
+    const GS::Optional<GS::ObjectState> error = GetObjectField (os, objectName, fieldName, idOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    guid = GetGuidFromObjectState (*idOS);
+    if (guid == APINULLGuid) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Invalid %s.%s.", objectName, fieldName));
+    }
+    return GS::NoValue;
+}
+
+// Reads a required number field. Returns an error response when it is missing.
+GS::Optional<GS::ObjectState> GetNumberField (const GS::ObjectState& os, const char* objectName, const char* fieldName, double& value)
+{
+    if (!os.Get (fieldName, value)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("%s has no %s.", objectName, fieldName));
+    }
+    return GS::NoValue;
+}
+
+// API_Vector3D is API_Coord3D from Archicad 27 and its own struct with the same fields before.
+// Reads a required {x, y, z} field. Returns an error response when it is missing.
+template <typename Vector>
+GS::Optional<GS::ObjectState> GetVector3DField (const GS::ObjectState& os, const char* objectName, const char* fieldName, Vector& v)
+{
+    const GS::ObjectState* vectorOS = nullptr;
+    const GS::Optional<GS::ObjectState> error = GetObjectField (os, objectName, fieldName, vectorOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (!vectorOS->Get ("x", v.x) || !vectorOS->Get ("y", v.y) || !vectorOS->Get ("z", v.z)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("%s.%s needs x, y and z.", objectName, fieldName));
+    }
+    return GS::NoValue;
+}
+
+// Fills the node from its JSON form; the nodeId is 0 when left out.
+GS::Optional<GS::ObjectState> GetLoadCurveNodeFromObjectState (const GS::ObjectState& curveOS, const char* fieldName, API_AnalyticalNode& node)
+{
+    const GS::ObjectState* nodeOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetObjectField (curveOS, "A curve", fieldName, nodeOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* coordOS = nullptr;
+    error = GetObjectField (*nodeOS, fieldName, "coord", coordOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    Int32 nodeId = 0;
+    nodeOS->Get ("nodeId", nodeId);
+    node.nodeId = static_cast<UInt32> (nodeId);
+    node.coord = Get3DCoordinateFromObjectState (*coordOS);
+    return GS::NoValue;
+}
+
+// Fills the curves of the custom data of an edge or a surface load from their JSON form, as
+// GetAnalyticalLoads returns them; the type of a curve is Line when left out. Returns an error response
+// on failure.
+GS::Optional<GS::ObjectState> GetLoadCurvesFromObjectState (const GS::ObjectState& os, const char* fieldName, GS::Array<API_AnalyticalCurve>& curves)
+{
+    GS::Array<GS::ObjectState> curvesOS;
+    if (!os.Get (fieldName, curvesOS) || curvesOS.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("customData.%s is required and must not be empty.", fieldName));
+    }
+    curves.Clear ();
+    for (const GS::ObjectState& curveOS : curvesOS) {
+        API_AnalyticalCurve curve {};
+        curve.type = API_AnalyticalCurve_LineType;
+        GS::UniString type;
+        if (curveOS.Get ("type", type) && !EnumFromString (AnalyticalCurveTypeNames, type, curve.type)) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Unknown curve type '%T'.", type.ToPrintf ()));
+        }
+        GS::Optional<GS::ObjectState> error = GetLoadCurveNodeFromObjectState (curveOS, "begNode", curve.begNode);
+        if (error.HasValue ()) {
+            return error;
+        }
+        error = GetLoadCurveNodeFromObjectState (curveOS, "endNode", curve.endNode);
+        if (error.HasValue ()) {
+            return error;
+        }
+        GS::Array<GS::ObjectState> midCoords;
+        curveOS.Get ("midCoords", midCoords);
+        for (const GS::ObjectState& midCoord : midCoords) {
+            curve.midCoords.Push (Get3DCoordinateFromObjectState (midCoord));
+        }
+        curves.Push (curve);
+    }
+    return GS::NoValue;
+}
+
+GS::ObjectState CreateAnalyticalPointLoadObjectState (const API_AnalyticalPointLoadType& pointLoad)
+{
+    const API_AnalyticalPointLoad_Settings& settings = pointLoad.analyticalPointLoadSettings;
+    GS::ObjectState settingsOS;
+    settingsOS.Add ("loadCaseId", CreateGuidObjectState (settings.loadCaseId));
+    AddEnumName (settingsOS, "loadForceType", AnalyticalLoadForceTypeNames, settings.loadForceType);
+    AddEnumName (settingsOS, "coordinateSystemType", AnalyticalCoordSysDirectionNames, settings.coordinateSystemType);
+    settingsOS.Add ("xValue", settings.xValue);
+    settingsOS.Add ("yValue", settings.yValue);
+    settingsOS.Add ("zValue", settings.zValue);
+    return GS::ObjectState (
+        "loadSettings", settingsOS,
+        "loadedMemberPartRef", CreateAnalyticalMemberPartRefObjectState (pointLoad.loadedMemberPartRef));
+}
+
+GS::ObjectState CreateAnalyticalEdgeLoadObjectState (const API_AnalyticalEdgeLoadType& edgeLoad)
+{
+    const API_AnalyticalEdgeLoad_Settings& settings = edgeLoad.analyticalEdgeLoadSettings;
+    GS::ObjectState settingsOS;
+    settingsOS.Add ("loadCaseId", CreateGuidObjectState (settings.loadCaseId));
+    AddEnumName (settingsOS, "loadForceType", AnalyticalLoadForceTypeNames, settings.loadForceType);
+    AddEnumName (settingsOS, "loadDistributionType", AnalyticalLoadDistributionTypeNames, settings.loadDistributionType);
+    AddEnumName (settingsOS, "coordinateSystemType", AnalyticalCoordSysDirectionNames, settings.coordinateSystemType);
+    settingsOS.Add ("startValue", CreateVector3DObjectState (settings.startValue));
+    settingsOS.Add ("endValue", CreateVector3DObjectState (settings.endValue));
+    return GS::ObjectState (
+        "loadSettings", settingsOS,
+        "loadedMemberPartRef", CreateAnalyticalMemberPartRefObjectState (edgeLoad.loadedMemberPartRef));
+}
+
+GS::ObjectState CreateAnalyticalSurfaceLoadObjectState (const API_AnalyticalSurfaceLoadType& surfaceLoad)
+{
+    const API_AnalyticalSurfaceLoad_Settings& settings = surfaceLoad.analyticalSurfaceLoadSettings;
+    GS::ObjectState settingsOS;
+    settingsOS.Add ("loadCaseId", CreateGuidObjectState (settings.loadCaseId));
+    AddEnumName (settingsOS, "coordinateSystemType", AnalyticalCoordSysDirectionNames, settings.coordinateSystemType);
+    settingsOS.Add ("xValue", settings.xValue);
+    settingsOS.Add ("yValue", settings.yValue);
+    settingsOS.Add ("zValue", settings.zValue);
+    return GS::ObjectState (
+        "loadSettings", settingsOS,
+        "loadedMemberPartRef", CreateAnalyticalMemberPartRefObjectState (surfaceLoad.loadedMemberPartRef));
+}
+
+// Reads the loadSettings object and the loadedMemberPartRef of a load. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetLoadSettingsAndPartRefFromObjectState (const GS::ObjectState& loadOS, const GS::ObjectState*& settingsOS, API_AnalyticalMemberPartRef& loadedMemberPartRef)
+{
+    GS::Optional<GS::ObjectState> error = GetObjectField (loadOS, "The load", "loadSettings", settingsOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* memberPartRefOS = nullptr;
+    error = GetObjectField (loadOS, "The load", "loadedMemberPartRef", memberPartRefOS);
+    if (error.HasValue ()) {
+        return error;
+    }
+    return GetAnalyticalMemberPartRefFromObjectState (*memberPartRefOS, loadedMemberPartRef);
+}
+
+// Fills the point load from its JSON form, as GetAnalyticalLoads returns it. Every field of loadSettings
+// is required. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalPointLoadFromObjectState (const GS::ObjectState& loadOS, API_AnalyticalPointLoadType& pointLoad)
+{
+    const GS::ObjectState* settingsOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetLoadSettingsAndPartRefFromObjectState (loadOS, settingsOS, pointLoad.loadedMemberPartRef);
+    if (error.HasValue ()) {
+        return error;
+    }
+    API_AnalyticalPointLoad_Settings& settings = pointLoad.analyticalPointLoadSettings;
+    error = GetGuidIdField (*settingsOS, "loadSettings", "loadCaseId", settings.loadCaseId);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "loadSettings", "loadForceType", AnalyticalLoadForceTypeNames, settings.loadForceType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "loadSettings", "coordinateSystemType", AnalyticalCoordSysDirectionNames, settings.coordinateSystemType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetNumberField (*settingsOS, "loadSettings", "xValue", settings.xValue);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetNumberField (*settingsOS, "loadSettings", "yValue", settings.yValue);
+    if (error.HasValue ()) {
+        return error;
+    }
+    return GetNumberField (*settingsOS, "loadSettings", "zValue", settings.zValue);
+}
+
+// Fills the edge load from its JSON form, as GetAnalyticalLoads returns it. Every field of loadSettings
+// is required. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalEdgeLoadFromObjectState (const GS::ObjectState& loadOS, API_AnalyticalEdgeLoadType& edgeLoad)
+{
+    const GS::ObjectState* settingsOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetLoadSettingsAndPartRefFromObjectState (loadOS, settingsOS, edgeLoad.loadedMemberPartRef);
+    if (error.HasValue ()) {
+        return error;
+    }
+    API_AnalyticalEdgeLoad_Settings& settings = edgeLoad.analyticalEdgeLoadSettings;
+    error = GetGuidIdField (*settingsOS, "loadSettings", "loadCaseId", settings.loadCaseId);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "loadSettings", "loadForceType", AnalyticalLoadForceTypeNames, settings.loadForceType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "loadSettings", "loadDistributionType", AnalyticalLoadDistributionTypeNames, settings.loadDistributionType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "loadSettings", "coordinateSystemType", AnalyticalCoordSysDirectionNames, settings.coordinateSystemType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetVector3DField (*settingsOS, "loadSettings", "startValue", settings.startValue);
+    if (error.HasValue ()) {
+        return error;
+    }
+    return GetVector3DField (*settingsOS, "loadSettings", "endValue", settings.endValue);
+}
+
+// Fills the surface load from its JSON form, as GetAnalyticalLoads returns it. Every field of loadSettings
+// is required. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalSurfaceLoadFromObjectState (const GS::ObjectState& loadOS, API_AnalyticalSurfaceLoadType& surfaceLoad)
+{
+    const GS::ObjectState* settingsOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetLoadSettingsAndPartRefFromObjectState (loadOS, settingsOS, surfaceLoad.loadedMemberPartRef);
+    if (error.HasValue ()) {
+        return error;
+    }
+    API_AnalyticalSurfaceLoad_Settings& settings = surfaceLoad.analyticalSurfaceLoadSettings;
+    error = GetGuidIdField (*settingsOS, "loadSettings", "loadCaseId", settings.loadCaseId);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetEnumField (*settingsOS, "loadSettings", "coordinateSystemType", AnalyticalCoordSysDirectionNames, settings.coordinateSystemType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetNumberField (*settingsOS, "loadSettings", "xValue", settings.xValue);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = GetNumberField (*settingsOS, "loadSettings", "yValue", settings.yValue);
+    if (error.HasValue ()) {
+        return error;
+    }
+    return GetNumberField (*settingsOS, "loadSettings", "zValue", settings.zValue);
+}
+
+// Reads the load of one element of GetAnalyticalLoads, with its custom data and its geometry, and returns
+// its result item.
+GS::ObjectState GetAnalyticalLoadOfElement (const API_Guid& amGuid, const API_Guid& elemGuid)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the element.");
+    }
+
+    const API_ElemTypeID typeID = GetElemTypeId (element.header);
+    if (typeID == API_AnalyticalPointLoadID) {
+        API_AnalyticalPointLoadType pointLoad {};
+        err = TAPIR_GetPointLoadFromElement (element, pointLoad);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the point load of the element.");
+        }
+        API_AnalyticalPointLoadGeometry geometry {};
+        err = TAPIR_GetAnalyticalPointLoadGeometry (amGuid, elemGuid, geometry);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the geometry of the point load in the Structural Analytical Model.");
+        }
+        return GS::ObjectState (
+            "pointLoad", CreateAnalyticalPointLoadObjectState (pointLoad),
+            "geometry", GS::ObjectState ("coordinate", Create3DCoordinateObjectState (geometry.coordinate)));
+    }
+
+    if (typeID != API_AnalyticalEdgeLoadID && typeID != API_AnalyticalSurfaceLoadID) {
+        return CreateErrorResponse (APIERR_BADID, "The element is not an analytical point, edge or surface load.");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_All);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the memo of the load.");
+    }
+
+    if (typeID == API_AnalyticalEdgeLoadID) {
+        API_AnalyticalEdgeLoadType edgeLoad {};
+        err = TAPIR_GetEdgeLoadFromElement (element, edgeLoad);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the edge load of the element.");
+        }
+        API_EdgeLoadCustomData customData;
+        err = TAPIR_SetEdgeLoadCustomDataFromMemo (memo, customData);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the custom data of the edge load.");
+        }
+        API_EdgeLoadCustomData geometry;
+        err = TAPIR_GetEdgeLoadGeometry (amGuid, elemGuid, geometry);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the geometry of the edge load in the Structural Analytical Model.");
+        }
+        GS::ObjectState customDataOS;
+        AddAnalyticalCurves (customDataOS, "curve", customData.curve);
+        GS::ObjectState geometryOS;
+        AddAnalyticalCurves (geometryOS, "curve", geometry.curve);
+        return GS::ObjectState (
+            "edgeLoad", CreateAnalyticalEdgeLoadObjectState (edgeLoad),
+            "customData", customDataOS,
+            "geometry", geometryOS);
+    }
+
+    API_AnalyticalSurfaceLoadType surfaceLoad {};
+    err = TAPIR_GetSurfaceLoadFromElement (element, surfaceLoad);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the surface load of the element.");
+    }
+    API_SurfaceLoadCustomData customData;
+    err = TAPIR_SetSurfaceLoadCustomDataFromMemo (memo, customData);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the custom data of the surface load.");
+    }
+    API_SurfaceLoadCustomData geometry;
+    err = TAPIR_GetSurfaceLoadGeometry (amGuid, elemGuid, geometry);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the geometry of the surface load in the Structural Analytical Model.");
+    }
+    GS::ObjectState customDataOS;
+    AddAnalyticalCurves (customDataOS, "contour", customData.contour);
+    GS::ObjectState geometryOS;
+    AddAnalyticalCurves (geometryOS, "contour", geometry.contour);
+    return GS::ObjectState (
+        "surfaceLoad", CreateAnalyticalSurfaceLoadObjectState (surfaceLoad),
+        "customData", customDataOS,
+        "geometry", geometryOS);
+}
+
+// Creates one load element from the tool defaults: setElement fills the element from the load (the
+// SetElementFrom* functions set the type and the external element data), setMemo writes the custom data
+// into the memo before ACAPI_Element_Create.
+template <typename SetElement, typename SetMemo>
+GS::ObjectState CreateAnalyticalLoadElement (API_ElemTypeID typeID, const char* typeName, const SetElement& setElement, const SetMemo& setMemo)
+{
+    API_Element element = {};
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+
+    element.header.type = typeID;
+    GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to get the defaults of the %s.", typeName));
+    }
+    err = setElement (element);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to fill the %s element.", typeName));
+    }
+    err = setMemo (memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to write the custom data of the %s.", typeName));
+    }
+    err = ACAPI_Element_Create (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to create the %s.", typeName));
+    }
+    return CreateElementIdObjectState (element.header.guid);
+}
+
+// Creates the element of one item of CreateAnalyticalLoads and returns its result item.
+GS::ObjectState CreateAnalyticalLoad (const GS::ObjectState& itemOS)
+{
+    const GS::ObjectState* pointLoadOS = itemOS.Get ("pointLoad");
+    const GS::ObjectState* edgeLoadOS = itemOS.Get ("edgeLoad");
+    const GS::ObjectState* surfaceLoadOS = itemOS.Get ("surfaceLoad");
+    if ((pointLoadOS != nullptr ? 1 : 0) + (edgeLoadOS != nullptr ? 1 : 0) + (surfaceLoadOS != nullptr ? 1 : 0) != 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "Each load needs exactly one of pointLoad, edgeLoad and surfaceLoad.");
+    }
+
+    if (pointLoadOS != nullptr) {
+        if (itemOS.Contains ("customData")) {
+            return CreateErrorResponse (APIERR_BADPARS, "A point load has no customData.");
+        }
+        API_AnalyticalPointLoadType pointLoad {};
+        const GS::Optional<GS::ObjectState> error = GetAnalyticalPointLoadFromObjectState (*pointLoadOS, pointLoad);
+        if (error.HasValue ()) {
+            return *error;
+        }
+        return CreateAnalyticalLoadElement (API_AnalyticalPointLoadID, "analytical point load",
+            [&] (API_Element& element) { return TAPIR_SetElementFromPointLoad (pointLoad, element); },
+            [] (API_ElementMemo&) -> GSErrCode { return NoError; });
+    }
+
+    const GS::ObjectState* customDataOS = nullptr;
+    GS::Optional<GS::ObjectState> error = GetObjectField (itemOS, "An edge or a surface load", "customData", customDataOS);
+    if (error.HasValue ()) {
+        return *error;
+    }
+
+    if (edgeLoadOS != nullptr) {
+        API_AnalyticalEdgeLoadType edgeLoad {};
+        error = GetAnalyticalEdgeLoadFromObjectState (*edgeLoadOS, edgeLoad);
+        if (error.HasValue ()) {
+            return *error;
+        }
+        API_EdgeLoadCustomData customData;
+        error = GetLoadCurvesFromObjectState (*customDataOS, "curve", customData.curve);
+        if (error.HasValue ()) {
+            return *error;
+        }
+        return CreateAnalyticalLoadElement (API_AnalyticalEdgeLoadID, "analytical edge load",
+            [&] (API_Element& element) { return TAPIR_SetElementFromEdgeLoad (edgeLoad, element); },
+            [&] (API_ElementMemo& memo) { return TAPIR_SetMemoFromEdgeLoadCustomData (customData, memo); });
+    }
+
+    API_AnalyticalSurfaceLoadType surfaceLoad {};
+    error = GetAnalyticalSurfaceLoadFromObjectState (*surfaceLoadOS, surfaceLoad);
+    if (error.HasValue ()) {
+        return *error;
+    }
+    API_SurfaceLoadCustomData customData;
+    error = GetLoadCurvesFromObjectState (*customDataOS, "contour", customData.contour);
+    if (error.HasValue ()) {
+        return *error;
+    }
+    return CreateAnalyticalLoadElement (API_AnalyticalSurfaceLoadID, "analytical surface load",
+        [&] (API_Element& element) { return TAPIR_SetElementFromSurfaceLoad (surfaceLoad, element); },
+        [&] (API_ElementMemo& memo) { return TAPIR_SetMemoFromSurfaceLoadCustomData (customData, memo); });
+}
 #endif
 
 GS::HashSet<API_Guid> CreateGuidSet (const GS::Array<API_Guid>& guids)
@@ -3251,4 +3812,274 @@ GS::ObjectState ConvertAnalyticalLinksToNonShortestCommand::Execute (const GS::O
     UNUSED_VARIABLE (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer.");
 #endif
+}
+
+GetAnalyticalLoadsCommand::GetAnalyticalLoadsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAnalyticalLoadsCommand::GetName () const
+{
+    return "GetAnalyticalLoads";
+}
+
+GS::Optional<GS::UniString> GetAnalyticalLoadsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "analyticalModelId": {
+                "$ref": "#/GuidId",
+                "description": "The identifier of the Structural Analytical Model the geometry is read from. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAnalyticalLoadsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "loads": {
+                "type": "array",
+                "description": "The load of each element, in the order of the input, with its geometry in the Structural Analytical Model and, for an edge or a surface load, its custom data (the curve or contour stored with the element). An element that is not an analytical point, edge or surface load, or whose load cannot be got, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pointLoad": {
+                                    "$ref": "#/AnalyticalPointLoad"
+                                },
+                                "geometry": {
+                                    "type": "object",
+                                    "properties": {
+                                        "coordinate": {
+                                            "$ref": "#/Coordinate3D"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "coordinate"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "pointLoad",
+                                "geometry"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "edgeLoad": {
+                                    "$ref": "#/AnalyticalEdgeLoad"
+                                },
+                                "customData": {
+                                    "$ref": "#/AnalyticalEdgeLoadCustomData"
+                                },
+                                "geometry": {
+                                    "$ref": "#/AnalyticalEdgeLoadCustomData"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "edgeLoad",
+                                "customData",
+                                "geometry"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "surfaceLoad": {
+                                    "$ref": "#/AnalyticalSurfaceLoad"
+                                },
+                                "customData": {
+                                    "$ref": "#/AnalyticalSurfaceLoadCustomData"
+                                },
+                                "geometry": {
+                                    "$ref": "#/AnalyticalSurfaceLoadCustomData"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "surfaceLoad",
+                                "customData",
+                                "geometry"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loads"
+        ]
+    })";
+}
+
+GS::ObjectState GetAnalyticalLoadsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    API_Guid analyticalModelGuid = APINULLGuid;
+    const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
+    if (modelError.HasValue ()) {
+        return *modelError;
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& loads = response.AddList<GS::ObjectState> ("loads");
+
+    for (const GS::ObjectState& item : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (item);
+        if (elemGuid == APINULLGuid) {
+            loads (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+        loads (GetAnalyticalLoadOfElement (analyticalModelGuid, elemGuid));
+    }
+
+    return response;
+#else
+    UNUSED_VARIABLE (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer.");
+#endif
+}
+
+CreateAnalyticalLoadsCommand::CreateAnalyticalLoadsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateAnalyticalLoadsCommand::GetName () const
+{
+    return "CreateAnalyticalLoads";
+}
+
+GS::Optional<GS::UniString> CreateAnalyticalLoadsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "loads": {
+                "type": "array",
+                "description": "The loads to create, as GetAnalyticalLoads returns them without their geometry. Each is created from the defaults of its tool. An edge load needs the curve and a surface load the contour it is applied on, in customData.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pointLoad": {
+                                    "$ref": "#/AnalyticalPointLoad"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "pointLoad"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "edgeLoad": {
+                                    "$ref": "#/AnalyticalEdgeLoad"
+                                },
+                                "customData": {
+                                    "$ref": "#/AnalyticalEdgeLoadCustomData"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "edgeLoad",
+                                "customData"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "surfaceLoad": {
+                                    "$ref": "#/AnalyticalSurfaceLoad"
+                                },
+                                "customData": {
+                                    "$ref": "#/AnalyticalSurfaceLoadCustomData"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "surfaceLoad",
+                                "customData"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loads"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateAnalyticalLoadsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateAnalyticalLoadsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> loads;
+    parameters.Get ("loads", loads);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+#ifdef ServerMainVers_2600
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Create Analytical Loads", [&] () -> GSErrCode {
+        for (const GS::ObjectState& load : loads) {
+            elements (CreateAnalyticalLoad (load));
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to create the loads.");
+    }
+#else
+    for (UIndex i = 0; i < loads.GetSize (); ++i) {
+        elements (CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer."));
+    }
+#endif
+
+    return response;
 }
