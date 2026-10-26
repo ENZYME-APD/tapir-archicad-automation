@@ -751,6 +751,12 @@ void VisitViewOptions (Visitor& v, API_ViewOptions& viewOptions)
     });
 }
 
+// The GDL model view options handle filled by ACAPI_Navigator_GetViewOptions belongs to the caller.
+void DisposeViewOptions (API_ViewOptions& viewOptions)
+{
+    BMKillHandle (reinterpret_cast<GSHandle*> (&viewOptions.modelViewOpt.gdlOptions));
+}
+
 }
 
 GetViewOptionsCommand::GetViewOptionsCommand () :
@@ -807,12 +813,14 @@ GS::ObjectState GetViewOptionsCommand::Execute (const GS::ObjectState& /*paramet
     short modelViewOptionIndex = 0;
     const GSErrCode err = ACAPI_Navigator_GetViewOptions (&viewOptions, &modelViewOptionIndex);
     if (err != NoError) {
+        DisposeViewOptions (viewOptions);
         return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
     }
 
     GS::ObjectState viewOptionsOS;
     ViewOptionsWriter writer { &viewOptionsOS };
     VisitViewOptions (writer, viewOptions);
+    DisposeViewOptions (viewOptions);
 
     GS::ObjectState response;
     response.Add ("modelViewOptionIndex", (Int32) modelViewOptionIndex);
@@ -879,6 +887,7 @@ GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameter
         short currentIndex = 0;
         err = ACAPI_Navigator_GetViewOptions (&viewOptions, &currentIndex);
         if (err != NoError) {
+            DisposeViewOptions (viewOptions);
             return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
         }
 
@@ -886,6 +895,7 @@ GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameter
         VisitViewOptions (reader, viewOptions);
 
         err = ACAPI_Navigator_ChangeViewOptions (&viewOptions, switchCombination ? &modelViewOptionIndex : nullptr);
+        DisposeViewOptions (viewOptions);
     }
 
     if (err != NoError) {
