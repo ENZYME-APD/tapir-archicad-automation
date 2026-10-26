@@ -39,8 +39,8 @@ static GSErrCode FindLibraryPartIndexByName (const GS::UniString& name, Int32& l
     GS::Array<GS::UniString> candidates;
     candidates.Push (name);
     const USize length = name.GetLength ();
-    if (length > 4 && name.GetSubstring (length - 4, 4).Compare (".gsm", CaseInsensitive) == GS::UniString::Equal) {
-        candidates.Push (name.GetSubstring (0, length - 4));
+    if (length > 4 && GS::UniString (name.GetSubstring (length - 4, 4)).Compare (".gsm", CaseInsensitive) == GS::UniString::Equal) {
+        candidates.Push (GS::UniString (name.GetSubstring (0, length - 4)));
     }
 
     GSErrCode err = APIERR_BADNAME;
