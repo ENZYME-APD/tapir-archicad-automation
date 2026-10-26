@@ -539,6 +539,107 @@ void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoin
     element.dimension.direction = direction;
 }
 
+// Reads the Dimension tool defaults into element and memo, with the item's optional
+// "favoriteName" applied to them first (#1390), then the item's optional "textHeight" and
+// "textPen" applied to defNote, which both creation paths copy into every witness point.
+// Favorites can only be applied through the tool defaults, which are global, so they are
+// snapshotted first and restored when this object goes out of scope, leaving the user's next
+// manual placement as it was. Keep it alive until the dimension is created, as
+// CreateElementsCommandBase does. A favorite gave the new dimension its layer, line pen and
+// markers but not its text size, text pen or text frame (tested in AC28, also with defNote and
+// the first witness point's note taken straight from the favorite), so the text is set with
+// textHeight and textPen instead.
+class DimensionDefaults {
+public:
+    DimensionDefaults () = default;
+    DimensionDefaults (const DimensionDefaults&) = delete;
+    DimensionDefaults& operator= (const DimensionDefaults&) = delete;
+    ~DimensionDefaults ();
+
+    // Returns the error response, if any.
+    GS::Optional<GS::ObjectState> Read (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo);
+
+private:
+    GS::Optional<GS::ObjectState> ReadWithFavorite (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo);
+
+    API_Element snapshot = {};
+    API_ElementMemo snapshotMemo = {};
+    bool restore = false;
+};
+
+DimensionDefaults::~DimensionDefaults ()
+{
+    if (restore) {
+        API_Element restoreMask;
+        ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+        ACAPI_Element_ChangeDefaults (&snapshot, &snapshotMemo, &restoreMask);
+    }
+    ACAPI_DisposeElemMemoHdls (&snapshotMemo);
+}
+
+GS::Optional<GS::ObjectState> DimensionDefaults::Read (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo)
+{
+    auto error = ReadWithFavorite (data, element, memo);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    double textHeight = 0.0;
+    if (data.Get ("textHeight", textHeight) && textHeight > 0.0) {
+        element.dimension.defNote.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (data.Get ("textPen", textPen) && textPen > 0) {
+        element.dimension.defNote.notePen = static_cast<short> (textPen);
+    }
+
+    return {};
+}
+
+GS::Optional<GS::ObjectState> DimensionDefaults::ReadWithFavorite (const GS::ObjectState& data, API_Element& element, API_ElementMemo& memo)
+{
+#ifdef ServerMainVers_2600
+    element.header.type = API_DimensionID;
+#else
+    element.header.typeID = API_DimensionID;
+#endif
+
+    GS::UniString favoriteName;
+    if (!data.Get ("favoriteName", favoriteName) || favoriteName.IsEmpty ()) {
+        const GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the dimension defaults.");
+        }
+        return {};
+    }
+
+    snapshot = element;
+    GSErrCode err = ACAPI_Element_GetDefaults (&snapshot, &snapshotMemo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the dimension defaults.");
+    }
+    restore = true;
+
+    const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, API_DimensionID);
+    if (favoriteErr != NoError) {
+        // Same two usual causes as in CreateElementsCommandBase: ApplyFavoriteToElementDefaults
+        // answers APIERR_REFUSEDPAR for a favorite of another element type, and passes on the
+        // ACAPI_Favorite_Get error when no favorite has this name.
+        const GS::UniString reason = favoriteErr == APIERR_REFUSEDPAR
+            ? GS::UniString ("it is not a Dimension favorite")
+            : GS::UniString ("no favorite with this exact name was found");
+        return CreateErrorResponse (favoriteErr,
+            "Failed to apply favoriteName '" + favoriteName + "' to the Dimension defaults: " + reason + ".");
+    }
+
+    err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the dimension defaults.");
+    }
+    return {};
+}
+
 GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectState& pointData, AssociativeDimensionPoint& point)
 {
     const GS::ObjectState* elementId = pointData.Get ("elementId");
@@ -6007,6 +6108,18 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
+                        },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "number" },
@@ -6093,14 +6206,10 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            #ifdef ServerMainVers_2600
-            element.header.type = API_DimensionID;
-            #else
-            element.header.typeID = API_DimensionID;
-            #endif
-            GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare associative dimension defaults."));
+            DimensionDefaults defaults;
+            auto defaultsError = defaults.Read (data, element, memo);
+            if (defaultsError.HasValue ()) {
+                elements.Push (defaultsError.Get ());
                 continue;
             }
 
@@ -6117,7 +6226,7 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
-            err = ACAPI_Element_Create (&element, &memo);
+            GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create associative dimension."));
                 continue;
@@ -6158,6 +6267,18 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
+                        },
                         "sectionElementId": {
                             "$ref": "#/ElementId",
                             "description": "The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given."
@@ -6252,14 +6373,10 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            #ifdef ServerMainVers_2600
-            element.header.type = API_DimensionID;
-            #else
-            element.header.typeID = API_DimensionID;
-            #endif
-            GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare section associative dimension defaults."));
+            DimensionDefaults defaults;
+            auto defaultsError = defaults.Read (data, element, memo);
+            if (defaultsError.HasValue ()) {
+                elements.Push (defaultsError.Get ());
                 continue;
             }
 
@@ -6280,7 +6397,7 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 continue;
             }
 
-            err = ACAPI_Element_Create (&element, &memo);
+            GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create associative section dimension."));
                 continue;
@@ -6322,6 +6439,18 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "description": "Optional pen index of the dimension texts, applied to every witness point after favoriteName."
+                        },
                         "wallId": { "$ref": "#/ElementId" },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" }
@@ -6384,14 +6513,10 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            #ifdef ServerMainVers_2600
-            element.header.type = API_DimensionID;
-            #else
-            element.header.typeID = API_DimensionID;
-            #endif
-            err = ACAPI_Element_GetDefaults (&element, &memo);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare dimension defaults."));
+            DimensionDefaults defaults;
+            auto defaultsError = defaults.Read (data, element, memo);
+            if (defaultsError.HasValue ()) {
+                elements.Push (defaultsError.Get ());
                 continue;
             }
 
