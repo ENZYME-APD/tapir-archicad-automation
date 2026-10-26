@@ -10,8 +10,17 @@
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Library/LibraryManager.hpp"
 #include "ACAPI/Library/GSMObject.hpp"
+// GSMObject.hpp declares the picture setters with GX::ImageRef; included here to construct the images.
+#if __has_include ("GXImage.hpp")
+#include "GXImage.hpp"
+#elif __has_include ("GXImage/GXImage.hpp")
+#include "GXImage/GXImage.hpp"
+#endif
+#include "NativeImage.hpp"
+#include "Base64Converter.hpp"
 
 #include <functional>
+#include <vector>
 
 using ACAPI::Library::GSMObject;
 
@@ -28,6 +37,56 @@ static const LibraryPartScriptSection libraryPartScriptSections[] = {
     { "3d",         [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.Set3DScript (script); } },
     { "properties", [] (GSMObject::Modifier& modifier, const GS::UniString& script) { return modifier.SetPropertiesScript (script); } }
 };
+
+// Decodes a base64 encoded PNG into an image, or returns false when it is not a valid PNG.
+static bool DecodeBase64PngImage (const GS::UniString& base64, GX::ImageRef& image)
+{
+    GS::Array<char> bytes = Base64Converter::Decode (base64);
+    if (bytes.IsEmpty ()) {
+        return false;
+    }
+
+    NewDisplay::NativeImage nativeImage (bytes.GetContent (), bytes.GetSize (), NewDisplay::NativeImage::Encoding::PNG);
+    if (nativeImage.GetWidth () == 0 || nativeImage.GetHeight () == 0) {
+        return false;
+    }
+
+    image = GX::ImageRef (new GX::Image (nativeImage));
+    return true;
+}
+
+// Decodes the picture given under key, or the list of pictures when isList is true.
+// Returns false and sets errorMessage when a picture cannot be decoded; a missing key is not an error.
+static bool GetPictureImages (const GS::ObjectState& parameters, const char* key, bool isList, bool& found, std::vector<GX::ImageRef>& images, GS::UniString& errorMessage)
+{
+    GS::Array<GS::UniString> pictures;
+    if (isList) {
+        found = parameters.Get (key, pictures);
+    } else {
+        GS::UniString picture;
+        found = parameters.Get (key, picture);
+        if (found) {
+            pictures.Push (picture);
+        }
+    }
+    if (!found) {
+        return true;
+    }
+
+    for (UIndex i = 0; i < pictures.GetSize (); ++i) {
+        GX::ImageRef image;
+        if (!DecodeBase64PngImage (pictures[i], image)) {
+            errorMessage = "'" + GS::UniString (key) + "'";
+            if (isList) {
+                errorMessage += GS::UniString::Printf (" item %u", i);
+            }
+            errorMessage += " is not a valid base64 encoded PNG image.";
+            return false;
+        }
+        images.push_back (image);
+    }
+    return true;
+}
 #endif
 
 AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
@@ -1133,5 +1192,172 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+SetLibraryPartPictureImagesCommand::SetLibraryPartPictureImagesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLibraryPartPictureImagesCommand::GetName () const
+{
+    return "SetLibraryPartPictureImages";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartPictureImagesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+            },
+            "previewPicture": {
+                "type": "string",
+                "description": "Optional. The new preview picture as a base64 encoded PNG."
+            },
+            "gdlPictures": {
+                "type": "array",
+                "description": "Optional. The new GDL pictures, each a base64 encoded PNG. They replace all GDL pictures of the library part.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            },
+            "darkPreviewPicture": {
+                "type": "string",
+                "description": "Optional. The new preview picture for the dark user interface as a base64 encoded PNG. Requires Archicad 29 or newer."
+            },
+            "darkGdlPictures": {
+                "type": "array",
+                "description": "Optional. The new GDL pictures for the dark user interface, each a base64 encoded PNG. They replace all dark GDL pictures of the library part. Requires Archicad 29 or newer.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLibraryPartPictureImagesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetLibraryPartPictureImagesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::UniString name;
+    if (!parameters.Get ("name", name) || name.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid or missing 'name' parameter.");
+    }
+
+    // Every picture is decoded before anything is changed, so an invalid picture changes nothing.
+    GS::UniString errorMessage;
+    bool hasPreviewPicture = false;
+    bool hasGdlPictures = false;
+    bool hasDarkPreviewPicture = false;
+    bool hasDarkGdlPictures = false;
+    std::vector<GX::ImageRef> previewPicture;
+    std::vector<GX::ImageRef> gdlPictures;
+    std::vector<GX::ImageRef> darkPreviewPicture;
+    std::vector<GX::ImageRef> darkGdlPictures;
+    if (!GetPictureImages (parameters, "previewPicture", false, hasPreviewPicture, previewPicture, errorMessage) ||
+        !GetPictureImages (parameters, "gdlPictures", true, hasGdlPictures, gdlPictures, errorMessage) ||
+        !GetPictureImages (parameters, "darkPreviewPicture", false, hasDarkPreviewPicture, darkPreviewPicture, errorMessage) ||
+        !GetPictureImages (parameters, "darkGdlPictures", true, hasDarkGdlPictures, darkGdlPictures, errorMessage)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, errorMessage + " Nothing was changed.");
+    }
+
+#ifndef ServerMainVers_2900
+    if (hasDarkPreviewPicture || hasDarkGdlPictures) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'darkPreviewPicture' and 'darkGdlPictures' require Archicad 29 or newer. Nothing was changed.");
+    }
+#endif
+
+    if (!hasPreviewPicture && !hasGdlPictures && !hasDarkPreviewPicture && !hasDarkGdlPictures) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give at least one of 'previewPicture', 'gdlPictures', 'darkPreviewPicture' or 'darkGdlPictures'.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateFailedExecutionResult (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    auto libPart = libraryManager->GetLibPartByName (name);
+    if (libPart.IsErr ()) {
+        return CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
+    }
+
+    auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    if (gsmObject.IsErr ()) {
+        return CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'.");
+    }
+
+    if (!gsmObject->IsEditable ()) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library.");
+    }
+
+    GS::ObjectState result = CreateSuccessfulExecutionResult ();
+    ACAPI_CallUndoableCommand ("Set Library Part Pictures", [&]() -> GSErrCode {
+        GS::UniString failedPicture;
+        GS::UniString failedText;
+        const auto Check = [&] (const char* key, ACAPI::Result<void> setResult) -> GSErrCode {
+            if (setResult.IsErr ()) {
+                failedPicture = key;
+                failedText = setResult.UnwrapErr ().text.c_str ();
+                return setResult.UnwrapErr ().kind;
+            }
+            return NoError;
+        };
+
+        ACAPI::Result<void> modifyResult = gsmObject->Modify ([&] (GSMObject::Modifier& modifier) -> GSErrCode {
+            GSErrCode err = NoError;
+            if (hasPreviewPicture && err == NoError) {
+                err = Check ("previewPicture", modifier.SetPreviewPicture (previewPicture[0]));
+            }
+            if (hasGdlPictures && err == NoError) {
+                err = Check ("gdlPictures", modifier.SetGDLPictures (gdlPictures));
+            }
+#ifdef ServerMainVers_2900
+            if (hasDarkPreviewPicture && err == NoError) {
+                err = Check ("darkPreviewPicture", modifier.SetDarkPreviewPicture (darkPreviewPicture[0]));
+            }
+            if (hasDarkGdlPictures && err == NoError) {
+                err = Check ("darkGdlPictures", modifier.SetDarkGDLPictures (darkGdlPictures));
+            }
+#endif
+            return err;
+        });
+
+        if (modifyResult.IsErr ()) {
+            GS::UniString modifyErrorMessage = "Failed to modify the library part '" + name + "'";
+            GS::UniString errorText = modifyResult.UnwrapErr ().text.c_str ();
+            if (!failedPicture.IsEmpty ()) {
+                modifyErrorMessage += ": setting '" + failedPicture + "' failed";
+                errorText = failedText;
+            }
+            if (!errorText.IsEmpty ()) {
+                modifyErrorMessage += " (" + errorText + ")";
+            }
+            modifyErrorMessage += ".";
+            result = CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, modifyErrorMessage);
+        }
+        return NoError;
+    });
+
+    return result;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }

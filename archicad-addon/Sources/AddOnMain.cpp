@@ -1348,6 +1348,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.7.3",
             "Sets the master, parameter, 2D, 3D and properties scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
         );
+        err |= RegisterCommand<SetLibraryPartPictureImagesCommand> (
+            libraryCommands, "1.7.3",
+            "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+        );
         AddCommandGroup (libraryCommands);
     }
 
