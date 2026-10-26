@@ -2011,6 +2011,38 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements."
         );
+        err |= RegisterCommand<GetAnalyticalMembersCommand> (
+            analyticalCommands, "1.7.3",
+            "Lists the elements of the curve and surface members of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27)."
+        );
+        err |= RegisterCommand<GetAnalyticalMemberDetailsCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the curve, surface or segmented surface member of the given elements in a Structural Analytical Model, with their connections. Cross sections, curves, nodes and surfaces are returned with every field the Archicad version has."
+        );
+        err |= RegisterCommand<GetAnalyticalReleasesCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the releases of the given analytical members. Available from Archicad 26."
+        );
+        err |= RegisterCommand<SetAnalyticalReleasesCommand> (
+            analyticalCommands, "1.7.3",
+            "Replaces the releases of the given analytical members, in one undo step. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetCustomCurveMemberStretchCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the lengths added to the start and end of the given curve members. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetCustomCurveMemberStretchCommand> (
+            analyticalCommands, "1.7.3",
+            "Sets the lengths added to the start and end of the given curve members, in one undo step. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetLCSOfAnalyticalMembersCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the local coordinate system of the given analytical member parts, optionally in their intersection with another member part. Available from Archicad 26."
+        );
+        err |= RegisterCommand<GetAnalyticalMemberPartGeometriesCommand> (
+            analyticalCommands, "1.7.3",
+            "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
