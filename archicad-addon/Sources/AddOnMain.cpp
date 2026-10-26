@@ -32,6 +32,7 @@
 #include "TeamworkCommands.hpp"
 #include "IssueCommands.hpp"
 #include "LibraryCommands.hpp"
+#include "LibraryPartSectionCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ClassificationCommands.hpp"
 #include "FavoritesCommands.hpp"
@@ -1347,6 +1348,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
             "Sets the master, parameter, 2D, 3D and properties scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+        );
+        err |= RegisterCommand<UpdateLibraryPartSectionsCommand> (
+            libraryCommands, "1.7.3",
+            "Replaces the text of existing sections (scripts, comment, keywords, copyright) of a loaded library part, found by its name. Each section is read back after the update, and the output has one execution result per section."
+        );
+        err |= RegisterCommand<GetLibraryPart2DPrimitivesCommand> (
+            libraryCommands, "1.7.3",
+            "Gets the lines, arcs and polygons (with their holes, and whether they are fills) of the 2D symbol of a loaded library part, drawn with its default parameters or with the parameters of a placed instance."
         );
         AddCommandGroup (libraryCommands);
     }
