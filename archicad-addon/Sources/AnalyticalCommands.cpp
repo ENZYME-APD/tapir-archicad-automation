@@ -788,7 +788,466 @@ GS::ObjectState CreateCoordinateSystemObjectState (const API_CoordinateSystem& c
         "xVector", CreateVector3DObjectState (coordinateSystem.xVector),
         "yVector", CreateVector3DObjectState (coordinateSystem.yVector));
 }
+
+GS::ObjectState CreateImportMappingTableObjectState (const API_ImportMappingTable& table)
+{
+    GS::ObjectState tableOS;
+    const auto& items = tableOS.AddList<GS::ObjectState> ("items");
+    for (const auto& kv : table) {
+        const API_AnalyticalElemPartId& elemPartId = PairKey (kv);
+        items (GS::ObjectState (
+            "elemPartId", GS::ObjectState (
+                "memberGuid", CreateGuidObjectState (elemPartId.memberGuid),
+                "contourIndex", static_cast<Int32> (elemPartId.contourIndex),
+                "edgeOrVertexIndex", static_cast<Int32> (elemPartId.edgeOrVertexIndex)),
+            "memberPartRef", CreateAnalyticalMemberPartRefObjectState (PairValue (kv))));
+    }
+    return tableOS;
+}
+
+GS::ObjectState CreateImportIdMappingObjectState (const API_ImportIdMappingType& idMapping)
+{
+    return GS::ObjectState (
+        "edges", CreateImportMappingTableObjectState (idMapping.edges),
+        "vertices", CreateImportMappingTableObjectState (idMapping.vertices));
+}
 #endif
+
+// The members are created from the given structs: the elemGuid of the input is not passed on, the
+// function fills in the GUID of the new element. Archicad 25 returns the GUID in an output parameter,
+// Archicad 26 and newer in the elemGuid of the member (of a segment for a segmented member).
+// Archicad 25 gets no profile image and no id mapping, whose part references are not known here.
+GSErrCode TAPIR_CreateElementFromCurveMember (API_AnalyticalCurveMember& curveMember, const GS::Optional<GS::UniString>& favoriteName, API_Guid& elemGuid)
+{
+#if defined (ServerMainVers_2700)
+    const GSErrCode err = ACAPI_Analytical_CreateElementFromCurveMember (ACAPI_GetToken (), curveMember, favoriteName);
+    elemGuid = curveMember.elemGuid;
+    return err;
+#elif defined (ServerMainVers_2600)
+    const GSErrCode err = ACAPI_AnalyticalModel_CreateElementFromCurveMember (ACAPI_GetToken (), curveMember, favoriteName);
+    elemGuid = curveMember.elemGuid;
+    return err;
+#else
+    return ACAPI_AnalyticalModel_CreateElementFromCurveMember (curveMember, nullptr, favoriteName.HasValue () ? *favoriteName : GS::UniString (), &elemGuid);
+#endif
+}
+
+GSErrCode TAPIR_CreateElementFromSurfaceMember (API_AnalyticalSurfaceMember& surfaceMember, const GS::Optional<GS::UniString>& favoriteName, API_ImportIdMappingType& idMapping, API_Guid& elemGuid)
+{
+#if defined (ServerMainVers_2700)
+    const GSErrCode err = ACAPI_Analytical_CreateElementFromSurfaceMember (ACAPI_GetToken (), surfaceMember, favoriteName, &idMapping);
+    elemGuid = surfaceMember.elemGuid;
+    return err;
+#elif defined (ServerMainVers_2600)
+    const GSErrCode err = ACAPI_AnalyticalModel_CreateElementFromSurfaceMember (ACAPI_GetToken (), surfaceMember, favoriteName, &idMapping);
+    elemGuid = surfaceMember.elemGuid;
+    return err;
+#else
+    UNUSED_PARAMETER (idMapping);
+    return ACAPI_AnalyticalModel_CreateElementFromSurfaceMember (surfaceMember, favoriteName.HasValue () ? *favoriteName : GS::UniString (), &elemGuid, nullptr);
+#endif
+}
+
+#ifdef ServerMainVers_2600
+API_Guid GetFirstElemGuid (const GS::Array<API_AnalyticalSurfaceMember>& surfaceMembers)
+{
+    for (const API_AnalyticalSurfaceMember& surfaceMember : surfaceMembers) {
+        if (surfaceMember.elemGuid != APINULLGuid) {
+            return surfaceMember.elemGuid;
+        }
+    }
+    return APINULLGuid;
+}
+#endif
+
+GSErrCode TAPIR_CreateElementFromSegmentedSurfaceMember (GS::Array<API_AnalyticalSurfaceMember>& surfaceMembers, const GS::Optional<GS::UniString>& favoriteName, API_ImportIdMappingType& idMapping, API_Guid& elemGuid)
+{
+#if defined (ServerMainVers_2700)
+    const GSErrCode err = ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember (ACAPI_GetToken (), surfaceMembers, favoriteName, &idMapping);
+    elemGuid = GetFirstElemGuid (surfaceMembers);
+    return err;
+#elif defined (ServerMainVers_2600)
+    const GSErrCode err = ACAPI_AnalyticalModel_CreateElementFromSegmentedSurfaceMember (ACAPI_GetToken (), surfaceMembers, favoriteName, &idMapping);
+    elemGuid = GetFirstElemGuid (surfaceMembers);
+    return err;
+#else
+    UNUSED_PARAMETER (idMapping);
+    return ACAPI_AnalyticalModel_CreateElementFromSegmentedSurfaceMember (surfaceMembers, favoriteName.HasValue () ? *favoriteName : GS::UniString (), &elemGuid, nullptr);
+#endif
+}
+
+// Reads the enumerator named in the field when it is given, and leaves the value unchanged otherwise.
+// Returns an error response for an unknown name.
+template <typename EnumType, size_t N>
+GS::Optional<GS::ObjectState> GetEnumFromObjectState (const GS::ObjectState& os, const char* fieldName, const EnumName<EnumType> (&names)[N], EnumType& value)
+{
+    GS::UniString name;
+    if (os.Get (fieldName, name) && !EnumFromString (names, name, value)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Unknown %s '%T'.", fieldName, name.ToPrintf ()));
+    }
+    return GS::NoValue;
+}
+
+template <typename EnumType, size_t N>
+GS::Optional<GS::ObjectState> GetRequiredEnumFromObjectState (const GS::ObjectState& os, const char* fieldName, const EnumName<EnumType> (&names)[N], EnumType& value)
+{
+    if (!os.Contains (fieldName)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("%s is required.", fieldName));
+    }
+    return GetEnumFromObjectState (os, fieldName, names, value);
+}
+
+void GetCoord3DFromObjectState (const GS::ObjectState& os, const char* fieldName, API_Coord3D& coord)
+{
+    const GS::ObjectState* coordOS = os.Get (fieldName);
+    if (coordOS != nullptr) {
+        coord = Get3DCoordinateFromObjectState (*coordOS);
+    }
+}
+
+// API_Vector3D is API_Coord3D from Archicad 27 and its own struct with the same fields before.
+template <typename Vector>
+void GetVector3DFromObjectState (const GS::ObjectState& os, const char* fieldName, Vector& v)
+{
+    const GS::ObjectState* vectorOS = os.Get (fieldName);
+    if (vectorOS != nullptr) {
+        vectorOS->Get ("x", v.x);
+        vectorOS->Get ("y", v.y);
+        vectorOS->Get ("z", v.z);
+    }
+}
+
+void GetAttributeIndexFromObjectState (const GS::ObjectState& os, const char* fieldName, API_AttributeIndex& index)
+{
+    Int32 value = 0;
+    if (os.Get (fieldName, value)) {
+        index = ACAPI_CreateAttributeIndex (value);
+    }
+}
+
+void GetAnalyticalNodeFromObjectState (const GS::ObjectState& nodeOS, API_AnalyticalNode& node)
+{
+    Int32 nodeId = 0;
+    nodeOS.Get ("nodeId", nodeId);
+    node.nodeId = static_cast<UInt32> (nodeId);
+    GetCoord3DFromObjectState (nodeOS, "coord", node.coord);
+}
+
+void GetAnalyticalNodesFromObjectState (const GS::ObjectState& os, const char* fieldName, GS::Array<API_AnalyticalNode>& nodes)
+{
+    GS::Array<GS::ObjectState> nodesOS;
+    os.Get (fieldName, nodesOS);
+    nodes.Clear ();
+    for (const GS::ObjectState& nodeOS : nodesOS) {
+        API_AnalyticalNode node {};
+        GetAnalyticalNodeFromObjectState (nodeOS, node);
+        nodes.Push (node);
+    }
+}
+
+// Fills the curve from its JSON form; the type is Line when left out. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalCurveFromObjectState (const GS::ObjectState& curveOS, API_AnalyticalCurve& curve)
+{
+    curve.type = API_AnalyticalCurve_LineType;
+    const GS::Optional<GS::ObjectState> typeError = GetEnumFromObjectState (curveOS, "type", AnalyticalCurveTypeNames, curve.type);
+    if (typeError.HasValue ()) {
+        return typeError;
+    }
+
+    const GS::ObjectState* begNode = curveOS.Get ("begNode");
+    const GS::ObjectState* endNode = curveOS.Get ("endNode");
+    if (begNode == nullptr || endNode == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "A curve needs a begNode and an endNode.");
+    }
+    GetAnalyticalNodeFromObjectState (*begNode, curve.begNode);
+    GetAnalyticalNodeFromObjectState (*endNode, curve.endNode);
+
+    GS::Array<GS::ObjectState> midCoords;
+    curveOS.Get ("midCoords", midCoords);
+    curve.midCoords.Clear ();
+    for (const GS::ObjectState& midCoord : midCoords) {
+        curve.midCoords.Push (Get3DCoordinateFromObjectState (midCoord));
+    }
+    return GS::NoValue;
+}
+
+GS::Optional<GS::ObjectState> GetAnalyticalCurvesFromObjectState (const GS::ObjectState& os, const char* fieldName, GS::Array<API_AnalyticalCurve>& curves)
+{
+    GS::Array<GS::ObjectState> curvesOS;
+    os.Get (fieldName, curvesOS);
+    curves.Clear ();
+    for (const GS::ObjectState& curveOS : curvesOS) {
+        API_AnalyticalCurve curve {};
+        const GS::Optional<GS::ObjectState> curveError = GetAnalyticalCurveFromObjectState (curveOS, curve);
+        if (curveError.HasValue ()) {
+            return curveError;
+        }
+        curves.Push (curve);
+    }
+    return GS::NoValue;
+}
+
+// Fills the cross section from its JSON form, as GetAnalyticalMemberDetails returns it. The profile image
+// of Archicad 26 and newer stays empty. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalCrossSectionFromObjectState (const GS::ObjectState& crossSectionOS, API_AnalyticalCrossSection& crossSection)
+{
+    GS::Optional<GS::ObjectState> enumError = GetEnumFromObjectState (crossSectionOS, "crossSectionType", AnalyticalCrossSectionTypeNames, crossSection.crossSectionType);
+    if (enumError.HasValue ()) {
+        return enumError;
+    }
+    crossSectionOS.Get ("width", crossSection.width);
+    crossSectionOS.Get ("height", crossSection.height);
+    crossSectionOS.Get ("veneerThickness", crossSection.veneerThickness);
+    GetAttributeIndexFromObjectState (crossSectionOS, "profileAttrIndex", crossSection.profileAttrIndex);
+
+    GS::Array<Int32> materialAttrIndices;
+    crossSectionOS.Get ("materialAttrIndices", materialAttrIndices);
+    crossSection.materialAttrIndices.Clear ();
+    for (Int32 materialAttrIndex : materialAttrIndices) {
+        crossSection.materialAttrIndices.Push (ACAPI_CreateAttributeIndex (materialAttrIndex));
+    }
+
+    GS::Array<GS::ObjectState> profileParameters;
+    crossSectionOS.Get ("profileParameters", profileParameters);
+    crossSection.profileParameters.Clear ();
+    for (const GS::ObjectState& profileParameter : profileParameters) {
+        const GS::ObjectState* parameterId = profileParameter.Get ("parameterId");
+        double value = 0.0;
+        if (parameterId == nullptr || !profileParameter.Get ("value", value)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each profile parameter needs a parameterId and a value.");
+        }
+        crossSection.profileParameters.Put (GetGuidFromObjectState (*parameterId), value);
+    }
+
+#ifdef ServerMainVers_2600
+    enumError = GetEnumFromObjectState (crossSectionOS, "alignment", AnalyticalAlignmentTypeNames, crossSection.alignment);
+    if (enumError.HasValue ()) {
+        return enumError;
+    }
+#endif
+    return GS::NoValue;
+}
+
+// Fills the curve member from its JSON form, as GetAnalyticalMemberDetails returns it. analyticalMemberType
+// and curve are required, the other fields keep their value when left out. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalCurveMemberFromObjectState (const GS::ObjectState& curveMemberOS, API_AnalyticalCurveMember& curveMember)
+{
+    GS::Optional<GS::ObjectState> error = GetRequiredEnumFromObjectState (curveMemberOS, "analyticalMemberType", AnalyticalMemberTypeNames, curveMember.analyticalMemberType);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    const GS::ObjectState* crossSection = curveMemberOS.Get ("crossSection");
+    if (crossSection != nullptr) {
+        error = GetAnalyticalCrossSectionFromObjectState (*crossSection, curveMember.crossSection);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    const GS::ObjectState* curve = curveMemberOS.Get ("curve");
+    if (curve == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "curve is required.");
+    }
+    error = GetAnalyticalCurveFromObjectState (*curve, curveMember.curve);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    GetAnalyticalNodesFromObjectState (curveMemberOS, "internalNodes", curveMember.internalNodes);
+    curveMemberOS.Get ("rotationAngle", curveMember.rotationAngle);
+    curveMemberOS.Get ("ey", curveMember.ey);
+    GetVector3DFromObjectState (curveMemberOS, "eyVector", curveMember.eyVector);
+    curveMemberOS.Get ("ez", curveMember.ez);
+    GetVector3DFromObjectState (curveMemberOS, "ezVector", curveMember.ezVector);
+    GetAttributeIndexFromObjectState (curveMemberOS, "layerAttrIndex", curveMember.layerAttrIndex);
+    error = GetEnumFromObjectState (curveMemberOS, "FEMType", Analytical1DFEMTypeNames, curveMember.FEMType);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> varyingSegmentList;
+    curveMemberOS.Get ("varyingSegmentList", varyingSegmentList);
+    curveMember.varyingSegmentList.Clear ();
+    for (const GS::ObjectState& segmentOS : varyingSegmentList) {
+        API_AnalyticalVaryingSegment segment {};
+        const GS::ObjectState* begProfile = segmentOS.Get ("begProfile");
+        if (begProfile == nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each varying segment needs a begProfile.");
+        }
+        error = GetAnalyticalCrossSectionFromObjectState (*begProfile, segment.begProfile);
+        if (error.HasValue ()) {
+            return error;
+        }
+        const GS::ObjectState* endProfile = segmentOS.Get ("endProfile");
+        if (endProfile != nullptr) {
+            API_AnalyticalCrossSection endCrossSection {};
+            error = GetAnalyticalCrossSectionFromObjectState (*endProfile, endCrossSection);
+            if (error.HasValue ()) {
+                return error;
+            }
+            segment.endProfile = endCrossSection;
+        }
+        segmentOS.Get ("span", segment.span);
+        curveMember.varyingSegmentList.Push (segment);
+    }
+#endif
+
+    curveMember.elemGuid = APINULLGuid;
+    return GS::NoValue;
+}
+
+GS::Optional<GS::ObjectState> GetAnalyticalSurfaceFromObjectState (const GS::ObjectState& surfaceOS, API_AnalyticalSurface& surface)
+{
+    const GS::Optional<GS::ObjectState> typeError = GetEnumFromObjectState (surfaceOS, "surfaceType", AnalyticalSurfaceTypeNames, surface.surfaceType);
+    if (typeError.HasValue ()) {
+        return typeError;
+    }
+    const GS::ObjectState* planeSurface = surfaceOS.Get ("planeSurface");
+    if (planeSurface != nullptr) {
+        GetCoord3DFromObjectState (*planeSurface, "basePoint", surface.planeSurface.basePoint);
+        GetVector3DFromObjectState (*planeSurface, "normalVector", surface.planeSurface.normalVector);
+    }
+    const GS::ObjectState* cylinderSurface = surfaceOS.Get ("cylinderSurface");
+    if (cylinderSurface != nullptr) {
+        GetCoord3DFromObjectState (*cylinderSurface, "basePoint", surface.cylinderSurface.basePoint);
+        GetVector3DFromObjectState (*cylinderSurface, "axisDirection", surface.cylinderSurface.axisDirection);
+        GetVector3DFromObjectState (*cylinderSurface, "referenceRay", surface.cylinderSurface.referenceRay);
+    }
+    return GS::NoValue;
+}
+
+// Fills the surface member from its JSON form, as GetAnalyticalMemberDetails returns it. analyticalMemberType
+// and contour are required, the other fields keep their value when left out. Returns an error response on failure.
+GS::Optional<GS::ObjectState> GetAnalyticalSurfaceMemberFromObjectState (const GS::ObjectState& surfaceMemberOS, API_AnalyticalSurfaceMember& surfaceMember)
+{
+    GS::Optional<GS::ObjectState> error = GetRequiredEnumFromObjectState (surfaceMemberOS, "analyticalMemberType", AnalyticalMemberTypeNames, surfaceMember.analyticalMemberType);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    const GS::ObjectState* surface = surfaceMemberOS.Get ("surface");
+    if (surface != nullptr) {
+        error = GetAnalyticalSurfaceFromObjectState (*surface, surfaceMember.surface);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    error = GetAnalyticalCurvesFromObjectState (surfaceMemberOS, "contour", surfaceMember.contour);
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (surfaceMember.contour.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "contour is required and must not be empty.");
+    }
+
+    GS::Array<GS::ObjectState> holeContours;
+    surfaceMemberOS.Get ("holeContours", holeContours);
+    surfaceMember.holeContours.Clear ();
+    for (const GS::ObjectState& holeContourOS : holeContours) {
+        GS::Array<API_AnalyticalCurve> holeContour;
+        error = GetAnalyticalCurvesFromObjectState (holeContourOS, "contour", holeContour);
+        if (error.HasValue ()) {
+            return error;
+        }
+        surfaceMember.holeContours.Push (holeContour);
+    }
+
+    GetAnalyticalNodesFromObjectState (surfaceMemberOS, "internalNodes", surfaceMember.internalNodes);
+    surfaceMemberOS.Get ("thickness", surfaceMember.thickness);
+#ifdef ServerMainVers_2600
+    GetVector3DFromObjectState (surfaceMemberOS, "lcsXVector", surfaceMember.lcsXVector);
+#endif
+    surfaceMemberOS.Get ("ez", surfaceMember.ez);
+    GetVector3DFromObjectState (surfaceMemberOS, "ezVector", surfaceMember.ezVector);
+    GetAttributeIndexFromObjectState (surfaceMemberOS, "materialAttrIndex", surfaceMember.materialAttrIndex);
+    GetAttributeIndexFromObjectState (surfaceMemberOS, "layerAttrIndex", surfaceMember.layerAttrIndex);
+    error = GetEnumFromObjectState (surfaceMemberOS, "FEMType", Analytical2DFEMTypeNames, surfaceMember.FEMType);
+    if (error.HasValue ()) {
+        return error;
+    }
+    const GS::ObjectState* groupId = surfaceMemberOS.Get ("groupId");
+    if (groupId != nullptr) {
+        surfaceMember.groupId = GetGuidFromObjectState (*groupId);
+    }
+
+    surfaceMember.elemGuid = APINULLGuid;
+    return GS::NoValue;
+}
+
+// Creates the element of one item of CreateElementsFromAnalyticalMembers and returns its result item.
+GS::ObjectState CreateElementFromAnalyticalMember (const GS::ObjectState& memberOS)
+{
+    GS::Optional<GS::UniString> favoriteName;
+    GS::UniString favoriteNameValue;
+    if (memberOS.Get ("favoriteName", favoriteNameValue)) {
+        favoriteName = favoriteNameValue;
+    }
+
+    const GS::ObjectState* curveMemberOS = memberOS.Get ("curveMember");
+    const GS::ObjectState* surfaceMemberOS = memberOS.Get ("surfaceMember");
+    GS::Array<GS::ObjectState> segmentsOS;
+    const bool segmented = memberOS.Get ("segmentedSurfaceMembers", segmentsOS);
+    if ((curveMemberOS != nullptr ? 1 : 0) + (surfaceMemberOS != nullptr ? 1 : 0) + (segmented ? 1 : 0) != 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "Each member needs exactly one of curveMember, surfaceMember and segmentedSurfaceMembers.");
+    }
+
+    API_Guid elemGuid = APINULLGuid;
+    API_ImportIdMappingType idMapping;
+    GSErrCode err = NoError;
+    bool hasIdMapping = false;
+
+    if (curveMemberOS != nullptr) {
+        API_AnalyticalCurveMember curveMember {};
+        const GS::Optional<GS::ObjectState> memberError = GetAnalyticalCurveMemberFromObjectState (*curveMemberOS, curveMember);
+        if (memberError.HasValue ()) {
+            return *memberError;
+        }
+        err = TAPIR_CreateElementFromCurveMember (curveMember, favoriteName, elemGuid);
+    } else if (surfaceMemberOS != nullptr) {
+        API_AnalyticalSurfaceMember surfaceMember {};
+        const GS::Optional<GS::ObjectState> memberError = GetAnalyticalSurfaceMemberFromObjectState (*surfaceMemberOS, surfaceMember);
+        if (memberError.HasValue ()) {
+            return *memberError;
+        }
+        err = TAPIR_CreateElementFromSurfaceMember (surfaceMember, favoriteName, idMapping, elemGuid);
+        hasIdMapping = true;
+    } else {
+        if (segmentsOS.IsEmpty ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "segmentedSurfaceMembers must not be empty.");
+        }
+        GS::Array<API_AnalyticalSurfaceMember> surfaceMembers;
+        for (const GS::ObjectState& segmentOS : segmentsOS) {
+            API_AnalyticalSurfaceMember surfaceMember {};
+            const GS::Optional<GS::ObjectState> memberError = GetAnalyticalSurfaceMemberFromObjectState (segmentOS, surfaceMember);
+            if (memberError.HasValue ()) {
+                return *memberError;
+            }
+            surfaceMembers.Push (surfaceMember);
+        }
+        err = TAPIR_CreateElementFromSegmentedSurfaceMember (surfaceMembers, favoriteName, idMapping, elemGuid);
+        hasIdMapping = true;
+    }
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create the element from the analytical member.");
+    }
+    if (elemGuid == APINULLGuid) {
+        return CreateErrorResponse (APIERR_GENERAL, "The element was created, but Archicad did not return its identifier.");
+    }
+
+    GS::ObjectState result = CreateElementIdObjectState (elemGuid);
+#ifdef ServerMainVers_2600
+    if (hasIdMapping) {
+        result.Add ("idMapping", CreateImportIdMappingObjectState (idMapping));
+    }
+#else
+    UNUSED_VARIABLE (hasIdMapping);
+#endif
+    return result;
+}
 
 GS::HashSet<API_Guid> CreateGuidSet (const GS::Array<API_Guid>& guids)
 {
@@ -2296,4 +2755,135 @@ GS::ObjectState GetAnalyticalMemberPartGeometriesCommand::Execute (const GS::Obj
     UNUSED_VARIABLE (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 26 or newer.");
 #endif
+}
+
+CreateElementsFromAnalyticalMembersCommand::CreateElementsFromAnalyticalMembersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateElementsFromAnalyticalMembersCommand::GetName () const
+{
+    return "CreateElementsFromAnalyticalMembers";
+}
+
+GS::Optional<GS::UniString> CreateElementsFromAnalyticalMembersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "members": {
+                "type": "array",
+                "description": "The analytical members to create elements from, in the form GetAnalyticalMemberDetails returns them, so a member read there can be passed on as it is. The elemGuid of a member is ignored. A curve member needs analyticalMemberType and curve, a surface member (or segment) analyticalMemberType and contour; the other fields are zero when left out.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "curveMember": {
+                            "$ref": "#/AnalyticalCurveMember",
+                            "description": "A curve member, creating a beam or a column."
+                        },
+                        "surfaceMember": {
+                            "$ref": "#/AnalyticalSurfaceMember",
+                            "description": "A surface member, creating a wall, a slab or a roof."
+                        },
+                        "segmentedSurfaceMembers": {
+                            "type": "array",
+                            "description": "The segments of a segmented surface member (a curved wall), creating one element.",
+                            "items": {
+                                "$ref": "#/AnalyticalSurfaceMember"
+                            },
+                            "minItems": 1
+                        },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "The name of the favorite whose settings the new element gets."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "oneOf": [
+                        {
+                            "required": [
+                                "curveMember"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "surfaceMember"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "segmentedSurfaceMembers"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "members"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateElementsFromAnalyticalMembersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "The new element of each member, in the order of the input. A member no element could be created from is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "idMapping": {
+                                    "$ref": "#/AnalyticalImportIdMapping"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateElementsFromAnalyticalMembersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> members;
+    parameters.Get ("members", members);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Create Elements From Analytical Members", [&] () -> GSErrCode {
+        for (const GS::ObjectState& member : members) {
+            elements (CreateElementFromAnalyticalMember (member));
+        }
+        return NoError;
+    });
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to create the elements from the analytical members.");
+    }
+
+    return response;
 }

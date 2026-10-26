@@ -15211,5 +15211,67 @@
             "xVector",
             "yVector"
         ]
+    },
+    "AnalyticalImportMappingTable": {
+        "type": "object",
+        "properties": {
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elemPartId": {
+                            "type": "object",
+                            "properties": {
+                                "memberGuid": {
+                                    "$ref": "#/GuidId"
+                                },
+                                "contourIndex": {
+                                    "type": "integer"
+                                },
+                                "edgeOrVertexIndex": {
+                                    "type": "integer"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "memberGuid",
+                                "contourIndex",
+                                "edgeOrVertexIndex"
+                            ]
+                        },
+                        "memberPartRef": {
+                            "$ref": "#/AnalyticalMemberPartRef"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elemPartId",
+                        "memberPartRef"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "items"
+        ]
+    },
+    "AnalyticalImportIdMapping": {
+        "type": "object",
+        "description": "Maps the edges and vertices of the given surface member to the parts of the new element. Archicad 26 and newer.",
+        "properties": {
+            "edges": {
+                "$ref": "#/AnalyticalImportMappingTable"
+            },
+            "vertices": {
+                "$ref": "#/AnalyticalImportMappingTable"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "edges",
+            "vertices"
+        ]
     }
 }

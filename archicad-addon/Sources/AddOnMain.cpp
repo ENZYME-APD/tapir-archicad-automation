@@ -2043,6 +2043,10 @@ GSErrCode Initialize (void)
             analyticalCommands, "1.7.3",
             "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26."
         );
+        err |= RegisterCommand<CreateElementsFromAnalyticalMembersCommand> (
+            analyticalCommands, "1.7.3",
+            "Creates elements (beams, columns, walls, slabs, roofs) from the given curve, surface or segmented surface members, in the form GetAnalyticalMemberDetails returns them, optionally with the settings of a favorite, in one undo step. Returns the new elements and, from Archicad 26, the mapping of their edges and vertices to member parts."
+        );
         AddCommandGroup (analyticalCommands);
     }
 
