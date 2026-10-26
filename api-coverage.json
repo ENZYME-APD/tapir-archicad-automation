@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 12:44 UTC",
+ "generatedAt": "2026-10-26 12:54 UTC",
  "versions": [
   25,
   26,
@@ -25764,6 +25764,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1545,
+     "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
+    },
     {
      "number": 1373,
      "title": "[4/4] Add GetLastValidEmbeddedLibraryPartName"
