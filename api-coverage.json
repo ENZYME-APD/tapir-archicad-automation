@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25 23:32 UTC",
+ "generatedAt": "2026-10-26 01:41 UTC",
  "versions": [
   25,
   26,
@@ -47459,6 +47459,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1475,
+     "title": "CreateHatches/SetDetailsOfElements: switch hatch type when buildingMaterialId or fillId is given"
+    },
     {
      "number": 1467,
      "title": "[4/6] Zone labeling settings and library part types"
