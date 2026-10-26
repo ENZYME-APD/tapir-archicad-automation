@@ -804,6 +804,138 @@ GS::ObjectState GetContainingDatabasesCommand::Execute (const GS::ObjectState& p
     return response;
 }
 
+CloseWindowsCommand::CloseWindowsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CloseWindowsCommand::GetName () const
+{
+    return "CloseWindows";
+}
+
+GS::Optional<GS::UniString> CloseWindowsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "windows": {
+                "type": "array",
+                "description": "The windows to close.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "databaseId": {
+                            "$ref": "#/DatabaseId",
+                            "description": "The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it."
+                        },
+                        "windowType": {
+                            "$ref": "#/WindowType",
+                            "description": "Optional. When given, the window is only closed when its database is of this type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "databaseId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "windows"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CloseWindowsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState CloseWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> windows;
+    parameters.Get ("windows", windows);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& window : windows) {
+        const GS::ObjectState* databaseId = window.Get ("databaseId");
+        if (databaseId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "databaseId is missing."));
+            continue;
+        }
+
+        // Resolves the database the same way ChangeWindow does.
+        API_WindowInfo windowInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
+        GSErrCode err = ACAPI_Window_GetDatabaseInfo (&windowInfo);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to resolve the database."));
+            continue;
+        }
+
+        GS::UniString windowTypeStr;
+        if (window.Get ("windowType", windowTypeStr) && ConvertStringToWindowType (windowTypeStr) != windowInfo.typeID) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "databaseId does not belong to the requested windowType."));
+            continue;
+        }
+
+        err = ACAPI_Window_CloseWindow (&windowInfo);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to close the window."));
+    }
+
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "CloseWindows requires Archicad 27 or later.");
+#endif
+}
+
+RebuildCurrentDatabaseCommand::RebuildCurrentDatabaseCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RebuildCurrentDatabaseCommand::GetName () const
+{
+    return "RebuildCurrentDatabase";
+}
+
+GS::Optional<GS::UniString> RebuildCurrentDatabaseCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RebuildCurrentDatabaseCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Database_RebuildCurrentDatabase ();
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to rebuild the current database.");
+#else
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "RebuildCurrentDatabase requires Archicad 27 or later.");
+#endif
+}
+
 
 
 ShowAlertCommand::ShowAlertCommand () :

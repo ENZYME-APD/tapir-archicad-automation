@@ -249,6 +249,14 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.2",
             "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout."
         );
+        err |= RegisterCommand<CloseWindowsCommand> (
+            applicationCommands, "1.7.3",
+            "Closes the windows of the given databases (for example layouts, sections or details opened earlier with ChangeWindow), with one execution result per window; a window Archicad cannot close gets a failed result. Requires Archicad 27 or later."
+        );
+        err |= RegisterCommand<RebuildCurrentDatabaseCommand> (
+            applicationCommands, "1.7.3",
+            "Rebuilds the current database, the one the API works on (see ChangeWindow). Requires Archicad 27 or later."
+        );
         err |= RegisterCommand<GetUserGSIDCommand> (
             applicationCommands, "1.5.6",
             "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later."
@@ -2007,6 +2015,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
             "Returns solid element operation links for each queried element, grouped by role (target or operator)."
+        );
+        err |= RegisterCommand<CreateSolidOperationsCommand> (
+            solidElementOperationCommands, "1.7.3",
+            "Runs a solid operation (subtraction, intersection, addition) on two morphs and returns the resulting morphs, one item per operation. Unlike CreateSolidElementLinks this is not a link: the target and the operator morph are replaced by the result. Morphs only; the operations run in one undo step."
         );
         err |= RegisterCommand<TrimElementsCommand> (
             solidElementOperationCommands, "1.5.9",

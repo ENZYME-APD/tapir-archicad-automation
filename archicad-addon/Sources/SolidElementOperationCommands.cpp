@@ -215,6 +215,162 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
 }
 
 // ---------------------------------------------------------------------------
+// CreateSolidOperations
+// ---------------------------------------------------------------------------
+
+static bool IsMorph (const API_Guid& guid)
+{
+    API_Elem_Head elemHead = {};
+    return LoadElementHeaderByGuid (guid, elemHead) && GetElemTypeId (elemHead) == API_MorphID;
+}
+
+CreateSolidOperationsCommand::CreateSolidOperationsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateSolidOperationsCommand::GetName () const
+{
+    return "CreateSolidOperations";
+}
+
+GS::Optional<GS::UniString> CreateSolidOperationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "operations": {
+                "type": "array",
+                "description": "The solid operations to run, each on two morphs. The target and the operator morph are replaced by the resulting morph.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "targetId": {
+                            "$ref": "#/ElementId",
+                            "description": "The target morph."
+                        },
+                        "operatorId": {
+                            "$ref": "#/ElementId",
+                            "description": "The operator morph."
+                        },
+                        "operation": {
+                            "$ref": "#/SolidOperationType"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "targetId",
+                        "operatorId",
+                        "operation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "operations"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateSolidOperationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item per operation, in the order of the input: the resulting morphs, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The morphs created by the operation."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState CreateSolidOperationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> operations;
+    parameters.Get ("operations", operations);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("CreateSolidOperations", [&] () -> GSErrCode {
+        for (const GS::ObjectState& operationOs : operations) {
+            GS::ObjectState targetIdOs, operatorIdOs;
+            if (!operationOs.Get ("targetId", targetIdOs) || !operationOs.Get ("operatorId", operatorIdOs)) {
+                results (CreateErrorResponse (APIERR_BADPARS, "targetId or operatorId is missing."));
+                continue;
+            }
+
+            const API_Guid targetGuid   = GetGuidFromObjectState (targetIdOs);
+            const API_Guid operatorGuid = GetGuidFromObjectState (operatorIdOs);
+            if (targetGuid == operatorGuid) {
+                results (CreateErrorResponse (APIERR_BADPARS, "targetId and operatorId must be different morphs."));
+                continue;
+            }
+            if (!IsMorph (targetGuid) || !IsMorph (operatorGuid)) {
+                results (CreateErrorResponse (APIERR_BADPARS, "targetId and operatorId must both be existing morphs."));
+                continue;
+            }
+
+            // OperationFromString falls back to Subtraction, so an unknown name is caught here.
+            GS::UniString operationStr;
+            operationOs.Get ("operation", operationStr);
+            const API_SolidOperationID operation = OperationFromString (operationStr);
+            if (OperationToString (operation) != operationStr) {
+                results (CreateErrorResponse (APIERR_BADPARS, "Unknown operation: " + operationStr));
+                continue;
+            }
+
+            GS::Array<API_Guid> resultGuids;
+            const GSErrCode err = ACAPI_Element_SolidOperation_Create (targetGuid, operatorGuid, operation, &resultGuids);
+            if (err != NoError) {
+                results (CreateErrorResponse (err, "Failed to run the solid operation."));
+                continue;
+            }
+
+            GS::ObjectState result;
+            const auto& elements = result.AddList<GS::ObjectState> ("elements");
+            for (const API_Guid& resultGuid : resultGuids) {
+                elements (CreateElementIdObjectState (resultGuid));
+            }
+            results (result);
+        }
+        return NoError;
+    });
+
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to run the solid operations.");
+    }
+
+    return response;
+}
+
+// ---------------------------------------------------------------------------
 // GetSolidElementLinks
 // ---------------------------------------------------------------------------
 
