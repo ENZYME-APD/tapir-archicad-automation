@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 05:26 UTC",
+ "generatedAt": "2026-10-26 05:37 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "merged": 356,
   "open": 100,
-  "in progress": 713,
-  "claimed": 347,
+  "in progress": 822,
+  "claimed": 238,
   "done": 743
  },
  "items": [
@@ -39999,6 +39999,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
     },
@@ -40352,6 +40356,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -40622,6 +40630,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -42463,6 +42475,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -42512,7 +42528,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": []
   },
   {
@@ -42550,9 +42571,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42571,9 +42597,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42596,7 +42627,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": []
   },
   {
@@ -42634,9 +42670,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42655,9 +42696,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42700,9 +42746,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42721,9 +42772,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42779,9 +42835,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42800,9 +42861,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42845,9 +42911,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42866,9 +42937,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42911,9 +42987,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42932,9 +43013,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -42957,7 +43043,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": []
   },
   {
@@ -42976,6 +43067,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -43023,6 +43118,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -43117,9 +43216,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43138,9 +43242,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43161,9 +43270,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43211,9 +43325,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43232,9 +43351,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43282,9 +43406,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43303,9 +43432,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43353,9 +43487,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43374,9 +43513,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43424,9 +43568,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43445,9 +43594,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43495,9 +43649,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43516,9 +43675,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43570,9 +43734,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43591,9 +43760,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43641,9 +43815,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43662,9 +43841,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -43711,6 +43895,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44416,9 +44604,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44466,9 +44659,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44487,9 +44685,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44537,9 +44740,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44558,9 +44766,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44800,6 +45013,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -44850,6 +45067,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -44913,9 +45134,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44934,9 +45160,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -44988,9 +45219,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45009,9 +45245,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45035,6 +45276,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -45101,9 +45346,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45122,9 +45372,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45149,6 +45404,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -45171,6 +45430,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -45265,9 +45528,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45286,9 +45554,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45308,9 +45581,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45357,9 +45635,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45404,9 +45687,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45454,9 +45742,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45475,9 +45768,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45525,9 +45823,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45546,9 +45849,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45619,9 +45927,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45640,9 +45953,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -45666,6 +45984,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46686,9 +47008,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46735,9 +47062,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -46882,9 +47214,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -47020,6 +47357,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -52960,6 +53301,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -53009,7 +53354,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": []
   },
   {
@@ -53047,9 +53397,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53068,9 +53423,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53093,7 +53453,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": []
   },
   {
@@ -53131,9 +53496,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53152,9 +53522,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53197,9 +53572,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53218,9 +53598,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53276,9 +53661,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53297,9 +53687,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53342,9 +53737,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53363,9 +53763,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53408,9 +53813,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53429,9 +53839,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53454,7 +53869,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": []
   },
   {
@@ -53473,6 +53893,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -53520,6 +53944,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -53614,9 +54042,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53635,9 +54068,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53658,9 +54096,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53708,9 +54151,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53729,9 +54177,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53779,9 +54232,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53800,9 +54258,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53850,9 +54313,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53871,9 +54339,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53921,9 +54394,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53942,9 +54420,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -53992,9 +54475,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54013,9 +54501,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54067,9 +54560,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54088,9 +54586,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54138,9 +54641,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54159,9 +54667,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54208,6 +54721,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54271,6 +54788,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -54321,6 +54842,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54384,9 +54909,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54405,9 +54935,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54459,9 +54994,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54480,9 +55020,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54506,6 +55051,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54572,9 +55121,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54593,9 +55147,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54620,6 +55179,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
+    {
      "number": 1460,
      "title": "[4/6] Add ModifyMEPPreferenceTables: edit the MEP preference tables"
     }
@@ -54642,6 +55205,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54736,9 +55303,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54757,9 +55329,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54779,9 +55356,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54828,9 +55410,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54875,9 +55462,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54925,9 +55517,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54946,9 +55543,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -54996,9 +55598,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55017,9 +55624,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55090,9 +55702,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55111,9 +55728,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55137,6 +55759,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55842,9 +56468,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55892,9 +56523,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55913,9 +56549,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55963,9 +56604,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -55984,9 +56630,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56657,9 +57308,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56706,9 +57362,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56804,9 +57465,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -56906,9 +57572,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    }
+   ],
    "issues": [
     {
      "number": 1456,
@@ -59285,6 +59956,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
@@ -64127,6 +64802,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1523,
+     "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
+    },
     {
      "number": 1518,
      "title": "[6/6] Get/SetDesignOptionCombinationOfViews on Archicad 27 and 28, rights checks before design option writes"
