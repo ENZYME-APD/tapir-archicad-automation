@@ -13,6 +13,15 @@
 #include "ACAPI/MEPRoutingSegment.hpp"
 #include "ACAPI/MEPRoutingSegmentDefault.hpp"
 #include "ACAPI/MEPRoutingNode.hpp"
+#include "ACAPI/MEPRigidSegmentDefault.hpp"
+#include "ACAPI/MEPRoutingNodeDefault.hpp"
+#include "ACAPI/MEPRigidSegment.hpp"
+#include "ACAPI/MEPTransitionDefault.hpp"
+#ifdef ServerMainVers_2900
+#include "ACAPI/MEPElbowDefault.hpp"
+#else
+#include "ACAPI/MEPBendDefault.hpp"
+#endif
 #include "ACAPI/MEPTerminalDefault.hpp"
 #include "ACAPI/MEPAccessoryDefault.hpp"
 #include "ACAPI/MEPEquipmentDefault.hpp"
@@ -146,6 +155,119 @@ static GSErrCode SetLayerOfRoutingElement (const ACAPI::MEP::UniqueID& routingEl
         }
     }
     return firstErr;
+}
+
+// Sets the insulation of an MEP element default (rigid segment, elbow, bend or transition); a
+// thickness of 0 removes it.
+template<class ElementDefaultType>
+static bool SetInsulationOfDefault (ElementDefaultType& elementDefault, double insulationThickness)
+{
+    bool setterSucceeded = true;
+    ACAPI::Result<void> result = elementDefault.Modify ([&](auto& modifier) {
+        if (insulationThickness > 0.0) {
+            setterSucceeded = modifier.SetInsulationThickness (insulationThickness).IsOk ();
+        } else {
+            modifier.RemoveInsulation ();
+        }
+    });
+    return result.IsOk () && setterSucceeded;
+}
+
+// Sets the insulation in the defaults of a routing element, which its uncustomized segments and nodes
+// follow and its settings show.
+static bool SetInsulationOfRoutingElementDefaults (RoutingElement& routingElement, double insulationThickness)
+{
+    RoutingSegmentDefault routingSegmentDefault = routingElement.GetRoutingSegmentDefaultParameters ();
+    RigidSegmentDefault rigidSegmentDefault = routingSegmentDefault.GetRigidSegmentDefault ();
+    if (!SetInsulationOfDefault (rigidSegmentDefault, insulationThickness) ||
+        routingSegmentDefault.Modify ([&](RoutingSegmentDefault::Modifier& modifier) {
+            modifier.SetRigidSegmentDefault (rigidSegmentDefault);
+        }).IsErr ()) {
+        return false;
+    }
+
+    RoutingNodeDefault routingNodeDefault = routingElement.GetRoutingNodeDefaultParameters ();
+#ifdef ServerMainVers_2900
+    ElbowDefault elbowDefault = routingNodeDefault.GetElbowDefault ();
+#else
+    BendDefault elbowDefault = routingNodeDefault.GetBendDefault ();
+#endif
+    TransitionDefault transitionDefault = routingNodeDefault.GetTransitionDefault ();
+    if (!SetInsulationOfDefault (elbowDefault, insulationThickness) ||
+        !SetInsulationOfDefault (transitionDefault, insulationThickness) ||
+        routingNodeDefault.Modify ([&](RoutingNodeDefault::Modifier& modifier) {
+#ifdef ServerMainVers_2900
+            modifier.SetElbowDefault (elbowDefault);
+#else
+            modifier.SetBendDefault (elbowDefault);
+#endif
+            modifier.SetTransitionDefault (transitionDefault);
+        }).IsErr ()) {
+        return false;
+    }
+
+    bool settersSucceeded = true;
+    ACAPI::Result<void> result = routingElement.Modify ([&](RoutingElement::Modifier& modifier) {
+        settersSucceeded &= modifier.SetRoutingSegmentDefaultParameters (routingSegmentDefault).IsOk ();
+        settersSucceeded &= modifier.SetRoutingNodeDefaultParameters (routingNodeDefault).IsOk ();
+    }, "Modify Insulation of Routing Element");
+    return result.IsOk () && settersSucceeded;
+}
+
+// Sets the insulation of a routing element, as Insulation in its settings does: in its defaults,
+// in the rigid segment defaults of each segment, and in the elbow (bend in Archicad 28) and
+// transition defaults of each node, without which the existing elbows and transitions keep their
+// insulation. Every part is tried; returns whether all of them succeeded.
+static bool SetInsulationOfRoutingElement (RoutingElement& routingElement, double insulationThickness)
+{
+    bool success = SetInsulationOfRoutingElementDefaults (routingElement, insulationThickness);
+
+    for (const auto& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        auto segment = RoutingSegment::Get (segmentId);
+        if (segment.IsErr ()) {
+            success = false;
+            continue;
+        }
+        RigidSegmentDefault rigidSegmentDefault = segment->GetRigidSegmentDefaultParameters ();
+        if (!SetInsulationOfDefault (rigidSegmentDefault, insulationThickness)) {
+            success = false;
+            continue;
+        }
+        bool setterSucceeded = true;
+        ACAPI::Result<void> result = segment->Modify ([&](RoutingSegment::Modifier& modifier) {
+            setterSucceeded = modifier.SetRigidSegmentDefaultParameters (rigidSegmentDefault).IsOk ();
+        }, "Modify Insulation of Routing Segment");
+        success &= result.IsOk () && setterSucceeded;
+    }
+
+    for (const auto& nodeId : routingElement.GetRoutingNodeIds ()) {
+        auto node = RoutingNode::Get (nodeId);
+        if (node.IsErr ()) {
+            success = false;
+            continue;
+        }
+#ifdef ServerMainVers_2900
+        ElbowDefault elbowDefault = node->GetElbowDefaultParameters ();
+#else
+        BendDefault elbowDefault = node->GetBendDefaultParameters ();
+#endif
+        TransitionDefault transitionDefault = node->GetTransitionDefaultParameters ();
+        if (!SetInsulationOfDefault (elbowDefault, insulationThickness) || !SetInsulationOfDefault (transitionDefault, insulationThickness)) {
+            success = false;
+            continue;
+        }
+        bool settersSucceeded = true;
+        ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
+#ifdef ServerMainVers_2900
+            settersSucceeded &= modifier.SetElbowDefaultParameters (elbowDefault).IsOk ();
+#else
+            settersSucceeded &= modifier.SetBendDefaultParameters (elbowDefault).IsOk ();
+#endif
+            settersSucceeded &= modifier.SetTransitionDefaultParameters (transitionDefault).IsOk ();
+        }, "Modify Insulation of Routing Node");
+        success &= result.IsOk () && settersSucceeded;
+    }
+    return success;
 }
 
 static GS::UniString DomainToString (Domain domain)
@@ -499,9 +621,19 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             if (flangeSize.has_value ()) {
                 segmentOs.Add ("flangeSize", flangeSize.value ());
             }
+            // Read from the rigid segments, which carry the geometry: the segment's rigid segment
+            // defaults did not report a thickness set by ModifyMEPRoutingElements.
+            std::optional<double> insulationThickness;
             const auto& rigidSegments = segmentOs.AddList<GS::ObjectState> ("rigidSegments");
             for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
                 rigidSegments (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (rigidSegmentId)));
+                ACAPI::Result<RigidSegment> rigidSegment = RigidSegment::Get (rigidSegmentId);
+                if (!insulationThickness.has_value () && rigidSegment.IsOk ()) {
+                    insulationThickness = rigidSegment->GetInsulationThickness ();
+                }
+            }
+            if (insulationThickness.has_value ()) {
+                segmentOs.Add ("insulationThickness", insulationThickness.value ());
             }
             segments (segmentOs);
         }
@@ -1186,6 +1318,11 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "type": "number",
                             "description": "New flange size applied to all segments."
                         },
+                        "insulationThickness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "New insulation thickness of the route, as Insulation in its settings: applied to the rigid segments of all segments and to the elbows (bends in Archicad 28) and transitions at all nodes. 0 removes the insulation. Not applicable to the CableCarrier domain."
+                        },
                         "nodePositions": {
                             "type": "array",
                             "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
@@ -1245,6 +1382,13 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
         if (routingElement.IsErr ()) {
             executionResults (CreateFailedExecutionResult (routingElement.UnwrapErr ().kind, "Failed to get the routing element."));
+            continue;
+        }
+
+        double insulationThickness = 0.0;
+        const bool hasInsulationThickness = routingElementData.Get ("insulationThickness", insulationThickness);
+        if (hasInsulationThickness && routingElement->GetDomain () == Domain::CableCarrier) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Cable carriers have no insulation, nothing was changed."));
             continue;
         }
 
@@ -1335,6 +1479,10 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                 }, "Modify Routing Segment");
                 success &= result.IsOk () && settersSucceeded;
             }
+        }
+
+        if (hasInsulationThickness) {
+            success &= SetInsulationOfRoutingElement (*routingElement, insulationThickness);
         }
 
         GS::Array<GS::ObjectState> nodePositions;
