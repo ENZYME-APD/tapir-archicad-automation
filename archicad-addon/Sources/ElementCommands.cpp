@@ -7077,6 +7077,99 @@ GS::ObjectState TriangulatePolygonsOfElementsCommand::Execute (const GS::ObjectS
     return response;
 }
 
+// Get3DModelCounts
+
+Get3DModelCountsCommand::Get3DModelCountsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get3DModelCountsCommand::GetName () const
+{
+    return "Get3DModelCounts";
+}
+
+GS::Optional<GS::UniString> Get3DModelCountsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "counts": {
+                "type": "array",
+                "description": "The number of components of each type in the 3D model Archicad currently holds, one item per type, or an error for a type that could not be counted.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "componentType": {
+                                    "type": "string",
+                                    "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
+                                    "enum": ["Body", "Pgon", "Pedg", "Edge", "Vert", "Vect", "Umat", "Lght"]
+                                },
+                                "count": {
+                                    "type": "integer",
+                                    "description": "The number of components of this type."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "componentType",
+                                "count"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "counts"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DModelCountsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    // Every API_3DTypeID except API_Zombie3DID, in the order of the enum.
+    static const std::pair<API_3DTypeID, const char*> componentTypes[] = {
+        { API_BodyID, "Body" },
+        { API_PgonID, "Pgon" },
+        { API_PedgID, "Pedg" },
+        { API_EdgeID, "Edge" },
+        { API_VertID, "Vert" },
+        { API_VectID, "Vect" },
+        { API_UmatID, "Umat" },
+        { API_LghtID, "Lght" }
+    };
+
+    GS::ObjectState response;
+    const auto& counts = response.AddList<GS::ObjectState> ("counts");
+
+    for (const auto& componentType : componentTypes) {
+        Int32 count = 0;
+        const GSErrCode err = ACAPI_ModelAccess_GetNum (componentType.first, &count);
+        if (err != NoError) {
+            counts (CreateErrorResponse (err, GS::UniString::Printf ("Failed to count the %s components of the 3D model", componentType.second)));
+            continue;
+        }
+
+        GS::ObjectState countOS;
+        countOS.Add ("componentType", GS::UniString (componentType.second));
+        countOS.Add ("count", count);
+        counts (countOS);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_GENERAL, "Get3DModelCounts is available from Archicad 27.");
+#endif
+}
+
 
 // GetQuantitiesOfElements
 
