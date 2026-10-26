@@ -6477,22 +6477,6 @@
             "localizedTypeName": {
                 "type": "string",
                 "description": "The type name of the element in the language of Archicad. Only returned by Archicad 28."
-            },
-            "polyline": {
-                "type": "object",
-                "description": "The polyline of a flexible segment. Only present for flexible segments.",
-                "properties": {
-                    "controlPoints": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/Coordinate3D"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "controlPoints"
-                ]
             }
         },
         "additionalProperties": false,

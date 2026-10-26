@@ -13,7 +13,6 @@
 #include "ACAPI/MEPRoutingSegment.hpp"
 #include "ACAPI/MEPRoutingSegmentDefault.hpp"
 #include "ACAPI/MEPRoutingNode.hpp"
-#include "ACAPI/MEPFlexibleSegment.hpp"
 #include "ACAPI/MEPTerminalDefault.hpp"
 #include "ACAPI/MEPAccessoryDefault.hpp"
 #include "ACAPI/MEPEquipmentDefault.hpp"
@@ -394,20 +393,6 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
         // Archicad 29 removed GetLocalizedElemTypeName.
         element.Add ("localizedTypeName", GetLocalizedElemTypeName (header.type.classID));
 #endif
-        if (typeName == "FlexibleSegment") {
-            ACAPI::Result<FlexibleSegment> flexibleSegment = FlexibleSegment::Get (Adapter::UniqueID (elemGuid));
-            if (flexibleSegment.IsOk ()) {
-                ACAPI::Result<FlexibleSegmentPolyline> polyline = flexibleSegment->GetPolyline ();
-                if (polyline.IsOk ()) {
-                    GS::ObjectState polylineOs;
-                    const auto& controlPoints = polylineOs.AddList<GS::ObjectState> ("controlPoints");
-                    for (const API_Coord3D& controlPoint : polyline->controlPoints) {
-                        controlPoints (Create3DCoordinateObjectState (controlPoint));
-                    }
-                    element.Add ("polyline", polylineOs);
-                }
-            }
-        }
         elements (element);
     }
 
