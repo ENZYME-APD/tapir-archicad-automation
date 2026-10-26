@@ -267,6 +267,111 @@ GS::ObjectState GetPrinterInfoCommand::Execute (const GS::ObjectState& /*paramet
     return response;
 }
 
+GetPrinterAndPlotterInfoCommand::GetPrinterAndPlotterInfoCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPrinterAndPlotterInfoCommand::GetName () const
+{
+    return "GetPrinterAndPlotterInfo";
+}
+
+GS::Optional<GS::UniString> GetPrinterAndPlotterInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "printer": {
+                "type": "object",
+                "description": "The printer selected in Archicad, or an error when it cannot be read.",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the selected printer."
+                            },
+                            "portrait": {
+                                "type": "boolean",
+                                "description": "The selected orientation: true for portrait, false for landscape."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name",
+                            "portrait"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            },
+            "plotter": {
+                "type": "object",
+                "description": "The plotter selected in Archicad, or an error when it cannot be read.",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the selected plotter."
+                            },
+                            "model": {
+                                "type": "string",
+                                "description": "The model of the selected plotter."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name",
+                            "model"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "printer",
+            "plotter"
+        ]
+    })";
+}
+
+GS::ObjectState GetPrinterAndPlotterInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+
+    API_MiscPrinterInfo printerInfo = {};
+    GSErrCode err = ACAPI_ProjectOperation_GetMiscPrinterInfo (&printerInfo);
+    if (err == NoError) {
+        response.Add ("printer", GS::ObjectState (
+            "name", GS::UniString (printerInfo.name),
+            "portrait", printerInfo.orientPortrait));
+    } else {
+        response.Add ("printer", CreateErrorResponse (err, "Failed to get the printer info."));
+    }
+
+    API_MiscPlotterInfo plotterInfo = {};
+    err = ACAPI_ProjectOperation_GetMiscPlotterInfo (&plotterInfo);
+    if (err == NoError) {
+        response.Add ("plotter", GS::ObjectState (
+            "name", GS::UniString (plotterInfo.name),
+            "model", GS::UniString (plotterInfo.model)));
+    } else {
+        response.Add ("plotter", CreateErrorResponse (err, "Failed to get the plotter info."));
+    }
+
+    return response;
+}
+
 QuitArchicadCommand::QuitArchicadCommand () :
     CommandBase (CommonSchema::NotUsed)
 {

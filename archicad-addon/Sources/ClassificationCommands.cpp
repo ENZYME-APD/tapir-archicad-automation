@@ -997,6 +997,135 @@ static GS::HashSet<API_Guid> AllClassificationGuids ()
     return guids;
 }
 
+GetClassificationItemParentsCommand::GetClassificationItemParentsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetClassificationItemParentsCommand::GetName () const
+{
+    return "GetClassificationItemParents";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemParentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetClassificationItemParentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemParents": {
+                "type": "array",
+                "description": "The parent and the system of each given item, in the order of the input. A non-existing item is an error item.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "classificationSystemId": {
+                                    "$ref": "#/ClassificationSystemId",
+                                    "description": "The classification system the item belongs to."
+                                },
+                                "parentClassificationItemId": {
+                                    "$ref": "#/ClassificationItemId",
+                                    "description": "The parent item. Missing for a top level item of its system."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "classificationSystemId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemParents"
+        ]
+    })";
+}
+
+static bool IsRootItemOfClassificationSystem (const API_Guid& systemGuid, const API_Guid& itemGuid)
+{
+    GS::Array<API_ClassificationItem> roots;
+    if (ACAPI_Classification_GetClassificationSystemRootItems (systemGuid, roots) != NoError) {
+        return false;
+    }
+    for (const API_ClassificationItem& root : roots) {
+        if (root.guid == itemGuid) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GS::ObjectState GetClassificationItemParentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    GS::ObjectState response;
+    const auto& classificationItemParents = response.AddList<GS::ObjectState> ("classificationItemParents");
+
+    for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+        const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+        if (itemId == nullptr) {
+            classificationItemParents (CreateErrorResponse (APIERR_BADPARS, "classificationItemId is missing"));
+            continue;
+        }
+
+        API_ClassificationItem item;
+        item.guid = GetGuidFromObjectState (*itemId);
+        if (ACAPI_Classification_GetClassificationItem (item) != NoError) {
+            classificationItemParents (CreateErrorResponse (APIERR_BADID, "classification item not found"));
+            continue;
+        }
+
+        API_ClassificationSystem system;
+        GSErrCode err = ACAPI_Classification_GetClassificationItemSystem (item.guid, system);
+        if (err != NoError) {
+            classificationItemParents (CreateErrorResponse (err, "Failed to get the classification system of the item"));
+            continue;
+        }
+
+        GS::ObjectState itemParent ("classificationSystemId", CreateGuidObjectState (system.guid));
+
+        API_ClassificationItem parent;
+        err = ACAPI_Classification_GetClassificationItemParent (item.guid, parent);
+        if (err == NoError && parent.guid != APINULLGuid) {
+            itemParent.Add ("parentClassificationItemId", CreateGuidObjectState (parent.guid));
+        } else if (!IsRootItemOfClassificationSystem (system.guid, item.guid)) {
+            // A top level item has no parent; whether Archicad reports that with an error or
+            // an empty parent, the root items of the system tell the two cases apart.
+            classificationItemParents (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to get the parent of the classification item"));
+            continue;
+        }
+
+        classificationItemParents (itemParent);
+    }
+
+    return response;
+}
+
 ImportClassificationsXmlCommand::ImportClassificationsXmlCommand () :
     CommandBase (CommonSchema::Used)
 {}
