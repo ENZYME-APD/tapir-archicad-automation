@@ -943,3 +943,52 @@ inline void DisposeAttribute (API_Attribute& attr)
         delete attr.material.texture.fileLoc;
     }
 }
+
+// Reads the property objects linked to an element, or to the defaults of its type when
+// head.guid is APINULLGuid. ACAPI_Element_GetLinkedPropertyObjects before Archicad 27; from
+// Archicad 30 the pointer overload is deprecated, so the std::vector overload is used there.
+inline GSErrCode TAPIR_ElementLink_GetLinkedPropertyObjects (const API_Elem_Head& head, bool& criteria, Int32& individuallyLibInd, GS::Array<Int32>& critLibInds)
+{
+    criteria = false;
+    individuallyLibInd = 0;
+    critLibInds.Clear ();
+#ifdef ServerMainVers_3000
+    std::vector<Int32> critLibIndVector;
+    const GSErrCode err = ACAPI_ElementLink_GetLinkedPropertyObjects (head, criteria, individuallyLibInd, critLibIndVector);
+    if (err == NoError) {
+        for (Int32 critLibInd : critLibIndVector) {
+            critLibInds.Push (critLibInd);
+        }
+    }
+    return err;
+#else
+    API_Elem_Head headCopy = head;
+    Int32* critLibIndPtr = nullptr;
+    Int32 nCrits = 0;
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_ElementLink_GetLinkedPropertyObjects (&headCopy, &criteria, &individuallyLibInd, &critLibIndPtr, &nCrits);
+#else
+    const GSErrCode err = ACAPI_Element_GetLinkedPropertyObjects (&headCopy, &criteria, &individuallyLibInd, &critLibIndPtr, &nCrits);
+#endif
+    if (err == NoError && critLibIndPtr != nullptr) {
+        for (Int32 i = 0; i < nCrits; ++i) {
+            critLibInds.Push (critLibIndPtr[i]);
+        }
+    }
+    if (critLibIndPtr != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&critLibIndPtr));
+    }
+    return err;
+#endif
+}
+
+// Links property objects to an element, or to the defaults of head's type when head.guid is
+// APINULLGuid. ACAPI_Element_SetLinkedPropertyObjects before Archicad 27.
+inline GSErrCode TAPIR_ElementLink_SetLinkedPropertyObjects (API_Elem_Head& head, bool criteria, Int32 individuallyLibInd)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_ElementLink_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#else
+    return ACAPI_Element_SetLinkedPropertyObjects (&head, criteria, individuallyLibInd);
+#endif
+}
