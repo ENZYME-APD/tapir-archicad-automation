@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 04:07 UTC",
+ "generatedAt": "2026-10-26 04:10 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "merged": 356,
-  "open": 103,
-  "claimed": 426,
-  "in progress": 631,
+  "open": 100,
+  "claimed": 416,
+  "in progress": 644,
   "done": 743
  },
  "items": [
@@ -5073,6 +5073,10 @@
    ],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1492,
      "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
     },
@@ -5463,6 +5467,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
@@ -5488,6 +5496,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
@@ -5696,6 +5708,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
@@ -5934,7 +5950,12 @@
      "title": "Add GetGhostStorySettings and SetGhostStorySettings commands"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Database_CheckWindowValidator",
@@ -7056,6 +7077,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    },
+    {
      "number": 1394,
      "title": "Add ChangeLibraryPartOfElements to switch placed elements to another library part"
     },
@@ -7581,9 +7606,14 @@
    "olderNames": [
     "APIEnv_GetNumberingGridLinesID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1499,
+     "title": "[1/6] Add GetDrawingNumberingGridLines command"
+    }
+   ],
    "issues": [
     {
      "number": 1495,
@@ -7871,6 +7901,10 @@
    ],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1182,
      "title": "Expose ACAPI_ElementSet_Create"
     }
@@ -7896,6 +7930,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1183,
      "title": "Expose ACAPI_ElementSet_Delete"
@@ -7960,7 +7998,12 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_AddClassificationItem",
@@ -8435,6 +8478,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1226,
      "title": "Expose ACAPI_Element_ChangeMore (apply one masked change to many elements, like multi-select + settings)"
@@ -9586,6 +9633,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -12987,7 +13038,12 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_SetUserData",
@@ -13007,6 +13063,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1268,
      "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
@@ -16361,6 +16421,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1314,
      "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
@@ -16379,9 +16443,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -16493,9 +16562,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -16526,6 +16600,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1314,
      "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
     }
@@ -16553,6 +16631,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1314,
      "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
@@ -16809,6 +16891,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
@@ -16974,6 +17060,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
@@ -17457,6 +17547,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
@@ -17485,6 +17579,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
     }
@@ -17512,6 +17610,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
@@ -17804,6 +17906,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
@@ -18414,6 +18520,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1314,
      "title": "Expose skylight hole polygons, polygon triangulation, 3D surface types and texture coordinates"
@@ -19247,6 +19357,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
@@ -19274,6 +19388,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
@@ -20793,6 +20911,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
     }
@@ -21429,9 +21551,14 @@
    "olderNames": [
     "ACAPI_3D_CreateSight"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -21457,9 +21584,14 @@
    "olderNames": [
     "ACAPI_3D_DeleteSight"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -21508,6 +21640,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1492,
      "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
     }
@@ -21531,9 +21667,14 @@
    "olderNames": [
     "ACAPI_3D_SelectSight"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1496,
+     "title": "[1/6] Add GetElementConnections"
+    }
+   ],
    "issues": [
     {
      "number": 1492,
@@ -22496,6 +22637,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1268,
      "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
     }
@@ -22520,6 +22665,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1268,
      "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
     }
@@ -22543,6 +22692,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1268,
      "title": "Expose ACAPI_UserData_Get/SetUserData for attributes and ACAPI_Grouping_SetUserData"
@@ -24211,6 +24364,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1187,
      "title": "Expose ACAPI_Window_AddTextWindowContent"
     }
@@ -24590,6 +24747,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
+    {
      "number": 1492,
      "title": "3D model reads: element connections, cut polygons, body materials, drawing primitives and 3D Document settings (#1093, #1060, #1256, #1069, #1070, #1048), with the DevKit declarations"
     }
@@ -24864,10 +25025,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_SetUserData",
@@ -24881,10 +25047,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    }
+   ]
   },
   {
    "id": "ACAPI_Automate",
@@ -25256,10 +25427,15 @@
     26
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    }
+   ]
   },
   {
    "id": "ACAPI_ElementList_AddProperty",
@@ -25716,6 +25892,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1499,
+     "title": "[1/6] Add GetDrawingNumberingGridLines command"
+    },
+    {
      "number": 1449,
      "title": "[2/5] Add GetTeamworkAccessRights command"
     },
@@ -25789,6 +25969,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1495,
      "title": "Project and view reads: numbering grid, default categories, add-on project data, view options, design option views on AC27/28 (#1171, #1076, #1077, #781, #1173, #1330), with the DevKit declarations"
@@ -25924,6 +26108,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1327,
      "title": "Expose project notes, export tolerance, 3D default levels, unit conversion and small lookups"
@@ -26803,6 +26991,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1498,
+     "title": "Master layout context, add-on viewpoints, unit conversion, surface types, user data of attributes and groups, element set deletion (#1321, #1327, #1314, #1268, #1183), with the DevKit declarations and decisions"
+    },
     {
      "number": 1321,
      "title": "Expose Navigator parent items, add-on viewpoints and master layouts"
@@ -36680,6 +36872,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     },
@@ -36867,6 +37063,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
+    {
      "number": 1302,
      "title": "[4/6] Library Manager and GSM object getters: FindLibraryParts, GetLibraryPartDetails, ModifyLibraryList"
     },
@@ -36893,6 +37093,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -36997,9 +37201,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37024,9 +37233,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37051,9 +37265,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37078,9 +37297,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37105,9 +37329,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37132,9 +37361,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1491,
@@ -37320,6 +37554,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
+    {
      "number": 1244,
      "title": "Add GetLibrariesOfLibParts command"
     }
@@ -37413,9 +37651,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": [
     {
      "number": 1217,
@@ -37986,7 +38229,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "filter helpers passed to the LibraryManager",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    }
+   ],
    "issues": []
   },
   {
@@ -38849,6 +39097,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -58093,6 +58345,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
+    {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
     },
@@ -62914,6 +63170,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
@@ -71638,6 +71898,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1497,
+     "title": "[2/4] GetLibraries: package information of library packages"
+    },
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
