@@ -1303,6 +1303,14 @@ GSErrCode Initialize (void)
             ifcCommands, "1.7.3",
             "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now."
         );
+        err |= RegisterCommand<GetIFCSpatialStructureCommand> (
+            ifcCommands, "1.7.3",
+            "Returns the IfcProject, IfcSite and IfcBuilding objects of the project's IFC model (hash value, IFC type and GlobalId), and for the given elements the index of the story they are assigned to in the IFC model. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetIFCAssignmentsCommand> (
+            ifcCommands, "1.7.3",
+            "Returns the IFC assignments of the project: the root IFC groups, and for each object the objects assigned to it (children) and the objects it is assigned to (parents). Each object is given by its hash value, its element where it belongs to one, its IFC type and its GlobalId. Available from Archicad 28."
+        );
         AddCommandGroup (ifcCommands);
     }
 

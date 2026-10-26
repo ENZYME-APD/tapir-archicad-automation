@@ -164,9 +164,15 @@ GS::ObjectState GetAllFavoritesCommand::Execute (const GS::ObjectState& paramete
         }
 
         GS::ObjectState favoriteOs ("name", favoriteName.Unwrap ());
-        const auto element = favorite.GetOldElementDefault ();
-        if (element.IsOk ()) {
-            favoriteOs.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (element.Unwrap ().header)));
+        // GetElementType reads only the type; the whole element default is loaded only when it fails.
+        const auto elemType = favorite.GetElementType ();
+        if (elemType.IsOk ()) {
+            favoriteOs.Add ("elementType", GetElementTypeNonLocalizedName (elemType.Unwrap ().typeID));
+        } else {
+            const auto element = favorite.GetOldElementDefault ();
+            if (element.IsOk ()) {
+                favoriteOs.Add ("elementType", GetElementTypeNonLocalizedName (GetElemTypeId (element.Unwrap ().header)));
+            }
         }
         favoritesList (favoriteOs);
     }
@@ -279,10 +285,22 @@ GS::ObjectState GetFavoritePreviewImageCommand::Execute (const GS::ObjectState& 
     parameters.Get ("height", height);
 
     NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto favoriteObject = manager.GetFavoriteByName (favorite);
+    if (favoriteObject.IsErr ()) {
+        return CreateErrorResponse (favoriteObject.UnwrapErr ().kind, GS::UniString::Printf ("Favorite '%T' not found.", favorite.ToPrintf ()));
+    }
+    const auto previewResult = favoriteObject.Unwrap ().GetPreviewImage (viewType, nativeImage);
+    if (previewResult.IsErr ()) {
+        return CreateErrorResponse (previewResult.UnwrapErr ().kind, "Failed to get favorite preview image.");
+    }
+#else
     GSErrCode err = ACAPI_Favorite_GetPreviewImage (favorite, viewType, &nativeImage);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get favorite preview image.");
     }
+#endif
 
     GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
     if (!nativeImage.Encode (memChannel, encoding)) {
@@ -1416,6 +1434,10 @@ GS::ObjectState RenameFavoritesCommand::Execute (const GS::ObjectState& paramete
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+#endif
+
     ACAPI_CallUndoableCommand ("RenameFavorites", [&]() -> GSErrCode {
         for (const GS::ObjectState& rename : renames) {
             GS::UniString oldName;
@@ -1423,8 +1445,18 @@ GS::ObjectState RenameFavoritesCommand::Execute (const GS::ObjectState& paramete
             rename.Get ("oldName", oldName);
             rename.Get ("newName", newName);
 
+#ifdef ServerMainVers_2900
+            const auto favorite = manager.GetFavoriteByName (oldName);
+            if (favorite.IsErr ()) {
+                executionResults (CreateFailedExecutionResult (favorite.UnwrapErr ().kind, GS::UniString::Printf ("Favorite '%T' not found.", oldName.ToPrintf ())));
+                continue;
+            }
+            const auto renameResult = manager.RenameFavorite (favorite.Unwrap (), newName);
+            executionResults (renameResult.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (renameResult.UnwrapErr ().kind, "Failed to rename favorite"));
+#else
             const GSErrCode err = ACAPI_Favorite_Rename (oldName, newName);
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to rename favorite"));
+#endif
         }
 
         return NoError;
