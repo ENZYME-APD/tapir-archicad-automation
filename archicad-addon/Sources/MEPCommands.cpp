@@ -13,6 +13,7 @@
 #include "ACAPI/MEPRoutingSegment.hpp"
 #include "ACAPI/MEPRoutingSegmentDefault.hpp"
 #include "ACAPI/MEPRoutingNode.hpp"
+#include "ACAPI/MEPFlexibleSegment.hpp"
 #include "ACAPI/MEPTerminalDefault.hpp"
 #include "ACAPI/MEPAccessoryDefault.hpp"
 #include "ACAPI/MEPEquipmentDefault.hpp"
@@ -46,6 +47,16 @@
 
 #include <optional>
 #include <type_traits>
+
+using namespace ACAPI::MEP;
+#elif defined (ServerMainVers_2700)
+// Archicad 27 only runs ConnectMEPElements and CheckMEPPortConnectability.
+#include "ACAPI/Result.hpp"
+#include "ACAPI/MEPAdapter.hpp"
+#include "ACAPI/MEPPort.hpp"
+#include "ACAPI/MEPRoutingElement.hpp"
+
+#include <optional>
 
 using namespace ACAPI::MEP;
 #endif
@@ -379,6 +390,24 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
         element.Add ("elementId", CreateGuidObjectState (elemGuid));
         element.Add ("type", typeName);
         element.Add ("domain", domainName);
+#ifndef ServerMainVers_2900
+        // Archicad 29 removed GetLocalizedElemTypeName.
+        element.Add ("localizedTypeName", GetLocalizedElemTypeName (header.type.classID));
+#endif
+        if (typeName == "FlexibleSegment") {
+            ACAPI::Result<FlexibleSegment> flexibleSegment = FlexibleSegment::Get (Adapter::UniqueID (elemGuid));
+            if (flexibleSegment.IsOk ()) {
+                ACAPI::Result<FlexibleSegmentPolyline> polyline = flexibleSegment->GetPolyline ();
+                if (polyline.IsOk ()) {
+                    GS::ObjectState polylineOs;
+                    const auto& controlPoints = polylineOs.AddList<GS::ObjectState> ("controlPoints");
+                    for (const API_Coord3D& controlPoint : polyline->controlPoints) {
+                        controlPoints (Create3DCoordinateObjectState (controlPoint));
+                    }
+                    element.Add ("polyline", polylineOs);
+                }
+            }
+        }
         elements (element);
     }
 
@@ -481,6 +510,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             }
             GS::ObjectState segmentOs;
             segmentOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segmentId)));
+            segmentOs.Add ("routingElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (segment->GetRoutingElementId ())));
             segmentOs.Add ("crossSectionWidth", segment->GetCrossSectionWidth ());
             segmentOs.Add ("crossSectionHeight", segment->GetCrossSectionHeight ());
             segmentOs.Add ("crossSectionShape", ConnectorShapeToString (segment->GetCrossSectionShape ()));
@@ -514,6 +544,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             }
             GS::ObjectState nodeOs;
             nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (nodeId)));
+            nodeOs.Add ("routingElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (node->GetRoutingElementId ())));
             nodeOs.Add ("position", Create3DCoordinateObjectState (node->GetPosition ()));
             const std::optional<ACAPI::MEP::UniqueID> incomingSegmentId = node->GetIncomingSegmentId ();
             if (incomingSegmentId.has_value ()) {
@@ -610,18 +641,23 @@ GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, 
             elementPorts (CreateErrorResponse (mepElement.UnwrapErr ().kind, "Failed to get the MEP element."));
             continue;
         }
+        if (!mepElement->Exists ()) {
+            elementPorts (CreateErrorResponse (APIERR_BADID, "The MEP element was not found."));
+            continue;
+        }
 
         GS::ObjectState elementPortsOs;
         const auto& ports = elementPortsOs.AddList<GS::ObjectState> ("ports");
 
         for (const ACAPI::MEP::UniqueID& portId : mepElement->GetPortIDs ()) {
             ACAPI::Result<Port> port = Port::Get (portId);
-            if (port.IsErr ()) {
+            if (port.IsErr () || !port->Exists ()) {
                 continue;
             }
 
             GS::ObjectState portOs;
             portOs.Add ("portId", APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
+            portOs.Add ("mepElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (port->GetMEPElementId ())));
             portOs.Add ("name", port->GetName ());
             portOs.Add ("position", Create3DCoordinateObjectState (port->GetPosition ()));
             const Orientation orientation = port->GetOrientation ();
@@ -676,6 +712,13 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
                 "items": {
                     "$ref": "#/MEPDistributionSystem"
                 }
+            },
+            "ports": {
+                "type": "array",
+                "description": "The ports in the distribution systems graph (see GetMEPPorts).",
+                "items": {
+                    "$ref": "#/Guid"
+                }
             }
         },
         "additionalProperties": false,
@@ -716,6 +759,11 @@ GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState
         }
 
         distributionSystems (systemOs);
+    }
+
+    const auto& ports = response.AddList<GS::UniString> ("ports");
+    for (const ACAPI::MEP::UniqueID& portId : graph->GetPorts ()) {
+        ports (APIGuidToString (MEPUniqueIDToAPIGuid (portId)));
     }
 
     return response;
@@ -1490,9 +1538,184 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+#elif defined (ServerMainVers_2700)
+    GS::Array<GS::ObjectState> connectionsData;
+    if (!parameters.Get ("connectionsData", connectionsData)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'connectionsData' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& connectionResults = response.AddList<GS::ObjectState> ("connectionResults");
+
+    for (const GS::ObjectState& connectionData : connectionsData) {
+        const GS::ObjectState* routingElementId = connectionData.Get ("routingElementId");
+        const GS::ObjectState* connectToId = connectionData.Get ("connectToId");
+        if (routingElementId == nullptr || connectToId == nullptr) {
+            connectionResults (CreateErrorResponse (APIERR_BADPARS, "Missing 'routingElementId' or 'connectToId' parameter."));
+            continue;
+        }
+
+        ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (GetGuidFromObjectState (*routingElementId)));
+        if (routingElement.IsErr ()) {
+            connectionResults (CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element."));
+            continue;
+        }
+
+        // Archicad 27 connects through RoutingElement::Modifier::Connect, which reports no result.
+        std::optional<ACAPI::Error> connectionError;
+        ACAPI::Result<void> modifyResult = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+            ACAPI::Result<void> result = modifier.Connect (Adapter::UniqueID (GetGuidFromObjectState (*connectToId)));
+            if (result.IsErr ()) {
+                connectionError = result.UnwrapErr ();
+            }
+        }, "Connect MEP Elements");
+
+        if (connectionError.has_value ()) {
+            connectionResults (CreateErrorResponse (connectionError->kind, "Failed to connect the elements."));
+            continue;
+        }
+        if (modifyResult.IsErr ()) {
+            connectionResults (CreateErrorResponse (modifyResult.UnwrapErr ().kind, "Failed to connect the elements."));
+            continue;
+        }
+
+        connectionResults (GS::ObjectState ());
+    }
+
+    return response;
 #else
     UNUSED_PARAMETER (parameters);
-    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+CheckMEPPortConnectabilityCommand::CheckMEPPortConnectabilityCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CheckMEPPortConnectabilityCommand::GetName () const
+{
+    return "CheckMEPPortConnectability";
+}
+
+GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "portPairs": {
+                "type": "array",
+                "description": "The pairs of ports to check.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "portId": {
+                            "$ref": "#/Guid",
+                            "description": "The port to check, as returned by GetMEPPorts."
+                        },
+                        "otherPortId": {
+                            "$ref": "#/Guid",
+                            "description": "The port to connect it to, as returned by GetMEPPorts."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "portId",
+                        "otherPortId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "portPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "The result for each pair of ports, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isConnectable": {
+                                    "type": "boolean",
+                                    "description": "Whether the port can be connected to the other port."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "isConnectable"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "results"
+        ]
+    })";
+}
+
+GS::ObjectState CheckMEPPortConnectabilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::ObjectState> portPairs;
+    if (!parameters.Get ("portPairs", portPairs)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'portPairs' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    for (const GS::ObjectState& portPair : portPairs) {
+        GS::UniString portIdStr;
+        GS::UniString otherPortIdStr;
+        if (!portPair.Get ("portId", portIdStr) || !portPair.Get ("otherPortId", otherPortIdStr)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "Missing 'portId' or 'otherPortId' parameter."));
+            continue;
+        }
+
+        const ACAPI::MEP::UniqueID otherPortId = Adapter::UniqueID (APIGuidFromString (otherPortIdStr.ToCStr ()));
+        ACAPI::Result<Port> port = Port::Get (Adapter::UniqueID (APIGuidFromString (portIdStr.ToCStr ())));
+        ACAPI::Result<Port> otherPort = Port::Get (otherPortId);
+        if (port.IsErr () || !port->Exists () || otherPort.IsErr () || !otherPort->Exists ()) {
+            results (CreateErrorResponse (APIERR_BADID, "The port given in 'portId' or 'otherPortId' was not found."));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        ACAPI::Result<bool> isConnectable = port->IsPhysicallyConnectable (otherPortId);
+#else
+        ACAPI::Result<bool> isConnectable = port->IsConnectable (otherPortId);
+#endif
+        if (isConnectable.IsErr ()) {
+            results (CreateErrorResponse (isConnectable.UnwrapErr ().kind, "Failed to check whether the ports can be connected."));
+            continue;
+        }
+
+        results (GS::ObjectState ("isConnectable", isConnectable.Unwrap ()));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }
 
@@ -1789,10 +2012,10 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
         }
 
         auto referenceSet = GetPipeReferenceSet ();
-        response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
+        response.Add ("referenceSet", referenceSet.IsOk () && referenceSet->Exists () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
 #ifdef ServerMainVers_2900
         auto angleSet = GetPipeAngleSet ();
-        if (angleSet.IsOk ()) {
+        if (angleSet.IsOk () && angleSet->Exists ()) {
             response.Add ("angleSet", DumpAngleSet (*angleSet));
         }
 #endif
@@ -1816,10 +2039,10 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
         }
 
         auto referenceSet = GetDuctReferenceSet ();
-        response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
+        response.Add ("referenceSet", referenceSet.IsOk () && referenceSet->Exists () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
 #ifdef ServerMainVers_2900
         auto angleSet = GetDuctAngleSet ();
-        if (angleSet.IsOk ()) {
+        if (angleSet.IsOk () && angleSet->Exists ()) {
             response.Add ("angleSet", DumpAngleSet (*angleSet));
         }
 #endif
