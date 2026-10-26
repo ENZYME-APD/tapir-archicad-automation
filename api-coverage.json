@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 01:41 UTC",
+ "generatedAt": "2026-10-26 04:00 UTC",
  "versions": [
   25,
   26,
@@ -1387,6 +1387,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1192,
      "title": "Expose ACAPI_Analytical_AddLoadCaseToLoadCombination"
     }
@@ -1414,6 +1418,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1193,
      "title": "Expose ACAPI_Analytical_ConvertAnalyticalLinkToNonShortest"
@@ -1443,6 +1451,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1194,
      "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadCase"
     }
@@ -1470,6 +1482,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1195,
      "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadCombination"
@@ -1499,6 +1515,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1196,
      "title": "Expose ACAPI_Analytical_CreateAnalyticalLoadGroup"
     }
@@ -1526,6 +1546,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1197,
      "title": "Expose ACAPI_Analytical_CreateElementFromCurveMember"
@@ -1555,6 +1579,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1198,
      "title": "Expose ACAPI_Analytical_CreateElementFromSegmentedSurfaceMember"
     }
@@ -1582,6 +1610,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1611,6 +1643,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1638,6 +1674,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1667,6 +1707,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1694,6 +1738,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1723,6 +1771,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1750,6 +1802,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1779,6 +1835,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1806,6 +1866,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1835,6 +1899,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1862,6 +1930,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1891,6 +1963,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1918,6 +1994,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -1947,6 +2027,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -1974,6 +2058,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2003,6 +2091,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2030,6 +2122,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2059,6 +2155,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2086,6 +2186,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2115,6 +2219,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2142,6 +2250,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2171,6 +2283,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2198,6 +2314,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2227,6 +2347,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2248,6 +2372,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2276,6 +2404,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2302,6 +2434,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2331,6 +2467,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2358,6 +2498,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2384,6 +2528,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2434,6 +2582,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2462,6 +2614,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2488,6 +2644,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2517,6 +2677,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2544,6 +2708,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2570,6 +2738,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2599,6 +2771,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2625,6 +2801,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2654,6 +2834,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2675,6 +2859,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2703,6 +2891,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2729,6 +2921,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2757,6 +2953,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2783,6 +2983,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2811,6 +3015,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2837,6 +3045,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2892,6 +3104,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2918,6 +3134,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -2946,6 +3166,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -2972,6 +3196,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -4806,6 +5034,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1463,
      "title": "Expose the ACAPI:: functions left out of #1298 (Opening enums, Favorites, library part writes)"
@@ -8228,6 +8460,10 @@
    ],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 578,
      "title": "CreateStairs rejects multi-segment baselines that turn clockwise (-2130313215)"
     },
@@ -8642,7 +8878,12 @@
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetActualOverrideStyle",
@@ -11768,7 +12009,16 @@
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    }
+   ]
   },
   {
    "id": "ACAPI_GraphicalOverride_ChangeOverrideCombination",
@@ -19101,7 +19351,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_Save",
@@ -24250,6 +24505,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -24271,6 +24530,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
+    {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
     }
@@ -24291,6 +24554,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1490,
+     "title": "Structural Analytical Model: the rest of #1202 and #1192–#1198, with the DevKit declarations"
+    },
     {
      "number": 1202,
      "title": "Expose the remaining ACAPI_Analytical (Structural Analytical Model) functions"
@@ -33885,6 +34152,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1219,
      "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
     }
@@ -33936,6 +34207,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
     }
@@ -33986,6 +34261,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
@@ -34319,6 +34598,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
     }
@@ -34364,6 +34647,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
@@ -34439,6 +34726,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
     }
@@ -34508,6 +34799,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
     }
@@ -34553,6 +34848,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
@@ -34741,6 +35040,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
     }
@@ -34763,6 +35066,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
@@ -34809,6 +35116,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1220,
      "title": "Expose ACAPI::Library::GSMObject script getters (read master/2D/3D/parameter/properties scripts)"
@@ -36119,7 +36430,12 @@
      "title": "Add GetLibrariesOfLibParts command"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    }
+   ]
   },
   {
    "id": "ACAPI::Library::LibPart::GetLocation",
@@ -36400,6 +36716,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1249,
      "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
     }
@@ -36422,6 +36742,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1249,
      "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
@@ -36446,6 +36770,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1249,
      "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
     }
@@ -36468,6 +36796,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1249,
      "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
@@ -36492,6 +36824,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1249,
      "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
     }
@@ -36514,6 +36850,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1249,
      "title": "Expose ACAPI::Library::Library package info (ID, version, minimum Archicad version, dependencies)"
@@ -36838,6 +37178,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
+    {
      "number": 1219,
      "title": "Expose ACAPI::Library::GSMObject::CopyTo (duplicate a library part under a new name and GUID)"
     }
@@ -37136,6 +37480,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1491,
+     "title": "Library part C++ API: read scripts, package info, copy and read a .gsm file (#1220, #1249, #1219, #1265), with the DevKit headers"
+    },
     {
      "number": 1265,
      "title": "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)"
