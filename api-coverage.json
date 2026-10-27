@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 13:33 UTC",
+ "generatedAt": "2026-10-27 18:33 UTC",
  "versions": [
   25,
   26,
@@ -9054,7 +9054,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetElementFromAnywhere",
@@ -16261,7 +16266,12 @@
      "title": "Add ActivateLayerCombination command and Grasshopper component"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_ChangeLayoutSets",
@@ -16879,6 +16889,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    },
     {
      "number": 1428,
      "title": "Archicad crashes (internal assertion) after CreateLayout + RenameNavigatorItem + DeleteNavigatorItems in quick succession"
@@ -20711,7 +20725,12 @@
      "title": "Add Get3DStyles, SetCurrent3DStyle and ShowElementsIn3D commands"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_Selection_Get",
@@ -21873,7 +21892,12 @@
    "status": "not applicable",
    "reason": "user interface",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_Toolbox_GetToolBoxMode",
@@ -21896,7 +21920,12 @@
    "status": "not applicable",
    "reason": "user interface",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_Toolbox_SetToolBoxMode",
@@ -21919,7 +21948,12 @@
    "status": "not applicable",
    "reason": "user interface",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_UnregisterModelessWindow",
@@ -23217,6 +23251,10 @@
    ],
    "issues": [
     {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    },
+    {
      "number": 1478,
      "title": "SaveCurrentWindowAsImage: MasterLayout exports a floor plan and its zoom"
     }
@@ -23244,6 +23282,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    },
     {
      "number": 1481,
      "title": "ChangeWindow: MasterLayout navigatorItemId fails while databaseId activation succeeds"
@@ -23415,7 +23457,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Redraw",
@@ -23438,7 +23485,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ResetZoom",
@@ -23617,7 +23669,12 @@
      "title": "Add ZoomToBox command to zoom the current 2D window to a model box"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ZoomToElements",
@@ -23673,7 +23730,12 @@
      "title": "Add ZoomToElements to zoom the current 2D or 3D window to elements"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    }
+   ]
   },
   {
    "id": "ACAPI_Window_AddTextWindowContent",
@@ -24388,6 +24450,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -25173,6 +25239,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1579,
+     "title": "Jacamar HUD: SetToolMode, GoToView, common menu operations and GetFullActionIndex"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
