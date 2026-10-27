@@ -1185,6 +1185,25 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
     return GetElemTypeId (header) == expectedTypeId;
 }
 
+GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = layer;
+    if (ACAPI_Attribute_Get (&layerAttr) != NoError) {
+        return NoError;
+    }
+    if ((layerAttr.header.flags & APILay_Locked) != 0) {
+        reason = "its layer is locked";
+        return APIERR_LOCKEDLAY;
+    }
+    if ((layerAttr.header.flags & APILay_Hidden) != 0) {
+        reason = "its layer is hidden";
+        return APIERR_HIDDENLAY;
+    }
+    return NoError;
+}
+
 
 API_Tranmat CreateHotlinkTransformation (const API_Coord3D& origin, double rotationAngle, bool mirrored)
 {
