@@ -941,7 +941,8 @@ GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::Get
                                                 "type": "string"
                                             },
                                             "description": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description": "Returned from Archicad 29."
                                             },
                                             "sort": {
                                                 "type": "string",
@@ -1066,8 +1067,8 @@ GS::ObjectState GetIFCClassificationReferencesOfElementsCommand::Execute (const 
             AddOptionalString (ifcClassificationReference, "identification", classificationReference.GetIdentification ());
             AddOptionalString (ifcClassificationReference, "name", classificationReference.GetName ());
             AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
-            AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
 #ifdef ServerMainVers_2900
+            AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
             AddOptionalString (ifcClassificationReference, "sort", classificationReference.GetSort ());
 #endif
             ifcClassificationReference.Add ("referencedSource", referencedSource);
