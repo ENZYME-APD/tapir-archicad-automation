@@ -148,9 +148,18 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            const API_Element requestedElement = element;
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 elements (CreateErrorResponse (err, "Failed to create new " + elemTypeName));
+                continue;
+            }
+
+            // As for the id below, a new element that could not be finished is deleted again.
+            err = AfterCreate (requestedElement, element.header.guid);
+            if (err != NoError) {
+                ACAPI_Element_Delete ({ element.header.guid });
+                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", so it was not created"));
                 continue;
             }
 
@@ -2506,9 +2515,16 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 #endif
             }
 
+            // The factors as read, or as the style sets them: a content write resets them, see KeepTextFactors.
+            const double widthFactor = element.text.widthFactor;
+            const double charSpaceFactor = element.text.charSpaceFactor;
+
             // withdel=false was tried and made things WORSE (even the style fields stopped
             // applying) - confirmed live. withdel=true is required here.
             err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
+            if (err == NoError && contentChanged) {
+                err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Text."));
         }
         return NoError;
@@ -2693,8 +2709,15 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+            // The factors as read, or as the style sets them: a content write resets them, see KeepTextFactors.
+            const double widthFactor = element.label.u.text.widthFactor;
+            const double charSpaceFactor = element.label.u.text.charSpaceFactor;
+
             // withdel=true required - see ModifyTexts.
             err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
+            if (err == NoError && contentChanged) {
+                err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Label."));
         }
         return NoError;
@@ -4166,6 +4189,39 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
     return {};
 }
 
+GSErrCode KeepTextFactors (const API_Guid& elemGuid, double widthFactor, double charSpaceFactor)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    API_TextType* text = nullptr;
+    if (GetElemTypeId (element.header) == API_TextID) {
+        text = &element.text;
+        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, widthFactor);
+        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, charSpaceFactor);
+    } else if (GetElemTypeId (element.header) == API_LabelID && element.label.labelClass == APILblClass_Text) {
+        text = &element.label.u.text;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.widthFactor);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.charSpaceFactor);
+    } else {
+        return NoError;
+    }
+
+    if (text->widthFactor == widthFactor && text->charSpaceFactor == charSpaceFactor) {
+        return NoError;
+    }
+    text->widthFactor = widthFactor;
+    text->charSpaceFactor = charSpaceFactor;
+    // No memo: a change of these two fields alone is kept (#1585), see the declaration.
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
 {
     os.Add ("penIndex", label.pen);
@@ -4554,6 +4610,15 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
+GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const
+{
+    if (requestedElement.label.labelClass != APILblClass_Text) {
+        return NoError;
+    }
+    // The factors of the style, the favorite or the tool defaults: the create with the content memo leaves them at 1.
+    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
+}
+
 CreateTextsCommand::CreateTextsCommand () :
     CreateElementsCommandBase ("CreateTexts", API_TextID, "textsData")
 {
@@ -4688,6 +4753,12 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     }
 
     return {};
+}
+
+GSErrCode CreateTextsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const
+{
+    // See CreateLabelsCommand::AfterCreate.
+    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.text.widthFactor, requestedElement.text.charSpaceFactor);
 }
 
 const char* DimensionOriginToString (API_DimOriginID origin)

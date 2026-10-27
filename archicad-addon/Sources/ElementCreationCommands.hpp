@@ -36,6 +36,9 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 protected:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const = 0;
+    // Called right after ACAPI_Element_Create with the element as SetTypeSpecificParameters
+    // prepared it, for what the create itself does not keep. An error deletes the new element.
+    virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/) const { return NoError; }
 protected:
     GS::String     commandName;
     API_ElemTypeID elemTypeID;
@@ -161,6 +164,7 @@ public:
     CreateLabelsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const override;
 };
 
 class CreateTextsCommand : public CreateElementsCommandBase
@@ -169,6 +173,7 @@ public:
     CreateTextsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const override;
 };
 
 class CreateLevelDimensionsCommand : public CreateElementsCommandBase
@@ -254,6 +259,12 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
 bool StyleNeedsContentRebuild (const GS::ObjectState& style);
 // Builds memo.textContent/paragraphs from either a "runs" array or a plain "text" string.
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
+// Writes widthFactor and charSpaceFactor of a Text or text-class Label again, without a memo, when
+// they differ from the given values. Reported on Archicad 29 (#1585): a create or change that
+// carries the content memo leaves both factors at 1, whatever the element struct holds, while a
+// change of the two fields alone without a memo keeps them. So every write of the content is
+// followed by this. Does nothing for other elements.
+GSErrCode KeepTextFactors (const API_Guid& elemGuid, double widthFactor, double charSpaceFactor);
 
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label);
 // Returns an error response for an attribute reference that cannot be resolved.
