@@ -2782,7 +2782,7 @@
     },
     "AxonometryProjectionType": {
         "type": "string",
-        "description": "The projection type of an axonometric 3D projection, the projMod of the Archicad API: YZ, XZ and XY are the views along an axis, Frontal, Monometric, Isometric and Dimetric the predefined axonometries, FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below, Bottom the view from below, Parallel a parallel view at the azimuth and Custom the custom axonometry given by its transformation matrix.",
+        "description": "The projection type of an axonometric 3D projection, the projMod of the Archicad API. Archicad works out the transformation matrix of every type but Custom from the type and the azimuth. XY is the top view and Bottom the view from below. YZ and XZ are both the side view (an elevation), looking from the azimuth. Frontal, Monometric, Isometric and Dimetric are the predefined axonometries, and FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below; an Isometric at azimuth 270 is the isometric from the south-east (X axis at -30 degrees, Y at 30, Z at 90). Custom keeps the transformation matrix as given. Parallel cannot be set: Archicad makes it Custom.",
         "enum": [
             "YZ",
             "XZ",
@@ -2823,7 +2823,7 @@
             },
             "viewCone": {
                 "type": "number",
-                "description": "The view cone angle of the camera in radians."
+                "description": "The view cone angle of the camera in degrees."
             },
             "rollAngle": {
                 "type": "number",

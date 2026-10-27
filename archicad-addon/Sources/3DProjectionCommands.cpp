@@ -86,7 +86,7 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
                 },
                 "azimuth": {
                     "type": "number",
-                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog."
+                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
                 },
                 "transformationMatrix": {
                     "type": "array",
@@ -180,7 +180,7 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSc
                 },
                 "azimuth": {
                     "type": "number",
-                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog."
+                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
                 },
                 "transformationMatrix": {
                     "type": "array",
