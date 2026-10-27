@@ -849,6 +849,36 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                             ]
                         },
                         {
+                            "type": "object",
+                            "description": "An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Use GetContainingDatabases and ChangeWindow to open its database and read its full details.",
+                            "properties": {
+                                "type": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "floorIndex": {
+                                    "type": "number"
+                                },
+                                "layerIndex": {
+                                    "type": "number"
+                                },
+                                "drawIndex": {
+                                    "type": "number"
+                                },
+                                "hotlinkId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink."
+                                },
+                                "fromOtherDatabase": {
+                                    "type": "boolean",
+                                    "description": "Always true: the element is not in the current database."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "fromOtherDatabase"
+                            ]
+                        },
+                        {
                             "$ref": "#/ErrorItem"
                         }
                     ]
@@ -1222,6 +1252,35 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         API_Element elem = {};
         elem.header.guid = GetGuidFromObjectState (*elementId);
         GSErrCode err = ACAPI_Element_Get (&elem);
+
+        if (err == APIERR_BADID) {
+            // Not in the current database: an element of another database (a layout, a section,
+            // a worksheet ...) can still be read from anywhere, but only its header is reported.
+            API_Element elemFromAnywhere = {};
+            elemFromAnywhere.header.guid = elem.header.guid;
+            if (ACAPI_Element_GetElementFromAnywhere (&elemFromAnywhere.header.guid, &elemFromAnywhere) == NoError) {
+                const API_Elem_Head& header = elemFromAnywhere.header;
+                GS::ObjectState detailsOfElement;
+                if (isFieldRequested ("type")) {
+                    detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (GetElemTypeId (header)));
+                }
+                if (isFieldRequested ("floorIndex")) {
+                    detailsOfElement.Add ("floorIndex", header.floorInd);
+                }
+                if (isFieldRequested ("layerIndex")) {
+                    detailsOfElement.Add ("layerIndex", GetAttributeIndex (header.layer));
+                }
+                if (isFieldRequested ("drawIndex")) {
+                    detailsOfElement.Add ("drawIndex", static_cast<short> (header.drwIndex));
+                }
+                if (isFieldRequested ("hotlinkId") && header.hotlinkGuid != APINULLGuid) {
+                    detailsOfElement.Add ("hotlinkId", CreateGuidObjectState (header.hotlinkGuid));
+                }
+                detailsOfElement.Add ("fromOtherDatabase", true);
+                detailsOfElements (detailsOfElement);
+                continue;
+            }
+        }
 
         if (err != NoError) {
             detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element (element guid: \"" + APIGuidToString (elem.header.guid) + "\")"));
@@ -5518,7 +5577,7 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetInputParametersSchema (
             },
             "nonHighlightedColor": {
                 "type": "array",
-                "description": "Optional parameter. Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+                "description": "Optional parameter. Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range. Ignored on Archicad 25.",
                 "items": {
                     "type": "integer"
                 },
@@ -5540,8 +5599,6 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetRawResponseSchema () co
         "$ref": "#/ExecutionResult"
     })";
 }
-
-#ifdef ServerMainVers_2600
 
 static API_RGBAColor GetRGBAColorFromArray (const GS::Array<GS::Int32>& color)
 {
@@ -5607,15 +5664,6 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
 
     return CreateSuccessfulExecutionResult ();
 }
-
-#else
-
-GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
-{
-    return CreateFailedExecutionResult (APIERR_GENERAL, GetName () + " command is not supported for this AC version.");
-}
-
-#endif
 
 
 static void UpdateGlobalBoundsWithPoint (API_Box3D& globalBounds, const API_Coord3D& pt)

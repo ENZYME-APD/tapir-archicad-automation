@@ -250,6 +250,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.2",
             "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout."
         );
+        err |= RegisterCommand<DeleteGhostRecordsCommand> (
+            applicationCommands, "1.7.4",
+            "Deletes the trace (ghost) record of each given parent database, which removes the trace reference shown in that database's window. A database without a trace reference gets a failed execution result. Not undoable."
+        );
         err |= RegisterCommand<GetUserGSIDCommand> (
             applicationCommands, "1.5.6",
             "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later."
@@ -455,7 +459,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons)."
+            "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
@@ -575,7 +579,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<HighlightElementsCommand> (
             elementCommands, "1.0.3",
-            "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights."
+            "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights. On Archicad 25 nonHighlightedColor is ignored."
         );
         err |= RegisterCommand<MoveElementsCommand> (
             elementCommands, "1.0.2",
