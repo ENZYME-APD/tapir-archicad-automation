@@ -41,3 +41,17 @@ if walls:
             'elements': walls[:1]
         }, debug = False)['triangulations']
     print ('A Wall gets an error: {}'.format ('error' in result[0]))
+
+    # With convex: true the faces of the 3D model of any element are decomposed into convex
+    # polygons, given by the 3D coordinates of their vertices.
+    result = aclib.RunTapirCommand (
+        'TriangulatePolygonsOfElements', {
+            'elements': walls[:1],
+            'convex': True
+        }, debug = False)['triangulations']
+    if 'error' in result[0]:
+        print ('  Error:\n{}'.format (aclib.JsonDumpDictionary (result[0]['error'])))
+    else:
+        convexPolygons = result[0]['convexPolygons']
+        print ('A Wall decomposed into {} convex polygons, the smallest with {} vertices'.format (
+            len (convexPolygons), min ((len (polygon['vertices']) for polygon in convexPolygons), default = 0)))

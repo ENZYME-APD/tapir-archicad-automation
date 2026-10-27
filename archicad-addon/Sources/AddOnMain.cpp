@@ -495,7 +495,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<TriangulatePolygonsOfElementsCommand> (
             elementCommands, "1.7.3",
-            "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. The output is aligned with the input array of elements; an element of another type gets an error item."
+            "Triangulates the plan polygon of the given elements, holes excluded, as Archicad does it: the outline of a Slab, Zone, Hatch or Mesh and the polygon of a Roof. Each triangle is given by the 2D coordinates of its three vertices. With convex: true, the faces of the 3D model of the elements (of any type) are decomposed into convex polygons instead, given by the 3D coordinates of their vertices. The output is aligned with the input array of elements; an element of another type gets an error item."
+        );
+        err |= RegisterCommand<GetTextureCoordinatesCommand> (
+            elementCommands, "1.7.4",
+            "Gets the texture coordinates (u, v) of the faces of the 3D model of the given elements: per solid body, per face, at the first vertex of the face. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<GetSurfaceQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
