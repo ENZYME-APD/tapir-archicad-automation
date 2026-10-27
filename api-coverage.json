@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 19:02 UTC",
+ "generatedAt": "2026-10-27 19:08 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 65,
-  "in progress": 977,
+  "claimed": 63,
+  "in progress": 979,
   "open": 114,
   "merged": 4
  },
@@ -9263,6 +9263,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
+    {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
     },
@@ -15977,9 +15981,14 @@
    "olderNames": [
     "ACAPI_3D_DecomposePgon"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -16053,6 +16062,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
+    {
      "number": 1483,
      "title": "Get3DGeometryOfElements: work with a 3D Document as the active window"
     },
@@ -16121,6 +16134,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
     {
      "number": 1038,
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
@@ -16211,9 +16228,14 @@
    "olderNames": [
     "APIAny_GetTextureCoordID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -25314,6 +25336,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
     {
      "number": 1378,
      "title": "[6/6] IFC GlobalIds in GetIFCIdsOfElements and GetElementsByIFCIds on Archicad 25-27"
@@ -38437,6 +38463,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -48699,6 +48729,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
@@ -59360,6 +59394,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
+    {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
@@ -64640,6 +64678,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1581,
+     "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
+    },
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
