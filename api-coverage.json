@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 19:35 UTC",
+ "generatedAt": "2026-10-27 23:09 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,9 @@
   "not applicable": 620,
   "done": 1099,
   "claimed": 59,
-  "in progress": 983,
+  "in progress": 982,
   "open": 114,
-  "merged": 4
+  "merged": 5
  },
  "items": [
   {
@@ -9197,20 +9197,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1101,
-     "title": "Add GetElementsByClassification command"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1098,
-     "title": "Expose ACAPI_Element_GetElementsWithClassification (all elements of one classification item in one call)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetExtent",
@@ -24668,6 +24658,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 1571,
      "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
@@ -72725,10 +72719,6 @@
     {
      "number": 1276,
      "title": "Add GetClassificationItemVisibility command"
-    },
-    {
-     "number": 1101,
-     "title": "Add GetElementsByClassification command"
     },
     {
      "number": 1008,

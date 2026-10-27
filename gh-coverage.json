@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-10-27 19:35 UTC",
+ "generatedAt": "2026-10-27 23:09 UTC",
  "counts": {
   "done": 302,
-  "open": 116,
+  "open": 117,
   "in progress": 11,
   "not applicable": 1
  },
@@ -4922,6 +4922,21 @@
     "classificationSystemIds",
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementsByClassification",
+   "group": "Classification Commands",
+   "version": "1.7.3",
+   "brief": "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
