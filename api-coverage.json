@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-26 21:28 UTC",
+ "generatedAt": "2026-10-27 00:48 UTC",
  "versions": [
   25,
   26,
@@ -7727,6 +7727,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1570,
+     "title": "Get3DBoundingBoxes: return an error instead of inverted ±1e35 bounds"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
