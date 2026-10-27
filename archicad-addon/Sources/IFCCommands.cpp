@@ -874,6 +874,216 @@ GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectStat
     return response;
 }
 
+GetIFCClassificationReferencesOfElementsCommand::GetIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "GetIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "preview": {
+                "type": "boolean",
+                "description": "Return the classification references Archicad would generate on IFC export (preview) instead of the ones stored on the elements (local). Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "type": "array",
+                "description": "The IFC classification references of each given element, in the order of the input, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "ifcClassificationReferences": {
+                                    "type": "array",
+                                    "description": "The IFC classification references (IfcClassificationReference) of the element. Optional fields without a value are left out.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "relAssociatesClassificationName": {
+                                                "type": "string",
+                                                "description": "The name of the IfcRelAssociatesClassification relation."
+                                            },
+                                            "identification": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "sort": {
+                                                "type": "string",
+                                                "description": "Returned from Archicad 29."
+                                            },
+                                            "referencedSource": {
+                                                "type": "object",
+                                                "description": "The classification (IfcClassification) the reference belongs to.",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "source": {
+                                                        "type": "string"
+                                                    },
+                                                    "edition": {
+                                                        "type": "string"
+                                                    },
+                                                    "editionDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "location": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "name"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "relAssociatesClassificationName",
+                                            "referencedSource"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "ifcClassificationReferences"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+static void AddOptionalString (GS::ObjectState& objectState, const char* key, const std::optional<GS::UniString>& value)
+{
+    if (value.has_value () && !value->IsEmpty ()) {
+        objectState.Add (key, *value);
+    }
+}
+#endif
+
+GS::ObjectState GetIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    bool preview = false;
+    parameters.Get ("preview", preview);
+
+    GS::ObjectState response;
+    const auto& elementIFCClassificationReferences = response.AddList<GS::ObjectState> ("elementIFCClassificationReferences");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            elementIFCClassificationReferences (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            elementIFCClassificationReferences (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
+        if (objectID.IsErr ()) {
+            elementIFCClassificationReferences (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+            continue;
+        }
+        IFCAPI::PropertyAccessor propertyAccessor = IFCAPI::PropertyAccessor (*objectID);
+        auto classificationReferences = preview ? propertyAccessor.GetPreviewClassificationReferences () : propertyAccessor.GetLocalClassificationReferences ();
+        if (classificationReferences.IsErr ()) {
+            elementIFCClassificationReferences (CreateErrorResponse (classificationReferences.UnwrapErr ().kind, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCClassificationReferences = CreateElementIdObjectState (elemGuid);
+        const auto& ifcClassificationReferences = elemIFCClassificationReferences.AddList<GS::ObjectState> ("ifcClassificationReferences");
+        for (const auto& classificationReference : classificationReferences.Unwrap ()) {
+            const auto classification = classificationReference.GetReferencedSource ();
+            GS::ObjectState referencedSource ("name", classification.GetName ());
+            AddOptionalString (referencedSource, "source", classification.GetSource ());
+            AddOptionalString (referencedSource, "edition", classification.GetEdition ());
+            AddOptionalString (referencedSource, "editionDate", classification.GetEditionDate ());
+            AddOptionalString (referencedSource, "description", classification.GetDescription ());
+            AddOptionalString (referencedSource, "location", classification.GetLocation ());
+
+            GS::ObjectState ifcClassificationReference ("relAssociatesClassificationName", classificationReference.GetIfcRelAssociatesClassificationName ());
+            AddOptionalString (ifcClassificationReference, "identification", classificationReference.GetIdentification ());
+            AddOptionalString (ifcClassificationReference, "name", classificationReference.GetName ());
+            AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
+            AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
+#ifdef ServerMainVers_2900
+            AddOptionalString (ifcClassificationReference, "sort", classificationReference.GetSort ());
+#endif
+            ifcClassificationReference.Add ("referencedSource", referencedSource);
+            ifcClassificationReferences (ifcClassificationReference);
+        }
+
+        elementIFCClassificationReferences (elemIFCClassificationReferences);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
 SetIFCAttributesOfElementsCommand::SetIFCAttributesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
