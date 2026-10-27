@@ -1791,6 +1791,170 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
     return response;
 }
 
+SetMarkerLibraryPartOfElementsCommand::SetMarkerLibraryPartOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetMarkerLibraryPartOfElementsCommand::GetName () const
+{
+    return "SetMarkerLibraryPartOfElements";
+}
+
+GS::Optional<GS::UniString> SetMarkerLibraryPartOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elementsWithMarkerLibraryPart": {
+            "type": "array",
+            "description": "The elements with the library part their marker should use.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "libraryPartName": {
+                        "type": "string",
+                        "description": "The name of the library part the marker should use, as GetMarkerParametersOfElements and GetAvailableLibraryParts report it. It should be a marker library part."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "libraryPartName"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elementsWithMarkerLibraryPart"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> SetMarkerLibraryPartOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// Finds the library part named `libName` by its name only, as ResolveLibraryPartName does. The
+// typeID that ACAPI_LibraryPart_Get returns for the marker's current part does not tell a marker
+// from other parts (Archicad reports APILib_ObjectID for every part), and given to the search it
+// made even the marker's own name not found.
+static GSErrCode SearchMarkerLibraryPart (const GS::UniString& libName, API_LibPart& libPart)
+{
+    libPart = {};
+    GS::ucscpy (libPart.docu_UName, libName.ToUStr ());
+    GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    delete libPart.location;
+    libPart.location = nullptr;
+    return err;
+}
+
+GS::ObjectState SetMarkerLibraryPartOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithMarkerLibraryPart;
+    parameters.Get ("elementsWithMarkerLibraryPart", elementsWithMarkerLibraryPart);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Set Marker Library Part of Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithMarkerLibraryPart : elementsWithMarkerLibraryPart) {
+            const GS::ObjectState* elementId = elementWithMarkerLibraryPart.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            GS::UniString libName;
+            if (!elementWithMarkerLibraryPart.Get ("libraryPartName", libName) || libName.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "libraryPartName is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            const GS::OnExit cleanup ([&]() {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+            });
+
+            GS::UniString errMessage;
+            GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, element, memo, marker, errMessage);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, errMessage));
+                continue;
+            }
+
+            API_LibPart libPart = {};
+            err = SearchMarkerLibraryPart (libName, libPart);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Not found marker library part with name '%T' for element %T", libName.ToPrintf (), APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            if (libPart.index == marker.subElem.object.libInd) {
+                // Already this library part: the marker's parameters are kept as they are.
+                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
+            // The parameters the marker was read with belong to its previous library part, so it
+            // gets the new library part's own defaults, as PrepareWindowOrDoorDefaults gives them
+            // to a marker built from the marker parent. SetMarkerParametersOfElements changes
+            // them afterwards.
+            double a = 0.0;
+            double b = 0.0;
+            Int32 addParNum = 0;
+            API_AddParType** addPars = nullptr;
+            err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+            if (err != NoError || addPars == nullptr) {
+                if (addPars != nullptr) {
+                    ACAPI_DisposeAddParHdl (&addPars);
+                }
+                executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, GS::UniString::Printf ("Failed to get the parameters of library part '%T'", libName.ToPrintf ())));
+                continue;
+            }
+            ACAPI_DisposeAddParHdl (&marker.memo.params);
+            marker.memo.params = addPars;
+            marker.subElem.object.libInd = libPart.index;
+
+            // Only the marker changes, as in SetMarkerParametersOfElements.
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            ACAPI_ELEMENT_MASK_SETFULL (marker.mask);
+            err = ACAPI_Element_ChangeExt (&element, &mask, &memo, 0, 1UL, &marker, true, 0);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to change the marker of element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 RunParameterScriptOfElementsCommand::RunParameterScriptOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
