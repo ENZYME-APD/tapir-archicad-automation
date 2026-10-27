@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 18:57 UTC",
+ "generatedAt": "2026-10-27 19:02 UTC",
  "versions": [
   25,
   26,
@@ -4786,6 +4786,10 @@
    ],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     },
@@ -8237,6 +8241,10 @@
    ],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 578,
      "title": "CreateStairs rejects multi-segment baselines that turn clockwise (-2130313215)"
     },
@@ -8663,6 +8671,10 @@
    ],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -9079,6 +9091,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -9412,6 +9428,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 811,
      "title": "Get/Set door & window marker settings, and Curtain Wall frame/panel class assignment"
@@ -10497,6 +10517,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -13778,6 +13802,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -13805,6 +13833,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -13940,6 +13972,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -14136,6 +14172,10 @@
    ],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -14163,6 +14203,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -14710,6 +14754,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -14741,7 +14789,12 @@
      "title": "[1/2] Add CreateLibraryParts command: GDL objects from scripts and parameters"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetSection",
@@ -14878,6 +14931,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -14985,6 +15042,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -15051,6 +15112,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -15133,6 +15198,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -15160,6 +15229,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -15250,6 +15323,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -15905,6 +15982,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -15980,7 +16061,12 @@
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_GetBuildingMaterial",
@@ -16040,7 +16126,12 @@
      "title": "[4/4] Add GetCutPolygonsOfElements: the floor plan cut polygons and area of elements"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    }
+   ]
   },
   {
    "id": "ACAPI_ModelAccess_GetConnectionTable",
@@ -16124,6 +16215,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -21825,6 +21920,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -22415,7 +22514,12 @@
    "status": "not applicable",
    "reason": "interactive input from the user",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_SetNeigFilter",
@@ -22841,6 +22945,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
@@ -23127,6 +23235,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -25174,6 +25286,10 @@
    ],
    "issues": [
     {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
+    {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     },
@@ -25276,6 +25392,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -25849,6 +25969,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -26841,6 +26965,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 1580,
+     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
