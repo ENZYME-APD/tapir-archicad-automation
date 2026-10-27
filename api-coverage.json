@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 06:49 UTC",
+ "generatedAt": "2026-10-27 07:29 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 620,
   "done": 1099,
   "claimed": 72,
-  "in progress": 968,
-  "open": 116,
+  "in progress": 970,
+  "open": 114,
   "merged": 4
  },
  "items": [
@@ -6963,7 +6963,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1571,
+     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
+    }
+   ],
    "issues": []
   },
   {
@@ -6984,9 +6989,14 @@
    "olderNames": [
     "APIDb_DrawOrderInitID"
    ],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1571,
+     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
+    }
+   ],
    "issues": []
   },
   {
@@ -7007,9 +7017,14 @@
    "olderNames": [
     "APIDb_DrawOrderTermID"
    ],
-   "status": "open",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1571,
+     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
+    }
+   ],
    "issues": []
   },
   {
@@ -24431,6 +24446,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1571,
+     "title": "Fix the GetElementsInDrawOrder crash: walk between DrawOrderInit and DrawOrderTerm"
+    },
     {
      "number": 1514,
      "title": "[5/6] Add GetStoryControlPrimitives"
