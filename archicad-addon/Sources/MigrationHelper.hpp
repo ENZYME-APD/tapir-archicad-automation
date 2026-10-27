@@ -137,9 +137,20 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
 #define ACAPI_Database_ModifyDatabase(par1) ACAPI_Database (APIDb_ModifyDatabaseID, par1)
 
+inline GSErrCode ACAPI_DrawOrder_DrawOrderInit ()
+{
+    return ACAPI_Database (APIDb_DrawOrderInitID, nullptr, nullptr);
+}
+
+// par1 is the filter value itself, passed as a pointer-sized value (see the DevKit's Element_Test example).
 inline GSErrCode ACAPI_DrawOrder_DrawOrderGetNext (API_ElemFilterFlags filterBits, API_Elem_Head* elemHead)
 {
-    return ACAPI_Database (APIDb_DrawOrderGetNextID, &filterBits, elemHead);
+    return ACAPI_Database (APIDb_DrawOrderGetNextID, (void*) (GS::IntPtr) filterBits, elemHead);
+}
+
+inline GSErrCode ACAPI_DrawOrder_DrawOrderTerm ()
+{
+    return ACAPI_Database (APIDb_DrawOrderTermID, nullptr, nullptr);
 }
 
 inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutInfo, API_DatabaseUnId* databaseUnId)

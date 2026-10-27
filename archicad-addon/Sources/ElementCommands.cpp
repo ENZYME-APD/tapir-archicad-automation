@@ -389,10 +389,18 @@ GS::ObjectState GetSectionElementsCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
-// Walks the current database with ACAPI_DrawOrder_DrawOrderGetNext, starting from an empty
-// header (null guid, zombie type) and feeding back the header it returned each time. The walk
-// ends at the first call that fails, which is how the function reports that no element is left.
-// The visited set stops it should a database ever hand back an element twice.
+// Closes a draw order walk on every way out of the function.
+class DrawOrderWalk {
+public:
+    DrawOrderWalk () : error (ACAPI_DrawOrder_DrawOrderInit ()) {}
+    ~DrawOrderWalk () { if (error == NoError) ACAPI_DrawOrder_DrawOrderTerm (); }
+    const GSErrCode error;
+};
+
+// Walks the current database with ACAPI_DrawOrder_DrawOrderGetNext between DrawOrderInit and
+// DrawOrderTerm, as the DevKit requires (calling GetNext without Init crashed Archicad, #1548).
+// The walk ends when GetNext reports APIERR_NOMORE. The visited set stops it should a database
+// ever hand back an element twice.
 template <typename ListProxyType>
 static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -413,6 +421,11 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
                 filterFlags |= ConvertFilterStringToFlag (filter);
             }
         }
+    }
+
+    const DrawOrderWalk walk;
+    if (walk.error != NoError) {
+        return walk.error;
     }
 
     GS::HashSet<API_Guid> visitedGuids;

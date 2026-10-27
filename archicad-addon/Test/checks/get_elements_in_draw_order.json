@@ -1,0 +1,44 @@
+{
+  "title": "GetElementsInDrawOrder walks the database between DrawOrderInit and DrawOrderTerm (#1548)",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "two walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 704, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 700, "y": 703 }, "endCoordinate": { "x": 704, "y": 703 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "every element",
+      "command": "GetElementsInDrawOrder",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "answers without crashing" }
+      ]
+    },
+    {
+      "id": "walls only",
+      "command": "GetElementsInDrawOrder",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "the filter is applied" }
+      ]
+    },
+    {
+      "id": "walls only, again",
+      "command": "GetElementsInDrawOrder",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "a second walk starts from the beginning" }
+      ]
+    }
+  ]
+}
