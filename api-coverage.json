@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 09:04 UTC",
+ "generatedAt": "2026-10-27 10:03 UTC",
  "versions": [
   25,
   26,
@@ -4527,6 +4527,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1574,
+     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
+    },
     {
      "number": 1544,
      "title": "[6/6] Add CloseWindows, RebuildCurrentDatabase and CreateSolidOperations"
@@ -22504,7 +22508,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1574,
+     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
+    }
+   ],
    "issues": [
     {
      "number": 876,
@@ -22905,7 +22914,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1574,
+     "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
+    }
+   ],
    "issues": [
     {
      "number": 876,
