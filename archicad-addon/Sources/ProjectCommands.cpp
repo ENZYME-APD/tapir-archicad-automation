@@ -461,17 +461,7 @@ GS::Optional<GS::UniString> GetNoteAutoTextKeywordsCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "keyword": {
-                                    "type": "string",
-                                    "description": "The keyword of the note autotext."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "keyword"
-                            ]
+                            "$ref": "#/NoteAutoTextKeyword"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2003,14 +1993,12 @@ GS::Optional<GS::UniString> GetCurrentViewImageCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "source": {
-                "type": "string",
-                "description": "Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.",
-                "enum": ["3DWindow", "RenderingWindow"]
+                "$ref": "#/ViewImageSource",
+                "description": "Optional, 3DWindow by default."
             },
             "format": {
-                "type": "string",
-                "description": "Optional, png by default. The image format.",
-                "enum": ["png", "jpg"]
+                "$ref": "#/ViewImageFormat",
+                "description": "Optional, png by default."
             }
         },
         "additionalProperties": false,
@@ -2636,68 +2624,13 @@ GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetRawResponseSchema () 
                 ]
             },
             "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "accuracy",
-                    "decimals"
-                ]
+                "$ref": "#/CalculationUnitAreaFormat"
             },
             "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "accuracy",
-                    "decimals"
-                ]
+                "$ref": "#/CalculationUnitVolumeFormat"
             },
             "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "unit",
-                    "decimals",
-                    "accuracy"
-                ]
+                "$ref": "#/AngleUnitFormat"
             }
         },
         "additionalProperties": false,
@@ -3250,332 +3183,6 @@ static GS::ObjectState SetProjectPreferencesPage (const char* pageName, API_Pref
 
 #endif
 
-// The "required" list of a preferences object: every field in the response of
-// GetProjectPreferences, none in the input of SetProjectPreferences, where a
-// missing field keeps its value.
-static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired, const GS::UniString& fields)
-{
-    if (allFieldsRequired) {
-        return GS::UniString ("\"required\": [") + fields + "]";
-    }
-    return "\"required\": []";
-}
-
-static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
-        "properties": {
-            "length": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for length values."
-                    },
-                    "roundInch": {
-                        "type": "integer",
-                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")");
-    schema += R"(
-            },
-            "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
-    schema += R"(
-            },
-            "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
-    schema += R"(
-            },
-            "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetLengthDimFormatSchema (bool allFieldsRequired, const GS::UniString& description)
-{
-    GS::UniString schema = GS::UniString (R"({
-                "type": "object",
-                "description": ")") + description + R"(",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "roundInch": {
-                        "type": "integer",
-                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "showZeroWhole": {
-                        "type": "boolean",
-                        "description": "Show the zero before the decimal point of values below one."
-                    },
-                    "showZeroInch": {
-                        "type": "boolean",
-                        "description": "Show zero inches in feet and inches values."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch", "accuracy", "showZeroWhole", "showZeroInch", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetAngleDimFormatSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": "The format of the angle dimensions.",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetAreaDimFormatSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": "The format of the area values the dimensions show (area calculations).",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetDimensionsSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
-        "properties": {
-            "dimensionStandardIndex": {
-                "type": "integer",
-                "description": "The index of the dimension standard the page follows."
-            },
-            "linear": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the linear dimensions.");
-    schema += R"(,
-            "angle": )";
-    schema += GetAngleDimFormatSchema (allFieldsRequired);
-    schema += R"(,
-            "radial": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the radial dimensions.");
-    schema += R"(,
-            "level": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the level dimensions.");
-    schema += R"(,
-            "elevation": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the elevation dimensions.");
-    schema += R"(,
-            "doorWindow": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the door, window and skylight dimensions.");
-    schema += R"(,
-            "parapet": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the sill height (parapet) dimensions.");
-    schema += R"(,
-            "area": )";
-    schema += GetAreaDimFormatSchema (allFieldsRequired);
-    schema += R"(
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("dimensionStandardIndex", "linear", "angle", "radial", "level", "elevation", "doorWindow", "parapet", "area")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
-        "properties": {
-            "length": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for length values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
-    schema += R"(
-    })";
-    return schema;
-}
-
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3595,12 +3202,7 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The preference pages to get. Every page when missing.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "WorkingUnits",
-                        "Dimensions",
-                        "CalculationUnits"
-                    ]
+                    "$ref": "#/ProjectPreferenceType"
                 },
                 "minItems": 1
             }
@@ -3613,25 +3215,23 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
 
 GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema () const
 {
-    GS::UniString schema = R"({
+    return R"({
         "type": "object",
         "description": "The pages asked for, by name.",
         "properties": {
-            "workingUnits": )";
-    schema += GetWorkingUnitsSchema (true);
-    schema += R"(,
-            "dimensions": )";
-    schema += GetDimensionsSchema (true);
-    schema += R"(,
-            "calculationUnits": )";
-    schema += GetCalculationUnitsPageSchema (true);
-    schema += R"(
+            "workingUnits": {
+                "$ref": "#/WorkingUnitPreferences"
+            },
+            "dimensions": {
+                "$ref": "#/DimensionPreferences"
+            },
+            "calculationUnits": {
+                "$ref": "#/CalculationUnitPreferences"
+            }
         },
         "additionalProperties": false,
-        "required": [
-        ]
+        "required": []
     })";
-    return schema;
 }
 
 GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3686,25 +3286,23 @@ GS::String SetProjectPreferencesCommand::GetName () const
 
 GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSchema () const
 {
-    GS::UniString schema = R"({
+    return R"({
         "type": "object",
         "description": "The pages to change, by name. Only the given fields of a page change, the rest keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet).",
         "properties": {
-            "workingUnits": )";
-    schema += GetWorkingUnitsSchema (false);
-    schema += R"(,
-            "dimensions": )";
-    schema += GetDimensionsSchema (false);
-    schema += R"(,
-            "calculationUnits": )";
-    schema += GetCalculationUnitsPageSchema (false);
-    schema += R"(
+            "workingUnits": {
+                "$ref": "#/WorkingUnitPreferencesUpdate"
+            },
+            "dimensions": {
+                "$ref": "#/DimensionPreferencesUpdate"
+            },
+            "calculationUnits": {
+                "$ref": "#/CalculationUnitPreferencesUpdate"
+            }
         },
         "additionalProperties": false,
-        "required": [
-        ]
+        "required": []
     })";
-    return schema;
 }
 
 GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema () const
@@ -4844,35 +4442,7 @@ GS::Optional<GS::UniString> GetHotlinkProxyElementTableCommand::GetRawResponseSc
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "proxyElements": {
-                                    "type": "array",
-                                    "description": "The proxy elements of the instance, in no particular order.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "proxyElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The proxy element in the current project."
-                                            },
-                                            "sourceElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The element in the hotlink's source file the proxy was made from."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "proxyElementId",
-                                            "sourceElementId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "proxyElements"
-                            ]
+                            "$ref": "#/HotlinkProxyElementTable"
                         },
                         {
                             "$ref": "#/ErrorItem"

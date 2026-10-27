@@ -1156,19 +1156,8 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "description": "New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element."
                         },
                         "anchor": {
-                            "type": "string",
-                            "description": "New anchor point of the cross section, on a 3x3 grid, applied to all segments.",
-                            "enum": [
-                                "TopLeft",
-                                "TopCenter",
-                                "TopRight",
-                                "MiddleLeft",
-                                "Center",
-                                "MiddleRight",
-                                "BottomLeft",
-                                "BottomCenter",
-                                "BottomRight"
-                            ]
+                            "$ref": "#/MEPRoutingAnchor",
+                            "description": "Applied to all segments of the routing element."
                         },
                         "referenceLineOffsetX": {
                             "type": "number",

@@ -11,7 +11,7 @@ GS::String Set3DCutPlanesCommand::GetName () const
 // there is no 3DCutPlane scheme definition.
 // I am not sure if it is needed, because it will not occur in other commands
 Set3DCutPlanesCommand::Set3DCutPlanesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 
@@ -66,33 +66,7 @@ GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetInputParametersSchema () c
             "type": "array",
             "description": "The cut planes. An empty array switches the 3D cut off. The side of a plane its normal vector points to is cut away and the other side is kept (to be confirmed in Archicad). pd is in meters.",
             "items": {
-                "type": "object",
-                "description": "Defines a 3D cut plane using the plane equation: pa*x + pb*y + pc*z + pd = 0",
-                "properties": {
-                    "pa": {
-                        "type": "number",
-                        "description": "Coefficient of x in the plane equation. The x coordinate of the normal vector of the plane."
-                    },
-                    "pb": {
-                        "type": "number",
-                        "description": "Coefficient of y in the plane equation. The y coordinate of the normal vector of the plane."
-                    },
-                    "pc": {
-                        "type": "number",
-                        "description": "Coefficient of z in the plane equation. The z coordinate of the normal vector of the plane."
-                    },
-                    "pd": {
-                        "type": "number",
-                        "description": "Constant term in the plane equation, in meters. The distance of the plane from the origin along the normal vector."
-                    }
-                },
-                "required": [
-                    "pa",
-                    "pb",
-                    "pc",
-                    "pd"
-                ],
-                "additionalProperties": false
+                "$ref": "#/CutPlane"
             }
         }
     },
@@ -132,7 +106,7 @@ GS::String Get3DCutPlanesCommand::GetName () const
 
 
 Get3DCutPlanesCommand::Get3DCutPlanesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 
@@ -153,15 +127,7 @@ GS::Optional<GS::UniString> Get3DCutPlanesCommand::GetRawResponseSchema () const
             "type": "array",
             "description": "The cut planes, in the form accepted by Set3DCutPlanes: pa*x + pb*y + pc*z + pd = 0, pd in meters.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "pa": { "type": "number" },
-                    "pb": { "type": "number" },
-                    "pc": { "type": "number" },
-                    "pd": { "type": "number" }
-                },
-                "required": ["pa", "pb", "pc", "pd"],
-                "additionalProperties": false
+                "$ref": "#/CutPlane"
             }
         }
     },

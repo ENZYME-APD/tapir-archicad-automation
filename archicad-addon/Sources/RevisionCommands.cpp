@@ -175,19 +175,7 @@ GS::Optional<GS::UniString> GetRevisionChangeCustomSchemeCommand::GetRawResponse
             "customScheme": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "customSchemeKey": {
-                            "type": "string",
-                            "description": "The identifier of the custom field. The same key is used in the customSchemeData of the revision changes."
-                        },
-                        "customSchemeName": {
-                            "type": "string",
-                            "description": "The name of the custom field."
-                        }
-                    },
-                    "required": ["customSchemeKey", "customSchemeName"],
-                    "additionalProperties": false
+                    "$ref": "#/RevisionChangeCustomSchemeItem"
                 }
             }
         },

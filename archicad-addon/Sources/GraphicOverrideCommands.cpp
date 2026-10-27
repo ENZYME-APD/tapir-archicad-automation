@@ -380,21 +380,7 @@ GS::Optional<GS::UniString> GetGraphicOverrideRulesByNameCommand::GetInputParame
                 "type": "array",
                 "description": "The graphic override rules to get, by name.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the rule. Rule names are unique within the project."
-                        },
-                        "ruleGroupName": {
-                            "type": "string",
-                            "description": "The name of the rule group to search the rule in. Left out: every rule group is searched."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/GraphicOverrideRuleReference"
                 }
             }
         },
@@ -1117,22 +1103,7 @@ GS::Optional<GS::UniString> RenameGraphicOverrideRuleGroupsCommand::GetInputPara
                 "type": "array",
                 "description": "The rule groups to rename. Their rules and the combinations that contain them are kept.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The current name of the rule group."
-                        },
-                        "newName": {
-                            "type": "string",
-                            "description": "The new name of the rule group. It must not be empty or used by another rule group."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "newName"
-                    ]
+                    "$ref": "#/GraphicOverrideRuleGroupRename"
                 }
             }
         },
@@ -1461,25 +1432,7 @@ GS::Optional<GS::UniString> MoveGraphicOverrideRulesCommand::GetInputParametersS
                 "type": "array",
                 "description": "The rules to move, processed in this order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "graphicOverrideRuleId": {
-                            "$ref": "#/GraphicOverrideRuleId"
-                        },
-                        "ruleGroupName": {
-                            "type": "string",
-                            "description": "The rule group the rule is moved to; it can be the rule's own group to change its place there. Created when no rule group has this name."
-                        },
-                        "beforeGraphicOverrideRuleId": {
-                            "$ref": "#/GraphicOverrideRuleId",
-                            "description": "The rule of the target group the moved rule is put in front of. Left out: the rule becomes the last of the group."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "graphicOverrideRuleId",
-                        "ruleGroupName"
-                    ]
+                    "$ref": "#/GraphicOverrideRuleMove"
                 }
             }
         },

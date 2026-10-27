@@ -4288,55 +4288,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.",
                 "items": {
-                    "type": "object",
-                    "description": "The parameters of the Stair to check. Fields that are not given come from the current Stair tool defaults, as in CreateStairs.",
-                    "properties": {
-                        "baseLinePoints": {
-                            "type": "array",
-                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 2
-                        },
-                        "zCoordinate": {
-                            "type": "number",
-                            "description": "The Z coordinate (absolute elevation) of the stair base."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional floor index. If omitted, derived from zCoordinate."
-                        },
-                        "totalHeight": {
-                            "type": "number",
-                            "description": "Total height of the stair.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "flightWidth": {
-                            "type": "number",
-                            "description": "Width of the stair flight.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "stepNum": {
-                            "type": "integer",
-                            "description": "Number of risers (steps).",
-                            "minimum": 1
-                        },
-                        "riserHeight": {
-                            "type": "number",
-                            "description": "Height of each riser.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "treadDepth": {
-                            "type": "number",
-                            "description": "Depth (going) of each tread.",
-                            "exclusiveMinimum": 0.0
-                        },
-                        "finishVisible": {
-                            "type": "boolean",
-                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["baseLinePoints", "zCoordinate"]
+                    "$ref": "#/StairBaselineData"
                 }
             }
         },
@@ -4357,46 +4309,7 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "solution": {
-                                    "type": "string",
-                                    "enum": ["Correct", "Solved", "NotSolved"],
-                                    "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
-                                },
-                                "baseLinePoints": {
-                                    "type": "array",
-                                    "description": "The baseline polyline after the solver ran.",
-                                    "items": { "$ref": "#/Coordinate2D" }
-                                },
-                                "baseLineArcs": {
-                                    "type": "array",
-                                    "description": "The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.",
-                                    "items": { "$ref": "#/PolyArc" }
-                                },
-                                "totalHeight": {
-                                    "type": "number",
-                                    "description": "Total height of the stair after the solver ran."
-                                },
-                                "flightWidth": {
-                                    "type": "number",
-                                    "description": "Width of the stair flight after the solver ran."
-                                },
-                                "stepNum": {
-                                    "type": "integer",
-                                    "description": "Number of risers after the solver ran."
-                                },
-                                "riserHeight": {
-                                    "type": "number",
-                                    "description": "Height of each riser after the solver ran."
-                                },
-                                "treadDepth": {
-                                    "type": "number",
-                                    "description": "Depth (going) of each tread after the solver ran."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["solution", "baseLinePoints", "totalHeight", "flightWidth", "stepNum", "riserHeight", "treadDepth"]
+                            "$ref": "#/StairBaselineSolution"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5130,39 +5043,9 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetInputParametersSchema (
 }
 
 // Also the extrusion parameters of the Opening tool defaults in GetOpeningDefault.
-static const char* OpeningExtrusionParametersResponseSchema = R"({
-    "type": "object",
-    "description": "The size and extrusion settings. A size Archicad does not give for the opening's shape is left out.",
-    "properties": {
-        "width": { "type": "number" },
-        "height": { "type": "number" },
-        "anchor": {
-            "type": "string",
-            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
-            "description": "The anchor point of the opening's polygon."
-        },
-        "anchorAltitude": { "type": "number" },
-        "extrusionStartOffset": { "type": "number" },
-        "finiteBodyLength": { "type": "number" },
-        "isExtrusionSurfaceOverridden": { "type": "boolean" },
-        "extrusionSurfaceId": {
-            "$ref": "#/AttributeId",
-            "description": "The surface of the extrusion faces. Only given when it is overridden."
-        },
-        "isEndSurfaceOverridden": { "type": "boolean" },
-        "endSurfaceId": {
-            "$ref": "#/AttributeId",
-            "description": "The surface of the end faces. Only given when it is overridden."
-        },
-        "areOverriddenSurfacesLinked": { "type": "boolean" }
-    },
-    "additionalProperties": false,
-    "required": ["anchor", "isExtrusionSurfaceOverridden", "isEndSurfaceOverridden", "areOverriddenSurfacesLinked"]
-})";
-
 GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openings": {
@@ -5172,43 +5055,7 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": { "$ref": "#/ElementId" },
-                                "parentElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The element the opening was placed in. Left out when the opening has none."
-                                },
-                                "cutElements": {
-                                    "type": "array",
-                                    "description": "The elements the opening cuts.",
-                                    "items": { "$ref": "#/ElementIdArrayItem" }
-                                },
-                                "connectedOpenings": {
-                                    "type": "array",
-                                    "description": "The openings Archicad reports as connected to this one. Left out when they cannot be read.",
-                                    "items": { "$ref": "#/ElementIdArrayItem" }
-                                },
-                                "geometry": {
-                                    "type": "object",
-                                    "properties": {
-                                        "anchorPoint": { "$ref": "#/Coordinate3D", "description": "The anchor point of the opening in world coordinates." },
-                                        "extrusionDirection": { "$ref": "#/Coordinate3D", "description": "The direction the opening is extruded in." },
-                                        "xAxis": { "$ref": "#/Coordinate3D", "description": "The X axis of the plane of the opening's polygon." },
-                                        "yAxis": { "$ref": "#/Coordinate3D", "description": "The Y axis of the plane of the opening's polygon." },
-                                        "polygon": {
-                                            "type": "array",
-                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis. Left out when the opening has no polygon.",
-                                            "items": { "$ref": "#/Coordinate2D" }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["anchorPoint", "extrusionDirection", "xAxis", "yAxis"]
-                                },
-                                "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId", "cutElements", "geometry", "extrusionParameters"]
+                            "$ref": "#/OpeningDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5218,7 +5065,9 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
             }
         },
         "additionalProperties": false,
-        "required": ["openings"]
+        "required": [
+            "openings"
+        ]
     })";
 }
 
@@ -5353,67 +5202,7 @@ GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The Opening elements (made with the Opening tool) to change, each with the details to set. A detail that is left out stays as it is.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "parentElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The new element the opening belongs to."
-                        },
-                        "addCutElements": {
-                            "type": "array",
-                            "description": "Elements the opening should cut as well.",
-                            "items": { "$ref": "#/ElementIdArrayItem" }
-                        },
-                        "removeCutElements": {
-                            "type": "array",
-                            "description": "Elements the opening should no longer cut.",
-                            "items": { "$ref": "#/ElementIdArrayItem" }
-                        },
-                        "polygon": {
-                            "type": "array",
-                            "description": "The new polygon of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 3
-                        },
-                        "transformation": {
-                            "type": "array",
-                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] moves the opening by 1 along X.",
-                            "items": { "type": "number" },
-                            "minItems": 12,
-                            "maxItems": 12
-                        },
-                        "extrusionParameters": {
-                            "type": "object",
-                            "description": "The size and extrusion settings to change, with the same names GetOpeningDetails returns.",
-                            "properties": {
-                                "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                                "height": { "type": "number", "exclusiveMinimum": 0.0 },
-                                "anchor": {
-                                    "type": "string",
-                                    "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
-                                    "description": "The anchor point of the opening's polygon."
-                                },
-                                "anchorAltitude": { "type": "number" },
-                                "extrusionStartOffset": { "type": "number" },
-                                "finiteBodyLength": { "type": "number" },
-                                "isExtrusionSurfaceOverridden": { "type": "boolean" },
-                                "extrusionSurfaceId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The surface of the extrusion faces. Only used when the surface is overridden."
-                                },
-                                "isEndSurfaceOverridden": { "type": "boolean" },
-                                "endSurfaceId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The surface of the end faces. Only used when the surface is overridden."
-                                },
-                                "areOverriddenSurfacesLinked": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId"]
+                    "$ref": "#/OpeningModificationData"
                 }
             }
         },
@@ -7416,52 +7205,7 @@ GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetRawResponseSche
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "globalToLocal": {
-                                    "type": "array",
-                                    "description": "The matrix as Archicad returns it (API_Tranmat, global to local): the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
-                                    "items": { "type": "number" },
-                                    "minItems": 12,
-                                    "maxItems": 12
-                                },
-                                "localToGlobal": {
-                                    "type": "array",
-                                    "description": "The inverse of globalToLocal, in the same layout. Missing when globalToLocal cannot be inverted.",
-                                    "items": { "type": "number" },
-                                    "minItems": 12,
-                                    "maxItems": 12
-                                },
-                                "origin": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
-                                },
-                                "xAxis": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The local X axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
-                                },
-                                "yAxis": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The local Y axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
-                                },
-                                "zAxis": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The local Z axis in world coordinates, from localToGlobal. Missing when globalToLocal cannot be inverted."
-                                },
-                                "determinant": {
-                                    "type": "number",
-                                    "description": "The determinant of the 3x3 part of globalToLocal. Zero (or nearly) when it cannot be inverted."
-                                },
-                                "isMirrored": {
-                                    "type": "boolean",
-                                    "description": "True when the matrix is left-handed (negative determinant), which Archicad returns for a mirrored opening."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId", "globalToLocal", "determinant", "isMirrored"]
+                            "$ref": "#/OpeningTransformation"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -8852,38 +8596,6 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
 
 // The floor plan parameters of an opening, read by GetOpeningFloorPlanParameters and
 // GetOpeningDefault and changed by SetOpeningFloorPlanParameters with the same names.
-static const char* OpeningFloorPlanParametersSchemaProperties = R"(
-    "showReferenceAxis": { "type": "boolean", "description": "Whether the reference axis of the opening is shown on the floor plan." },
-    "referenceAxisPen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "referenceAxisLineTypeId": { "$ref": "#/AttributeId", "description": "The line type of the reference axis." },
-    "referenceAxisOverhang": { "type": "number", "description": "How far the reference axis reaches beyond the opening." },
-    "cutSurfacesUseLineOfCutElements": { "type": "boolean", "description": "Whether the cut surfaces use the line of the cut elements instead of cutSurfacesLinePen and cutSurfacesLineTypeId." },
-    "cutSurfacesLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "cutSurfacesLineTypeId": { "$ref": "#/AttributeId" },
-    "outlinesUseLineOfCutElements": { "type": "boolean", "description": "Whether the outlines use the line of the cut elements instead of the uncut and overhead lines below." },
-    "outlinesUncutLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "outlinesUncutLineTypeId": { "$ref": "#/AttributeId" },
-    "outlinesOverheadLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "outlinesOverheadLineTypeId": { "$ref": "#/AttributeId" },
-    "useCoverFills": { "type": "boolean" },
-    "coverFillsUseFillsOfCutElements": { "type": "boolean", "description": "Whether the cover fills are the fills of the cut elements instead of coverFillId." },
-    "coverFillId": { "$ref": "#/AttributeId", "description": "The fill of the cover fills." },
-    "coverFillPen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "coverFillBackgroundPen": { "type": "integer", "minimum": 0, "maximum": 255 },
-    "coverFillOrientation": { "$ref": "#/HatchOrientationType" },
-    "coverFillTransformation": {
-        "$ref": "#/CoverFillTransformation",
-        "description": "The orientation and distortion of the cover fill. Left out when Archicad gives none."
-    },
-    "cutSymbolLibPartId": {
-        "$ref": "#/Guid",
-        "description": "The id of the library part drawn as the symbol of the cut opening. Left out when the opening has no cut symbol."
-    },
-    "unCutSymbolLibPartId": {
-        "$ref": "#/Guid",
-        "description": "The id of the library part drawn as the symbol of the uncut opening. Left out when the opening has no uncut symbol."
-    })";
-
 #ifdef ServerMainVers_2900
 static GS::ObjectState CreateOpeningFloorPlanParametersObjectState (const ACAPI::Element::OpeningFloorPlanParameters& floorPlanParameters)
 {
@@ -9198,7 +8910,7 @@ GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetInputParame
 
 GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openings": {
@@ -9208,24 +8920,7 @@ GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponse
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": { "$ref": "#/ElementId" },
-                                "floorPlanParameters": {
-                                    "type": "object",
-                                    "properties": {)") + OpeningFloorPlanParametersSchemaProperties + R"(
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "showReferenceAxis", "referenceAxisPen", "referenceAxisLineTypeId", "referenceAxisOverhang",
-                                        "cutSurfacesUseLineOfCutElements", "cutSurfacesLinePen", "cutSurfacesLineTypeId",
-                                        "outlinesUseLineOfCutElements", "outlinesUncutLinePen", "outlinesUncutLineTypeId", "outlinesOverheadLinePen", "outlinesOverheadLineTypeId",
-                                        "useCoverFills", "coverFillsUseFillsOfCutElements", "coverFillId", "coverFillPen", "coverFillBackgroundPen", "coverFillOrientation"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId", "floorPlanParameters"]
+                            "$ref": "#/OpeningFloorPlanDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -9235,7 +8930,9 @@ GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponse
             }
         },
         "additionalProperties": false,
-        "required": ["openings"]
+        "required": [
+            "openings"
+        ]
     })";
 }
 
@@ -9278,32 +8975,20 @@ GS::String SetOpeningFloorPlanParametersCommand::GetName () const
 
 GS::Optional<GS::UniString> SetOpeningFloorPlanParametersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openingsWithFloorPlanParameters": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "floorPlanParameters": {
-                            "type": "object",
-                            "description": "The floor plan parameters to change, with the names GetOpeningFloorPlanParameters returns. The ones left out are not changed.",
-                            "properties": {)") + OpeningFloorPlanParametersSchemaProperties + R"(,
-                                "clearCutSymbol": { "type": "boolean", "description": "Removes the cut symbol of the opening. Cannot be given together with cutSymbolLibPartId." },
-                                "clearUnCutSymbol": { "type": "boolean", "description": "Removes the uncut symbol of the opening. Cannot be given together with unCutSymbolLibPartId." }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "floorPlanParameters"]
+                    "$ref": "#/OpeningFloorPlanModificationData"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["openingsWithFloorPlanParameters"]
+        "required": [
+            "openingsWithFloorPlanParameters"
+        ]
     })";
 }
 
@@ -9399,19 +9084,21 @@ GS::Optional<GS::UniString> GetOpeningDefaultCommand::GetInputParametersSchema (
 
 GS::Optional<GS::UniString> GetOpeningDefaultCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(,
+            "extrusionParameters": {
+                "$ref": "#/OpeningExtrusionParameters"
+            },
             "floorPlanParameters": {
-                "type": "object",
-                "properties": {)" + OpeningFloorPlanParametersSchemaProperties + R"(
-                },
-                "additionalProperties": false
+                "$ref": "#/OpeningDefaultFloorPlanParameters"
             }
         },
         "additionalProperties": false,
-        "required": ["extrusionParameters", "floorPlanParameters"]
+        "required": [
+            "extrusionParameters",
+            "floorPlanParameters"
+        ]
     })";
 }
 
