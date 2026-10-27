@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 19:18 UTC",
+ "generatedAt": "2026-10-27 19:35 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 60,
-  "in progress": 982,
+  "claimed": 59,
+  "in progress": 983,
   "open": 114,
   "merged": 4
  },
@@ -7881,6 +7881,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1588,
+     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
+    },
+    {
      "number": 1568,
      "title": "ApplyFavoritesToElements: keep the target's home story"
     },
@@ -8223,6 +8227,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1588,
+     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
+    },
+    {
      "number": 1578,
      "title": "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"
     },
@@ -8351,6 +8359,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1588,
+     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
+    },
     {
      "number": 751,
      "title": "DeleteElements: a guid that is not in the project no longer blocks the batch, and reports APIERR_BADID (#749)"
@@ -8584,6 +8596,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1588,
+     "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
+    },
     {
      "number": 1568,
      "title": "ApplyFavoritesToElements: keep the target's home story"
@@ -13810,9 +13826,14 @@
    "olderNames": [
     "APIDo_OpenLibraryPartID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1587,
+     "title": "[4/4] Add OpenLibraryPartInEditor command"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -14244,6 +14265,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1587,
+     "title": "[4/4] Add OpenLibraryPartInEditor command"
+    },
+    {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
     },
@@ -14649,6 +14674,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1587,
+     "title": "[4/4] Add OpenLibraryPartInEditor command"
+    },
     {
      "number": 1469,
      "title": "[6/6] Library part pictures, custom sections and CreateLibraryPart"
@@ -36477,6 +36506,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1587,
+     "title": "[4/4] Add OpenLibraryPartInEditor command"
+    },
     {
      "number": 1543,
      "title": "[5/6] Add UpdateLibraryPartSections and GetLibraryPart2DPrimitives"
@@ -73803,6 +73836,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1587,
+     "title": "[4/4] Add OpenLibraryPartInEditor command"
+    },
     {
      "number": 1583,
      "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
