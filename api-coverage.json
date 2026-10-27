@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 07:37 UTC",
+ "generatedAt": "2026-10-27 09:04 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 72,
-  "in progress": 970,
+  "claimed": 65,
+  "in progress": 977,
   "open": 114,
   "merged": 4
  },
@@ -37815,6 +37815,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -37870,6 +37874,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -37934,6 +37942,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -38270,6 +38282,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1564,
      "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
     },
@@ -38552,6 +38568,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -38682,6 +38702,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -38818,6 +38842,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -38853,6 +38881,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1290,
      "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
@@ -38923,6 +38955,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     }
@@ -38949,6 +38985,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -38978,6 +39018,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -40809,6 +40853,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -42310,6 +42358,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -42399,6 +42451,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -43443,6 +43499,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -43528,6 +43588,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -44562,6 +44626,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -45182,6 +45250,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -45975,6 +46047,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -46032,6 +46108,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -46106,6 +46186,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -46216,6 +46300,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1290,
      "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
@@ -46561,6 +46649,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -46627,6 +46719,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -47113,6 +47209,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -47157,6 +47257,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -47380,6 +47484,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -47522,6 +47630,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -47905,6 +48017,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -48068,6 +48184,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -48373,6 +48493,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -48420,6 +48544,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1554,
      "title": "GetElementAtCoordinate: no hit is found: false, default z finds a slab top at the story level"
@@ -49073,6 +49201,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -49135,6 +49267,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1290,
      "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
@@ -49412,6 +49548,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     }
@@ -49456,6 +49596,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -49553,6 +49697,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -49636,6 +49784,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -49724,6 +49876,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -49865,6 +50021,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -49920,6 +50080,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -49984,6 +50148,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -50125,6 +50293,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -50209,6 +50381,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -50455,6 +50631,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -51801,6 +51981,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -51890,6 +52074,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -52115,6 +52303,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -52192,6 +52384,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -53694,6 +53890,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -53783,6 +53983,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -54817,6 +55021,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -54906,6 +55114,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -55950,6 +56162,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -56033,6 +56249,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -56813,6 +57033,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -57429,6 +57653,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -58977,6 +59205,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1564,
      "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
     },
@@ -59262,6 +59494,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -59327,6 +59563,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -59382,6 +59622,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -59446,6 +59690,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1290,
      "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
@@ -59687,6 +59935,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -59812,6 +60064,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -60019,6 +60275,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     }
@@ -60047,6 +60307,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -60084,6 +60348,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     }
@@ -60111,7 +60379,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": []
   },
   {
@@ -60377,6 +60650,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     }
@@ -60405,6 +60682,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
@@ -60468,6 +60749,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -60609,6 +60894,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61057,6 +61346,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -61169,6 +61462,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -61228,9 +61525,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61273,6 +61575,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -61306,6 +61612,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
@@ -61479,6 +61789,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     }
@@ -61549,9 +61863,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61574,6 +61893,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
@@ -61659,6 +61982,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     }
@@ -61687,6 +62014,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -61762,9 +62093,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61789,6 +62125,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -61815,6 +62155,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -61884,6 +62228,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -61914,9 +62262,14 @@
     28
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -61939,6 +62292,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -62009,6 +62366,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -62041,6 +62402,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -62113,6 +62478,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -62395,6 +62764,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -62578,6 +62951,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
@@ -62958,9 +63335,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -63003,6 +63385,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -63281,6 +63667,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -63442,9 +63832,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -63744,9 +64139,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -63789,6 +64189,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -63926,6 +64330,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -64077,6 +64485,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1564,
      "title": "GetDetailsOfElements: read a Stair's elevation and baseline in model coordinates"
@@ -64351,6 +64763,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -64397,6 +64813,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -64452,6 +64872,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -64559,6 +64983,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -64694,6 +65122,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -64749,6 +65181,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -64813,6 +65249,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -64954,6 +65394,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
@@ -65066,6 +65510,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
@@ -65101,6 +65549,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1290,
      "title": "[3/6] Add GetMEPElementDetails: type-specific details of MEP route parts"
@@ -65362,6 +65814,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
@@ -65631,6 +66087,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
