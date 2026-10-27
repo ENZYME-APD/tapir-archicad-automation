@@ -1032,6 +1032,18 @@ GSErrCode Initialize (void)
             propertyCommands, "1.6.0",
             "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
+        err |= RegisterCommand<SetPropertyValueOfElementsCommand> (
+            propertyCommands, "1.7.3",
+            "Sets one property value on many elements at once. Available only in Archicad 25 and 26; in later versions use SetPropertyValuesOfElements."
+        );
+        err |= RegisterCommand<AddPropertyToElementsCommand> (
+            propertyCommands, "1.7.3",
+            "Adds a custom property to the given elements. Available only in Archicad 25 and 26; in later versions the availability of a property is set by classification on its definition."
+        );
+        err |= RegisterCommand<RemovePropertyFromElementsCommand> (
+            propertyCommands, "1.7.3",
+            "Removes a custom property from the given elements. Available only in Archicad 25 and 26; in later versions the availability of a property is set by classification on its definition."
+        );
         err |= RegisterCommand<MakePropertyAvailableForElementsCommand> (
             propertyCommands, "1.7.2",
             "Makes a property definition available for all the given elements. Available only in Archicad 27."

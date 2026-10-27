@@ -2263,6 +2263,245 @@ GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& para
     return response;
 }
 
+// The ACAPI_ElementList_* functions exist only in the AC25 and AC26 DevKits.
+#ifndef ServerMainVers_2700
+static bool GetElementsAndPropertyGuid (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_Guid& propertyGuid)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+
+    const GS::ObjectState* propertyId = parameters.Get ("propertyId");
+    propertyGuid = (propertyId != nullptr) ? GetGuidFromObjectState (*propertyId) : APINULLGuid;
+
+    return !elemGuids.IsEmpty () && propertyGuid != APINULLGuid;
+}
+#else
+static const char* ElementListPropertyCommandsNeedArchicad26 = "This command is available only in Archicad 25 and 26. In later versions use SetPropertyValuesOfElements to set values, and the availability of the property definition (by classification) instead of adding or removing it.";
+#endif
+
+SetPropertyValueOfElementsCommand::SetPropertyValueOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPropertyValueOfElementsCommand::GetName () const
+{
+    return "SetPropertyValueOfElements";
+}
+
+GS::Optional<GS::UniString> SetPropertyValueOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "propertyId",
+            "propertyValue"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPropertyValueOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetPropertyValueOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifndef ServerMainVers_2700
+    GS::Array<API_Guid> elemGuids;
+    API_Guid propertyGuid;
+    if (!GetElementsAndPropertyGuid (parameters, elemGuids, propertyGuid)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elements must not be empty and propertyId must be given");
+    }
+
+    GS::UniString propertyValueString;
+    const GS::ObjectState* propertyValue = parameters.Get ("propertyValue");
+    if (propertyValue == nullptr || !propertyValue->Get ("value", propertyValueString)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue");
+    }
+
+    GSErrCode err = NoError;
+    GS::UniString errorMessage;
+    ACAPI_CallUndoableCommand ("SetPropertyValueOfElements", [&]() -> GSErrCode {
+        // The property of the first element gives the definition and the value structure to fill.
+        GS::Array<API_Guid> propertyGuids;
+        propertyGuids.Push (propertyGuid);
+        GS::Array<API_Property> properties;
+        err = ACAPI_Element_GetPropertyValuesByGuid (elemGuids[0], propertyGuids, properties);
+        if (err == NoError && properties.IsEmpty ()) {
+            err = APIERR_BADPROPERTY;
+        }
+        if (err != NoError) {
+            errorMessage = "Failed to get the property of the first element";
+            return err;
+        }
+
+        PropertyConversionUtils conversionUtils;
+        API_Property& property = properties[0];
+        err = ACAPI_Property_SetPropertyValueFromString (propertyValueString, conversionUtils, &property);
+        if (err != NoError) {
+            errorMessage = "Failed to convert the value to the type of the property";
+            return err;
+        }
+
+        err = ACAPI_ElementList_ModifyPropertyValue (property, elemGuids);
+        if (err != NoError) {
+            errorMessage = "Failed to set the property value of the elements";
+        }
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, errorMessage);
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, ElementListPropertyCommandsNeedArchicad26);
+#endif
+}
+
+AddPropertyToElementsCommand::AddPropertyToElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String AddPropertyToElementsCommand::GetName () const
+{
+    return "AddPropertyToElements";
+}
+
+GS::Optional<GS::UniString> AddPropertyToElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "propertyId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> AddPropertyToElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState AddPropertyToElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifndef ServerMainVers_2700
+    GS::Array<API_Guid> elemGuids;
+    API_PropertyDefinition definition;
+    if (!GetElementsAndPropertyGuid (parameters, elemGuids, definition.guid)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elements must not be empty and propertyId must be given");
+    }
+
+    if (ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "property not found");
+    }
+
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("AddPropertyToElements", [&]() -> GSErrCode {
+        err = ACAPI_ElementList_AddProperty (definition, elemGuids);
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to add the property to the elements");
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, ElementListPropertyCommandsNeedArchicad26);
+#endif
+}
+
+RemovePropertyFromElementsCommand::RemovePropertyFromElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemovePropertyFromElementsCommand::GetName () const
+{
+    return "RemovePropertyFromElements";
+}
+
+GS::Optional<GS::UniString> RemovePropertyFromElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "propertyId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemovePropertyFromElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RemovePropertyFromElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifndef ServerMainVers_2700
+    GS::Array<API_Guid> elemGuids;
+    API_Guid propertyGuid;
+    if (!GetElementsAndPropertyGuid (parameters, elemGuids, propertyGuid)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elements must not be empty and propertyId must be given");
+    }
+
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("RemovePropertyFromElements", [&]() -> GSErrCode {
+        err = ACAPI_ElementList_DeleteProperty (propertyGuid, elemGuids);
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to remove the property from the elements");
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, ElementListPropertyCommandsNeedArchicad26);
+#endif
+}
+
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 static bool GetPropertyAvailabilityParameters (const GS::ObjectState& parameters, GS::Array<API_Guid>& elemGuids, API_PropertyDefinition& definition, GS::ObjectState& failedResult)
 {
