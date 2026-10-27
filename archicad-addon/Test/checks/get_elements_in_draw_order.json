@@ -1,6 +1,6 @@
 {
   "title": "GetElementsInDrawOrder walks the database between DrawOrderInit and DrawOrderTerm (#1548)",
-  "minTapir": "1.7.3",
+  "minTapir": "1.7.4",
   "steps": [
     {
       "id": "two walls",

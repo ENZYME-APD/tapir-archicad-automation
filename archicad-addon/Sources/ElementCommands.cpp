@@ -399,7 +399,7 @@ public:
 
 // Walks the current database with ACAPI_DrawOrder_DrawOrderGetNext between DrawOrderInit and
 // DrawOrderTerm, as the DevKit requires (calling GetNext without Init crashed Archicad, #1548).
-// The walk ends when GetNext reports APIERR_NOMORE. The visited set stops it should a database
+// The walk ends when GetNext returns an error, APIERR_NOMORE after the last element. The visited set stops it should a database
 // ever hand back an element twice.
 template <typename ListProxyType>
 static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
