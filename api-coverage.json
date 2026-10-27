@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-27 19:08 UTC",
+ "generatedAt": "2026-10-27 19:18 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,8 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 63,
-  "in progress": 979,
+  "claimed": 60,
+  "in progress": 982,
   "open": 114,
   "merged": 4
  },
@@ -4531,6 +4531,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 1574,
      "title": "Set3DProjectionSettings: set an axonometry as well as a perspective"
@@ -9086,9 +9090,14 @@
    "olderNames": [
     "APIDb_GetElementFromAnywhereID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -22217,7 +22226,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    }
+   ],
    "issues": []
   },
   {
@@ -22535,7 +22549,12 @@
    ],
    "status": "not applicable",
    "reason": "interactive input from the user",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -22962,9 +22981,14 @@
    "olderNames": [
     "APIEnv_DeleteGhostRecordID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -23251,6 +23275,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 972,
      "title": "Add GetGhostStorySettings and SetGhostStorySettings commands"
@@ -24020,6 +24048,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 1569,
      "title": "RemoveSolidElementLinks: no false failure when the 3D window is active"
@@ -25218,6 +25250,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
+    {
      "number": 1517,
      "title": "[6/6] Add Get3DDocumentSettings and Set3DDocumentSettings"
     },
@@ -25985,6 +26021,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 1545,
      "title": "Feat implement GetLineFromUser and GetPolygonFromUser commands"
@@ -26987,9 +27027,14 @@
     25
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -38462,6 +38507,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 1581,
      "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
@@ -59394,6 +59443,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
+    {
      "number": 1581,
      "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
     },
@@ -64678,6 +64731,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1584,
+     "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
+    },
     {
      "number": 1581,
      "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
@@ -72280,6 +72337,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -72943,6 +73004,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -73383,6 +73448,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -73735,6 +73804,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
      "number": 1542,
      "title": "[4/6] IFC spatial structure and assignments, enumeration references, Favorites through the C++ API, GetElemId"
     },
@@ -73995,6 +74068,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
+    {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
     },
@@ -74048,6 +74125,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1583,
+     "title": "[2/4] Add GetIFCClassificationReferencesOfElements"
+    },
     {
      "number": 1370,
      "title": "[4/6] Add SetIFCClassificationReferencesOfElements and RemoveIFCClassificationReferencesOfElements (Archicad 25-27)"
