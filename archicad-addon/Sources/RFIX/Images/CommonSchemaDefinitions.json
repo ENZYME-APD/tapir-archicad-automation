@@ -2780,6 +2780,27 @@
             "z"
         ]
     },
+    "AxonometryProjectionType": {
+        "type": "string",
+        "description": "The projection type of an axonometric 3D projection, the projMod of the Archicad API: YZ, XZ and XY are the views along an axis, Frontal, Monometric, Isometric and Dimetric the predefined axonometries, FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below, Bottom the view from below, Parallel a parallel view at the azimuth and Custom the custom axonometry given by its transformation matrix.",
+        "enum": [
+            "YZ",
+            "XZ",
+            "XY",
+            "Frontal",
+            "Monometric",
+            "Isometric",
+            "Dimetric",
+            "Bottom",
+            "FrontalBottom",
+            "MonometricBottom",
+            "IsometricBottom",
+            "DimetricBottom",
+            "Parallel",
+            "Custom",
+            "Unknown"
+        ]
+    },
     "PerspectiveProjectionParameters": {
         "type": "object",
         "description": "The parameters of a perspective projection of the 3D window.",
@@ -2798,11 +2819,11 @@
             },
             "azimuth": {
                 "type": "number",
-                "description": "The azimuth angle of the camera."
+                "description": "The azimuth of the camera in degrees: the direction from the target to the camera, counterclockwise from the X axis. Archicad works it out from the camera and target positions, so a set value is replaced by that."
             },
             "viewCone": {
                 "type": "number",
-                "description": "The view cone angle of the camera."
+                "description": "The view cone angle of the camera in radians."
             },
             "rollAngle": {
                 "type": "number",

@@ -1562,11 +1562,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<Get3DProjectionSettingsCommand> (
             navigatorCommands, "1.7.1",
-            "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry."
+            "Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the projection type, azimuth and transformation matrix of an axonometry."
         );
         err |= RegisterCommand<Set3DProjectionSettingsCommand> (
             navigatorCommands, "1.7.1",
-            "Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced."
+            "Sets a perspective or an axonometric projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced. An axonometry changes only the values given: the projection type, the azimuth and the transformation matrix. The 3D window shows the change after a rebuild (RebuildView), e.g. before SaveCurrentWindowAsImage."
         );
         err |= RegisterCommand<Get3DWindowSettingsCommand> (
             navigatorCommands, "1.7.3",

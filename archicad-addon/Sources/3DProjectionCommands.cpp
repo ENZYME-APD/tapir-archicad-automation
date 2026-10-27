@@ -3,8 +3,49 @@
 
 // Both commands mirror API_3DProjectionInfo (the 3D Projection Settings of the 3D window):
 // the common part (isPersp, camGuid, actCamSet) plus either the perspective parameters
-// (API_PerspPars) or the axonometric transformation (API_AxonoPars), whichever the
-// projection currently is.
+// (API_PerspPars) or the axonometric ones (API_AxonoPars: projection type, azimuth and
+// transformation matrix), whichever the projection currently is.
+
+// The projMod values of API_AxonoPars (API_Projection_* in APIdefs_Elements.h), by the
+// names the commands use. API_Projection_Perspective is left out: it is never the type
+// of an axonometry.
+static const std::pair<short, const char*> AxonometryProjectionTypes[] = {
+    { API_Projection_YZ,          "YZ" },
+    { API_Projection_XZ,          "XZ" },
+    { API_Projection_XY,          "XY" },
+    { API_Projection_Frontal,     "Frontal" },
+    { API_Projection_Monometric,  "Monometric" },
+    { API_Projection_Isometric,   "Isometric" },
+    { API_Projection_Dimetric,    "Dimetric" },
+    { API_Projection_Bottom,      "Bottom" },
+    { API_Projection_FrontalB,    "FrontalBottom" },
+    { API_Projection_MonometricB, "MonometricBottom" },
+    { API_Projection_IzometricB,  "IsometricBottom" },
+    { API_Projection_DimetricB,   "DimetricBottom" },
+    { API_Projection_Parallel,    "Parallel" },
+    { API_Projection_FreeAx,      "Custom" },
+};
+
+static GS::UniString GetAxonometryProjectionTypeName (short projMod)
+{
+    for (const auto& type : AxonometryProjectionTypes) {
+        if (type.first == projMod) {
+            return type.second;
+        }
+    }
+    return "Unknown";
+}
+
+static bool GetAxonometryProjectionType (const GS::UniString& name, short& projMod)
+{
+    for (const auto& type : AxonometryProjectionTypes) {
+        if (name == type.second) {
+            projMod = type.first;
+            return true;
+        }
+    }
+    return false;
+}
 
 Get3DProjectionSettingsCommand::Get3DProjectionSettingsCommand () :
     CommandBase (CommonSchema::Used)
@@ -40,6 +81,13 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             "type": "object",
             "description": "The parameters of an axonometric projection. Present only when isPersp is false.",
             "properties": {
+                "projectionType": {
+                    "$ref": "#/AxonometryProjectionType"
+                },
+                "azimuth": {
+                    "type": "number",
+                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog."
+                },
                 "transformationMatrix": {
                     "type": "array",
                     "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
@@ -52,6 +100,8 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             },
             "additionalProperties": false,
             "required": [
+                "projectionType",
+                "azimuth",
                 "transformationMatrix"
             ]
         }
@@ -90,9 +140,12 @@ GS::ObjectState Get3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
             "rollAngle", persp.rollAngle,
             "isTwoPointPersp", persp.isTwoPointPersp));
     } else {
-        GS::ObjectState axonometric;
+        const API_AxonoPars& axono = projectionInfo.u.axono;
+        GS::ObjectState axonometric (
+            "projectionType", GetAxonometryProjectionTypeName (axono.projMod),
+            "azimuth", axono.azimuth);
         const auto& transformationMatrix = axonometric.AddList<double> ("transformationMatrix");
-        for (double value : projectionInfo.u.axono.tranmat.tmx) {
+        for (double value : axono.tranmat.tmx) {
             transformationMatrix (value);
         }
         response.Add ("axonometric", axonometric);
@@ -117,11 +170,44 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSc
     "properties": {
         "perspective": {
             "$ref": "#/PerspectiveProjectionParameters"
+        },
+        "axonometry": {
+            "type": "object",
+            "description": "Makes the projection axonometric. Only the given values change; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
+            "properties": {
+                "projectionType": {
+                    "$ref": "#/AxonometryProjectionType"
+                },
+                "azimuth": {
+                    "type": "number",
+                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog."
+                },
+                "transformationMatrix": {
+                    "type": "array",
+                    "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers), as Get3DProjectionSettings returns it. Its 3x3 part must be invertible.",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 12,
+                    "maxItems": 12
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 1
         }
     },
     "additionalProperties": false,
-    "required": [
-        "perspective"
+    "oneOf": [
+        {
+            "required": [
+                "perspective"
+            ]
+        },
+        {
+            "required": [
+                "axonometry"
+            ]
+        }
     ]
 })";
 }
@@ -133,13 +219,8 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetRawResponseSchema
     })";
 }
 
-GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+static GS::ObjectState SetPerspective (const GS::ObjectState& perspective)
 {
-    GS::ObjectState perspective;
-    if (!parameters.Get ("perspective", perspective)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: perspective.");
-    }
-
     GS::ObjectState cameraPosition;
     GS::ObjectState targetPosition;
     double distance = 0.0;
@@ -197,6 +278,91 @@ GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
         : CreateFailedExecutionResult (err, "Failed to set the 3D projection settings.");
 }
 
+static GS::ObjectState SetAxonometry (const GS::ObjectState& axonometry)
+{
+    short projMod = 0;
+    GS::UniString projectionType;
+    const bool hasProjectionType = axonometry.Get ("projectionType", projectionType);
+    if (hasProjectionType && !GetAxonometryProjectionType (projectionType, projMod)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: projectionType.");
+    }
+
+    double azimuth = 0.0;
+    const bool hasAzimuth = axonometry.Get ("azimuth", azimuth);
+
+    API_Tranmat tranmat {};
+    API_Tranmat invtranmat {};
+    GS::Array<double> transformationMatrix;
+    const bool hasTransformationMatrix = axonometry.Get ("transformationMatrix", transformationMatrix);
+    if (hasTransformationMatrix) {
+        if (transformationMatrix.GetSize () != 12) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: transformationMatrix must have 12 numbers.");
+        }
+        for (UIndex i = 0; i < 12; ++i) {
+            tranmat.tmx[i] = transformationMatrix[i];
+        }
+        // Archicad keeps the inverse next to the matrix, to get model coordinates back from projected ones.
+        if (!InvertTranmat (tranmat, invtranmat)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: the 3x3 part of transformationMatrix is not invertible.");
+        }
+    }
+
+    if (!hasProjectionType && !hasAzimuth && !hasTransformationMatrix) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: give at least one of projectionType, azimuth and transformationMatrix in axonometry.");
+    }
+
+    const GSErrCode err = ACAPI_CallUndoableCommand ("Set3DProjectionSettingsCommand", [&]() -> GSErrCode {
+        API_3DProjectionInfo projectionInfo {};
+        GSErrCode err = ACAPI_View_Get3DProjectionSets (&projectionInfo);
+        if (err != NoError) {
+            return err;
+        }
+
+        // A perspective shares its memory with the axonometric parameters, so they are
+        // read after switching back to the last axonometry; the values not given come from it.
+        if (projectionInfo.isPersp) {
+            projectionInfo.isPersp = false;
+            bool switchOnlyAxonoOrPersp = true;
+            err = ACAPI_View_Change3DProjectionSets (&projectionInfo, &switchOnlyAxonoOrPersp);
+            if (err == NoError) {
+                err = ACAPI_View_Get3DProjectionSets (&projectionInfo);
+            }
+            if (err != NoError) {
+                return err;
+            }
+        }
+
+        API_AxonoPars& axono = projectionInfo.u.axono;
+        if (hasProjectionType) {
+            axono.projMod = projMod;
+        }
+        if (hasAzimuth) {
+            axono.azimuth = azimuth;
+        }
+        if (hasTransformationMatrix) {
+            axono.tranmat = tranmat;
+            axono.invtranmat = invtranmat;
+        }
+        return ACAPI_View_Change3DProjectionSets (&projectionInfo, nullptr);
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set the 3D projection settings.");
+}
+
+GS::ObjectState Set3DProjectionSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState perspective;
+    GS::ObjectState axonometry;
+    const bool hasPerspective = parameters.Get ("perspective", perspective);
+    const bool hasAxonometry = parameters.Get ("axonometry", axonometry);
+    if (hasPerspective == hasAxonometry) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameters: give exactly one of perspective and axonometry.");
+    }
+
+    return hasPerspective ? SetPerspective (perspective) : SetAxonometry (axonometry);
+}
 // Both commands mirror API_3DWindowInfo: the pixel size of the 3D window (hSize, vSize) and
 // the zoom of its projection (zoomScaleX/Y, zoomDispX/Y). Archicad applies the size only
 // when setWindowSize is true and the zoom only when setZoom is true.

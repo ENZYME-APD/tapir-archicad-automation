@@ -1186,6 +1186,36 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
 }
 
 
+// Inverts the affine transformation of a 3x4 API_Tranmat (rotation/scale part plus translation).
+bool InvertTranmat (const API_Tranmat& tranmat, API_Tranmat& inverse)
+{
+    const double* m = tranmat.tmx;
+    const double c00 = m[5] * m[10] - m[6] * m[9];
+    const double c01 = m[6] * m[8] - m[4] * m[10];
+    const double c02 = m[4] * m[9] - m[5] * m[8];
+    const double det = m[0] * c00 + m[1] * c01 + m[2] * c02;
+    if (std::fabs (det) < 1e-12) {
+        return false;
+    }
+
+    double* r = inverse.tmx;
+    r[0]  = c00 / det;
+    r[1]  = (m[2] * m[9] - m[1] * m[10]) / det;
+    r[2]  = (m[1] * m[6] - m[2] * m[5]) / det;
+    r[4]  = c01 / det;
+    r[5]  = (m[0] * m[10] - m[2] * m[8]) / det;
+    r[6]  = (m[2] * m[4] - m[0] * m[6]) / det;
+    r[8]  = c02 / det;
+    r[9]  = (m[1] * m[8] - m[0] * m[9]) / det;
+    r[10] = (m[0] * m[5] - m[1] * m[4]) / det;
+
+    r[3]  = -(r[0] * m[3] + r[1] * m[7] + r[2] * m[11]);
+    r[7]  = -(r[4] * m[3] + r[5] * m[7] + r[6] * m[11]);
+    r[11] = -(r[8] * m[3] + r[9] * m[7] + r[10] * m[11]);
+    return true;
+}
+
+
 API_Tranmat CreateHotlinkTransformation (const API_Coord3D& origin, double rotationAngle, bool mirrored)
 {
     API_Tranmat transformation = {};
