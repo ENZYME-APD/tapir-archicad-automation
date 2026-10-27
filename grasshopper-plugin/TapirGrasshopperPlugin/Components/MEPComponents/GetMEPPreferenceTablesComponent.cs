@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         public GetMEPPreferenceTablesComponent()
             : base(
                 "GetMEPPreferenceTables",
-                "Get the circular segment preference tables of the given MEP domain. Available from Archicad 28.",
+                "Get the segment preference tables of the given MEP domain: the circular tables, and the rectangular duct or cable carrier tables. Available from Archicad 28.",
                 GroupNames.MEP)
         {
         }
@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         {
             InText(
                 "Domain",
-                "The MEP domain of the segment preference tables: Piping or Ventilation.");
+                "The MEP domain of the segment preference tables: Piping, Ventilation or CableCarrier.");
         }
 
         protected override void AddOutputs()
@@ -45,6 +45,38 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             OutTextTree(
                 "Descriptions",
                 "Description of each table row (one branch per table).");
+
+            OutTexts(
+                "TableNames",
+                "Names of the preference tables.");
+
+            OutBooleans(
+                "TablesEditable",
+                "Whether each preference table is editable.");
+
+            OutNumbers(
+                "WallThicknesses",
+                "Wall thickness of each table row (one branch per table).");
+
+            OutTexts(
+                "SizeTableGuids",
+                "Identifiers of the rectangular duct (Ventilation) or cable carrier (CableCarrier) preference tables.");
+
+            OutTexts(
+                "SizeTableNames",
+                "Names of the rectangular duct or cable carrier preference tables.");
+
+            OutBooleans(
+                "SizeTablesEditable",
+                "Whether each rectangular duct or cable carrier preference table is editable.");
+
+            OutNumbers(
+                "Sizes",
+                "Size of each rectangular duct or cable carrier table row (one branch per table).");
+
+            OutTextTree(
+                "SizeDescriptions",
+                "Description of each rectangular duct or cable carrier table row (one branch per table).");
         }
 
         protected override void Solve(
@@ -68,6 +100,9 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             }
 
             var tableGuids = new List<string>();
+            var tableNames = new List<string>();
+            var tablesEditable = new List<bool>();
+            var wallThicknesses = new DataTree<double>();
             var referenceIds = new DataTree<int>();
             var diameters = new DataTree<double>();
             var descriptions = new DataTree<string>();
@@ -77,11 +112,14 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             {
                 var table = tables[i];
                 tableGuids.Add(table?["guid"]?.ToString());
+                tableNames.Add(table?["name"]?.ToString() ?? "");
+                tablesEditable.Add((bool?)table?["isEditable"] ?? false);
 
                 var path = new GH_Path(i);
                 referenceIds.EnsurePath(path);
                 diameters.EnsurePath(path);
                 descriptions.EnsurePath(path);
+                wallThicknesses.EnsurePath(path);
 
                 if (table?["rows"] is JArray rows)
                 {
@@ -90,6 +128,37 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                         referenceIds.Add((int?)row["referenceId"] ?? 0, path);
                         diameters.Add((double?)row["diameter"] ?? 0.0, path);
                         descriptions.Add(row["description"]?.ToString() ?? "", path);
+                        wallThicknesses.Add((double?)row["wallThickness"] ?? 0.0, path);
+                    }
+                }
+            }
+
+            var sizeTableGuids = new List<string>();
+            var sizeTableNames = new List<string>();
+            var sizeTablesEditable = new List<bool>();
+            var sizes = new DataTree<double>();
+            var sizeDescriptions = new DataTree<string>();
+
+            var sizeTables = new List<JToken>();
+            sizeTables.AddRange(response["rectangularTables"] as JArray ?? new JArray());
+            sizeTables.AddRange(response["cableCarrierTables"] as JArray ?? new JArray());
+            for (var i = 0; i < sizeTables.Count; i++)
+            {
+                var table = sizeTables[i];
+                sizeTableGuids.Add(table?["guid"]?.ToString());
+                sizeTableNames.Add(table?["name"]?.ToString() ?? "");
+                sizeTablesEditable.Add((bool?)table?["isEditable"] ?? false);
+
+                var path = new GH_Path(i);
+                sizes.EnsurePath(path);
+                sizeDescriptions.EnsurePath(path);
+
+                if (table?["rows"] is JArray rows)
+                {
+                    foreach (var row in rows)
+                    {
+                        sizes.Add((double?)row["value"] ?? 0.0, path);
+                        sizeDescriptions.Add(row["description"]?.ToString() ?? "", path);
                     }
                 }
             }
@@ -98,6 +167,14 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             da.SetDataTree(1, referenceIds);
             da.SetDataTree(2, diameters);
             da.SetDataTree(3, descriptions);
+            da.SetDataList(4, tableNames);
+            da.SetDataList(5, tablesEditable);
+            da.SetDataTree(6, wallThicknesses);
+            da.SetDataList(7, sizeTableGuids);
+            da.SetDataList(8, sizeTableNames);
+            da.SetDataList(9, sizeTablesEditable);
+            da.SetDataTree(10, sizes);
+            da.SetDataTree(11, sizeDescriptions);
         }
 
         protected override System.Drawing.Bitmap Icon =>
