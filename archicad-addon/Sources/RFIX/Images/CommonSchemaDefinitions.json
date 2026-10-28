@@ -94,6 +94,30 @@
             }
         ]
     },
+    "MergedElements": {
+        "type": "object",
+        "description": "The elements merged with one element.",
+        "properties": {
+            "mergedElements": {
+                "$ref": "#/Elements",
+                "description": "The elements merged with the queried element. Empty when it is not merged with any."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "mergedElements" ]
+    },
+    "MergedElementsOrError": {
+        "type": "object",
+        "description": "The elements merged with one element, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/MergedElements"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "MEPRoutingSegmentDetails": {
         "type": "object",
         "description": "The details of an MEP routing segment.",
