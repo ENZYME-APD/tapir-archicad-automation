@@ -3332,6 +3332,252 @@ static GS::ObjectState CreateCalculationUnitsObjectState (const API_CalcUnitPref
             "accuracy", unitPrefs.angle.accuracy));
 }
 
+GetDimensionStandardsCommand::GetDimensionStandardsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDimensionStandardsCommand::GetName () const
+{
+    return "GetDimensionStandards";
+}
+
+GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Only the dimension standard with this name is returned (case-sensitive). The list is empty when no standard has this name."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema () const
+{
+    const GS::UniString lengthDimFormatSchema = R"({
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals displayed."
+            },
+            "showSmall5": {
+                "type": "integer",
+                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of fractional inches."
+            },
+            "showZeroWhole": {
+                "type": "boolean",
+                "description": "Whether a zero whole part is displayed."
+            },
+            "showZeroInch": {
+                "type": "integer",
+                "description": "Whether zero inches are displayed, as Archicad stores it."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Whether trailing zero decimals are hidden."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "showSmall5",
+            "roundInch",
+            "showZeroWhole",
+            "showZeroInch",
+            "hideZeroDecimals"
+        ]
+    })";
+
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "dimensionStandards": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "A dimension standard of the project, as listed in Options > Project Preferences > Dimensions.",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The 1-based index of the dimension standard."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the dimension standard, as the dimensionStyle of GetViewSettings and SetViewSettings."
+                        },
+                        "settings": {
+                            "type": "object",
+                            "properties": {
+                                "linear": )") + lengthDimFormatSchema + R"(,
+                                "angle": {
+                                    "type": "object",
+                                    "properties": {
+                                        "unit": {
+                                            "$ref": "#/AngleType"
+                                        },
+                                        "decimals": {
+                                            "type": "integer",
+                                            "description": "Number of decimals displayed."
+                                        },
+                                        "accuracy": {
+                                            "type": "integer",
+                                            "description": "Accuracy of the angle values."
+                                        },
+                                        "hideZeroDecimals": {
+                                            "type": "boolean",
+                                            "description": "Whether trailing zero decimals are hidden."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "unit",
+                                        "decimals",
+                                        "accuracy",
+                                        "hideZeroDecimals"
+                                    ]
+                                },
+                                "radial": )" + lengthDimFormatSchema + R"(,
+                                "level": )" + lengthDimFormatSchema + R"(,
+                                "elevation": )" + lengthDimFormatSchema + R"(,
+                                "doorWindow": )" + lengthDimFormatSchema + R"(,
+                                "parapet": )" + lengthDimFormatSchema + R"(,
+                                "area": {
+                                    "type": "object",
+                                    "properties": {
+                                        "unit": {
+                                            "$ref": "#/AreaType"
+                                        },
+                                        "decimals": {
+                                            "type": "integer",
+                                            "description": "Number of decimals displayed."
+                                        },
+                                        "hideZeroDecimals": {
+                                            "type": "boolean",
+                                            "description": "Whether trailing zero decimals are hidden."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "unit",
+                                        "decimals",
+                                        "hideZeroDecimals"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "linear",
+                                "angle",
+                                "radial",
+                                "level",
+                                "elevation",
+                                "doorWindow",
+                                "parapet",
+                                "area"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "settings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dimensionStandards"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2700
+static GS::ObjectState ConvertAPILengthDimFormat (const API_LengthDimFormat& format)
+{
+    return GS::ObjectState (
+        "unit", ConvertAPILengthType (format.unit),
+        "decimals", format.lenDecimals,
+        "showSmall5", static_cast<Int32> (format.showSmall5),
+        "roundInch", format.roundInch,
+        "showZeroWhole", static_cast<bool> (format.show0Whole),
+        "showZeroInch", static_cast<Int32> (format.show0Inch),
+        "hideZeroDecimals", static_cast<bool> (format.hide0Dec));
+}
+#endif
+
+GS::ObjectState GetDimensionStandardsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::UniString nameFilter;
+    const bool hasNameFilter = parameters.Get ("name", nameFilter);
+
+    UInt32 count = 0;
+    GSErrCode err = ACAPI_Navigator_DimStand_GetNum (count);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the number of dimension standards.");
+    }
+
+    GS::ObjectState response;
+    const auto& dimensionStandards = response.AddList<GS::ObjectState> ("dimensionStandards");
+
+    for (UInt32 i = 1; i <= count; ++i) {
+        GS::UniString name;
+        API_DimensionStandardsType dimStand = {};
+        dimStand.head.index = i;
+        dimStand.head.uniStringNamePtr = &name;
+
+        if (ACAPI_Navigator_DimStand_Get (dimStand) != NoError) {
+            continue;
+        }
+        if (hasNameFilter && name != nameFilter) {
+            continue;
+        }
+
+        const API_DimensionPrefs& dim = dimStand.dim;
+        dimensionStandards (GS::ObjectState (
+            "index", static_cast<Int32> (i),
+            "name", name,
+            "settings", GS::ObjectState (
+                "linear", ConvertAPILengthDimFormat (dim.linear),
+                "angle", GS::ObjectState (
+                    "unit", ConvertAPIAngleType (dim.angle.unit),
+                    "decimals", dim.angle.angleDecimals,
+                    "accuracy", dim.angle.angleAccuracy,
+                    "hideZeroDecimals", static_cast<bool> (dim.angle.hide0Dec)),
+                "radial", ConvertAPILengthDimFormat (dim.radial),
+                "level", ConvertAPILengthDimFormat (dim.level),
+                "elevation", ConvertAPILengthDimFormat (dim.elevation),
+                "doorWindow", ConvertAPILengthDimFormat (dim.doorwindow),
+                "parapet", ConvertAPILengthDimFormat (dim.parapet),
+                "area", GS::ObjectState (
+                    "unit", ConvertAPIAreaType (dim.area.unit),
+                    "decimals", dim.area.lenDecimals,
+                    "hideZeroDecimals", static_cast<bool> (dim.area.hide0Dec)))));
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
 GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_CalcUnitPrefs unitPrefs = {};

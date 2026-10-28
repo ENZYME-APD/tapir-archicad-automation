@@ -418,6 +418,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.4.0",
             "Gets the project calculation units."
         );
+        err |= RegisterCommand<GetDimensionStandardsCommand> (
+            projectCommands, "1.7.3",
+            "Gets the dimension standards of the project (Options > Project Preferences > Dimensions) with their name and the unit, decimals and rounding of each dimension type, optionally only the one with the given name. Read-only. Available from Archicad 27."
+        );
         err |= RegisterCommand<GetProjectPreferencesCommand> (
             projectCommands, "1.7.2",
             "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow."
