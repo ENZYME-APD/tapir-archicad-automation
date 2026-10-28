@@ -181,6 +181,9 @@
                 "type": "number",
                 "description": "The flange size of the segment. Only present when the segment has flanges."
             },
+            "connectionStyle": {
+                "$ref": "#/MEPConnectionStyle"
+            },
             "rigidSegments": {
                 "$ref": "#/Elements",
                 "description": "The rigid segments (the straight duct, pipe or cable carrier pieces) of the routing segment."
@@ -211,6 +214,9 @@
             "outgoingSegmentId": {
                 "$ref": "#/ElementId",
                 "description": "The routing segment starting at this node. Not present at the end of the route."
+            },
+            "preferredTransitionPlacement": {
+                "$ref": "#/MEPPreferredTransitionPlacement"
             },
             "elbows": {
                 "$ref": "#/Elements",
@@ -252,6 +258,18 @@
             "logicallyConnectedPortIdAtRouteEnd": {
                 "$ref": "#/Guid",
                 "description": "The port logically connected to the end of the route (see GetMEPPorts). Not present when nothing is connected there."
+            },
+            "cutPlanePosition": {
+                "$ref": "#/MEPCutPlanePosition"
+            },
+            "floorPlanDisplayOption": {
+                "$ref": "#/MEPFloorPlanDisplayOption"
+            },
+            "showProjection": {
+                "$ref": "#/MEPShowProjection"
+            },
+            "onStoryVisibility": {
+                "$ref": "#/MEPOnStoryVisibility"
             },
             "polyline": {
                 "type": "array",
@@ -3821,6 +3839,58 @@
             "Circular",
             "Oval",
             "UShape"
+        ]
+    },
+    "MEPConnectionStyle": {
+        "type": "string",
+        "description": "How the pieces of an MEP routing segment are connected.",
+        "enum": [
+            "SimpleBody",
+            "Flanged",
+            "Welded"
+        ]
+    },
+    "MEPPreferredTransitionPlacement": {
+        "type": "string",
+        "description": "Where an MEP routing node places its transitions.",
+        "enum": [
+            "SmallToLarge",
+            "LargeToSmall"
+        ]
+    },
+    "MEPCutPlanePosition": {
+        "type": "string",
+        "description": "Where the floor plan cut plane of an MEP routing element is. Available from Archicad 29.",
+        "enum": [
+            "AtUpperDisplayLimit",
+            "ByViewSettings"
+        ]
+    },
+    "MEPFloorPlanDisplayOption": {
+        "type": "string",
+        "description": "How an MEP routing element is shown on the floor plan. Available from Archicad 29.",
+        "enum": [
+            "Projected",
+            "ProjectedWithOverhead",
+            "Symbolic",
+            "ByMVO"
+        ]
+    },
+    "MEPShowProjection": {
+        "type": "string",
+        "description": "How much of an MEP routing element's projection is shown on the floor plan. Available from Archicad 29.",
+        "enum": [
+            "ToFloorPlanRange",
+            "ToAbsoluteDisplayLimit",
+            "EntireElement"
+        ]
+    },
+    "MEPOnStoryVisibility": {
+        "type": "string",
+        "description": "On which stories an MEP routing element is shown. Available from Archicad 29.",
+        "enum": [
+            "AllRelevantStories",
+            "HomeStoryOnly"
         ]
     },
     "MEPPreferenceTableDomain": {

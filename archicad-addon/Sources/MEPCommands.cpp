@@ -226,6 +226,73 @@ static std::optional<ConnectorShape> ConnectorShapeFromString (const GS::UniStri
     return std::nullopt;
 }
 
+// The MEP enums below go over JSON as the names of their values (MEPEnums.hpp, from Archicad 29
+// MEPTypes.hpp).
+template <typename EnumT>
+struct MEPEnumName {
+    EnumT       value;
+    const char* name;
+};
+
+// Adds the name of the value; a value without a name is left out of the response.
+template <typename EnumT, size_t N>
+static void AddMEPEnumName (GS::ObjectState& os, const char* fieldName, const MEPEnumName<EnumT> (&names)[N], EnumT value)
+{
+    for (const MEPEnumName<EnumT>& entry : names) {
+        if (entry.value == value) {
+            os.Add (fieldName, GS::UniString (entry.name));
+            return;
+        }
+    }
+}
+
+template <typename EnumT, size_t N>
+static std::optional<EnumT> MEPEnumFromString (const MEPEnumName<EnumT> (&names)[N], const GS::UniString& name)
+{
+    for (const MEPEnumName<EnumT>& entry : names) {
+        if (name == entry.name) {
+            return entry.value;
+        }
+    }
+    return std::nullopt;
+}
+
+static const MEPEnumName<ConnectionStyle> ConnectionStyleNames[] = {
+    { ConnectionStyle::SimpleBody, "SimpleBody" },
+    { ConnectionStyle::Flanged,    "Flanged" },
+    { ConnectionStyle::Welded,     "Welded" }
+};
+
+static const MEPEnumName<PreferredTransitionPlacement> PreferredTransitionPlacementNames[] = {
+    { PreferredTransitionPlacement::SmallToLarge, "SmallToLarge" },
+    { PreferredTransitionPlacement::LargeToSmall, "LargeToSmall" }
+};
+
+#ifdef ServerMainVers_2900
+static const MEPEnumName<CutPlanePosition> CutPlanePositionNames[] = {
+    { CutPlanePosition::AtUpperDisplayLimit, "AtUpperDisplayLimit" },
+    { CutPlanePosition::ByViewSettings,      "ByViewSettings" }
+};
+
+static const MEPEnumName<FloorPlanDisplayOption> FloorPlanDisplayOptionNames[] = {
+    { FloorPlanDisplayOption::Projected,             "Projected" },
+    { FloorPlanDisplayOption::ProjectedWithOverhead, "ProjectedWithOverhead" },
+    { FloorPlanDisplayOption::Symbolic,              "Symbolic" },
+    { FloorPlanDisplayOption::ByMVO,                 "ByMVO" }
+};
+
+static const MEPEnumName<ShowProjection> ShowProjectionNames[] = {
+    { ShowProjection::ToFloorPlanRange,       "ToFloorPlanRange" },
+    { ShowProjection::ToAbsoluteDisplayLimit, "ToAbsoluteDisplayLimit" },
+    { ShowProjection::EntireElement,          "EntireElement" }
+};
+
+static const MEPEnumName<OnStoryVisibility> OnStoryVisibilityNames[] = {
+    { OnStoryVisibility::AllRelevantStories, "AllRelevantStories" },
+    { OnStoryVisibility::HomeStoryOnly,      "HomeStoryOnly" }
+};
+#endif
+
 // Classifies an MEP element based on its classID; empty for non-MEP classIDs.
 static GS::UniString GetMEPElementTypeName (const API_Guid& classId)
 {
@@ -553,6 +620,12 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
         if (portIdAtRouteEnd.has_value ()) {
             routingElementOs.Add ("logicallyConnectedPortIdAtRouteEnd", APIGuidToString (MEPUniqueIDToAPIGuid (portIdAtRouteEnd.value ())));
         }
+#ifdef ServerMainVers_2900
+        AddMEPEnumName (routingElementOs, "cutPlanePosition", CutPlanePositionNames, routingElement->GetCutPlanePosition ());
+        AddMEPEnumName (routingElementOs, "floorPlanDisplayOption", FloorPlanDisplayOptionNames, routingElement->GetFloorPlanDisplayOption ());
+        AddMEPEnumName (routingElementOs, "showProjection", ShowProjectionNames, routingElement->GetShowProjection ());
+        AddMEPEnumName (routingElementOs, "onStoryVisibility", OnStoryVisibilityNames, routingElement->GetOnStoryVisibility ());
+#endif
 
         const auto& polyline = routingElementOs.AddList<GS::ObjectState> ("polyline");
         for (const API_Coord3D& coordinate : routingElement->GetPolyLine ()) {
@@ -585,6 +658,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             if (flangeSize.has_value ()) {
                 segmentOs.Add ("flangeSize", flangeSize.value ());
             }
+            AddMEPEnumName (segmentOs, "connectionStyle", ConnectionStyleNames, segment->GetConnectionStyle ());
             const auto& rigidSegments = segmentOs.AddList<GS::ObjectState> ("rigidSegments");
             for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
                 rigidSegments (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (rigidSegmentId)));
@@ -609,6 +683,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             if (outgoingSegmentId.has_value ()) {
                 nodeOs.Add ("outgoingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (outgoingSegmentId.value ())));
             }
+            AddMEPEnumName (nodeOs, "preferredTransitionPlacement", PreferredTransitionPlacementNames, node->GetPreferredTransitionPlacement ());
             const auto& elbows = nodeOs.AddList<GS::ObjectState> ("elbows");
 #ifdef ServerMainVers_2900
             for (const ACAPI::MEP::UniqueID& elbowId : node->GetElbowIds ()) {
@@ -1507,6 +1582,30 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                             "type": "number",
                             "description": "New flange size applied to all segments."
                         },
+                        "connectionStyle": {
+                            "$ref": "#/MEPConnectionStyle",
+                            "description": "New connection style applied to all segments."
+                        },
+                        "preferredTransitionPlacement": {
+                            "$ref": "#/MEPPreferredTransitionPlacement",
+                            "description": "New preferred transition placement applied to all nodes."
+                        },
+                        "cutPlanePosition": {
+                            "$ref": "#/MEPCutPlanePosition",
+                            "description": "New cut plane position of the routing element. Available from Archicad 29."
+                        },
+                        "floorPlanDisplayOption": {
+                            "$ref": "#/MEPFloorPlanDisplayOption",
+                            "description": "New floor plan display option of the routing element. Available from Archicad 29."
+                        },
+                        "showProjection": {
+                            "$ref": "#/MEPShowProjection",
+                            "description": "New show projection setting of the routing element. Available from Archicad 29."
+                        },
+                        "onStoryVisibility": {
+                            "$ref": "#/MEPOnStoryVisibility",
+                            "description": "New on-story visibility of the routing element. Available from Archicad 29."
+                        },
                         "nodePositions": {
                             "type": "array",
                             "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
@@ -1569,6 +1668,46 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             continue;
         }
 
+        // The enum values are checked before anything is changed.
+        GS::UniString connectionStyleStr;
+        GS::UniString preferredTransitionPlacementStr;
+        const bool hasConnectionStyle = routingElementData.Get ("connectionStyle", connectionStyleStr);
+        const bool hasPreferredTransitionPlacement = routingElementData.Get ("preferredTransitionPlacement", preferredTransitionPlacementStr);
+        const std::optional<ConnectionStyle> connectionStyle = MEPEnumFromString (ConnectionStyleNames, connectionStyleStr);
+        const std::optional<PreferredTransitionPlacement> preferredTransitionPlacement = MEPEnumFromString (PreferredTransitionPlacementNames, preferredTransitionPlacementStr);
+        if ((hasConnectionStyle && !connectionStyle.has_value ()) || (hasPreferredTransitionPlacement && !preferredTransitionPlacement.has_value ())) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'connectionStyle' or 'preferredTransitionPlacement' value."));
+            continue;
+        }
+
+        GS::UniString cutPlanePositionStr;
+        GS::UniString floorPlanDisplayOptionStr;
+        GS::UniString showProjectionStr;
+        GS::UniString onStoryVisibilityStr;
+        const bool hasCutPlanePosition = routingElementData.Get ("cutPlanePosition", cutPlanePositionStr);
+        const bool hasFloorPlanDisplayOption = routingElementData.Get ("floorPlanDisplayOption", floorPlanDisplayOptionStr);
+        const bool hasShowProjection = routingElementData.Get ("showProjection", showProjectionStr);
+        const bool hasOnStoryVisibility = routingElementData.Get ("onStoryVisibility", onStoryVisibilityStr);
+        const bool hasFloorPlanDisplay = hasCutPlanePosition || hasFloorPlanDisplayOption || hasShowProjection || hasOnStoryVisibility;
+#ifdef ServerMainVers_2900
+        const std::optional<CutPlanePosition> cutPlanePosition = MEPEnumFromString (CutPlanePositionNames, cutPlanePositionStr);
+        const std::optional<FloorPlanDisplayOption> floorPlanDisplayOption = MEPEnumFromString (FloorPlanDisplayOptionNames, floorPlanDisplayOptionStr);
+        const std::optional<ShowProjection> showProjection = MEPEnumFromString (ShowProjectionNames, showProjectionStr);
+        const std::optional<OnStoryVisibility> onStoryVisibility = MEPEnumFromString (OnStoryVisibilityNames, onStoryVisibilityStr);
+        if ((hasCutPlanePosition && !cutPlanePosition.has_value ()) ||
+            (hasFloorPlanDisplayOption && !floorPlanDisplayOption.has_value ()) ||
+            (hasShowProjection && !showProjection.has_value ()) ||
+            (hasOnStoryVisibility && !onStoryVisibility.has_value ())) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid 'cutPlanePosition', 'floorPlanDisplayOption', 'showProjection' or 'onStoryVisibility' value."));
+            continue;
+        }
+#else
+        if (hasFloorPlanDisplay) {
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'cutPlanePosition', 'floorPlanDisplayOption', 'showProjection' and 'onStoryVisibility' require Archicad 29 or newer."));
+            continue;
+        }
+#endif
+
         bool success = true;
 
         const GS::ObjectState* mepSystemId = routingElementData.Get ("mepSystemId");
@@ -1578,6 +1717,28 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }, "Modify MEP System of Routing Element");
             success &= result.IsOk ();
         }
+
+#ifdef ServerMainVers_2900
+        if (hasFloorPlanDisplay) {
+            bool settersSucceeded = true;
+            ACAPI::Result<void> result = routingElement->Modify ([&](RoutingElement::Modifier& modifier) {
+                // The floor plan display option first, the projection setting may depend on it.
+                if (floorPlanDisplayOption.has_value ()) {
+                    settersSucceeded &= modifier.SetFloorPlanDisplayOption (floorPlanDisplayOption.value ()).IsOk ();
+                }
+                if (cutPlanePosition.has_value ()) {
+                    modifier.SetCutPlanePosition (cutPlanePosition.value ());
+                }
+                if (showProjection.has_value ()) {
+                    settersSucceeded &= modifier.SetShowProjection (showProjection.value ()).IsOk ();
+                }
+                if (onStoryVisibility.has_value ()) {
+                    modifier.SetOnStoryVisibility (onStoryVisibility.value ());
+                }
+            }, "Modify Floor Plan Display of Routing Element");
+            success &= result.IsOk () && settersSucceeded;
+        }
+#endif
 
         GS::UniString branchPreferenceTableIdStr;
         if (routingElementData.Get ("branchPreferenceTableId", branchPreferenceTableIdStr)) {
@@ -1609,7 +1770,7 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         const bool hasWallThickness = routingElementData.Get ("wallThickness", wallThickness);
         const bool hasFlangeSize = routingElementData.Get ("flangeSize", flangeSize);
         if (hasWidth || hasHeight || hasShape || hasReferenceId || hasPreferenceTableId ||
-            hasAnchor || hasReferenceLineOffsetX || hasReferenceLineOffsetY || hasWallThickness || hasFlangeSize) {
+            hasAnchor || hasReferenceLineOffsetX || hasReferenceLineOffsetY || hasWallThickness || hasFlangeSize || hasConnectionStyle) {
             for (const ACAPI::MEP::UniqueID& segmentId : routingElement->GetRoutingSegmentIds ()) {
                 ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
                 if (segment.IsErr ()) {
@@ -1653,8 +1814,25 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
                     if (hasFlangeSize) {
                         settersSucceeded &= modifier.SetFlangeSize (flangeSize).IsOk ();
                     }
+                    if (connectionStyle.has_value ()) {
+                        settersSucceeded &= modifier.SetConnectionStyle (connectionStyle.value ()).IsOk ();
+                    }
                 }, "Modify Routing Segment");
                 success &= result.IsOk () && settersSucceeded;
+            }
+        }
+
+        if (preferredTransitionPlacement.has_value ()) {
+            for (const ACAPI::MEP::UniqueID& nodeId : routingElement->GetRoutingNodeIds ()) {
+                ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+                if (node.IsErr ()) {
+                    success = false;
+                    continue;
+                }
+                ACAPI::Result<void> result = node->Modify ([&](RoutingNode::Modifier& modifier) {
+                    modifier.SetPreferredTransitionPlacement (preferredTransitionPlacement.value ());
+                }, "Modify Preferred Transition Placement of Routing Node");
+                success &= result.IsOk ();
             }
         }
 
