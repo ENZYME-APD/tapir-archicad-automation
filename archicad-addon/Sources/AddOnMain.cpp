@@ -986,7 +986,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetPropertyValuesOfAttributesCommand> (
             propertyCommands, "1.1.8",
-            "Returns the property values of the attributes for the given property."
+            "Returns the property values of the attributes for the given property. With includeStatus it also returns whether each property is available, editable and visible for the attribute (from 1.7.3)."
         );
         err |= RegisterCommand<SetPropertyValuesOfAttributesCommand> (
             propertyCommands, "1.1.8",
