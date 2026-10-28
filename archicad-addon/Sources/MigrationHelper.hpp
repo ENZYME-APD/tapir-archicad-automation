@@ -274,6 +274,12 @@ inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
     return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
 }
 
+// APIDo_ZoomToSelectedID takes no parameters (APIdefs_Automate.h: "par1: --- par2: ---").
+inline GSErrCode ACAPI_View_ZoomToSelected ()
+{
+    return ACAPI_Automate (APIDo_ZoomToSelectedID);
+}
+
 inline GSErrCode ACAPI_View_SetZoom (API_Box* zoomBox = nullptr, API_Tranmat* tranmat = nullptr)
 {
     return ACAPI_Database (APIDb_SetZoomID, (void*) zoomBox, (void*) tranmat);
