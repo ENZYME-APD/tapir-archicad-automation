@@ -1,0 +1,80 @@
+{
+  "title": "GetElementTrims answers for walls and slabs, trimmed or not, with an empty trims list",
+  "minTapir": "1.5.9",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "two walls under the roof, one apart",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "height": 2.7, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 706, "y": 700 }, "endCoordinate": { "x": 706, "y": 705 }, "height": 2.7, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 720, "y": 700 }, "endCoordinate": { "x": 726, "y": 700 }, "height": 2.7, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid", "w3": "elements[2].elementId.guid" }
+    },
+    {
+      "id": "slab apart",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "polygonCoordinates": [ { "x": 730, "y": 700 }, { "x": 734, "y": 700 }, { "x": 734, "y": 704 }, { "x": 730, "y": 704 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "roof over the first two walls",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 2.7, "floorIndex": 0, "eavesOverhang": 0.45,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.4363323 } ],
+            "polygonCoordinates": [ { "x": 700, "y": 700 }, { "x": 706, "y": 700 }, { "x": 706, "y": 705 }, { "x": 700, "y": 705 } ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "trim the first two walls",
+      "command": "TrimElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${r1}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "trimmed" }
+      ]
+    },
+    {
+      "id": "[trimmed wall, untrimmed wall, slab, roof, bogus]",
+      "command": "GetElementTrims",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w3}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${r1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementTrims", "len": 5, "name": "one item per element" },
+        { "path": "elementTrims[0].trimmedBy", "len": 1, "name": "trimmed wall: trimmed by the roof" },
+        { "path": "elementTrims[0].trimmedBy[0].trimType", "eq": "KeepInside", "name": "trimmed wall: trim type of TrimElements' default" },
+        { "path": "elementTrims[0].trims", "len": 0, "name": "trimmed wall: trims nothing" },
+        { "path": "elementTrims[1].trimmedBy", "len": 0, "name": "untrimmed wall: not trimmed" },
+        { "path": "elementTrims[1].trims", "len": 0, "name": "untrimmed wall: trims nothing" },
+        { "path": "elementTrims[2].trimmedBy", "len": 0, "name": "slab: not trimmed" },
+        { "path": "elementTrims[2].trims", "len": 0, "name": "slab: trims nothing" },
+        { "path": "elementTrims[3].trims", "len": 2, "name": "roof: trims both walls" },
+        { "path": "elementTrims[4].error", "exists": true, "name": "unknown element is still an error" }
+      ]
+    }
+  ]
+}
