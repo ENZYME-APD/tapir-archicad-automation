@@ -2,6 +2,10 @@
 
 #include "CommandBase.hpp"
 
+// The display string of a property value, as GetPropertyValuesOfElements returns it.
+// Only meaningful for a value whose status is API_Property_HasValue.
+GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString);
+
 class GetAllPropertiesCommand : public CommandBase
 {
 public:

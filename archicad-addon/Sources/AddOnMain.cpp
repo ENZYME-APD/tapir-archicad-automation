@@ -926,6 +926,12 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.2.7",
             "Returns the preview image of the given favorite."
         );
+        err |= RegisterCommand<GetFavoriteDetailsCommand> (
+            favoritesCommands, "1.7.3",
+            "Returns the classifications, property values and element category values stored in the given favorites, "
+            "so they can be audited before elements are placed. Each property value comes with its evaluation status "
+            "and default-value flag; the value itself is only returned when it has been evaluated."
+        );
         err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
             favoritesCommands, "1.1.2",
             "Apply the given favorites to element defaults."
