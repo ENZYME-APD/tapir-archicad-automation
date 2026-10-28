@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 01:34 UTC",
+ "generatedAt": "2026-10-28 02:34 UTC",
  "versions": [
   25,
   26,
@@ -30604,6 +30604,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1593,
+     "title": "Dimensions: add textFrame to the dimension creation commands"
+    },
+    {
      "number": 1530,
      "title": "[2/6] SetLibraryPartParameters"
     },
@@ -48805,6 +48809,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1593,
+     "title": "Dimensions: add textFrame to the dimension creation commands"
+    },
     {
      "number": 1581,
      "title": "[1/4] Add GetTextureCoordinates and convex polygons on TriangulatePolygonsOfElements"
