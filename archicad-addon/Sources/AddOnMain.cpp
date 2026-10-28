@@ -2007,6 +2007,10 @@ GSErrCode Initialize (void)
             mepCommands, "1.7.2",
             "Modifies the electrical project settings: sets the default voltage and adds or removes wiring types and load classifications. Available from Archicad 30."
         );
+        err |= RegisterCommand<GetMEPElementDetailsCommand> (
+            mepCommands, "1.7.3",
+            "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28."
+        );
         AddCommandGroup (mepCommands);
     }
 
