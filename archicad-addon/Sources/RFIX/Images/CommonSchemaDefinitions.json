@@ -10548,6 +10548,113 @@
         "additionalProperties": false,
         "required": []
     },
+    "SunDateTime": {
+        "type": "object",
+        "description": "The project's date and time (Options > Project Preferences > Location Settings), which Archicad calculates the sun position from.",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "daylightSaving": {
+                "type": "boolean",
+                "description": "True when the time is daylight saving (summer) time."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second",
+            "daylightSaving"
+        ]
+    },
+    "SunDateTimeUpdate": {
+        "type": "object",
+        "description": "The fields of the date and time to use instead of the project's; the fields left out keep the project's values.",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "daylightSaving": {
+                "type": "boolean",
+                "description": "True when the time is daylight saving (summer) time."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SunPosition": {
+        "type": "object",
+        "description": "The position of the sun as Archicad calculates it from a date, time and location, in degrees.",
+        "properties": {
+            "azimuth": {
+                "type": "number",
+                "description": "The sun azimuth in degrees: the direction of the sun in the project's XY plane, as the 3D Projection Settings show it."
+            },
+            "altitude": {
+                "type": "number",
+                "description": "The sun altitude in degrees: the elevation of the sun above the horizon, as the 3D Projection Settings show it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "azimuth",
+            "altitude"
+        ]
+    },
     "LayoutInfo": {
         "type": "object",
         "properties": {
