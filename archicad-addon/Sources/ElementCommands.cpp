@@ -1658,6 +1658,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.hatch.buildingMaterial)));
                 typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
                 typeSpecificDetails.Add ("showArea", elem.hatch.showArea);
+                typeSpecificDetails.Add ("fillOrientation", CreateHatchOrientationObjectState (elem.hatch.hatchOrientation));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -2880,6 +2881,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 if (typeSpecificDetails->Get ("showArea", elem.hatch.showArea)) {
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, showArea);
+                    hasElementChanges = true;
+                }
+                GS::ObjectState fillOrientationOs;
+                if (typeSpecificDetails->Get ("fillOrientation", fillOrientationOs)) {
+                    elem.hatch.hatchOrientation = GetHatchOrientationFromObjectState (fillOrientationOs, elem.hatch.hatchOrientation);
+                    TAPIR_MASK_SET_HATCH_ORIENTATION (mask, API_HatchType, hatchOrientation);
                     hasElementChanges = true;
                 }
             }

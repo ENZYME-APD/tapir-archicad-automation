@@ -2260,7 +2260,7 @@ bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillBGPen);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillInd);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, use3DHatching);
-        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation);
+        TAPIR_MASK_SET_HATCH_ORIENTATION (mask, API_SlabType, hatchOrientation);
         changed = true;
     }
 

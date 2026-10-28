@@ -8764,6 +8764,10 @@
                 "type": "boolean",
                 "description": "True if the area text is shown."
             },
+            "fillOrientation": {
+                "$ref": "#/HatchOrientation",
+                "description": "Orientation, origin and distortion of the fill pattern."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -11174,6 +11178,10 @@
             },
             "showArea": {
                 "type": "boolean"
+            },
+            "fillOrientation": {
+                "$ref": "#/HatchOrientation",
+                "description": "Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values."
             }
         },
         "additionalProperties": false,
@@ -12508,7 +12516,7 @@
             },
             "origin": {
                 "$ref": "#/Coordinate2D",
-                "description": "The origin of the fill relative to the project origin."
+                "description": "The origin of the fill relative to the project origin. When modifying an element, a given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well."
             },
             "matrix00": {
                 "type": "number",

@@ -504,13 +504,21 @@ API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& 
 {
     API_HatchOrientation orientation = currentOrientation;
     GS::UniString typeStr;
-    if (os.Get ("type", typeStr)) {
+    const bool hasType = os.Get ("type", typeStr);
+    if (hasType) {
         orientation.type = HatchOrientationTypeFromString (typeStr, orientation.type);
     }
     GS::ObjectState originOs;
     if (os.Get ("origin", originOs)) {
         originOs.Get ("x", orientation.origo.x);
         originOs.Get ("y", orientation.origo.y);
+        // Archicad ignores the origin while the fill is snapped to the project origin (the
+        // GlobalOrigo flag, set on every Global fill), so a given origin unsnaps it and turns a
+        // Global fill into a Rotated one unless a type was sent as well.
+        if (!hasType && orientation.type == API_HatchGlobal) {
+            orientation.type = API_HatchRotated;
+        }
+        orientation.flags &= ~APIHatchOrinFlag_GlobalOrigo;
     }
     os.Get ("matrix00", orientation.matrix00);
     os.Get ("matrix10", orientation.matrix10);
