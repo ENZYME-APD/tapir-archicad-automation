@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 21:05 UTC",
+ "generatedAt": "2026-10-28 21:15 UTC",
  "versions": [
   25,
   26,
@@ -3471,6 +3471,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1624,
+     "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
+    },
+    {
      "number": 1026,
      "title": "[3/4] Add folderPath to GetAttributesByType"
     }
@@ -3495,6 +3499,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1624,
+     "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
+    },
     {
      "number": 1026,
      "title": "[3/4] Add folderPath to GetAttributesByType"
@@ -46522,6 +46530,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1624,
+     "title": "GetAttributesByType: return the attribute folder path (replaces #1026)"
+    },
     {
      "number": 1622,
      "title": "CreateFills: keep the percent of a Solid fill (isPercentFill)"
