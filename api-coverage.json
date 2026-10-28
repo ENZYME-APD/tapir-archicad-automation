@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 11:24 UTC",
+ "generatedAt": "2026-10-28 12:49 UTC",
  "versions": [
   25,
   26,
@@ -11,10 +11,10 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 56,
-  "in progress": 683,
-  "open": 101,
-  "merged": 320
+  "claimed": 52,
+  "in progress": 660,
+  "open": 96,
+  "merged": 352
  },
  "items": [
   {
@@ -36678,10 +36678,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -36716,10 +36712,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -36792,10 +36784,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -36971,10 +36959,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -37156,10 +37140,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -37335,10 +37315,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -37476,10 +37452,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -37571,10 +37543,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -37764,10 +37732,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -38013,10 +37977,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -38129,10 +38089,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -38435,10 +38391,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -39561,10 +39513,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -40173,10 +40121,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -40969,10 +40913,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -41051,10 +40991,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -41298,10 +41234,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -41968,10 +41900,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -42054,10 +41982,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -42315,10 +42239,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -42997,10 +42917,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -43079,10 +42995,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -43197,10 +43109,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -43503,10 +43411,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -43583,10 +43487,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -43861,10 +43761,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -44289,10 +44185,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -44353,10 +44245,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -44393,10 +44281,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -44919,10 +44803,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -45394,10 +45274,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -45435,10 +45311,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -45649,10 +45521,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -45788,10 +45656,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -46162,10 +46026,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -46322,10 +46182,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -46610,10 +46466,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -46750,10 +46602,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1431,
@@ -47246,10 +47094,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -47746,10 +47590,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -47828,10 +47668,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     },
@@ -47906,10 +47742,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -48044,10 +47876,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -48082,10 +47910,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -48158,10 +47982,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -48296,10 +48116,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -48358,10 +48174,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -48608,10 +48420,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -49881,10 +49689,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -49969,10 +49773,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -50005,10 +49805,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -50158,10 +49954,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -50244,10 +50036,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -50858,10 +50646,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -51654,10 +51438,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -51740,10 +51520,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -52001,10 +51777,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -52683,10 +52455,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -52765,10 +52533,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -53012,10 +52776,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -53682,10 +53442,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -53762,10 +53518,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -54023,10 +53775,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -54460,10 +54208,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54482,9 +54226,21 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54492,10 +54248,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -54515,7 +54267,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54546,7 +54298,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54556,10 +54308,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54575,7 +54323,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54585,10 +54333,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54631,7 +54375,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54641,6 +54385,10 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
+    },
+    {
+     "number": 1293,
+     "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     },
     {
      "number": 1291,
@@ -54678,7 +54426,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54688,10 +54436,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54707,7 +54451,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54717,10 +54461,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54739,7 +54479,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54749,10 +54489,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54790,9 +54526,21 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -54800,10 +54548,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -54961,7 +54705,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -54971,10 +54715,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -55062,10 +54802,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -55086,9 +54822,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -55110,7 +54851,7 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -55129,7 +54870,7 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -55145,7 +54886,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55155,10 +54896,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -55177,9 +54914,13 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55189,8 +54930,8 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+     "number": 1291,
+     "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
    ],
    "issues": []
@@ -55230,7 +54971,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55258,9 +54999,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -55282,7 +55028,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55310,9 +55056,13 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55322,8 +55072,8 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
+     "number": 1293,
+     "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
    ],
    "issues": []
@@ -55342,7 +55092,7 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -55361,7 +55111,7 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -55380,7 +55130,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55408,7 +55158,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55433,9 +55183,14 @@
     27
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -55477,9 +55232,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    }
+   ],
    "issues": [
     {
      "number": 1538,
@@ -55500,7 +55260,7 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "merged",
    "reason": "",
    "pullRequests": [],
    "issues": []
@@ -55526,10 +55286,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -55591,7 +55347,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55601,10 +55357,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -55647,9 +55399,21 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -55657,10 +55421,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -55846,10 +55606,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -55885,7 +55641,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -55895,10 +55651,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -56377,10 +56129,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -56582,10 +56330,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -56764,10 +56508,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -56827,10 +56567,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -56865,10 +56601,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -57182,10 +56914,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -57246,10 +56974,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57284,10 +57008,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -57316,10 +57036,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57429,10 +57145,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57517,10 +57229,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57604,10 +57312,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57724,10 +57428,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57754,10 +57454,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57803,10 +57499,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57899,10 +57591,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -57947,10 +57635,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58032,10 +57716,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58070,10 +57750,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -58102,10 +57778,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58160,10 +57832,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58250,10 +57918,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58298,10 +57962,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58328,10 +57988,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58377,10 +58033,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58455,10 +58107,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58499,10 +58147,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -58613,10 +58257,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -58700,10 +58340,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -58845,10 +58481,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -59063,10 +58695,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -59144,10 +58772,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -59435,10 +59059,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -59598,10 +59218,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -59690,10 +59306,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -59853,10 +59465,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -60202,10 +59810,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -60470,10 +60074,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -60564,10 +60164,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -60727,10 +60323,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -60977,10 +60569,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -61245,10 +60833,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -61376,10 +60960,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -61412,10 +60992,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1293,
@@ -61569,10 +61145,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1431,
@@ -61745,10 +61317,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -61790,10 +61358,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -61827,10 +61391,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -61942,10 +61502,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -62074,10 +61630,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -62112,10 +61664,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -62188,10 +61736,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -62338,10 +61882,6 @@
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
     {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
-    },
-    {
      "number": 1291,
      "title": "[4/6] GetMEPPorts: return piping and ventilation port details"
     }
@@ -62416,10 +61956,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -62700,10 +62236,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -63002,9 +62534,21 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -63012,10 +62556,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     },
     {
      "number": 1291,
@@ -63035,7 +62575,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -63066,7 +62606,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -63076,10 +62616,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -63098,7 +62634,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -63108,6 +62644,10 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
+    },
+    {
+     "number": 1293,
+     "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     },
     {
      "number": 1291,
@@ -63145,7 +62685,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -63155,10 +62695,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -63196,9 +62732,21 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1573,
+     "title": "ModifyMEPRoutingElements: set the insulation of a route"
+    },
+    {
+     "number": 1541,
+     "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
+    },
+    {
+     "number": 1539,
+     "title": "[1/6] MEP ports, connections and element reads"
+    },
     {
      "number": 1462,
      "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
@@ -63206,10 +62754,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
@@ -63349,7 +62893,7 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -63359,10 +62903,6 @@
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
-    },
-    {
-     "number": 1458,
-     "title": "[2/6] MEP ports: flow direction, connection style, nominal size and ModifyMEPPorts"
     }
    ],
    "issues": []
