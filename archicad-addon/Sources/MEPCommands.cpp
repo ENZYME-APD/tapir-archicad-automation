@@ -23,6 +23,9 @@
 #include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctRectangularSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeElbowPreferenceTable.hpp"
 #include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
 #include "ACAPI/MEPPipeBranchPreferenceTable.hpp"
@@ -52,6 +55,7 @@
 #include <optional>
 #include <utility>
 #include <type_traits>
+#include <utility>
 
 using namespace ACAPI::MEP;
 #endif
@@ -176,6 +180,22 @@ static std::optional<Domain> DomainFromString (const GS::UniString& domain)
         return Domain::CableCarrier;
     }
     return std::nullopt;
+}
+
+// Calls a modifier function that returns either nothing or an ACAPI::Result, and gives back its error code, if any.
+template <typename CallT>
+static std::optional<GSErrCode> GetErrorOfCall (CallT&& call)
+{
+    if constexpr (std::is_void_v<decltype (call ())>) {
+        call ();
+        return std::nullopt;
+    } else {
+        auto result = call ();
+        if (result.IsErr ()) {
+            return result.UnwrapErr ().kind;
+        }
+        return std::nullopt;
+    }
 }
 
 static GS::UniString ConnectorShapeToString (ConnectorShape shape)
@@ -1817,7 +1837,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
             },
             "includeFittingTables": {
                 "type": "boolean",
-                "description": "Also return the elbow, branch and transition preference tables. Defaults to false."
+                "description": "Also return the elbow, branch and transition preference tables. Defaults to false. Ignored for the CableCarrier domain."
             }
         },
         "additionalProperties": false,
@@ -1832,13 +1852,28 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
         "properties": {
             "tables": {
                 "type": "array",
-                "description": "The circular segment preference tables of the domain.",
+                "description": "The circular segment preference tables of the domain. Empty for the CableCarrier domain.",
                 "items": {
                     "$ref": "#/MEPPreferenceTable"
                 }
             },
+            "rectangularTables": {
+                "type": "array",
+                "description": "The rectangular segment preference tables of the Ventilation domain.",
+                "items": {
+                    "$ref": "#/MEPValuePreferenceTable"
+                }
+            },
+            "cableCarrierTables": {
+                "type": "array",
+                "description": "The segment preference tables of the CableCarrier domain.",
+                "items": {
+                    "$ref": "#/MEPValuePreferenceTable"
+                }
+            },
             "referenceSet": {
-                "$ref": "#/MEPReferenceSet"
+                "$ref": "#/MEPReferenceSet",
+                "description": "The reference set of the Piping or Ventilation domain. Not returned for the CableCarrier domain."
             },
             "angleSet": {
                 "$ref": "#/MEPAngleSet",
@@ -1867,16 +1902,92 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema 
             }
         },
         "additionalProperties": false,
-        "required": ["tables", "referenceSet"]
+        "required": ["tables"]
     })";
 }
 
 #ifdef ServerMainVers_2800
+// The preference table getters return either a plain value, a std::optional or an ACAPI::Result.
+// PreferenceTableValueToOptional turns all of them into a std::optional, so a value that cannot
+// be read is left out of the response instead of failing the whole table.
+// IsEditable returns an ACAPI::Result<void> that is Ok when the table is editable; PreferenceTableIsEditable
+// also handles a Result<bool> or a bool, so a read-only table is never reported as editable.
+template <typename T, typename = void>
+struct IsPreferenceTableResult : std::false_type {};
+
+template <typename T>
+struct IsPreferenceTableResult<T, std::void_t<decltype (std::declval<T&> ().IsOk ())>> : std::true_type {};
+
+template <typename T>
+struct IsPreferenceTableOptional : std::false_type {};
+
+template <typename T>
+struct IsPreferenceTableOptional<std::optional<T>> : std::true_type {};
+
+template <typename T>
+static auto PreferenceTableValueToOptional (T&& value)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (IsPreferenceTableResult<ValueT>::value) {
+        using ResultValueT = std::decay_t<decltype (*value)>;
+        return value.IsOk () ? std::optional<ResultValueT> (*value) : std::optional<ResultValueT> ();
+    } else if constexpr (IsPreferenceTableOptional<ValueT>::value) {
+        return ValueT (std::forward<T> (value));
+    } else {
+        return std::optional<ValueT> (std::forward<T> (value));
+    }
+}
+
+template <typename T, typename = void>
+struct HasPreferenceTableResultValue : std::false_type {};
+
+template <typename T>
+struct HasPreferenceTableResultValue<T, std::enable_if_t<!std::is_void_v<decltype (*std::declval<T&> ())>>> : std::true_type {};
+
+template <typename T>
+static bool PreferenceTableIsEditable (T&& isEditable)
+{
+    using ValueT = std::decay_t<T>;
+    if constexpr (std::is_same_v<ValueT, bool>) {
+        return isEditable;
+    } else if constexpr (HasPreferenceTableResultValue<ValueT>::value) {
+        return isEditable.IsOk () && static_cast<bool> (*isEditable);
+    } else {
+        return isEditable.IsOk ();
+    }
+}
+
+template <typename T>
+static void AddPreferenceTableValue (GS::ObjectState& os, const char* name, T&& value)
+{
+    const auto optionalValue = PreferenceTableValueToOptional (std::forward<T> (value));
+    if (optionalValue.has_value ()) {
+        os.Add (name, *optionalValue);
+    }
+}
+
+// The segmentation lengths of a segment preference table, available from Archicad 29.
+template <typename TableT>
+static void AddSegmentationLengths (GS::ObjectState& tableOS, const TableT& table)
+{
+#ifdef ServerMainVers_2900
+    AddPreferenceTableValue (tableOS, "useIndividualSegmentLengths", table.GetUseIndividualSegmentLengths ());
+    AddPreferenceTableValue (tableOS, "minimumSegmentationLength", table.GetMinimumSegmentationLength ());
+    AddPreferenceTableValue (tableOS, "maximumSegmentationLength", table.GetMaximumSegmentationLength ());
+#else
+    UNUSED_PARAMETER (tableOS);
+    UNUSED_PARAMETER (table);
+#endif
+}
+
 template <typename TableT>
 static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
 {
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
+    AddPreferenceTableValue (tableOS, "name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
+    AddSegmentationLengths (tableOS, table);
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     const uint32_t size = table.GetSize ();
     for (uint32_t i = 0; i < size; ++i) {
@@ -1885,13 +1996,39 @@ static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid&
         if (rowDiameter.IsErr () || rowReferenceId.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("referenceId", static_cast<Int32> (*rowReferenceId));
         rowOS.Add ("diameter", *rowDiameter);
+        AddPreferenceTableValue (rowOS, "wallThickness", table.GetWallThickness (i));
         auto rowDescription = table.GetDescription (i);
         if (rowDescription.IsOk ()) {
             rowOS.Add ("description", *rowDescription);
         }
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+// Rectangular duct and cable carrier segment preference tables are a list of sizes (values) with a description.
+template <typename TableT>
+static GS::ObjectState DumpValuePreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    AddPreferenceTableValue (tableOS, "name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
+    AddSegmentationLengths (tableOS, table);
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    const uint32_t size = static_cast<uint32_t> (PreferenceTableValueToOptional (table.GetSize ()).value_or (0));
+    for (uint32_t i = 0; i < size; ++i) {
+        const auto value = PreferenceTableValueToOptional (table.GetValue (i));
+        if (!value.has_value ()) {
+            continue;
+        }
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
+        rowOS.Add ("value", *value);
+        AddPreferenceTableValue (rowOS, "description", table.GetDescription (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1910,6 +2047,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto referenceId = table.GetReferenceId (i);
@@ -1918,7 +2056,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
         if (referenceId.IsErr () || diameter.IsErr () || radius.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("referenceId", static_cast<Int32> (*referenceId));
 #ifdef ServerMainVers_2900
         auto angle = table.GetAngle (i);
@@ -1929,6 +2067,7 @@ static GS::ObjectState DumpElbowPreferenceTable (const TableT& table, const GS::
         rowOS.Add ("diameter", *diameter);
         rowOS.Add ("radius", *radius);
         AddRowDescription (rowOS, table.GetDescription (i));
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1940,6 +2079,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto mainAxisReferenceId = table.GetMainAxisReferenceId (i);
@@ -1953,7 +2093,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
             length.IsErr () || branchOffset.IsErr () || connectionLength.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("mainAxisReferenceId", static_cast<Int32> (*mainAxisReferenceId));
         rowOS.Add ("branchAxisReferenceId", static_cast<Int32> (*branchAxisReferenceId));
 #ifdef ServerMainVers_2900
@@ -1968,6 +2108,7 @@ static GS::ObjectState DumpBranchPreferenceTable (const TableT& table, const GS:
         rowOS.Add ("branchOffset", *branchOffset);
         rowOS.Add ("connectionLength", *connectionLength);
         AddRowDescription (rowOS, table.GetDescription (i));
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
         rows (rowOS);
     }
     return tableOS;
@@ -1980,6 +2121,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
     GS::ObjectState tableOS;
     tableOS.Add ("guid", tableGuid.ToUniString ());
     tableOS.Add ("name", table.GetName ());
+    tableOS.Add ("isEditable", PreferenceTableIsEditable (table.IsEditable ()));
     const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
     for (uint32_t i = 0; i < table.GetSize (); ++i) {
         auto beginReferenceId = table.GetBeginReferenceId (i);
@@ -1989,7 +2131,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
         if (beginReferenceId.IsErr () || endReferenceId.IsErr () || beginDiameter.IsErr () || endDiameter.IsErr ()) {
             continue;
         }
-        GS::ObjectState rowOS;
+        GS::ObjectState rowOS ("index", static_cast<Int32> (i));
         rowOS.Add ("beginReferenceId", static_cast<Int32> (*beginReferenceId));
         rowOS.Add ("endReferenceId", static_cast<Int32> (*endReferenceId));
         rowOS.Add ("beginDiameter", *beginDiameter);
@@ -2007,6 +2149,7 @@ static GS::ObjectState DumpTransitionPreferenceTable (const TableT& table, const
             }
         }
         AddRowDescription (rowOS, table.GetDescription (i));
+        AddPreferenceTableValue (rowOS, "isValid", table.IsRowValid (i));
         rows (rowOS);
     }
     return tableOS;
@@ -2016,11 +2159,16 @@ static GS::ObjectState DumpAngleSet (const AngleSetBase& angleSet)
 {
     GS::ObjectState angleSetOS;
     angleSetOS.Add ("name", angleSet.GetName ());
+    angleSetOS.Add ("isEditable", PreferenceTableIsEditable (angleSet.IsEditable ()));
     const auto& angles = angleSetOS.AddList<double> ("angles");
+    const auto& angleDetails = angleSetOS.AddList<GS::ObjectState> ("angleDetails");
     for (uint32_t i = 0; i < angleSet.GetSize (); ++i) {
         auto angle = angleSet.GetAngle (i);
         if (angle.IsOk ()) {
             angles (*angle);
+            GS::ObjectState angleOS ("angle", *angle);
+            AddPreferenceTableValue (angleOS, "isDefined", angleSet.IsAngleDefined (i));
+            angleDetails (angleOS);
         }
     }
     return angleSetOS;
@@ -2031,11 +2179,16 @@ static GS::ObjectState DumpReferenceSet (const ReferenceSetBase& referenceSet)
 {
     GS::ObjectState referenceSetOS;
     referenceSetOS.Add ("name", referenceSet.GetName ());
+    referenceSetOS.Add ("isEditable", PreferenceTableIsEditable (referenceSet.IsEditable ()));
     const auto& referenceIds = referenceSetOS.AddList<Int32> ("referenceIds");
+    const auto& referenceIdDetails = referenceSetOS.AddList<GS::ObjectState> ("referenceIdDetails");
     for (uint32_t i = 0; i < referenceSet.GetSize (); ++i) {
         auto referenceId = referenceSet.GetReferenceId (i);
         if (referenceId.IsOk ()) {
             referenceIds (static_cast<Int32> (*referenceId));
+            GS::ObjectState referenceIdOS ("referenceId", static_cast<Int32> (*referenceId));
+            AddPreferenceTableValue (referenceIdOS, "isDefined", referenceSet.IsReferenceIdDefined (i));
+            referenceIdDetails (referenceIdOS);
         }
     }
     return referenceSetOS;
@@ -2062,7 +2215,7 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
     GS::UniString domainStr;
     parameters.Get ("domain", domainStr);
     const std::optional<Domain> domain = DomainFromString (domainStr);
-    if (!domain.has_value () || *domain == Domain::CableCarrier) {
+    if (!domain.has_value ()) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
     }
     bool includeFittingTables = false;
@@ -2070,6 +2223,17 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
 
     GS::ObjectState response;
     const auto& tables = response.AddList<GS::ObjectState> ("tables");
+    const auto dumpValueTable = [] (const auto& table, const GS::Guid& guid) { return DumpValuePreferenceTable (table, guid); };
+
+    // Cable carriers have no circular tables, reference set or fitting tables, only their own segment tables.
+    if (*domain == Domain::CableCarrier) {
+        auto container = GetCableCarrierSegmentPreferenceTableContainer ();
+        if (container.IsErr ()) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the cable carrier segment preference table container: ") + container.UnwrapErr ().text.c_str ());
+        }
+        AddPreferenceTables<CableCarrierSegmentPreferenceTable> (response, "cableCarrierTables", container, dumpValueTable);
+        return response;
+    }
 
     const auto dumpElbow = [] (const auto& table, const GS::Guid& guid) { return DumpElbowPreferenceTable (table, guid); };
     const auto dumpBranch = [] (const auto& table, const GS::Guid& guid) { return DumpBranchPreferenceTable (table, guid); };
@@ -2115,6 +2279,8 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
             }
         }
+        // The rectangular tables are in the same container; DuctRectangularSegmentPreferenceTable::Get picks them.
+        AddPreferenceTables<DuctRectangularSegmentPreferenceTable> (response, "rectangularTables", container, dumpValueTable);
 
         auto referenceSet = GetDuctReferenceSet ();
         response.Add ("referenceSet", referenceSet.IsOk () ? DumpReferenceSet (*referenceSet) : GS::ObjectState ("name", GS::UniString (), "referenceIds", GS::Array<Int32> ()));
@@ -2137,6 +2303,792 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
 }
 #else
 GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+}
+#endif
+
+ModifyMEPPreferenceTablesCommand::ModifyMEPPreferenceTablesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyMEPPreferenceTablesCommand::GetName () const
+{
+    return "ModifyMEPPreferenceTables";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "domain": {
+                "$ref": "#/MEPPreferenceTableDomain"
+            },
+            "tablesToAdd": {
+                "type": "array",
+                "description": "New tables to add to the domain, before the other changes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "$ref": "#/MEPPreferenceTableType"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["type", "name"]
+                }
+            },
+            "tables": {
+                "type": "array",
+                "description": "The tables of the domain to change, in the shape GetMEPPreferenceTables returns them. Each table is changed in one undoable step.",
+                "items": {
+                    "$ref": "#/MEPPreferenceTableChange"
+                }
+            },
+            "tablesToDelete": {
+                "type": "array",
+                "description": "The guids of the tables of the domain to delete, after the other table changes.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "referenceIdsToDelete": {
+                "type": "array",
+                "description": "Reference ids to delete from the reference set of the Piping or Ventilation domain.",
+                "items": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "anglesToDelete": {
+                "type": "array",
+                "description": "Angles to delete from the angle set of the Piping or Ventilation domain, as GetMEPPreferenceTables returns them. Available from Archicad 29.",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["domain"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "addedTables": {
+                "type": "array",
+                "description": "One item for each item of tablesToAdd: the guid of the new table, or the error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "guid": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        {
+                            "$ref": "#/FailedExecutionResult"
+                        }
+                    ]
+                }
+            },
+            "tables": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result for each item of tables."
+            },
+            "deletedTables": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result for each item of tablesToDelete."
+            },
+            "referenceSet": {
+                "$ref": "#/ExecutionResult",
+                "description": "Only when referenceIdsToDelete is given."
+            },
+            "angleSet": {
+                "$ref": "#/ExecutionResult",
+                "description": "Only when anglesToDelete is given."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["addedTables", "tables", "deletedTables"]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+template <typename TableT>
+constexpr bool IsCircularSegmentPreferenceTable = std::is_same_v<TableT, PipeSegmentPreferenceTable> || std::is_same_v<TableT, DuctCircularSegmentPreferenceTable>;
+
+template <typename TableT>
+constexpr bool IsValuePreferenceTable = std::is_same_v<TableT, DuctRectangularSegmentPreferenceTable> || std::is_same_v<TableT, CableCarrierSegmentPreferenceTable>;
+
+template <typename TableT>
+constexpr bool IsElbowPreferenceTable = std::is_same_v<TableT, PipeElbowPreferenceTable> || std::is_same_v<TableT, DuctElbowPreferenceTable>;
+
+template <typename TableT>
+constexpr bool IsBranchPreferenceTable = std::is_same_v<TableT, PipeBranchPreferenceTable> || std::is_same_v<TableT, DuctBranchPreferenceTable>;
+
+// The row values ModifyMEPPreferenceTables can set; which of them belong to a table depends on its kind.
+static const char* const PreferenceRowValueKeys[] = {
+    "diameter", "wallThickness", "value", "radius", "mainAxisDiameter", "branchAxisDiameter", "length",
+    "branchOffset", "connectionLength", "beginDiameter", "endDiameter", "angle", "description"
+};
+
+template <typename TableT>
+static bool IsPreferenceRowValueOfTable (const GS::UniString& key)
+{
+    if (key == "description") {
+        return true;
+    }
+    if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+        return key == "diameter" || key == "wallThickness";
+    } else if constexpr (IsValuePreferenceTable<TableT>) {
+        return key == "value";
+    } else if constexpr (IsElbowPreferenceTable<TableT>) {
+        return key == "diameter" || key == "radius";
+    } else if constexpr (IsBranchPreferenceTable<TableT>) {
+        return key == "mainAxisDiameter" || key == "branchAxisDiameter" || key == "length" || key == "branchOffset" || key == "connectionLength";
+    } else {
+#ifdef ServerMainVers_2900
+        // Pipe transitions are defined by their length, duct transitions by their angle.
+        if constexpr (std::is_same_v<TableT, PipeTransitionPreferenceTable>) {
+            return key == "beginDiameter" || key == "endDiameter" || key == "length";
+        } else {
+            return key == "beginDiameter" || key == "endDiameter" || key == "angle";
+        }
+#else
+        return false;
+#endif
+    }
+}
+
+// Follows where the rows of a preference table move while it is modified, so that every row index given
+// refers to the table before the call: deleting a row moves the rows after it up, and setting the value of
+// a rectangular duct or cable carrier row can move it, since these tables keep their rows ordered by value.
+class PreferenceTableRowIndices
+{
+public:
+    explicit PreferenceTableRowIndices (uint32_t size)
+    {
+        for (uint32_t i = 0; i < size; ++i) {
+            indices.push_back (i);
+        }
+    }
+
+    uint32_t Current (uint32_t originalIndex) const
+    {
+        return indices[originalIndex];
+    }
+
+    void Moved (uint32_t from, uint32_t to)
+    {
+        for (uint32_t& index : indices) {
+            if (index == from) {
+                index = to;
+            } else if (from < to && index > from && index <= to) {
+                --index;
+            } else if (to < from && index >= to && index < from) {
+                ++index;
+            }
+        }
+    }
+
+    void Deleted (uint32_t deletedIndex)
+    {
+        for (uint32_t& index : indices) {
+            if (index > deletedIndex) {
+                --index;
+            }
+        }
+    }
+
+private:
+    std::vector<uint32_t> indices;
+};
+
+struct PreferenceTableModifyError {
+    GSErrCode code;
+    GS::UniString message;
+};
+
+static GS::UniString PreferenceRowText (Int32 index)
+{
+    return " of row " + GS::ValueToUniString (index);
+}
+
+// Sets the value of a rectangular duct or cable carrier row unless an earlier change failed. The row can
+// move, since these tables keep their rows ordered by value; gives its new index.
+template <typename ModifierT>
+static std::optional<uint32_t> SetPreferenceRowValue (ModifierT& modifier, uint32_t index, double value, const GS::UniString& what, std::optional<PreferenceTableModifyError>& error)
+{
+    if (error.has_value ()) {
+        return std::nullopt;
+    }
+    ACAPI::Result<uint32_t> newIndex = modifier.SetValue (index, value);
+    if (newIndex.IsErr ()) {
+        error = PreferenceTableModifyError { newIndex.UnwrapErr ().kind, "Failed to " + what + "." };
+        return std::nullopt;
+    }
+    return *newIndex;
+}
+
+// Changes one preference table: its name, segmentation lengths, the values of its rows, deletes rows and,
+// in rectangular duct and cable carrier tables, adds rows. Everything is checked before the table is
+// changed, in one undoable step.
+template <typename TableT>
+static GS::ObjectState ModifyPreferenceTable (TableT& table, const GS::ObjectState& tableData)
+{
+    if (!PreferenceTableIsEditable (table.IsEditable ())) {
+        return CreateFailedExecutionResult (APIERR_NOACCESSRIGHT, "The preference table is not editable.");
+    }
+
+    const uint32_t size = static_cast<uint32_t> (PreferenceTableValueToOptional (table.GetSize ()).value_or (0));
+    GS::Array<GS::ObjectState> rowsData;
+    tableData.Get ("rows", rowsData);
+    std::vector<bool> isRowGiven (size, false);
+    // The wall thickness of a circular segment row is set by its reference id.
+    std::vector<uint32_t> referenceIds (size, 0);
+    for (const GS::ObjectState& rowData : rowsData) {
+        Int32 index = -1;
+        rowData.Get ("index", index);
+        if (index < 0 || static_cast<uint32_t> (index) >= size) {
+            return CreateFailedExecutionResult (APIERR_BADINDEX, "The table has no row " + GS::ValueToUniString (index) + ".");
+        }
+        if (isRowGiven[index]) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Row " + GS::ValueToUniString (index) + " is given more than once.");
+        }
+        isRowGiven[index] = true;
+        bool deleteRow = false;
+        rowData.Get ("delete", deleteRow);
+        for (const char* key : PreferenceRowValueKeys) {
+            if (!rowData.Contains (key)) {
+                continue;
+            }
+            if (!IsPreferenceRowValueOfTable<TableT> (key)) {
+                // The elbow tables return the angle of their rows, but it cannot be set.
+                if constexpr (IsElbowPreferenceTable<TableT>) {
+                    if (GS::UniString (key) == "angle") {
+                        continue;
+                    }
+                }
+                return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("The row value '") + key + "' does not belong to this kind of preference table.");
+            }
+            if (deleteRow) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "Row " + GS::ValueToUniString (index) + " is deleted, so it cannot get new values.");
+            }
+        }
+        if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+            if (rowData.Contains ("wallThickness")) {
+                auto referenceId = table.GetReferenceId (static_cast<uint32_t> (index));
+                if (referenceId.IsErr ()) {
+                    return CreateFailedExecutionResult (referenceId.UnwrapErr ().kind, "Failed to get the reference id" + PreferenceRowText (index) + ".");
+                }
+                referenceIds[index] = *referenceId;
+            }
+        }
+    }
+
+    double minimumSegmentationLength = 0.0;
+    double maximumSegmentationLength = 0.0;
+    const bool hasMinimumSegmentationLength = tableData.Get ("minimumSegmentationLength", minimumSegmentationLength);
+    const bool hasMaximumSegmentationLength = tableData.Get ("maximumSegmentationLength", maximumSegmentationLength);
+    const bool hasSegmentationLengths = hasMinimumSegmentationLength || hasMaximumSegmentationLength || tableData.Contains ("useIndividualSegmentLengths");
+    if (hasSegmentationLengths) {
+        if constexpr (IsCircularSegmentPreferenceTable<TableT> || IsValuePreferenceTable<TableT>) {
+#ifdef ServerMainVers_2900
+            // Both lengths are set together, so a missing one keeps its current value.
+            if (hasMinimumSegmentationLength != hasMaximumSegmentationLength) {
+                const auto currentLength = hasMinimumSegmentationLength
+                    ? PreferenceTableValueToOptional (table.GetMaximumSegmentationLength ())
+                    : PreferenceTableValueToOptional (table.GetMinimumSegmentationLength ());
+                if (!currentLength.has_value ()) {
+                    return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to get the current segmentation lengths; give both the minimum and the maximum.");
+                }
+                (hasMinimumSegmentationLength ? maximumSegmentationLength : minimumSegmentationLength) = *currentLength;
+            }
+#else
+            return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The segmentation lengths are available from Archicad 29.");
+#endif
+        } else {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Only segment preference tables have segmentation lengths.");
+        }
+    }
+
+    GS::Array<GS::ObjectState> newRowsData;
+    tableData.Get ("newRows", newRowsData);
+    if constexpr (!IsValuePreferenceTable<TableT>) {
+        if (!newRowsData.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Rows can only be added to rectangular duct and cable carrier segment tables.");
+        }
+    }
+
+    std::optional<PreferenceTableModifyError> error;
+    // Calls a setter unless an earlier one failed, and keeps the first error.
+    const auto call = [&] (const GS::UniString& what, const auto& setter) {
+        if (!error.has_value ()) {
+            const std::optional<GSErrCode> callError = GetErrorOfCall (setter);
+            if (callError.has_value ()) {
+                error = PreferenceTableModifyError { *callError, "Failed to " + what + "." };
+            }
+        }
+    };
+    PreferenceTableRowIndices rowIndices (size);
+    ACAPI::Result<void> modifyResult = table.Modify ([&] (typename TableT::Modifier& modifier) {
+        GS::UniString name;
+        if (tableData.Get ("name", name)) {
+            call ("set the name of the table", [&] () { return modifier.SetName (name); });
+        }
+        if constexpr (IsCircularSegmentPreferenceTable<TableT> || IsValuePreferenceTable<TableT>) {
+#ifdef ServerMainVers_2900
+            bool useIndividualSegmentLengths = false;
+            if (tableData.Get ("useIndividualSegmentLengths", useIndividualSegmentLengths)) {
+                call ("set whether the table uses individual segment lengths", [&] () { return modifier.SetUseIndividualSegmentLengths (useIndividualSegmentLengths); });
+            }
+            if (hasMinimumSegmentationLength || hasMaximumSegmentationLength) {
+                call ("set the segmentation lengths", [&] () { return modifier.SetSegmentationLengths (minimumSegmentationLength, maximumSegmentationLength); });
+            }
+#endif
+        }
+
+        // New values first, then the deletions, so that the indices of the deleted rows can be followed.
+        for (const GS::ObjectState& rowData : rowsData) {
+            Int32 originalIndex = 0;
+            rowData.Get ("index", originalIndex);
+            bool deleteRow = false;
+            rowData.Get ("delete", deleteRow);
+            if (deleteRow) {
+                continue;
+            }
+            const GS::UniString rowText = PreferenceRowText (originalIndex);
+            uint32_t index = rowIndices.Current (static_cast<uint32_t> (originalIndex));
+            double number = 0.0;
+            if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+                if (rowData.Get ("diameter", number)) {
+                    call ("set the diameter" + rowText, [&] () { return modifier.SetDiameter (index, number); });
+                }
+                if (rowData.Get ("wallThickness", number)) {
+                    const uint32_t referenceId = referenceIds[originalIndex];
+#ifdef ServerMainVers_2900
+                    call ("set the wall thickness" + rowText, [&] () { return modifier.SetWallThicknessByKey (referenceId, number); });
+#else
+                    call ("set the wall thickness" + rowText, [&] () { return modifier.SetWallThicknessByReferenceId (referenceId, number); });
+#endif
+                }
+            } else if constexpr (IsValuePreferenceTable<TableT>) {
+                if (rowData.Get ("value", number)) {
+                    const std::optional<uint32_t> newIndex = SetPreferenceRowValue (modifier, index, number, "set the value" + rowText, error);
+                    if (newIndex.has_value ()) {
+                        rowIndices.Moved (index, *newIndex);
+                        index = *newIndex;
+                    }
+                }
+            } else if constexpr (IsElbowPreferenceTable<TableT>) {
+                if (rowData.Get ("diameter", number)) {
+                    call ("set the diameter" + rowText, [&] () { return modifier.SetDiameter (index, number); });
+                }
+                if (rowData.Get ("radius", number)) {
+                    call ("set the radius" + rowText, [&] () { return modifier.SetRadius (index, number); });
+                }
+            } else if constexpr (IsBranchPreferenceTable<TableT>) {
+                if (rowData.Get ("mainAxisDiameter", number)) {
+                    call ("set the main axis diameter" + rowText, [&] () { return modifier.SetMainAxisDiameter (index, number); });
+                }
+                if (rowData.Get ("branchAxisDiameter", number)) {
+                    call ("set the branch axis diameter" + rowText, [&] () { return modifier.SetBranchAxisDiameter (index, number); });
+                }
+                if (rowData.Get ("length", number)) {
+                    call ("set the length" + rowText, [&] () { return modifier.SetLength (index, number); });
+                }
+                if (rowData.Get ("branchOffset", number)) {
+                    call ("set the branch offset" + rowText, [&] () { return modifier.SetBranchOffset (index, number); });
+                }
+                if (rowData.Get ("connectionLength", number)) {
+                    call ("set the connection length" + rowText, [&] () { return modifier.SetConnectionLength (index, number); });
+                }
+            } else {
+#ifdef ServerMainVers_2900
+                if (rowData.Get ("beginDiameter", number)) {
+                    call ("set the begin diameter" + rowText, [&] () { return modifier.SetBeginDiameter (index, number); });
+                }
+                if (rowData.Get ("endDiameter", number)) {
+                    call ("set the end diameter" + rowText, [&] () { return modifier.SetEndDiameter (index, number); });
+                }
+                if constexpr (std::is_same_v<TableT, PipeTransitionPreferenceTable>) {
+                    if (rowData.Get ("length", number)) {
+                        call ("set the length" + rowText, [&] () { return modifier.SetLength (index, number); });
+                    }
+                } else {
+                    if (rowData.Get ("angle", number)) {
+                        call ("set the angle" + rowText, [&] () { return modifier.SetAngle (index, number); });
+                    }
+                }
+#endif
+            }
+            GS::UniString description;
+            if (rowData.Get ("description", description)) {
+                call ("set the description" + rowText, [&] () { return modifier.SetDescription (index, description); });
+            }
+        }
+
+        for (const GS::ObjectState& rowData : rowsData) {
+            bool deleteRow = false;
+            rowData.Get ("delete", deleteRow);
+            if (!deleteRow || error.has_value ()) {
+                continue;
+            }
+            Int32 originalIndex = 0;
+            rowData.Get ("index", originalIndex);
+            const GS::UniString what = "delete row " + GS::ValueToUniString (originalIndex);
+            const uint32_t index = rowIndices.Current (static_cast<uint32_t> (originalIndex));
+            // The circular segment tables, and the elbow tables of Archicad 28, have a fixed row for each
+            // reference id, which can only be emptied; the rows of the other tables are removed.
+            bool rowsMoved = true;
+            if constexpr (IsCircularSegmentPreferenceTable<TableT>) {
+                call (what, [&] () { return modifier.EmptyRow (index); });
+                rowsMoved = false;
+            } else if constexpr (IsValuePreferenceTable<TableT>) {
+                call (what, [&] () { return modifier.Delete (index); });
+            } else if constexpr (IsElbowPreferenceTable<TableT>) {
+#ifdef ServerMainVers_2900
+                call (what, [&] () { return modifier.DeleteRow (index); });
+#else
+                call (what, [&] () { return modifier.EmptyRow (index); });
+                rowsMoved = false;
+#endif
+            } else {
+                call (what, [&] () { return modifier.DeleteRow (index); });
+            }
+            if (rowsMoved && !error.has_value ()) {
+                rowIndices.Deleted (index);
+            }
+        }
+
+        if constexpr (IsValuePreferenceTable<TableT>) {
+            for (UIndex i = 0; i < newRowsData.GetSize () && !error.has_value (); ++i) {
+                const GS::UniString rowText = " of new row " + GS::ValueToUniString (i);
+                ACAPI::Result<uint32_t> addedIndex = modifier.AddNewPreference ();
+                if (addedIndex.IsErr ()) {
+                    error = PreferenceTableModifyError { addedIndex.UnwrapErr ().kind, "Failed to add new row " + GS::ValueToUniString (i) + "." };
+                    break;
+                }
+                double value = 0.0;
+                newRowsData[i].Get ("value", value);
+                const std::optional<uint32_t> index = SetPreferenceRowValue (modifier, *addedIndex, value, "set the value" + rowText, error);
+                GS::UniString description;
+                if (index.has_value () && newRowsData[i].Get ("description", description)) {
+                    call ("set the description" + rowText, [&] () { return modifier.SetDescription (*index, description); });
+                }
+            }
+        }
+    }, "Modify MEP Preference Table");
+
+    if (error.has_value ()) {
+        return CreateFailedExecutionResult (error->code, error->message + " The changes before it may have been made.");
+    }
+    if (modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, GS::UniString ("Failed to modify the preference table: ") + modifyResult.UnwrapErr ().text.c_str ());
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+// Changes the table if the id is a table of type TableT; gives nothing otherwise.
+template <typename TableT>
+static std::optional<GS::ObjectState> TryModifyPreferenceTable (const ACAPI::MEP::UniqueID& id, const GS::ObjectState& tableData)
+{
+    auto table = TableT::Get (id);
+    if (table.IsErr ()) {
+        return std::nullopt;
+    }
+    return ModifyPreferenceTable (*table, tableData);
+}
+
+static GS::ObjectState ModifyPreferenceTableOfDomain (Domain domain, const GS::ObjectState& tableData)
+{
+    GS::UniString guidStr;
+    tableData.Get ("guid", guidStr);
+    const auto id = Adapter::UniqueID (APIGuidFromString (guidStr.ToCStr ()));
+
+    std::optional<GS::ObjectState> result;
+    if (domain == Domain::CableCarrier) {
+        result = TryModifyPreferenceTable<CableCarrierSegmentPreferenceTable> (id, tableData);
+    } else if (domain == Domain::Piping) {
+        result = TryModifyPreferenceTable<PipeSegmentPreferenceTable> (id, tableData);
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<PipeElbowPreferenceTable> (id, tableData);
+        }
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<PipeBranchPreferenceTable> (id, tableData);
+        }
+#ifdef ServerMainVers_2900
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<PipeTransitionPreferenceTable> (id, tableData);
+        }
+#endif
+    } else {
+        result = TryModifyPreferenceTable<DuctCircularSegmentPreferenceTable> (id, tableData);
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctRectangularSegmentPreferenceTable> (id, tableData);
+        }
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctElbowPreferenceTable> (id, tableData);
+        }
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctBranchPreferenceTable> (id, tableData);
+        }
+#ifdef ServerMainVers_2900
+        if (!result.has_value ()) {
+            result = TryModifyPreferenceTable<DuctTransitionPreferenceTable> (id, tableData);
+        }
+#endif
+    }
+    if (!result.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_BADID, "'" + guidStr + "' is not a preference table of the domain.");
+    }
+    return *result;
+}
+
+static std::vector<GS::UniString> GetPreferenceTableTypes (Domain domain)
+{
+    if (domain == Domain::CableCarrier) {
+        return { "Segment" };
+    }
+#ifdef ServerMainVers_2900
+    return { "Segment", "Elbow", "Branch", "Transition" };
+#else
+    return { "Segment", "Elbow", "Branch" };
+#endif
+}
+
+// Calls func with the preference table container of the domain and type, and gives back its result.
+template <typename FuncT>
+static GS::ObjectState WithPreferenceTableContainer (Domain domain, const GS::UniString& type, const FuncT& func)
+{
+    const auto callWith = [&] (auto container) -> GS::ObjectState {
+        if (container.IsErr ()) {
+            return CreateFailedExecutionResult (container.UnwrapErr ().kind, "Failed to get the " + type + " preference table container.");
+        }
+        return func (*container);
+    };
+    const bool isPiping = domain == Domain::Piping;
+    if (domain == Domain::CableCarrier) {
+        if (type == "Segment") {
+            return callWith (GetCableCarrierSegmentPreferenceTableContainer ());
+        }
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The CableCarrier domain has only segment preference tables.");
+    }
+    if (type == "Segment") {
+        return isPiping ? callWith (GetPipeSegmentPreferenceTableContainer ()) : callWith (GetDuctSegmentPreferenceTableContainer ());
+    }
+    if (type == "Elbow") {
+        return isPiping ? callWith (GetPipeElbowPreferenceTableContainer ()) : callWith (GetDuctElbowPreferenceTableContainer ());
+    }
+    if (type == "Branch") {
+        return isPiping ? callWith (GetPipeBranchPreferenceTableContainer ()) : callWith (GetDuctBranchPreferenceTableContainer ());
+    }
+    if (type == "Transition") {
+#ifdef ServerMainVers_2900
+        return isPiping ? callWith (GetPipeTransitionPreferenceTableContainer ()) : callWith (GetDuctTransitionPreferenceTableContainer ());
+#else
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The transition preference tables are available from Archicad 29.");
+#endif
+    }
+    return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid preference table type: " + type);
+}
+
+static GS::ObjectState AddPreferenceTable (Domain domain, const GS::UniString& type, const GS::UniString& name)
+{
+    return WithPreferenceTableContainer (domain, type, [&] (auto& container) -> GS::ObjectState {
+        std::optional<ACAPI::Result<ACAPI::MEP::UniqueID>> addResult;
+        ACAPI::Result<void> modifyResult = container.Modify ([&] (auto& modifier) {
+            addResult.emplace (modifier.AddNewTable (name));
+        }, "Add MEP Preference Table");
+        if (addResult.has_value () && addResult->IsErr ()) {
+            return CreateFailedExecutionResult (addResult->UnwrapErr ().kind, "Failed to add the preference table '" + name + "'.");
+        }
+        if (modifyResult.IsErr () || !addResult.has_value ()) {
+            return CreateFailedExecutionResult (modifyResult.IsErr () ? modifyResult.UnwrapErr ().kind : APIERR_GENERAL, "Failed to add the preference table '" + name + "'.");
+        }
+        return GS::ObjectState ("guid", (*addResult)->GetGuid ().ToUniString ());
+    });
+}
+
+static GS::ObjectState DeletePreferenceTable (Domain domain, const GS::UniString& guidStr)
+{
+    const GS::Guid guid = APIGuid2GSGuid (APIGuidFromString (guidStr.ToCStr ()));
+    for (const GS::UniString& type : GetPreferenceTableTypes (domain)) {
+        bool found = false;
+        GS::ObjectState result = WithPreferenceTableContainer (domain, type, [&] (auto& container) -> GS::ObjectState {
+            for (const auto& id : container.GetPreferenceTables ()) {
+                if (id.GetGuid () != guid) {
+                    continue;
+                }
+                found = true;
+                std::optional<GSErrCode> deleteError;
+                ACAPI::Result<void> modifyResult = container.Modify ([&] (auto& modifier) {
+                    deleteError = GetErrorOfCall ([&] () { return modifier.Delete (id); });
+                }, "Delete MEP Preference Table");
+                if (deleteError.has_value () || modifyResult.IsErr ()) {
+                    return CreateFailedExecutionResult (deleteError.has_value () ? *deleteError : modifyResult.UnwrapErr ().kind, "Failed to delete the preference table '" + guidStr + "'.");
+                }
+                return CreateSuccessfulExecutionResult ();
+            }
+            return CreateSuccessfulExecutionResult ();
+        });
+        if (found) {
+            return result;
+        }
+    }
+    return CreateFailedExecutionResult (APIERR_BADID, "'" + guidStr + "' is not a preference table of the domain.");
+}
+
+template <typename ReferenceSetResultT>
+static GS::ObjectState DeleteReferenceIds (ReferenceSetResultT referenceSet, const GS::Array<Int32>& referenceIdsToDelete)
+{
+    if (referenceSet.IsErr ()) {
+        return CreateFailedExecutionResult (referenceSet.UnwrapErr ().kind, "Failed to get the reference set.");
+    }
+    GS::Array<Int32> referenceIds;
+    for (uint32_t i = 0; i < referenceSet->GetSize (); ++i) {
+        auto referenceId = referenceSet->GetReferenceId (i);
+        if (referenceId.IsOk ()) {
+            referenceIds.Push (static_cast<Int32> (*referenceId));
+        }
+    }
+    for (Int32 referenceId : referenceIdsToDelete) {
+        if (!referenceIds.Contains (referenceId)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The reference id " + GS::ValueToUniString (referenceId) + " is not in the reference set.");
+        }
+    }
+    std::optional<GSErrCode> deleteError;
+    // The modifier type is named, a generic lambda here crashes MSVC 14.44 (C1001).
+    ACAPI::Result<void> modifyResult = referenceSet->Modify ([&] (ReferenceSetBase::Modifier& modifier) {
+        for (Int32 referenceId : referenceIdsToDelete) {
+            if (!deleteError.has_value ()) {
+                deleteError = GetErrorOfCall ([&] () { return modifier.Delete (static_cast<uint32_t> (referenceId)); });
+            }
+        }
+    }, "Modify MEP Reference Set");
+    if (deleteError.has_value () || modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (deleteError.has_value () ? *deleteError : modifyResult.UnwrapErr ().kind, "Failed to delete the reference ids.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+#ifdef ServerMainVers_2900
+template <typename AngleSetResultT>
+static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<double>& anglesToDelete)
+{
+    if (angleSet.IsErr ()) {
+        return CreateFailedExecutionResult (angleSet.UnwrapErr ().kind, "Failed to get the angle set.");
+    }
+    // The angles are deleted with the exact value of the set, so a value rounded by JSON still matches.
+    std::vector<double> angles;
+    for (double angleToDelete : anglesToDelete) {
+        std::optional<double> found;
+        for (uint32_t i = 0; i < angleSet->GetSize () && !found.has_value (); ++i) {
+            auto angle = angleSet->GetAngle (i);
+            if (angle.IsOk () && std::abs (*angle - angleToDelete) < 1e-9) {
+                found = *angle;
+            }
+        }
+        if (!found.has_value ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The angle " + GS::ValueToUniString (angleToDelete) + " is not in the angle set.");
+        }
+        angles.push_back (*found);
+    }
+    std::optional<GSErrCode> deleteError;
+    // Like the reference set, the modifier is the base class's: PipeAngleSet::Modifier and DuctAngleSet::Modifier are incomplete types.
+    ACAPI::Result<void> modifyResult = angleSet->Modify ([&] (AngleSetBase::Modifier& modifier) {
+        for (double angle : angles) {
+            if (!deleteError.has_value ()) {
+                deleteError = GetErrorOfCall ([&] () { return modifier.Delete (angle); });
+            }
+        }
+    }, "Modify MEP Angle Set");
+    if (deleteError.has_value () || modifyResult.IsErr ()) {
+        return CreateFailedExecutionResult (deleteError.has_value () ? *deleteError : modifyResult.UnwrapErr ().kind, "Failed to delete the angles.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+#endif
+
+GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString domainStr;
+    parameters.Get ("domain", domainStr);
+    const std::optional<Domain> domain = DomainFromString (domainStr);
+    if (!domain.has_value ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
+    }
+
+    GS::Array<GS::ObjectState> tablesToAdd;
+    parameters.Get ("tablesToAdd", tablesToAdd);
+    GS::Array<GS::ObjectState> tablesData;
+    parameters.Get ("tables", tablesData);
+    GS::Array<GS::UniString> tablesToDelete;
+    parameters.Get ("tablesToDelete", tablesToDelete);
+    GS::Array<Int32> referenceIdsToDelete;
+    const bool hasReferenceIdsToDelete = parameters.Get ("referenceIdsToDelete", referenceIdsToDelete);
+    GS::Array<double> anglesToDelete;
+    const bool hasAnglesToDelete = parameters.Get ("anglesToDelete", anglesToDelete);
+    if (*domain == Domain::CableCarrier && (hasReferenceIdsToDelete || hasAnglesToDelete)) {
+        return CreateErrorResponse (APIERR_BADPARS, "The CableCarrier domain has no reference set or angle set.");
+    }
+#ifndef ServerMainVers_2900
+    if (hasAnglesToDelete) {
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, "The angle set is available from Archicad 29.");
+    }
+#endif
+
+    GS::ObjectState response;
+    const auto& addedTables = response.AddList<GS::ObjectState> ("addedTables");
+    for (const GS::ObjectState& tableToAdd : tablesToAdd) {
+        GS::UniString type;
+        GS::UniString name;
+        tableToAdd.Get ("type", type);
+        tableToAdd.Get ("name", name);
+        addedTables (AddPreferenceTable (*domain, type, name));
+    }
+
+    const auto& tables = response.AddList<GS::ObjectState> ("tables");
+    for (const GS::ObjectState& tableData : tablesData) {
+        tables (ModifyPreferenceTableOfDomain (*domain, tableData));
+    }
+
+    const auto& deletedTables = response.AddList<GS::ObjectState> ("deletedTables");
+    for (const GS::UniString& guidStr : tablesToDelete) {
+        deletedTables (DeletePreferenceTable (*domain, guidStr));
+    }
+
+    if (hasReferenceIdsToDelete) {
+        response.Add ("referenceSet", *domain == Domain::Piping
+            ? DeleteReferenceIds (GetPipeReferenceSet (), referenceIdsToDelete)
+            : DeleteReferenceIds (GetDuctReferenceSet (), referenceIdsToDelete));
+    }
+#ifdef ServerMainVers_2900
+    if (hasAnglesToDelete) {
+        response.Add ("angleSet", *domain == Domain::Piping
+            ? DeleteAngles (GetPipeAngleSet (), anglesToDelete)
+            : DeleteAngles (GetDuctAngleSet (), anglesToDelete));
+    }
+#endif
+
+    return response;
+}
+#else
+GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
@@ -4147,22 +5099,6 @@ static void AddIsEditable (GS::ObjectState& os, const std::optional<bool>& isEdi
 {
     if (isEditable.has_value ()) {
         os.Add ("isEditable", isEditable.value ());
-    }
-}
-
-// Calls a modifier function that returns either nothing or an ACAPI::Result, and gives back its error code, if any.
-template <typename CallT>
-static std::optional<GSErrCode> GetErrorOfCall (CallT&& call)
-{
-    if constexpr (std::is_void_v<decltype (call ())>) {
-        call ();
-        return std::nullopt;
-    } else {
-        auto result = call ();
-        if (result.IsErr ()) {
-            return result.UnwrapErr ().kind;
-        }
-        return std::nullopt;
     }
 }
 

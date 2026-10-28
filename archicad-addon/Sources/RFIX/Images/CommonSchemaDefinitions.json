@@ -3828,7 +3828,179 @@
         "description": "The MEP domain of the segment preference tables.",
         "enum": [
             "Piping",
-            "Ventilation"
+            "Ventilation",
+            "CableCarrier"
+        ]
+    },
+    "MEPPreferenceRowIndex": {
+        "type": "integer",
+        "description": "The position of the row in its preference table, as ModifyMEPPreferenceTables expects it. Rows that cannot be read are left out of GetMEPPreferenceTables, so this is not always the position in the rows list.",
+        "minimum": 0
+    },
+    "MEPPreferenceTableType": {
+        "type": "string",
+        "description": "The kind of preference table container: the segment tables (circular and rectangular ducts share one container), or the elbow, branch or transition tables. CableCarrier has only segment tables, transition tables are available from Archicad 29.",
+        "enum": [
+            "Segment",
+            "Elbow",
+            "Branch",
+            "Transition"
+        ]
+    },
+    "MEPPreferenceRowChange": {
+        "type": "object",
+        "description": "Changes one row of a preference table, in the shape GetMEPPreferenceTables returns. Only the given values are changed. A value that does not belong to the kind of table is an error; the read-only values (reference ids, branchAxisAngle, isValid, and angle of an elbow table) are ignored.",
+        "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
+            "delete": {
+                "type": "boolean",
+                "description": "Deletes the row. The circular segment tables, and the elbow tables in Archicad 28, have a fixed row for each reference id; there the row is emptied instead. Cannot be combined with new values."
+            },
+            "diameter": {
+                "type": "number",
+                "description": "Circular segment and elbow tables."
+            },
+            "wallThickness": {
+                "type": "number",
+                "description": "Circular segment tables."
+            },
+            "value": {
+                "type": "number",
+                "description": "Rectangular duct and cable carrier segment tables. These tables keep their rows ordered by value, so a changed value can move the row; the indices of the other rows given in the same call are followed."
+            },
+            "radius": {
+                "type": "number",
+                "description": "Elbow tables."
+            },
+            "mainAxisDiameter": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "branchAxisDiameter": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "length": {
+                "type": "number",
+                "description": "Branch tables and piping transition tables."
+            },
+            "branchOffset": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "connectionLength": {
+                "type": "number",
+                "description": "Branch tables."
+            },
+            "beginDiameter": {
+                "type": "number",
+                "description": "Transition tables."
+            },
+            "endDiameter": {
+                "type": "number",
+                "description": "Transition tables."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Ventilation transition tables, in the unit GetMEPPreferenceTables returns it. Read-only (ignored) in elbow tables."
+            },
+            "description": {
+                "type": "string"
+            },
+            "referenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "mainAxisReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "branchAxisReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "beginReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "endReferenceId": {
+                "type": "integer",
+                "description": "Read-only, ignored."
+            },
+            "branchAxisAngle": {
+                "type": "number",
+                "description": "Read-only, ignored."
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Read-only, ignored."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index"
+        ]
+    },
+    "MEPPreferenceTableChange": {
+        "type": "object",
+        "description": "Changes one preference table, in the shape GetMEPPreferenceTables returns. Only the given values and rows are changed.",
+        "properties": {
+            "guid": {
+                "type": "string",
+                "description": "The guid of the table, as returned by GetMEPPreferenceTables."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the table."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Read-only, ignored."
+            },
+            "useIndividualSegmentLengths": {
+                "type": "boolean",
+                "description": "Segment tables only. Available from Archicad 29."
+            },
+            "minimumSegmentationLength": {
+                "type": "number",
+                "description": "Segment tables only; the maximum is kept when not given. Available from Archicad 29."
+            },
+            "maximumSegmentationLength": {
+                "type": "number",
+                "description": "Segment tables only; the minimum is kept when not given. Available from Archicad 29."
+            },
+            "rows": {
+                "type": "array",
+                "description": "The rows to change or delete, each at most once. All indices refer to the table before this call.",
+                "items": {
+                    "$ref": "#/MEPPreferenceRowChange"
+                }
+            },
+            "newRows": {
+                "type": "array",
+                "description": "Rows to add to a rectangular duct or cable carrier segment table, after the other changes. Adding rows to the other tables is not supported yet.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "value": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "value"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
         ]
     },
     "MEPComponentType": {
@@ -6719,14 +6891,24 @@
     "MEPPreferenceRow": {
         "type": "object",
         "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
             "referenceId": {
                 "type": "integer"
             },
             "diameter": {
                 "type": "number"
             },
+            "wallThickness": {
+                "type": "number"
+            },
             "description": {
                 "type": "string"
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Whether the row is valid."
             }
         },
         "required": [
@@ -6782,10 +6964,84 @@
             "guid": {
                 "type": "string"
             },
+            "name": {
+                "type": "string"
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
+            "useIndividualSegmentLengths": {
+                "type": "boolean",
+                "description": "Whether the table uses individual segmentation lengths. Available from Archicad 29."
+            },
+            "minimumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
+            "maximumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "$ref": "#/MEPPreferenceRow"
+                }
+            }
+        },
+        "required": [
+            "guid",
+            "rows"
+        ],
+        "additionalProperties": false
+    },
+    "MEPValuePreferenceTable": {
+        "type": "object",
+        "description": "A rectangular duct or cable carrier segment preference table: a list of sizes.",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
+            "useIndividualSegmentLengths": {
+                "type": "boolean",
+                "description": "Whether the table uses individual segmentation lengths. Available from Archicad 29."
+            },
+            "minimumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
+            "maximumSegmentationLength": {
+                "type": "number",
+                "description": "Available from Archicad 29."
+            },
+            "rows": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
+                        "value": {
+                            "type": "number",
+                            "description": "The size of the row."
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "value"
+                    ]
                 }
             }
         },
@@ -13426,10 +13682,34 @@
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the set can be edited."
+            },
             "referenceIds": {
                 "type": "array",
                 "items": {
                     "type": "integer"
+                }
+            },
+            "referenceIdDetails": {
+                "type": "array",
+                "description": "The reference ids of the set in the same order as referenceIds, each with whether it is defined.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "referenceId": {
+                            "type": "integer"
+                        },
+                        "isDefined": {
+                            "type": "boolean",
+                            "description": "Whether the reference id is defined in the set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "referenceId"
+                    ]
                 }
             }
         },
@@ -13446,10 +13726,34 @@
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the set can be edited."
+            },
             "angles": {
                 "type": "array",
                 "items": {
                     "type": "number"
+                }
+            },
+            "angleDetails": {
+                "type": "array",
+                "description": "The angles of the set in the same order as angles, each with whether it is defined.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "angle": {
+                            "type": "number"
+                        },
+                        "isDefined": {
+                            "type": "boolean",
+                            "description": "Whether the angle is defined in the set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "angle"
+                    ]
                 }
             }
         },
@@ -13468,11 +13772,18 @@
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
                         "referenceId": {
                             "type": "integer"
                         },
@@ -13488,6 +13799,10 @@
                         },
                         "description": {
                             "type": "string"
+                        },
+                        "isValid": {
+                            "type": "boolean",
+                            "description": "Whether the row is valid."
                         }
                     },
                     "additionalProperties": false,
@@ -13515,11 +13830,18 @@
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
                         "mainAxisReferenceId": {
                             "type": "integer"
                         },
@@ -13547,6 +13869,10 @@
                         },
                         "description": {
                             "type": "string"
+                        },
+                        "isValid": {
+                            "type": "boolean",
+                            "description": "Whether the row is valid."
                         }
                     },
                     "additionalProperties": false,
@@ -13578,11 +13904,18 @@
             "name": {
                 "type": "string"
             },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the table can be edited."
+            },
             "rows": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
+                        "index": {
+                            "$ref": "#/MEPPreferenceRowIndex"
+                        },
                         "beginReferenceId": {
                             "type": "integer"
                         },
@@ -13605,6 +13938,10 @@
                         },
                         "description": {
                             "type": "string"
+                        },
+                        "isValid": {
+                            "type": "boolean",
+                            "description": "Whether the row is valid."
                         }
                     },
                     "additionalProperties": false,

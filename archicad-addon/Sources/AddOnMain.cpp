@@ -2041,7 +2041,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPPreferenceTablesCommand> (
             mepCommands, "1.5.7",
-            "Gets the circular cross section preference tables (referenceId, diameter, description) and the reference set of the Piping or Ventilation domain, optionally with the elbow, branch and transition preference tables. The angle set and the transition tables are available from Archicad 29. Available from Archicad 28."
+            "Gets the circular cross section preference tables (referenceId, diameter, wall thickness, description) and the reference set of the Piping or Ventilation domain, optionally with the elbow, branch and transition preference tables, plus the rectangular duct tables of the Ventilation domain or the segment tables of the CableCarrier domain. Each table has its name and whether it is editable; the segment tables also have their segmentation lengths from Archicad 29. The rows of the circular, elbow, branch and transition tables say whether they are valid, and the reference set and the angle set say which of their reference ids and angles are defined. The angle set and the transition tables are available from Archicad 29. Every row has its index in the table, as ModifyMEPPreferenceTables expects it. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyMEPPreferenceTablesCommand> (
+            mepCommands, "1.7.3",
+            "Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, and deletes reference ids from the reference set and angles from the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPSystemGroupsCommand> (
             mepCommands, "1.7.2",
