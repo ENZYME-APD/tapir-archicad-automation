@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 14:42 UTC",
+ "generatedAt": "2026-10-28 14:52 UTC",
  "versions": [
   25,
   26,
@@ -3248,7 +3248,12 @@
      "title": "GetAttributesFromProject: report Layer, Surface, BuildingMaterial and MEPSystem as not read instead of an empty list"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 1615,
+     "title": "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_GetClassificationInSystem",
@@ -46542,6 +46547,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1617,
+     "title": "[1/2] GetFills/CreateFills: symbol fill offsets (c1/c2)"
+    },
     {
      "number": 1611,
      "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
