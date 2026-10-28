@@ -352,6 +352,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.7.1",
             "Repoints hotlink module nodes at other source files, as the Hotlink Manager's Relink button does. Follow it with UpdateHotlinks to re-read the content."
         );
+        err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
+            projectCommands, "1.7.3",
+            "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27."
+        );
         err |= RegisterCommand<GetHotlinkProxyElementTableCommand> (
             projectCommands, "1.7.3",
             "Maps the proxy elements of placed hotlink instances to the elements of the source file they were made from, so an element seen in a hotlinked module can be traced back to its source element."
