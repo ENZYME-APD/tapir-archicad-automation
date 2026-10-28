@@ -4803,12 +4803,14 @@ GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetInputParametersSc
             "automaticLabeling": {
                 "type": "boolean",
                 "description": "Turns the automatic labeling of Zones (placing a Label on each new Zone) on or off."
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the Label Favorite that is placed on each new Zone by the automatic labeling."
             }
         },
         "additionalProperties": false,
-        "required": [
-            "automaticLabeling"
-        ]
+        "minProperties": 1
     })";
 }
 
@@ -4822,24 +4824,101 @@ GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetRawResponseSchema
 GS::ObjectState SetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     bool automaticLabeling = false;
-    if (!parameters.Get ("automaticLabeling", automaticLabeling)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "automaticLabeling is missing.");
+    const bool hasAutomaticLabeling = parameters.Get ("automaticLabeling", automaticLabeling);
+    GS::UniString favoriteName;
+    const bool hasFavoriteName = parameters.Get ("favoriteName", favoriteName);
+    if (!hasAutomaticLabeling && !hasFavoriteName) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Neither automaticLabeling nor favoriteName is given.");
     }
 
 #ifdef ServerMainVers_2800
     ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
 
+    GS::UniString errorMessage = "Failed to modify the zone labeling settings.";
     ACAPI::Result<void> modifyResult = settings.Modify (
-        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) {
-            return modifier.SetAutomaticLabeling (automaticLabeling);
+        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) -> ACAPI::Result<void> {
+            if (hasFavoriteName) {
+                ACAPI::Result<void> favoriteResult = modifier.SetSelectedFavorite (favoriteName);
+                if (favoriteResult.IsErr ()) {
+                    switch (favoriteResult.UnwrapErr ().kind) {
+                        case APIERR_GENERAL:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': there are no Favorites in the project.";
+                            break;
+                        case APIERR_BADNAME:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': there is no Favorite with this name.";
+                            break;
+                        case APIERR_BADELEMENTTYPE:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': it is not a Label Favorite.";
+                            break;
+                        default:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "'.";
+                            break;
+                    }
+                    return favoriteResult;
+                }
+            }
+            if (hasAutomaticLabeling) {
+                modifier.SetAutomaticLabeling (automaticLabeling);
+            }
+            return ACAPI::Ok ();
         }
     );
 
     return modifyResult.IsOk ()
         ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the zone labeling settings.");
+        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage);
 #else
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
+}
+
+GetZoneLabelingSettingsCommand::GetZoneLabelingSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetZoneLabelingSettingsCommand::GetName () const
+{
+    return "GetZoneLabelingSettings";
+}
+
+GS::Optional<GS::UniString> GetZoneLabelingSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isAutomaticLabelingOn": {
+                "type": "boolean",
+                "description": "Whether the automatic labeling of Zones (placing a Label on each new Zone) is on."
+            },
+            "selectedFavoriteName": {
+                "type": "string",
+                "description": "The name of the Label Favorite that is placed on each new Zone. Missing when no Favorite is selected."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isAutomaticLabelingOn"
+        ]
+    })";
+}
+
+GS::ObjectState GetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
+
+    GS::ObjectState response;
+    response.Add ("isAutomaticLabelingOn", settings.IsAutomaticLabelingOn ());
+
+    ACAPI::Result<GS::UniString> favoriteName = settings.GetSelectedFavoriteName ();
+    if (favoriteName.IsOk ()) {
+        response.Add ("selectedFavoriteName", favoriteName.Unwrap ());
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
 #endif
 }
 
