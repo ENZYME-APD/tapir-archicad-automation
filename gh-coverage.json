@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-10-28 16:26 UTC",
+ "generatedAt": "2026-10-28 20:48 UTC",
  "counts": {
   "done": 302,
   "open": 168,
   "in progress": 15,
-  "merged": 11,
+  "merged": 15,
   "not applicable": 1
  },
  "parameters": {
-  "all": 247,
+  "all": 251,
   "partial": 20,
   "json": 46
  },
@@ -4798,7 +4798,7 @@
    "id": "ImportFavorites",
    "group": "Favorites Commands",
    "version": "1.5.0",
-   "brief": "Import Favorites from a .prefs file or folder into the current project.",
+   "brief": "Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy .prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4808,9 +4808,11 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 6,
    "coveredParameters": [
     "conflictPolicy",
+    "fileNames",
+    "format",
     "importFolders",
     "path",
     "targetFolder"
@@ -4965,6 +4967,102 @@
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateFavorite",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Creates a Favorite in the given folder from the settings of another Favorite or of the current Opening tool default. conflictPolicy says what happens when the name is taken: fail, skip, overwrite the existing Favorite's settings or create the new one under a free name. Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CreateFavoriteComponent",
+     "path": "Components/FavoritesComponents/CreateFavoriteComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "conflictPolicy",
+    "folder",
+    "name",
+    "source",
+    "source.favoriteName",
+    "source.toolDefault"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ChangeFavorite",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Gives an existing Favorite the settings of another Favorite or of the current Opening tool default. Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ChangeFavoriteComponent",
+     "path": "Components/FavoritesComponents/ChangeFavoriteComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "favoriteName",
+    "source",
+    "source.toolDefault"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ApplyFavoriteToToolDefault",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Makes the settings of the given Favorite the settings of its tool, and returns the element type of that tool. Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ApplyFavoriteToToolDefaultComponent",
+     "path": "Components/FavoritesComponents/ApplyFavoriteToToolDefaultComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "favoriteName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MoveFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "brief": "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "MoveFavoriteFolderComponent",
+     "path": "Components/FavoritesComponents/MoveFavoriteFolderComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "folder",
+    "targetFolder"
+   ],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
