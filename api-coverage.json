@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 09:59 UTC",
+ "generatedAt": "2026-10-28 10:21 UTC",
  "versions": [
   25,
   26,
@@ -6598,6 +6598,10 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 1596,
+     "title": "Zones: read and set the contour line and the cover fill"
+    },
     {
      "number": 1505,
      "title": "[3/6] Add GetCutPolygonsOfElements"
@@ -46584,6 +46588,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1596,
+     "title": "Zones: read and set the contour line and the cover fill"
+    },
     {
      "number": 1593,
      "title": "Dimensions: add textFrame to the dimension creation commands"
