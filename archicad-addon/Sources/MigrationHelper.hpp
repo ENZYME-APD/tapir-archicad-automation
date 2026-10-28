@@ -119,6 +119,8 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
 #define ACAPI_View_Get3DProjectionSets(par1) ACAPI_Environment (APIEnv_Get3DProjectionSetsID, par1)
 #define ACAPI_View_Change3DProjectionSets(par1, par2) ACAPI_Environment (APIEnv_Change3DProjectionSetsID, (void*) par1, (void*) par2)
+#define ACAPI_View_GetDocumentFrom3DDefaults(par1) ACAPI_Environment (APIEnv_GetDocumentFrom3DDefaultsID, par1)
+#define ACAPI_View_ChangeDocumentFrom3DDefaults(par1) ACAPI_Environment (APIEnv_ChangeDocumentFrom3DDefaultsID, par1)
 #define ACAPI_View_Get3DWindowSets(par1) ACAPI_Environment (APIEnv_Get3DWindowSetsID, par1)
 #define ACAPI_View_Change3DWindowSets(par1) ACAPI_Environment (APIEnv_Change3DWindowSetsID, par1)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
