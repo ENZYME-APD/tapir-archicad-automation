@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 08:58 UTC",
+ "generatedAt": "2026-10-28 09:37 UTC",
  "versions": [
   25,
   26,
@@ -3248,7 +3248,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1595,
+     "title": "GetAttributesFromProject: report Layer, Surface, BuildingMaterial and MEPSystem as not read instead of an empty list"
+    }
+   ],
    "issues": []
   },
   {

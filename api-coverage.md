@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 51 % | 82 | 39 | 3 | 18 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 49 % | 1436 | 679 | 33 | 669 | 36 | 19 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-28 08:58 UTC.
+Archicad 25–30 DevKits; updated 2026-10-28 09:37 UTC.
 
 | | Status |
 |---|---|
@@ -329,7 +329,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ⬜ `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
 - ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#1578](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1578 "CreateMorphs, ModifyMorphs: say when the morph's layer is hidden"), [#1505](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1505 "[3/6] Add GetCutPolygonsOfElements"), [#1500](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1500 "[2/6] Add GetBodyMaterialsOfElements"), [#1398](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1398 "Allow partial modify of Composites and Layer Combinations"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table"), [#916](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/916 "Add ActivateLayerCombination command and Grasshopper component"), [#900](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/900 "UpdateZones: optional list of Zones to update instead of the current selection"), [#899](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/899 "Zones: expose height, base offset, top link and floor thickness; add ModifyZones")
 - ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database. — [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table")
-- ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file.
+- ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file. — [#1595](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1595 "GetAttributesFromProject: report Layer, Surface, BuildingMaterial and MEPSystem as not read instead of an empty list")
 - 🚧 `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system. — [#1536](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1536 "[4/5] Pens, attribute classification and built-in properties, element info strings"), [#1255](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1255 "Expose ACAPI_Element_IsClassificationItemVisible (+Default) and attribute classification read")
 - 🚧 `ACAPI_Attribute_GetClassificationItems` – Retrieves all of the classifications of an attribute. — [#1008](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1008 "Add GetClassificationsOfAttributes and SetClassificationsOfAttributes")
 - ✅ `ACAPI_Attribute_GetCreationInfo` <sub>AC30</sub> – Retrieves creation metadata for an attribute.

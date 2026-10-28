@@ -28,4 +28,4 @@ Parameters of the 302 used commands: 🟢 236 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-28 08:58 UTC.
+Updated 2026-10-28 09:37 UTC.
