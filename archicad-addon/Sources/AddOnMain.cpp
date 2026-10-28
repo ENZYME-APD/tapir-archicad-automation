@@ -841,7 +841,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateHatchesCommand> (
             elementCommands, "1.5.6",
-            "Creates Hatch elements based on the given parameters."
+            "Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches."
         );
         err |= RegisterCommand<CreateSplinesCommand> (
             elementCommands, "1.5.6",
