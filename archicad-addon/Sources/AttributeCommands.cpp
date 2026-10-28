@@ -4618,11 +4618,11 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
         data.Get ("horizontalSpacing", fill.filltype.hXSpac);
         data.Get ("verticalSpacing", fill.filltype.hYSpac);
         data.Get ("angle", fill.filltype.hAngle);
-        data.Get ("percent", fill.filltype.percent);
         // Archicad keeps the percent of a Solid fill only when isPercentFill is set. The DevKit documents
         // it as output-only, but ACAPI_Attribute_CreateExt and ModifyExt read it: without it the fill
-        // comes out as a full Solid fill with percent 1 (#1613).
-        if (fill.filltype.subType == APIFill_Solid) {
+        // comes out as a full Solid fill with percent 1 (#1613). It is only set when percent is given, so
+        // a Solid fill created or overwritten without percent stays as before.
+        if (data.Get ("percent", fill.filltype.percent) && fill.filltype.subType == APIFill_Solid) {
             fill.filltype.isPercentFill = fill.filltype.percent < 1.0;
         }
 
