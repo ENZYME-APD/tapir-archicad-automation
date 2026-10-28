@@ -3129,10 +3129,37 @@ static GS::Optional<GS::ObjectState> GetAttributeFolderFromObjectState (const GS
 }
 
 // Resolves folder.guid (a GS::Guid, not an API_Guid) from its typeID and path; false when no folder exists on that path.
+// ACAPI_Attribute_GetFolder writes the folder's full path back, with the localized name of the root folder
+// in front ("Ebenen" in a German Archicad). Callers keep the requested path for their messages and checks.
 static bool FindAttributeFolder (API_AttributeFolder& folder)
 {
     folder.guid = GS::Guid ();
     return ACAPI_Attribute_GetFolder (folder) == NoError && !folder.guid.IsNull ();
+}
+
+// ACAPI_Attribute_Move fails for an attribute or a folder that is already directly in the target folder.
+// Moving it there changes nothing, so the command reports it as a success; a script that applies a folder
+// layout can then run again. The folder is read again first: for the root folder Archicad reports no guid,
+// and the content is found from what ACAPI_Attribute_GetFolder returns.
+static bool IsDirectlyInAttributeFolder (const API_AttributeFolder& targetFolder, const GS::Guid& attributeGuid, const GS::Guid& folderGuid)
+{
+    API_AttributeFolder folder = targetFolder;
+    if (ACAPI_Attribute_GetFolder (folder) != NoError) {
+        return false;
+    }
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return false;
+    }
+    if (!attributeGuid.IsNull ()) {
+        return content.attributeIds.Contains (attributeGuid);
+    }
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        if (subFolder.guid == folderGuid) {
+            return true;
+        }
+    }
+    return false;
 }
 
 #endif
@@ -3283,16 +3310,17 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The root folder cannot be deleted."));
             continue;
         }
+        const GS::UniString requestedPath = GetAttributeFolderPathString (folder.path);
         if (!FindAttributeFolder (folder)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID,
-                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
             continue;
         }
 
         const GSErrCode err = ACAPI_Attribute_DeleteFolder (folder);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to delete attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to delete attribute folder '%T'.", requestedPath.ToPrintf ())));
             continue;
         }
 
@@ -3398,16 +3426,17 @@ GS::ObjectState RenameAttributeFoldersCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
+        const GS::UniString requestedPath = GetAttributeFolderPathString (folder.path);
         if (!FindAttributeFolder (folder)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID,
-                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
             continue;
         }
 
         const GSErrCode err = ACAPI_Attribute_RenameFolder (folder, newName);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to rename attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to rename attribute folder '%T'.", requestedPath.ToPrintf ())));
             continue;
         }
 
@@ -3490,10 +3519,11 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
     }
     // The root folder (empty path) always exists: its guid is looked up as well, and stays null when the API reports
     // none for it, so the target is identified either way.
+    const GS::Array<GS::UniString> requestedTargetPath = targetFolder.path;
     if (!FindAttributeFolder (targetFolder)) {
-        if (!targetFolder.path.IsEmpty ()) {
+        if (!requestedTargetPath.IsEmpty ()) {
             return CreateErrorResponse (APIERR_BADID,
-                GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (targetFolder.path).ToPrintf ()));
+                GS::UniString::Printf ("Target attribute folder '%T' not found.", GetAttributeFolderPathString (requestedTargetPath).ToPrintf ()));
         }
         targetFolder.guid = GS::Guid ();
     }
@@ -3523,7 +3553,7 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
         GS::Array<GS::Guid> attributesToMove;
         attributesToMove.Push (APIGuid2GSGuid (GetGuidFromAttributesArrayItem (attributeIdItem)));
         const GSErrCode err = ACAPI_Attribute_Move (noFolders, attributesToMove, targetFolder);
-        if (err != NoError) {
+        if (err != NoError && !IsDirectlyInAttributeFolder (targetFolder, attributesToMove[0], GS::Guid ())) {
             attributeExecutionResults (CreateFailedExecutionResult (err, "Failed to move the attribute."));
             continue;
         }
@@ -3547,10 +3577,11 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
             continue;
         }
 
-        // A folder's own subtree starts with its path: moving it there would make it its own ancestor.
-        bool targetIsInsideFolder = targetFolder.path.GetSize () >= folder.path.GetSize ();
+        // A folder's own subtree starts with its path: moving it there would make it its own ancestor. Compared with
+        // the requested target path, since the found target's path starts with the root folder's name.
+        bool targetIsInsideFolder = requestedTargetPath.GetSize () >= folder.path.GetSize ();
         for (UIndex i = 0; targetIsInsideFolder && i < folder.path.GetSize (); ++i) {
-            targetIsInsideFolder = (targetFolder.path[i] == folder.path[i]);
+            targetIsInsideFolder = (requestedTargetPath[i] == folder.path[i]);
         }
         if (targetIsInsideFolder) {
             folderExecutionResults (CreateFailedExecutionResult (APIERR_BADPARS,
@@ -3558,18 +3589,19 @@ GS::ObjectState MoveAttributesAndFoldersCommand::Execute (const GS::ObjectState&
             continue;
         }
 
+        const GS::UniString requestedPath = GetAttributeFolderPathString (folder.path);
         if (!FindAttributeFolder (folder)) {
             folderExecutionResults (CreateFailedExecutionResult (APIERR_BADID,
-                GS::UniString::Printf ("Attribute folder '%T' not found.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
             continue;
         }
 
         GS::Array<API_AttributeFolder> foldersToMove;
         foldersToMove.Push (folder);
         const GSErrCode err = ACAPI_Attribute_Move (foldersToMove, noAttributes, targetFolder);
-        if (err != NoError) {
+        if (err != NoError && !IsDirectlyInAttributeFolder (targetFolder, GS::Guid (), folder.guid)) {
             folderExecutionResults (CreateFailedExecutionResult (err,
-                GS::UniString::Printf ("Failed to move attribute folder '%T'.", GetAttributeFolderPathString (folder.path).ToPrintf ())));
+                GS::UniString::Printf ("Failed to move attribute folder '%T'.", requestedPath.ToPrintf ())));
             continue;
         }
 
