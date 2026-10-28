@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 13:27 UTC",
+ "generatedAt": "2026-10-28 14:16 UTC",
  "counts": {
   "done": 302,
   "open": 168,
@@ -2444,10 +2444,6 @@
     {
      "number": 781,
      "title": "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"
-    },
-    {
-     "number": 438,
-     "title": "Archicad crashes when setting GDL parameters on Curtain Wall Panel subelements (SetGDLParametersOfElements)"
     }
    ]
   },
@@ -2473,12 +2469,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 438,
-     "title": "Archicad crashes when setting GDL parameters on Curtain Wall Panel subelements (SetGDLParametersOfElements)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetMarkerParametersOfElements",

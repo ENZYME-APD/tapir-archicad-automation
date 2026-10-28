@@ -33,7 +33,7 @@ Parameters of the 313 used commands: 🟢 247 every parameter has an input, 🟡
 | Script UI Commands | 0 % | 2 |  |  |  |  | 2 |  |  |  |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-10-28 13:27 UTC.
+Updated 2026-10-28 14:16 UTC.
 
 | | Status |
 |---|---|
@@ -179,8 +179,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `LockElements` 🟢 1/1 parameters – `LockElementsComponent`
 - ✅ `UnlockElements` 🟢 1/1 parameters – `UnlockElementsComponent`
 - ⬜ `RefreshElements`
-- ✅ `GetGDLParametersOfElements` 🟢 1/1 parameters – `GetGDLParametersComponent` — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields"), [#438](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/438 "Archicad crashes when setting GDL parameters on Curtain Wall Panel subelements (SetGDLParametersOfElements)")
-- ✅ `SetGDLParametersOfElements` 🟢 3/3 parameters – `SetGDLParametersComponent` — [#438](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/438 "Archicad crashes when setting GDL parameters on Curtain Wall Panel subelements (SetGDLParametersOfElements)")
+- ✅ `GetGDLParametersOfElements` 🟢 1/1 parameters – `GetGDLParametersComponent` — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
+- ✅ `SetGDLParametersOfElements` 🟢 3/3 parameters – `SetGDLParametersComponent`
 - ✅ `GetMarkerParametersOfElements` 🟢 1/1 parameters – `GetMarkerParametersComponent`
 - ✅ `SetMarkerParametersOfElements` 🟠 5/6 parameters – `SetMarkerParametersComponent`<br><sub>no input: `elementsWithMarkerParameters.markerParameters.index`</sub>
 - ⬜ `ChangeLibraryPartOfElements`
