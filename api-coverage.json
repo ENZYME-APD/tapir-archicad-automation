@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 11:13 UTC",
+ "generatedAt": "2026-10-28 11:24 UTC",
  "versions": [
   25,
   26,
@@ -6603,6 +6603,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
+    {
      "number": 1596,
      "title": "Zones: read and set the contour line and the cover fill"
     },
@@ -8011,6 +8015,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
+    {
      "number": 1588,
      "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
     },
@@ -9142,6 +9150,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
     {
      "number": 1281,
      "title": "Add GetRoofPlanes: the single planes of multi-plane roofs"
@@ -16867,7 +16879,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1605,
+     "title": "[1/2] CreateWorksheets/CreateDetails return navigatorItemId; ChangeWindow opens never-opened worksheets by databaseId"
+    }
+   ],
    "issues": []
   },
   {
@@ -18621,6 +18638,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
+    {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
     }
@@ -18808,6 +18829,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
@@ -22663,7 +22688,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1605,
+     "title": "[1/2] CreateWorksheets/CreateDetails return navigatorItemId; ChangeWindow opens never-opened worksheets by databaseId"
+    }
+   ],
    "issues": [
     {
      "number": 1481,
@@ -37034,6 +37064,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
+    {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
     },
@@ -46601,6 +46635,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
+    {
+     "number": 1604,
+     "title": "CreateHatches: accept holes (same format as SetDetailsOfElements)"
+    },
     {
      "number": 1599,
      "title": "CreateWalls/ModifyWalls: accept flipped"
@@ -56448,6 +56490,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
+    {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
     },
@@ -61432,6 +61478,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1606,
+     "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
+    },
     {
      "number": 1584,
      "title": "[3/4] DeleteGhostRecords, HighlightElements on Archicad 25, GetDetailsOfElements for elements of other databases"
