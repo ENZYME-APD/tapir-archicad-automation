@@ -829,3 +829,168 @@ GS::ObjectState GetTeamworkStatusCommand::Execute (const GS::ObjectState& /*para
 
     return response;
 }
+
+static GS::UniString BuildBIMcloudLibrariesInputParametersSchema (const char* librariesKey, const char* librariesDescription)
+{
+    return GS::UniString::Printf (R"({
+        "type": "object",
+        "properties": {
+            "%s": {
+                "type": "array",
+                "description": "%s",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            },
+            "serverUrl": {
+                "type": "string",
+                "description": "The URL of the BIMcloud or Teamwork server, e.g. 'https://bimcloud.example.com:22000'.",
+                "minLength": 1
+            },
+            "parentPath": {
+                "type": "string",
+                "description": "The path of the folder on the server that holds the libraries, as shown in BIMcloud Manager."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "%s",
+            "serverUrl",
+            "parentPath"
+        ]
+    })", librariesKey, librariesDescription, librariesKey);
+}
+
+static GS::UniString BuildBIMcloudLibrariesResponseSchema ()
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per library, in the order of the input."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2900
+
+static bool GetBIMcloudLibrariesParameters (const GS::ObjectState& parameters, const char* librariesKey, GS::Array<GS::UniString>& libraries, GS::UniString& serverUrl, GS::UniString& parentPath)
+{
+    return parameters.Get (librariesKey, libraries) && !libraries.IsEmpty () &&
+           parameters.Get ("serverUrl", serverUrl) && !serverUrl.IsEmpty () &&
+           parameters.Get ("parentPath", parentPath);
+}
+
+static GS::ObjectState CreateBIMcloudLibrariesResponse (GSErrCode err, const GS::Array<GSErrCode>& errorCodes, const GS::Array<GS::UniString>& libraries, const GS::UniString& action)
+{
+    // Without a code for every library the call failed as a whole.
+    if (err != NoError && errorCodes.GetSize () != libraries.GetSize ()) {
+        return CreateErrorResponse (err, "Failed to " + action + " the libraries. Check the server URL, the parent path and the connection to the server!");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (UIndex i = 0; i < libraries.GetSize (); ++i) {
+        const GSErrCode libraryErr = (i < errorCodes.GetSize () && errorCodes[i] != NoError) ? errorCodes[i] : err;
+        if (libraryErr == NoError) {
+            executionResults (CreateSuccessfulExecutionResult ());
+        } else {
+            executionResults (CreateFailedExecutionResult (libraryErr, "Failed to " + action + " the library '" + libraries[i] + "'."));
+        }
+    }
+    return response;
+}
+
+#endif
+
+UploadLibrariesToBIMcloudCommand::UploadLibrariesToBIMcloudCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UploadLibrariesToBIMcloudCommand::GetName () const
+{
+    return "UploadLibrariesToBIMcloud";
+}
+
+GS::Optional<GS::UniString> UploadLibrariesToBIMcloudCommand::GetInputParametersSchema () const
+{
+    return BuildBIMcloudLibrariesInputParametersSchema ("libraryPaths", "The paths of the local library folders or container files (.lcf) to upload.");
+}
+
+GS::Optional<GS::UniString> UploadLibrariesToBIMcloudCommand::GetRawResponseSchema () const
+{
+    return BuildBIMcloudLibrariesResponseSchema ();
+}
+
+GS::ObjectState UploadLibrariesToBIMcloudCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> libraryPaths;
+    GS::UniString serverUrl;
+    GS::UniString parentPath;
+    if (!GetBIMcloudLibrariesParameters (parameters, "libraryPaths", libraryPaths, serverUrl, parentPath)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryPaths', 'serverUrl' or 'parentPath' parameter.");
+    }
+
+    const GS::Array<IO::Location> libraryLocations = libraryPaths.Transform<IO::Location> ([] (const GS::UniString& path) {
+        return IO::Location (path);
+    });
+
+    GS::Array<GSErrCode> errorCodes;
+    const GSErrCode err = ACAPI_Teamwork_UploadLibraries (libraryLocations, serverUrl, parentPath, errorCodes);
+
+    return CreateBIMcloudLibrariesResponse (err, errorCodes, libraryPaths, "upload");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "UploadLibrariesToBIMcloud requires Archicad 29 or newer.");
+#endif
+}
+
+RemoveLibrariesFromBIMcloudCommand::RemoveLibrariesFromBIMcloudCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveLibrariesFromBIMcloudCommand::GetName () const
+{
+    return "RemoveLibrariesFromBIMcloud";
+}
+
+GS::Optional<GS::UniString> RemoveLibrariesFromBIMcloudCommand::GetInputParametersSchema () const
+{
+    return BuildBIMcloudLibrariesInputParametersSchema ("libraryNames", "The names of the libraries on the server to remove.");
+}
+
+GS::Optional<GS::UniString> RemoveLibrariesFromBIMcloudCommand::GetRawResponseSchema () const
+{
+    return BuildBIMcloudLibrariesResponseSchema ();
+}
+
+GS::ObjectState RemoveLibrariesFromBIMcloudCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    GS::Array<GS::UniString> libraryNames;
+    GS::UniString serverUrl;
+    GS::UniString parentPath;
+    if (!GetBIMcloudLibrariesParameters (parameters, "libraryNames", libraryNames, serverUrl, parentPath)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryNames', 'serverUrl' or 'parentPath' parameter.");
+    }
+
+    GS::Array<GSErrCode> errorCodes;
+    const GSErrCode err = ACAPI_Teamwork_RemoveLibraries (libraryNames, serverUrl, parentPath, errorCodes);
+
+    return CreateBIMcloudLibrariesResponse (err, errorCodes, libraryNames, "remove");
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "RemoveLibrariesFromBIMcloud requires Archicad 29 or newer.");
+#endif
+}
