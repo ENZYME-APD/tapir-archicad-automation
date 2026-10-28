@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 53 % | 82 | 39 | 5 | 16 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 67 % | 1436 | 679 | 290 | 434 | 32 | 1 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-28 21:57 UTC.
+Archicad 25–30 DevKits; updated 2026-10-28 23:03 UTC.
 
 | | Status |
 |---|---|
@@ -753,7 +753,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ⬜ `ACAPI_LibraryManagement_CreateCopyOfGdlUserGlobalsHandle` – Returns a copy of the current GDL globals. <sub>(was `APIEnv_CreateCopyOfGdlUserGlobalsHandleID`)</sub>
 - ✅ `ACAPI_LibraryManagement_CreateFolderInLibrary` – Creates a new folder inside a loaded library. <sub>(was `APIEnv_CreateFolderInLibraryID`)</sub>
 - ✅ `ACAPI_LibraryManagement_DeleteEmbeddedLibItem` – Deletes the given embedded library item (folder or library part). <sub>(was `APIEnv_DeleteEmbeddedLibItemID`)</sub>
-- ✅ `ACAPI_LibraryManagement_DeleteEmbeddedLibItems` – Delete embeded lib items. <sub>(was `APIEnv_DeleteEmbeddedLibItemsID`)</sub>
+- ✅ `ACAPI_LibraryManagement_DeleteEmbeddedLibItems` – Delete embeded lib items. <sub>(was `APIEnv_DeleteEmbeddedLibItemsID`)</sub> — [#1626](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1626 "DeleteEmbeddedLibraryItems: fail for a path that is not in the embedded library")
 - ⬜ `ACAPI_LibraryManagement_DestroyCopyOfGdlUserGlobalsHandle` – Destroys the previously copied GDL globals handle. <sub>(was `APIEnv_DestroyCopyOfGdlUserGlobalsHandleID`)</sub>
 - 🚧 `ACAPI_LibraryManagement_GetGDLDate` – Returns GDL environment date information (GDL_PROJECT_DATE). <sub>(was `APIEnv_GetGDLDateID`)</sub> — [#1325](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1325 "[1/6] Add GetGDLDate and SetGDLDate commands")
 - 🚧 `ACAPI_LibraryManagement_GetLibPartOrigLocation` <sub>AC27–30</sub> – Returns the original location of a library part. <sub>(was `APIEnv_GetLibPartOrigLocationID`)</sub> — [#1371](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1371 "[5/6] Add GetLibraryPartOriginalLocations (Archicad 27+)")
