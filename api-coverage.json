@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 10:59 UTC",
+ "generatedAt": "2026-10-28 11:13 UTC",
  "versions": [
   25,
   26,
@@ -12561,7 +12561,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 1603,
+     "title": "CreateHotlinkNodes: allow XRef nodes from DWG/DXF files (if the API supports APIHotlink_XRef)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Hotlink_DeleteHotlinkNode",
@@ -29516,6 +29521,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1599,
+     "title": "CreateWalls/ModifyWalls: accept flipped"
+    },
     {
      "number": 1593,
      "title": "Dimensions: add textFrame to the dimension creation commands"
@@ -46592,6 +46601,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1599,
+     "title": "CreateWalls/ModifyWalls: accept flipped"
+    },
     {
      "number": 1597,
      "title": "CreateWalls, CreateSlabs, CreateColumns, CreateBeams: optional layerIndex"
