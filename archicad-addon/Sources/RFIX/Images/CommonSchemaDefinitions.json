@@ -1271,6 +1271,12 @@
             "gradientEnd": {
                 "$ref": "#/Coordinate2D"
             },
+            "symbolOffset1": {
+                "$ref": "#/Coordinate2D"
+            },
+            "symbolOffset2": {
+                "$ref": "#/Coordinate2D"
+            },
             "percent": {
                 "type": "number"
             },
@@ -3423,6 +3429,8 @@
             "bitPattern",
             "gradientStart",
             "gradientEnd",
+            "symbolOffset1",
+            "symbolOffset2",
             "percent",
             "texture",
             "lineItems",
