@@ -8835,6 +8835,15 @@ var gSchemaDefinitions = {
                 },
                 "minItems": 3
             },
+            "penTableUsageMode": {
+                "type": "string",
+                "enum": ["UseOwnPenTable", "UseModelPenTable", "UsePenTableIndex"],
+                "description": "Which pen table the drawing uses: the source view's own (UseOwnPenTable), the model's current one (UseModelPenTable), or a specific, forced one (UsePenTableIndex, see penTableId)."
+            },
+            "penTableId": {
+                "$ref": "#/AttributeId",
+                "description": "The forced Pen Table to use. Present only when penTableUsageMode is UsePenTableIndex."
+            },
             "navigatorItemId": {
                 "$ref": "#/NavigatorItemId",
                 "description": "The identifier of the navigator item (view/layout) this Drawing was created from. Read-only: Archicad only lets this be set at creation time (see CreateDrawings) - it cannot be changed afterwards to relink the Drawing to a different source."
@@ -10438,6 +10447,15 @@ var gSchemaDefinitions = {
                     "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
+            },
+            "penTableUsageMode": {
+                "type": "string",
+                "enum": ["UseOwnPenTable", "UseModelPenTable", "UsePenTableIndex"],
+                "description": "Which pen table the drawing should use: the source view's own (UseOwnPenTable), the model's current one (UseModelPenTable), or a specific, forced one (UsePenTableIndex, with penTableId given too)."
+            },
+            "penTableId": {
+                "$ref": "#/AttributeId",
+                "description": "The Pen Table to force. Required and only used when penTableUsageMode is UsePenTableIndex."
             },
             "nameType": {
                 "$ref": "#/DrawingNameType"

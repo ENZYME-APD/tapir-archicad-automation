@@ -18,6 +18,18 @@
 #include <algorithm>
 #include <cmath>
 
+// Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method;
+// AC27+ replaced it with a class. Kept local (same as the identical helper in
+// AttributeCommands.cpp) since it is only used in this file.
+static bool IsPositiveAttributeIndex (const API_AttributeIndex& index)
+{
+#ifdef ServerMainVers_2700
+    return index.IsPositive ();
+#else
+    return index > 0;
+#endif
+}
+
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
 // not carried: a curved pivot edge comes back as its end points (schema says so).
@@ -1884,6 +1896,19 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
                 typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
                 typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                switch (elem.drawing.penTableUsageMode) {
+                    case APIPenTableUsageMode_UseModelPenTable:
+                        typeSpecificDetails.Add ("penTableUsageMode", GS::UniString ("UseModelPenTable"));
+                        break;
+                    case APIPenTableUsageMode_UsePenTableIndex:
+                        typeSpecificDetails.Add ("penTableUsageMode", GS::UniString ("UsePenTableIndex"));
+                        typeSpecificDetails.Add ("penTableId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_PenTableID, elem.drawing.penTableIndex)));
+                        break;
+                    default:
+                    case APIPenTableUsageMode_UseOwnPenTable:
+                        typeSpecificDetails.Add ("penTableUsageMode", GS::UniString ("UseOwnPenTable"));
+                        break;
+                }
                 typeSpecificDetails.Add ("navigatorItemId", CreateGuidObjectState (elem.drawing.drawingGuid));
                 typeSpecificDetails.Add ("bounds", GS::ObjectState (
                     "xMin", elem.drawing.bounds.xMin,
@@ -2509,6 +2534,29 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             // cropping and restores the full extent (#651); true re-enables whatever
                             // clip polygon is still stored on the Drawing.
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
+                        }
+                        GS::UniString penTableUsageModeStr;
+                        if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr)) {
+                            if (penTableUsageModeStr == "UseModelPenTable") {
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UseModelPenTable;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                            } else if (penTableUsageModeStr == "UsePenTableIndex") {
+                                const GS::ObjectState* penTableIdState = typeSpecificDetails->Get ("penTableId");
+                                const API_AttributeIndex penTableIndex = penTableIdState != nullptr
+                                    ? GetAttributeIndexFromGuid (API_PenTableID, GetGuidFromObjectState (*penTableIdState))
+                                    : ACAPI_CreateAttributeIndex (-1);
+                                if (penTableIdState == nullptr || !IsPositiveAttributeIndex (penTableIndex)) {
+                                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "penTableId is required and must resolve to an existing Pen Table when penTableUsageMode is UsePenTableIndex."));
+                                    continue;
+                                }
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UsePenTableIndex;
+                                elem.drawing.penTableIndex = penTableIndex;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
+                            } else {
+                                elem.drawing.penTableUsageMode = APIPenTableUsageMode_UseOwnPenTable;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                            }
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
