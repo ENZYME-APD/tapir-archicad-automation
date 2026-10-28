@@ -1046,7 +1046,9 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ImportFavoritesCommand> (
             favoritesCommands, "1.5.0",
-            "Import Favorites from a .prefs file or folder into the current project."
+            "Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be "
+            "imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy "
+            ".prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew."
         );
         err |= RegisterCommand<ExportFavoritesCommand> (
             favoritesCommands, "1.5.0",
@@ -1089,6 +1091,27 @@ GSErrCode Initialize (void)
             "parameters) of Window and Door favorites, and the sub-elements. A favorite without a marker has no "
             "marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) "
             "are not returned."
+        );
+        err |= RegisterCommand<CreateFavoriteCommand> (
+            favoritesCommands, "1.7.3",
+            "Creates a Favorite in the given folder from the settings of another Favorite or of the current Opening tool "
+            "default. conflictPolicy says what happens when the name is taken: fail, skip, overwrite the existing "
+            "Favorite's settings or create the new one under a free name. Available from Archicad 29."
+        );
+        err |= RegisterCommand<ChangeFavoriteCommand> (
+            favoritesCommands, "1.7.3",
+            "Gives an existing Favorite the settings of another Favorite or of the current Opening tool default. "
+            "Available from Archicad 29."
+        );
+        err |= RegisterCommand<ApplyFavoriteToToolDefaultCommand> (
+            favoritesCommands, "1.7.3",
+            "Makes the settings of the given Favorite the settings of its tool, and returns the element type of that tool. "
+            "Available from Archicad 29."
+        );
+        err |= RegisterCommand<MoveFavoriteFolderCommand> (
+            favoritesCommands, "1.7.3",
+            "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are "
+            "given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29."
         );
         AddCommandGroup (favoritesCommands);
     }
