@@ -439,6 +439,11 @@ inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int
     return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
 }
 
+inline GSErrCode ACAPI_Element_ElemHasVisibleSkin (const API_Guid* elemGuid, const API_StructureDisplay* structure, bool* result)
+{
+    return ACAPI_Goodies (APIAny_ElemHasVisibleSkinID, (void*) elemGuid, (void*) structure, result);
+}
+
 inline GSErrCode ACAPI_CurtainWall_GetCWHeight (const API_Guid* guid, double* height)
 {
     return ACAPI_Goodies (APIAny_GetCWHeightID, (void*) guid, height);
