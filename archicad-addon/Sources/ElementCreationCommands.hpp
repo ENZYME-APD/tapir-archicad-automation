@@ -42,6 +42,10 @@ protected:
     GS::String     arrayFieldName;
 };
 
+// Optional "layerIndex" of the Create* commands: puts the new element on that layer instead of the layer
+// of the favorite or of the tool defaults. Returns an error response for a missing or locked layer.
+GS::Optional<GS::ObjectState> ApplyLayerIndexFromParameters (const GS::ObjectState& parameters, API_Element& element);
+
 class CreateColumnsCommand : public CreateElementsCommandBase
 {
 public:
