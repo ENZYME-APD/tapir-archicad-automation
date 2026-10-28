@@ -2977,7 +2977,7 @@ var gCommands = [{
             },{
                 "name": "SetDetailsOfElements",
                 "version": "1.0.7",
-                "description": "Sets the details of the given elements (floor, layer, order, Element ID etc).",
+                "description": "Sets the details of the given elements (floor, layer, order, Element ID etc). An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason.",
                 "inputScheme": {
         "type": "object",
         "properties": {

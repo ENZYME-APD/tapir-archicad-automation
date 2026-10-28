@@ -50,6 +50,9 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+// Why Archicad refused to change an element the user could not edit in Archicad either, as the end
+// of a sentence ("its layer is hidden"); empty when the refusal has another cause.
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead);
 
 // Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
 // commands use it to report what an import created and removed.

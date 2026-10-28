@@ -523,7 +523,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
-            "Sets the details of the given elements (floor, layer, order, Element ID etc)."
+            "Sets the details of the given elements (floor, layer, order, Element ID etc). An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason."
         );
         err |= RegisterCommand<GetElementCategoriesCommand> (
             elementCommands, "1.7.2",

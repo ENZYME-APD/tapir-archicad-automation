@@ -103,6 +103,32 @@ GS::UniString DescribeDefinitionChangeError (GSErrCode err)
     }
 }
 
+// ACAPI_Element_Change refuses an element on a hidden or locked layer, locked with Edit > Locking,
+// or in Teamwork not reserved by the user with a bare error code. The layer flags are read too,
+// because the code does not always name the layer (an element locked by Edit > Locking and one
+// on a locked layer can both come back as a general error).
+GS::UniString DescribeElementEditRefusal (GSErrCode err, const API_Elem_Head& elemHead)
+{
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = elemHead.layer;
+    const GSFlags layerFlags = ACAPI_Attribute_Get (&layerAttr) == NoError ? layerAttr.header.flags : 0;
+
+    if (err == APIERR_HIDDENLAY || (layerFlags & APILay_Hidden) != 0) {
+        return "its layer is hidden";
+    }
+    if (err == APIERR_LOCKEDLAY || (layerFlags & APILay_Locked) != 0) {
+        return "its layer is locked";
+    }
+    if (err == APIERR_NOTMINE || err == APIERR_NOACCESSRIGHT) {
+        return "it is not reserved by you in the Teamwork project";
+    }
+    if (!ACAPI_Element_Filter (elemHead.guid, APIFilt_IsEditable)) {
+        return "it is not editable (locked with Edit > Locking, or not reserved by you in a Teamwork project)";
+    }
+    return {};
+}
+
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 {
     GS::String guid;
