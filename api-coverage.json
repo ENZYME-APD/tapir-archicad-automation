@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 14:52 UTC",
+ "generatedAt": "2026-10-28 15:00 UTC",
  "versions": [
   25,
   26,
@@ -3157,6 +3157,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1618,
+     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
+    },
     {
      "number": 1597,
      "title": "CreateWalls, CreateSlabs, CreateColumns, CreateBeams: optional layerIndex"
@@ -7700,6 +7704,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1618,
+     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
+    },
+    {
      "number": 1588,
      "title": "Keep Label/Text widthFactor and charSpaceFactor on create and content changes"
     },
@@ -8353,6 +8361,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1618,
+     "title": "SetDetailsOfElements: say why Archicad refused the element (hidden or locked layer)"
+    },
     {
      "number": 900,
      "title": "UpdateZones: optional list of Zones to update instead of the current selection"
