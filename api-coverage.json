@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 15:38 UTC",
+ "generatedAt": "2026-10-28 15:57 UTC",
  "versions": [
   25,
   26,
@@ -3035,6 +3035,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1622,
+     "title": "CreateFills: keep the percent of a Solid fill (isPercentFill)"
+    },
     {
      "number": 1619,
      "title": "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"

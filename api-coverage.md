@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 53 % | 82 | 39 | 5 | 16 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 66 % | 1436 | 679 | 278 | 446 | 32 | 1 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-28 15:38 UTC.
+Archicad 25–30 DevKits; updated 2026-10-28 15:57 UTC.
 
 | | Status |
 |---|---|
@@ -321,7 +321,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Attribute_AddClassificationItem` – Classifies an attribute.
 - ✅ `ACAPI_Attribute_Create` — [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781 "Full Get/Set/Create access to Model View Option combinations, including custom GDL-contributed fields")
 - ➖ `ACAPI_Attribute_CreateAttributeFolderPicker` <sub>AC26–30</sub> – Enables the attribute folder picker functionality for a push check. If the user clicks the push check, the picker will open. Attributes folder pickers can be used to choose an attribute folder. *(user interface)*
-- ✅ `ACAPI_Attribute_CreateExt` — [#1619](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1619 "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)")
+- ✅ `ACAPI_Attribute_CreateExt` — [#1622](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1622 "CreateFills: keep the percent of a Solid fill (isPercentFill)"), [#1619](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1619 "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)")
 - ✅ `ACAPI_Attribute_CreateFolder` <sub>AC26–30</sub> – Creates attribute folders. To create a folder, its full path has to be provided. The command will create all folders along the path, if they do not exist.
 - ✅ `ACAPI_Attribute_Delete` – Deletes an attribute.
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
