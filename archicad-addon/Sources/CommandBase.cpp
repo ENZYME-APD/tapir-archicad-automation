@@ -1169,6 +1169,31 @@ GSErrCode ExecuteActionForEachDatabase (
     return NoError;
 }
 
+GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database)
+{
+    API_NavigatorItem filterItem = {};
+    if (database.typeID == APIWind_WorksheetID) {
+        filterItem.itemType = API_WorksheetDrawingNavItem;
+    } else if (database.typeID == APIWind_DetailID) {
+        filterItem.itemType = API_DetailDrawingNavItem;
+    } else {
+        return {};
+    }
+    filterItem.mapId           = API_ProjectMap;
+    filterItem.db.databaseUnId = database.databaseUnId;
+
+    GS::Array<API_NavigatorItem> results;
+    if (ACAPI_Navigator_SearchNavigatorItem (&filterItem, &results) != NoError) {
+        return {};
+    }
+    for (const API_NavigatorItem& result : results) {
+        if (result.itemType == filterItem.itemType) {
+            return result.guid;
+        }
+    }
+    return {};
+}
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
 {
     elementHeader = {};
