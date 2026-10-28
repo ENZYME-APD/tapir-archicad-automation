@@ -32,6 +32,7 @@
 #include "TeamworkCommands.hpp"
 #include "IssueCommands.hpp"
 #include "LibraryCommands.hpp"
+#include "LibraryPartCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ClassificationCommands.hpp"
 #include "FavoritesCommands.hpp"
@@ -1459,6 +1460,26 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
             "Sets the master, parameter, 2D, 3D and properties scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartPicturesCommand> (
+            libraryCommands, "1.7.3",
+            "Gets the preview picture and the GDL pictures of a loaded library part as base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. Available from Archicad 28."
+        );
+        err |= RegisterCommand<SetLibraryPartPicturesCommand> (
+            libraryCommands, "1.7.3",
+            "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartCustomSectionCommand> (
+            libraryCommands, "1.7.3",
+            "Gets a custom section of a loaded library part by its section identifier and index: whether it exists, its data version and its content as base64. Available from Archicad 28."
+        );
+        err |= RegisterCommand<SetLibraryPartCustomSectionCommand> (
+            libraryCommands, "1.7.3",
+            "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateLibraryPartCommand> (
+            libraryCommands, "1.7.3",
+            "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
         );
         AddCommandGroup (libraryCommands);
     }
