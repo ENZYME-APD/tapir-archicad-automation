@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 13:10 UTC",
+ "generatedAt": "2026-10-28 13:27 UTC",
  "versions": [
   25,
   26,
@@ -9250,7 +9250,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    }
+   ],
    "issues": []
   },
   {
@@ -11350,6 +11355,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
     {
      "number": 1530,
      "title": "[2/6] SetLibraryPartParameters"
@@ -29560,6 +29569,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
+    {
      "number": 1599,
      "title": "CreateWalls/ModifyWalls: accept flipped"
     },
@@ -29708,6 +29721,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -29828,6 +29845,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -30817,6 +30838,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
+    {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
     }
@@ -30838,6 +30863,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
     {
      "number": 1011,
      "title": "Support Archicad 29 and 30 in ModifyOpenings"
@@ -30876,7 +30905,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    }
+   ],
    "issues": []
   },
   {
@@ -30893,7 +30927,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    }
+   ],
    "issues": []
   },
   {
@@ -37055,6 +37094,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
     {
      "number": 1608,
      "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
@@ -46499,6 +46542,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
     {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
@@ -56250,6 +56297,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
+    {
      "number": 1608,
      "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
     },
@@ -61070,6 +61121,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1611,
+     "title": "Openings: direction vectors in GetOpeningDetails, working GetOpeningTransformations"
+    },
     {
      "number": 1608,
      "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
