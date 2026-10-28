@@ -1732,6 +1732,99 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
     return response;
 }
 
+#ifdef ServerMainVers_2900
+
+// Writes the folder, its Favorites and its subfolders recursively. The path is
+// built while walking down from the root, whose name and path are empty.
+static GSErrCode AddFavoriteFolderToObjectState (const ACAPI::Favorite::FavoriteFolder& folder, const GS::UniString& name, const GS::Array<GS::UniString>& path, GS::ObjectState& os, GS::UniString& errorMessage)
+{
+    os.Add ("name", name);
+    os.Add ("path", path);
+
+    GS::Array<GS::UniString> favoriteNames;
+    for (const ACAPI::Favorite::Favorite& favorite : folder.GetFavorites ()) {
+        const auto favoriteName = favorite.GetName ();
+        if (favoriteName.IsErr ()) {
+            errorMessage = "Failed to get the name of a Favorite.";
+            return favoriteName.UnwrapErr ().kind;
+        }
+        favoriteNames.Push (favoriteName.Unwrap ());
+    }
+    os.Add ("favorites", favoriteNames);
+
+    const auto& subFoldersList = os.AddList<GS::ObjectState> ("subFolders");
+    for (const ACAPI::Favorite::FavoriteFolder& subFolder : folder.GetSubFolders ()) {
+        const auto subFolderName = subFolder.GetName ();
+        if (subFolderName.IsErr ()) {
+            errorMessage = "Failed to get the name of a Favorite folder.";
+            return subFolderName.UnwrapErr ().kind;
+        }
+        GS::Array<GS::UniString> subFolderPath = path;
+        subFolderPath.Push (subFolderName.Unwrap ());
+
+        GS::ObjectState subFolderOs;
+        const GSErrCode err = AddFavoriteFolderToObjectState (subFolder, subFolderName.Unwrap (), subFolderPath, subFolderOs, errorMessage);
+        if (err != NoError) {
+            return err;
+        }
+        subFoldersList (subFolderOs);
+    }
+
+    return NoError;
+}
+
+#endif
+
+GetFavoriteFoldersCommand::GetFavoriteFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoriteFoldersCommand::GetName () const
+{
+    return "GetFavoriteFolders";
+}
+
+GS::Optional<GS::UniString> GetFavoriteFoldersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "rootFolder": {
+                "$ref": "#/FavoriteFolderDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rootFolder"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoriteFoldersCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto rootFolder = manager.GetRootFolder ();
+    if (rootFolder.IsErr ()) {
+        return CreateErrorResponse (rootFolder.UnwrapErr ().kind, "Failed to get the root folder of the Favorites.");
+    }
+
+    GS::ObjectState rootFolderOs;
+    GS::UniString errorMessage;
+    const GSErrCode err = AddFavoriteFolderToObjectState (rootFolder.Unwrap (), GS::UniString (), GS::Array<GS::UniString> (), rootFolderOs, errorMessage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, errorMessage);
+    }
+
+    GS::ObjectState response;
+    response.Add ("rootFolder", rootFolderOs);
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 // ============================================================================
 // GetFavoriteSettings — reads what ACAPI_Favorite_Get returns about a Favorite
 // (element type, the GDL parameters of its library part, its marker, its
