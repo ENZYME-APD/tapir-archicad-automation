@@ -3146,6 +3146,33 @@
         "additionalProperties": false,
         "required": [ "error" ]
     },
+    "OverriddenValue": {
+        "type": "object",
+        "description": "A value the active graphic override combination may replace. 'overridden' tells whether it does; only then the value is given: 'attributeId' for line types, fills and surfaces, 'penIndex' for pens, 'color' for background pens and surfaces set to a color.",
+        "properties": {
+            "overridden": {
+                "type": "boolean"
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "penIndex": {
+                "type": "integer"
+            },
+            "color": {
+                "type": "object",
+                "properties": {
+                    "red": { "type": "number" },
+                    "green": { "type": "number" },
+                    "blue": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": [ "red", "green", "blue" ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "overridden" ]
+    },
     "SuccessfulExecutionResult": {
         "type": "object",
         "description": "The result of a successful execution.",

@@ -1773,6 +1773,10 @@ GSErrCode Initialize (void)
             graphicOverrideCommands, "1.7.2",
             "Creates a graphic override combination from rule names, or replaces the rules of an existing one. Needs Archicad 27 or later."
         );
+        err |= RegisterCommand<GetGraphicalOverrideStyleOfElementsCommand> (
+            graphicOverrideCommands, "1.7.3",
+            "Returns the graphic override style each element is drawn with in the current window: for every overridable member (line type, pens, fill types, surfaces, ...) whether the active graphic override combination replaces it, and with what. Needs Archicad 27 or later."
+        );
         AddCommandGroup (graphicOverrideCommands);
     }
 
