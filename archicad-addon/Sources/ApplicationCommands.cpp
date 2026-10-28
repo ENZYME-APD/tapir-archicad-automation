@@ -59,6 +59,20 @@ static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocatio
 #define TAPIR_HAS_LICENSE_INFO
 #endif
 
+#if defined (ServerMainVers_2800) && __has_include ("ACAPI/LicenseInfo/ProductVersionInfo.hpp")
+#include "ACAPI/LicenseInfo/ProductVersionInfo.hpp"
+#endif
+
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/DomainAvailability.hpp")
+#include "ACAPI/DomainAvailability.hpp"
+#define TAPIR_HAS_DOMAIN_AVAILABILITY
+#endif
+
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/ProjectID.hpp")
+#include "ACAPI/ProjectID.hpp"
+#define TAPIR_HAS_CEIP_PROJECT_ID
+#endif
+
 #if defined (ServerMainVers_2800) && __has_include ("ACAPI/CuttingPlane.hpp")
 #include "ACAPI/CuttingPlane.hpp"
 #define TAPIR_HAS_CUTTING_PLANE
@@ -1095,6 +1109,128 @@ GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters
 }
 
 // ---------------------------------------------------------------------------
+// GetEditModeState
+// ---------------------------------------------------------------------------
+
+GetEditModeStateCommand::GetEditModeStateCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetEditModeStateCommand::GetName () const
+{
+    return "GetEditModeState";
+}
+
+GS::Optional<GS::UniString> GetEditModeStateCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "inEditMode": {
+                "type": "boolean",
+                "description": "True when Archicad is in any hierarchical editing mode (curtain wall, stair, railing, beam, column, MEP elements, etc.). Only returned from Archicad 29."
+            },
+            "curtainWall": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Curtain wall editing mode."
+            },
+            "stair": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Stair editing mode."
+            },
+            "beam": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Beam editing mode."
+            },
+            "column": {
+                "$ref": "#/EditModeStateItem",
+                "description": "Column editing mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curtainWall",
+            "stair",
+            "beam",
+            "column"
+        ]
+    })";
+}
+
+#if defined (ServerMainVers_2700)
+static GS::ObjectState CreateEditModeStateItem (bool inEditMode, const API_Guid& editedElement)
+{
+    GS::ObjectState item ("inEditMode", inEditMode);
+    if (inEditMode && editedElement != APINULLGuid) {
+        item.Add ("elementId", CreateGuidObjectState (editedElement));
+    }
+    return item;
+}
+
+// The ACAPI_HierarchicalEditing_IsIn*EditMode functions take the flag as bool* before Archicad 29 and as bool& from Archicad 29.
+#if defined (ServerMainVers_2900)
+#define EDIT_MODE_FLAG(flag) (flag)
+#else
+#define EDIT_MODE_FLAG(flag) (&(flag))
+#endif
+#endif
+
+GS::ObjectState GetEditModeStateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    // Read only: the edit mode is only queried, never entered, left or cancelled.
+    GS::ObjectState response;
+    GSErrCode err = NoError;
+
+#if defined (ServerMainVers_2900)
+    bool inAnyEditMode = false;
+    err = ACAPI_HierarchicalEditing_IsInEditMode (inAnyEditMode);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the hierarchical editing mode.");
+    }
+    response.Add ("inEditMode", inAnyEditMode);
+#endif
+
+    bool inEditMode = false;
+    API_Guid editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInCurtainWallEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the curtain wall editing mode.");
+    }
+    response.Add ("curtainWall", CreateEditModeStateItem (inEditMode, editedElement));
+
+    inEditMode = false;
+    editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInStairEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the stair editing mode.");
+    }
+    response.Add ("stair", CreateEditModeStateItem (inEditMode, editedElement));
+
+    inEditMode = false;
+    editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInBeamEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the beam editing mode.");
+    }
+    response.Add ("beam", CreateEditModeStateItem (inEditMode, editedElement));
+
+    inEditMode = false;
+    editedElement = APINULLGuid;
+    err = ACAPI_HierarchicalEditing_IsInColumnEditMode (EDIT_MODE_FLAG (inEditMode), &editedElement);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to query the column editing mode.");
+    }
+    response.Add ("column", CreateEditModeStateItem (inEditMode, editedElement));
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetEditModeState requires Archicad 27 or later.");
+#endif
+}
+
+// ---------------------------------------------------------------------------
 // GetProductVersionInfo
 // ---------------------------------------------------------------------------
 
@@ -1155,6 +1291,18 @@ GS::Optional<GS::UniString> GetProductVersionInfoCommand::GetRawResponseSchema (
                     "type": "integer"
                 },
                 "description": "The three parts of the version number. Archicad 28 only."
+            },
+            "availableDomains": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": ["Architecture", "MEP"]
+                },
+                "description": "The domains available in the running Archicad. Archicad 29 or later."
+            },
+            "ceipProjectId": {
+                "type": "string",
+                "description": "The CEIP project identifier of the open project. Left out when no saved project is open. Archicad 29 or later."
             }
         },
         "additionalProperties": false,
@@ -1175,7 +1323,7 @@ GS::ObjectState GetProductVersionInfoCommand::Execute (const GS::ObjectState& /*
         return CreateErrorResponse (licenseInfoManager.UnwrapErr ().kind, "Failed to get the license info manager.");
     }
 
-    const auto versionInfo = licenseInfoManager->GetProductVersionInfo ();
+    const ACAPI::LicenseInfo::ProductVersionInfo versionInfo = licenseInfoManager->GetProductVersionInfo ();
 
     GS::ObjectState response;
     response.Add ("productFamilyId", versionInfo.GetProductFamilyId ());
@@ -1195,6 +1343,25 @@ GS::ObjectState GetProductVersionInfoCommand::Execute (const GS::ObjectState& /*
     versionNumbers.Push (versionInfo.GetVersionNum2 ());
     versionNumbers.Push (versionInfo.GetVersionNum3 ());
     response.Add ("versionNumbers", versionNumbers);
+#endif
+#ifdef TAPIR_HAS_DOMAIN_AVAILABILITY
+    const auto& availableDomains = response.AddList<GS::UniString> ("availableDomains");
+    if (ACAPI::IsDomainAvailable (ACAPI::Domain::Architecture)) {
+        availableDomains (GS::UniString ("Architecture"));
+    }
+    if (ACAPI::IsDomainAvailable (ACAPI::Domain::MEP)) {
+        availableDomains (GS::UniString ("MEP"));
+    }
+#endif
+#ifdef TAPIR_HAS_CEIP_PROJECT_ID
+    API_ProjectInfo projectInfo = {};
+    if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && !projectInfo.untitled) {
+        const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+        const GS::UniString ceipProjectId = projectLocation != nullptr ? ACAPI::GetCEIPProjectID (*projectLocation) : GS::UniString ();
+        if (!ceipProjectId.IsEmpty ()) {
+            response.Add ("ceipProjectId", ceipProjectId);
+        }
+    }
 #endif
     return response;
 #else

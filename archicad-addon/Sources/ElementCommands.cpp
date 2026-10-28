@@ -3349,6 +3349,130 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
     return response;
 }
 
+EditHierarchicalElementCommand::EditHierarchicalElementCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String EditHierarchicalElementCommand::GetName () const
+{
+    return "EditHierarchicalElement";
+}
+
+GS::Optional<GS::UniString> EditHierarchicalElementCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) to open in hierarchical editing mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> EditHierarchicalElementCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState EditHierarchicalElementCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    const GS::ObjectState* elementId = parameters.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+    }
+
+    const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+    if (elemGuid == APINULLGuid) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is corrupt or missing");
+    }
+
+    // A complete operation: it must not run inside ACAPI_CallUndoableCommand, so it is called directly.
+    const GSErrCode err = ACAPI_HierarchicalEditing_EditHierarchicalElem (&elemGuid);
+    if (err == APIERR_REFUSEDCMD) {
+        return CreateFailedExecutionResult (err, "Archicad refused to enter the hierarchical editing mode; it may already be in an editing mode. Finish it first with FinishHierarchicalEditing.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to open the element in hierarchical editing mode; it must be a Curtain Wall, Stair, Railing, Beam or Column.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "EditHierarchicalElement requires Archicad 27 or later.");
+#endif
+}
+
+FinishHierarchicalEditingCommand::FinishHierarchicalEditingCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FinishHierarchicalEditingCommand::GetName () const
+{
+    return "FinishHierarchicalEditing";
+}
+
+GS::Optional<GS::UniString> FinishHierarchicalEditingCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "accept": {
+                "type": "boolean",
+                "description": "True to accept the changes made in the hierarchical editing mode (OK), false to discard them (Cancel)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "accept"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> FinishHierarchicalEditingCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState FinishHierarchicalEditingCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#if defined (ServerMainVers_2700)
+    // Required, never defaulted: the changes are only discarded when the caller asks for it.
+    bool accept = false;
+    if (!parameters.Get ("accept", accept)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: accept.");
+    }
+
+    // Complete operations: they must not run inside ACAPI_CallUndoableCommand, so they are called directly.
+    const GSErrCode err = accept
+        ? ACAPI_HierarchicalEditing_OkHierarchicalElem ()
+        : ACAPI_HierarchicalEditing_CancelHierarchicalElem ();
+    if (err == APIERR_REFUSEDCMD) {
+        return CreateFailedExecutionResult (err, "Archicad is not in a hierarchical editing mode that can be finished.");
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, accept ? "Failed to accept the hierarchical editing." : "Failed to cancel the hierarchical editing.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "FinishHierarchicalEditing requires Archicad 27 or later.");
+#endif
+}
+
 GetHierarchicalElementOwnersCommand::GetHierarchicalElementOwnersCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -4679,12 +4803,14 @@ GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetInputParametersSc
             "automaticLabeling": {
                 "type": "boolean",
                 "description": "Turns the automatic labeling of Zones (placing a Label on each new Zone) on or off."
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the Label Favorite that is placed on each new Zone by the automatic labeling."
             }
         },
         "additionalProperties": false,
-        "required": [
-            "automaticLabeling"
-        ]
+        "minProperties": 1
     })";
 }
 
@@ -4698,24 +4824,101 @@ GS::Optional<GS::UniString> SetZoneLabelingSettingsCommand::GetRawResponseSchema
 GS::ObjectState SetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     bool automaticLabeling = false;
-    if (!parameters.Get ("automaticLabeling", automaticLabeling)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "automaticLabeling is missing.");
+    const bool hasAutomaticLabeling = parameters.Get ("automaticLabeling", automaticLabeling);
+    GS::UniString favoriteName;
+    const bool hasFavoriteName = parameters.Get ("favoriteName", favoriteName);
+    if (!hasAutomaticLabeling && !hasFavoriteName) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Neither automaticLabeling nor favoriteName is given.");
     }
 
 #ifdef ServerMainVers_2800
     ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
 
+    GS::UniString errorMessage = "Failed to modify the zone labeling settings.";
     ACAPI::Result<void> modifyResult = settings.Modify (
-        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) {
-            return modifier.SetAutomaticLabeling (automaticLabeling);
+        [&] (ACAPI::ZoneLabelingSettings::Modifier& modifier) -> ACAPI::Result<void> {
+            if (hasFavoriteName) {
+                ACAPI::Result<void> favoriteResult = modifier.SetSelectedFavorite (favoriteName);
+                if (favoriteResult.IsErr ()) {
+                    switch (favoriteResult.UnwrapErr ().kind) {
+                        case APIERR_GENERAL:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': there are no Favorites in the project.";
+                            break;
+                        case APIERR_BADNAME:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': there is no Favorite with this name.";
+                            break;
+                        case APIERR_BADELEMENTTYPE:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "': it is not a Label Favorite.";
+                            break;
+                        default:
+                            errorMessage = "Failed to select the Favorite '" + favoriteName + "'.";
+                            break;
+                    }
+                    return favoriteResult;
+                }
+            }
+            if (hasAutomaticLabeling) {
+                modifier.SetAutomaticLabeling (automaticLabeling);
+            }
+            return ACAPI::Ok ();
         }
     );
 
     return modifyResult.IsOk ()
         ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to modify the zone labeling settings.");
+        : CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, errorMessage);
 #else
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
+#endif
+}
+
+GetZoneLabelingSettingsCommand::GetZoneLabelingSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetZoneLabelingSettingsCommand::GetName () const
+{
+    return "GetZoneLabelingSettings";
+}
+
+GS::Optional<GS::UniString> GetZoneLabelingSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isAutomaticLabelingOn": {
+                "type": "boolean",
+                "description": "Whether the automatic labeling of Zones (placing a Label on each new Zone) is on."
+            },
+            "selectedFavoriteName": {
+                "type": "string",
+                "description": "The name of the Label Favorite that is placed on each new Zone. Missing when no Favorite is selected."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isAutomaticLabelingOn"
+        ]
+    })";
+}
+
+GS::ObjectState GetZoneLabelingSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    ACAPI::ZoneLabelingSettings settings = ACAPI::CreateZoneLabelingSettings ();
+
+    GS::ObjectState response;
+    response.Add ("isAutomaticLabelingOn", settings.IsAutomaticLabelingOn ());
+
+    ACAPI::Result<GS::UniString> favoriteName = settings.GetSelectedFavoriteName ();
+    if (favoriteName.IsOk ()) {
+        response.Add ("selectedFavoriteName", favoriteName.Unwrap ());
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in Archicad 28 or later.");
 #endif
 }
 
@@ -5837,6 +6040,143 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+GetLibPartTransformationsCommand::GetLibPartTransformationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibPartTransformationsCommand::GetName () const
+{
+    return "GetLibPartTransformations";
+}
+
+GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "transformations": {
+                "type": "array",
+                "description": "The placement transformation of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "transformation": {
+                                    "type": "object",
+                                    "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
+                                    "properties": {
+                                        "location": {
+                                            "$ref": "#/Coordinate2D",
+                                            "description": "The location of the referenced library part on the floor plan."
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle in radians."
+                                        },
+                                        "xRatio": {
+                                            "type": "number",
+                                            "description": "The scaling along the rotated x axis."
+                                        },
+                                        "yRatio": {
+                                            "type": "number",
+                                            "description": "The scaling along the rotated y axis."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "location",
+                                        "angle",
+                                        "xRatio",
+                                        "yRatio"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "transformation"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "transformations"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibPartTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& transformations = response.AddList<GS::ObjectState> ("transformations");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            transformations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            transformations (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // ACAPI_Element_GetSyTran is documented for these types only, so the others are
+        // rejected here instead of being passed to it.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (typeID != API_WindowID && typeID != API_DoorID && typeID != API_ObjectID &&
+            typeID != API_LampID && typeID != API_ZoneID) {
+            transformations (CreateErrorResponse (APIERR_BADPARS, "Invalid element type, only Window, Door, Object, Lamp and Zone are supported"));
+            continue;
+        }
+
+        API_SyTran syTran = {};
+        err = ACAPI_Element_GetSyTran (&elemHead, &syTran);
+        if (err != NoError) {
+            transformations (CreateErrorResponse (err, "Failed to get the transformation of the element"));
+            continue;
+        }
+
+        GS::ObjectState transformation ("location", GS::ObjectState ("x", syTran.loc.x, "y", syTran.loc.y),
+                                        "angle", syTran.angle,
+                                        "xRatio", syTran.xRatio,
+                                        "yRatio", syTran.yRatio);
+        transformations (GS::ObjectState ("transformation", transformation));
+    }
+
+    return response;
+}
+
 ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6296,6 +6636,123 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+GetVisibleSkinStatusCommand::GetVisibleSkinStatusCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetVisibleSkinStatusCommand::GetName () const
+{
+    return "GetVisibleSkinStatus";
+}
+
+GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "structureDisplay": {
+                "type": "string",
+                "description": "The Partial Structure Display mode to check the elements in. The current window is not changed.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "structureDisplay"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "visibleSkinStatuses": {
+                "type": "array",
+                "description": "Whether each element has a visible skin in the given Partial Structure Display mode, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hasVisibleSkin": {
+                                    "type": "boolean",
+                                    "description": "True when the element has at least one skin shown in the given Partial Structure Display mode."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "hasVisibleSkin"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visibleSkinStatuses"
+        ]
+    })";
+}
+
+GS::ObjectState GetVisibleSkinStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString structureDisplayStr;
+    parameters.Get ("structureDisplay", structureDisplayStr);
+
+    API_StructureDisplay structureDisplay = API_EntireStructure;
+    if      (structureDisplayStr == "EntireStructure")  structureDisplay = API_EntireStructure;
+    else if (structureDisplayStr == "CoreOnly")         structureDisplay = API_CoreOnly;
+    else if (structureDisplayStr == "WithoutFinishes")  structureDisplay = API_WithoutFinishes;
+    else if (structureDisplayStr == "StructureOnly")    structureDisplay = API_StructureOnly;
+    else {
+        return CreateErrorResponse (APIERR_BADPARS, "structureDisplay must be one of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.");
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& visibleSkinStatuses = response.AddList<GS::ObjectState> ("visibleSkinStatuses");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            visibleSkinStatuses (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            visibleSkinStatuses (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        bool hasVisibleSkin = false;
+        err = ACAPI_Element_ElemHasVisibleSkin (&elemHead.guid, &structureDisplay, &hasVisibleSkin);
+        if (err != NoError) {
+            visibleSkinStatuses (CreateErrorResponse (err, "Failed to check the visible skins of the element"));
+            continue;
+        }
+
+        visibleSkinStatuses (GS::ObjectState ("hasVisibleSkin", hasVisibleSkin));
+    }
+
+    return response;
+}
+
 GetElementAtCoordinateCommand::GetElementAtCoordinateCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6466,6 +6923,12 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
+    // A guid that is not in the project must not reach ACAPI_Element_Delete:
+    // listed after an existing element it makes the whole call fail, the
+    // undoable command rolls back and that existing element stays in the
+    // project (#749). Such guids are left out of the calls and reported as
+    // APIERR_BADID below.
+    //
     // The zones of the call are deleted before everything else (#901). An automatic
     // zone is recomputed from its bounding elements when one of them is deleted, and
     // when the room is no longer closed Archicad opens its modal "No closed polygon
@@ -6473,13 +6936,18 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // later one, until someone clicks it in Archicad. One ACAPI_Element_Delete call
     // with the walls listed before their zone opened that dialog, while deleting the
     // zone first in a call of its own did not; so the zones get a call of their own,
-    // before the rest, within the same undoable command. Guids that are not in the
-    // project stay in the second call, which deletes the rest of the batch regardless.
+    // before the rest, within the same undoable command.
+    GS::Array<bool> existedBeforeDelete;
     GS::Array<API_Guid> zoneGuids;
     GS::Array<API_Guid> otherGuids;
     for (const API_Guid& elemGuid : elemGuids) {
         API_Elem_Head elemHead = {};
-        if (LoadElementHeaderByGuid (elemGuid, elemHead) && GetElemTypeId (elemHead) == API_ZoneID) {
+        const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
+        existedBeforeDelete.Push (exists);
+        if (!exists) {
+            continue;
+        }
+        if (GetElemTypeId (elemHead) == API_ZoneID) {
             zoneGuids.Push (elemGuid);
         } else {
             otherGuids.Push (elemGuid);
@@ -6487,7 +6955,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode deleteErr = NoError;
-    if (!elemGuids.IsEmpty ()) {
+    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
@@ -6509,10 +6977,15 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // ACAPI_Element_Delete reports NoError even when it skips elements it is
     // not allowed to delete (locked layer, locked element, teamwork access),
     // so success is decided per element by whether the element is really gone
-    // afterwards. An element that is gone is the asked-for outcome however it
-    // got there: deleted by this call, deleted with its owner, or never in the
-    // project to begin with.
-    for (const API_Guid& elemGuid : elemGuids) {
+    // afterwards. An element that existed and is gone is the asked-for outcome
+    // however it got there: deleted by this call or deleted with its owner.
+    for (UIndex i = 0; i < elemGuids.GetSize (); ++i) {
+        if (!existedBeforeDelete[i]) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not deleted, because it does not exist."));
+            continue;
+        }
+
+        const API_Guid& elemGuid = elemGuids[i];
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
@@ -6662,6 +7135,89 @@ GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameter
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to unlock elements.");
+}
+
+RefreshElementsCommand::RefreshElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RefreshElementsCommand::GetName () const
+{
+    return "RefreshElements";
+}
+
+GS::Optional<GS::UniString> RefreshElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "force": {
+                "type": "boolean",
+                "description": "Forces the rebuild of GDL-based elements, which runs their parameter script. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RefreshElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// ACAPI_Element_RefreshElement is a non-undoable data structure modifier, so,
+// like the hotlink node functions in UpdateHotlinks, it is not wrapped in
+// ACAPI_CallUndoableCommand.
+GS::ObjectState RefreshElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    bool force = false;
+    parameters.Get ("force", force);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& element : elements) {
+        const API_Guid elemGuid = GetGuidFromElementsArrayItem (element);
+
+        // The header is read from the current database, so an element of
+        // another database (or a deleted one) is reported here instead of
+        // being passed to the refresh with an incomplete header.
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "The element was not found in the current database (the floor plan, section or detail window that is open)."));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Element_RefreshElement (&elemHead, &force);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to refresh the element."));
+            continue;
+        }
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
 }
 
 GetElementPreviewImageCommand::GetElementPreviewImageCommand () :

@@ -331,6 +331,43 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// ConsolidateLines and ConsolidateFills: one class per menu command, like the CreateAttributesCommandBase
+// family, differing only in the name, the JSON query and the menu command the error names.
+class ConsolidationCommandBase : public CommandBase
+{
+public:
+    ConsolidationCommandBase (const GS::String& commandName, const GS::UniString& query, const GS::UniString& menuCommandName);
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+
+private:
+    GS::String commandName;
+    GS::UniString query;
+    GS::UniString menuCommandName;
+};
+
+class ConsolidateLinesCommand : public ConsolidationCommandBase
+{
+public:
+    ConsolidateLinesCommand ();
+};
+
+class ConsolidateFillsCommand : public ConsolidationCommandBase
+{
+public:
+    ConsolidateFillsCommand ();
+};
+
+class GetUsedAttributesCommand : public CommandBase
+{
+public:
+    GetUsedAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetFontsByNameCommand : public CommandBase
 {
 public:
