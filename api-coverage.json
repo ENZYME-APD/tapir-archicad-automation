@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 16:17 UTC",
+ "generatedAt": "2026-10-28 16:26 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,9 @@
  "counts": {
   "not applicable": 620,
   "done": 1099,
-  "claimed": 52,
-  "in progress": 660,
-  "open": 96,
+  "claimed": 53,
+  "in progress": 645,
+  "open": 110,
   "merged": 352
  },
  "items": [
@@ -4586,10 +4586,6 @@
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1421,
      "title": "Add ReorderNavigatorItems command"
     },
@@ -9111,10 +9107,6 @@
     {
      "number": 1496,
      "title": "[1/6] Add GetElementConnections"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -36771,10 +36763,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -36807,10 +36795,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -36838,10 +36822,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -36879,10 +36859,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -36906,10 +36882,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -36937,10 +36909,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -37024,10 +36992,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -37052,10 +37016,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -37083,10 +37043,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -37243,10 +37199,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -37422,10 +37374,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -37557,10 +37505,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -37650,10 +37594,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -37724,10 +37664,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -37839,10 +37775,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -37866,10 +37798,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -37954,10 +37882,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -38003,10 +37927,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -38080,10 +38000,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -38196,10 +38112,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -38233,10 +38145,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -38498,10 +38406,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -38521,14 +38425,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38551,10 +38450,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -38654,12 +38549,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38776,10 +38666,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -38826,10 +38712,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -38871,10 +38753,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -38959,10 +38837,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -39102,14 +38976,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39150,10 +39019,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -39270,14 +39135,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39311,14 +39171,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39398,14 +39253,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39421,14 +39271,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39444,14 +39289,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39467,14 +39307,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39490,14 +39325,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39513,14 +39343,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39536,14 +39361,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39616,10 +39436,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -40228,10 +40044,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -40269,10 +40081,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -40817,12 +40625,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41020,10 +40823,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -41096,10 +40895,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -41206,10 +41001,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -41341,10 +41132,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -41407,10 +41194,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -41455,10 +41238,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -42007,10 +41786,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -42089,10 +41864,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -42129,10 +41900,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -42244,10 +42011,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -42344,10 +42107,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -42495,10 +42254,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -43024,10 +42779,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -43100,10 +42851,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -43216,10 +42963,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -43253,10 +42996,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -43518,10 +43257,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -43594,10 +43329,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -43630,10 +43361,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -43868,10 +43595,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -43904,10 +43627,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -44292,10 +44011,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -44350,10 +44065,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -44386,10 +44097,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -44426,10 +44133,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -44458,10 +44161,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -44517,10 +44216,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -44595,10 +44290,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -44629,10 +44320,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -44658,10 +44345,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -44693,10 +44376,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -44724,10 +44403,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -44837,10 +44512,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -44906,10 +44577,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -45381,10 +45048,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -45416,10 +45079,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -45543,10 +45202,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -45628,10 +45283,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -45652,10 +45303,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -45728,10 +45375,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -45761,10 +45404,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -46032,10 +45671,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -46133,10 +45768,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -46157,10 +45788,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -46254,10 +45881,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -46287,10 +45910,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -46573,10 +46192,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -46727,10 +46342,6 @@
     {
      "number": 1466,
      "title": "[3/6] Favorites through the Archicad 29 Favorite manager: CreateFavorite, ChangeFavorite, ApplyFavoriteToToolDefault, MoveFavoriteFolder, xml/legacyPRF import"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -47008,10 +46619,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -47163,10 +46770,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -47221,10 +46824,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -47251,10 +46850,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -47303,10 +46898,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -47363,10 +46954,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -47416,10 +47003,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -47501,10 +47084,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -47717,10 +47296,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -47793,10 +47368,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -47828,10 +47399,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -47869,10 +47436,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -47896,10 +47459,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -47927,10 +47486,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -48001,10 +47556,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -48037,10 +47588,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -48068,10 +47615,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -48109,10 +47652,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -48136,10 +47675,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -48167,10 +47702,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -48241,10 +47772,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -48301,10 +47828,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -48332,10 +47855,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -48384,10 +47903,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -48411,10 +47926,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -48547,10 +48058,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -48574,10 +48081,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -48603,10 +48106,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -48630,10 +48129,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -48659,10 +48154,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -48683,14 +48174,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "claimed",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -49412,14 +48898,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49816,10 +49297,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -49860,14 +49337,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49898,10 +49370,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -49930,10 +49398,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -50081,10 +49545,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -50161,10 +49621,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -50773,10 +50229,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -50814,10 +50266,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -51362,12 +50810,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51565,10 +51008,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -51647,10 +51086,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -51687,10 +51122,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -51802,10 +51233,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -51902,10 +51329,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -52053,10 +51476,6 @@
     {
      "number": 1523,
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -52582,10 +52001,6 @@
      "title": "[1/6] MEP preference table rows by key: branch and elbow tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -52658,10 +52073,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -52768,10 +52179,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -52903,10 +52310,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -52969,10 +52372,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
     }
@@ -53017,10 +52416,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -53569,10 +52964,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -53643,10 +53034,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -53902,10 +53289,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -53938,10 +53321,6 @@
     {
      "number": 1524,
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1293,
@@ -54244,12 +53623,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54335,10 +53709,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54375,10 +53745,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -54403,10 +53769,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -54435,10 +53797,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54459,10 +53817,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -54512,10 +53866,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -54563,10 +53913,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54587,10 +53933,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -54615,10 +53957,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -54675,10 +54013,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54702,10 +54036,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54726,10 +54056,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -54754,10 +54080,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54780,10 +54102,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -54842,10 +54160,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54887,10 +54201,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -54925,10 +54235,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -55023,10 +54329,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55053,10 +54355,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -55107,10 +54405,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55165,10 +54459,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55195,10 +54485,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -55267,10 +54553,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55294,10 +54576,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55413,10 +54691,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55484,10 +54758,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55548,10 +54818,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55572,10 +54838,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55600,10 +54862,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55626,10 +54884,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55654,10 +54908,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55680,10 +54930,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55708,10 +54954,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -55732,10 +54974,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55777,10 +55015,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -55827,10 +55061,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -56254,10 +55484,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -56302,10 +55528,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1293,
      "title": "[5/6] GetMEPPreferenceTables: rectangular duct and cable carrier tables, table details"
@@ -56465,10 +55687,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -56647,10 +55865,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -56704,10 +55918,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -56740,10 +55950,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -56771,10 +55977,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -56862,10 +56064,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -56889,10 +56087,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57051,10 +56245,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -57087,10 +56277,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57112,10 +56298,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57145,10 +56327,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -57174,10 +56352,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57239,10 +56413,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57283,10 +56453,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57368,10 +56534,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57451,10 +56613,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57523,10 +56681,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57567,10 +56721,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57592,10 +56742,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57637,10 +56783,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57730,10 +56872,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57774,10 +56912,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57802,10 +56936,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57829,10 +56959,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57854,10 +56980,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -57887,10 +57009,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -57917,10 +57035,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57945,10 +57059,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -57970,10 +57080,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -58003,10 +57109,6 @@
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58031,10 +57133,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58056,10 +57154,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -58101,10 +57195,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58126,10 +57216,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -58171,10 +57257,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -58246,10 +57328,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58286,10 +57364,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58316,10 +57390,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -58392,10 +57462,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -58477,10 +57543,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -58620,10 +57682,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58729,10 +57787,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58834,10 +57888,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58911,10 +57961,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -58938,10 +57984,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -58998,10 +58040,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59036,10 +58074,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59066,10 +58100,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59106,10 +58136,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59198,10 +58224,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59273,10 +58295,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59355,10 +58373,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -59393,10 +58407,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59445,10 +58455,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59477,10 +58483,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59506,10 +58508,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59540,10 +58538,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59572,10 +58566,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59602,10 +58592,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59658,10 +58644,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -59694,10 +58676,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59725,10 +58703,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -59754,10 +58728,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -59868,10 +58838,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -59903,10 +58869,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -59948,10 +58910,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -60213,10 +59171,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60240,10 +59194,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -60272,10 +59222,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60301,10 +59247,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -60335,10 +59277,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60364,10 +59302,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -60398,10 +59332,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60430,10 +59360,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60460,10 +59386,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -60495,10 +59417,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -60533,10 +59451,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60564,10 +59478,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -60593,10 +59503,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -60655,10 +59561,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -60707,10 +59609,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -60972,10 +59870,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -61097,10 +59991,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -61129,10 +60019,6 @@
     {
      "number": 1539,
      "title": "[1/6] MEP ports, connections and element reads"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -61294,10 +60180,6 @@
     {
      "number": 1494,
      "title": "[1/4] Add GetLibraryPartScripts"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -61468,10 +60350,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -61507,10 +60385,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -61540,10 +60414,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -61591,10 +60461,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -61616,12 +60482,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -61653,10 +60514,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -61680,10 +60537,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -61703,14 +60556,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -61779,10 +60627,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -61815,10 +60659,6 @@
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -61846,10 +60686,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -61887,10 +60723,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -61914,10 +60746,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -61945,10 +60773,6 @@
     {
      "number": 1541,
      "title": "[3/6] MEP: placing defaults on the create commands, clearing electrical settings lists"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     }
    ],
    "issues": []
@@ -62031,10 +60855,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -62075,10 +60895,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62105,10 +60921,6 @@
     {
      "number": 1573,
      "title": "ModifyMEPRoutingElements: set the insulation of a route"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -62205,10 +61017,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62237,10 +61045,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62265,10 +61069,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -62387,10 +61187,6 @@
      "title": "[2/6] MEP preference table rows by key: segment, transition and cable carrier tables"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62414,10 +61210,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -62445,10 +61237,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -62479,10 +61267,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62511,10 +61295,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62539,10 +61319,6 @@
     {
      "number": 1540,
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
@@ -62631,10 +61407,6 @@
      "title": "[2/6] MEP routing parameters of placed elements: GetMEPRoutingParameters, SetMEPRoutingParameters"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62707,10 +61479,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     },
@@ -62735,10 +61503,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -62767,10 +61531,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62794,10 +61554,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -62845,10 +61601,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -62905,10 +61657,6 @@
      "title": "[1/6] MEP ports, connections and element reads"
     },
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62929,10 +61677,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -62957,10 +61701,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -62984,10 +61724,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
-    {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
     }
@@ -63010,10 +61746,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -63053,10 +61785,6 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -63121,10 +61849,6 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
-    },
     {
      "number": 1461,
      "title": "[5/6] Add GetMEPToolDefaults and TransferMEPSettings"
@@ -68132,10 +66856,6 @@
     {
      "number": 1525,
      "title": "[3/6] MEP preference table rows on Archicad 27"
-    },
-    {
-     "number": 1462,
-     "title": "[6/6] MEP: place flexible segments and take-offs, distribution system trees"
     },
     {
      "number": 1461,
