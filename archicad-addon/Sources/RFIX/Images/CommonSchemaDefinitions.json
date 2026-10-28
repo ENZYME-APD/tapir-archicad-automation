@@ -11034,8 +11034,8 @@
             },
             "backgroundPen": {
                 "type": "integer",
-                "description": "The pen index of the fill background. 0 is transparent.",
-                "minimum": 0,
+                "description": "The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.",
+                "minimum": -1,
                 "maximum": 255
             }
         },

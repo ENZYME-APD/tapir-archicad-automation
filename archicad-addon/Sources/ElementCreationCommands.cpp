@@ -645,8 +645,8 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     if (hasCoverFill && !isPenInRange (coverFill, "foregroundPen", 1)) {
         return GS::UniString ("coverFill.foregroundPen must be between 1 and 255.");
     }
-    if (hasCoverFill && !isPenInRange (coverFill, "backgroundPen", 0)) {
-        return GS::UniString ("coverFill.backgroundPen must be between 0 and 255.");
+    if (hasCoverFill && !isPenInRange (coverFill, "backgroundPen", -1)) {
+        return GS::UniString ("coverFill.backgroundPen must be between -1 and 255.");
     }
 
     if (hasContourLine) {
