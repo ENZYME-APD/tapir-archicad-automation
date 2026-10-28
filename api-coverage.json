@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-28 12:49 UTC",
+ "generatedAt": "2026-10-28 13:06 UTC",
  "versions": [
   25,
   26,
@@ -6603,6 +6603,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 1608,
+     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
+    },
+    {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
     },
@@ -9150,6 +9154,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1608,
+     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
+    },
     {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
@@ -37048,6 +37056,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1608,
+     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
+    },
+    {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
     },
@@ -56238,6 +56250,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 1608,
+     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
+    },
+    {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
     },
@@ -61054,6 +61070,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 1608,
+     "title": "Read the geometry of sections (CutPlane) in GetDetailsOfElements"
+    },
     {
      "number": 1606,
      "title": "Add CreateRailings and the Railing case of GetDetailsOfElements"
