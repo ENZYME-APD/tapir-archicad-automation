@@ -6040,6 +6040,143 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+GetLibPartTransformationsCommand::GetLibPartTransformationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibPartTransformationsCommand::GetName () const
+{
+    return "GetLibPartTransformations";
+}
+
+GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "transformations": {
+                "type": "array",
+                "description": "The placement transformation of each element, aligned with the input, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "transformation": {
+                                    "type": "object",
+                                    "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
+                                    "properties": {
+                                        "location": {
+                                            "$ref": "#/Coordinate2D",
+                                            "description": "The location of the referenced library part on the floor plan."
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle in radians."
+                                        },
+                                        "xRatio": {
+                                            "type": "number",
+                                            "description": "The scaling along the rotated x axis."
+                                        },
+                                        "yRatio": {
+                                            "type": "number",
+                                            "description": "The scaling along the rotated y axis."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "location",
+                                        "angle",
+                                        "xRatio",
+                                        "yRatio"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "transformation"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "transformations"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibPartTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& transformations = response.AddList<GS::ObjectState> ("transformations");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            transformations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            transformations (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        // ACAPI_Element_GetSyTran is documented for these types only, so the others are
+        // rejected here instead of being passed to it.
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+        if (typeID != API_WindowID && typeID != API_DoorID && typeID != API_ObjectID &&
+            typeID != API_LampID && typeID != API_ZoneID) {
+            transformations (CreateErrorResponse (APIERR_BADPARS, "Invalid element type, only Window, Door, Object, Lamp and Zone are supported"));
+            continue;
+        }
+
+        API_SyTran syTran = {};
+        err = ACAPI_Element_GetSyTran (&elemHead, &syTran);
+        if (err != NoError) {
+            transformations (CreateErrorResponse (err, "Failed to get the transformation of the element"));
+            continue;
+        }
+
+        GS::ObjectState transformation ("location", GS::ObjectState ("x", syTran.loc.x, "y", syTran.loc.y),
+                                        "angle", syTran.angle,
+                                        "xRatio", syTran.xRatio,
+                                        "yRatio", syTran.yRatio);
+        transformations (GS::ObjectState ("transformation", transformation));
+    }
+
+    return response;
+}
+
 ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
     CommandBase (CommonSchema::Used)
 {
