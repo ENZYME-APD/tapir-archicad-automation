@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 53 % | 82 | 39 | 5 | 16 | 3 | 19 |  | 57 |
 | C++ API (ACAPI::, IFCAPI::) | 67 % | 1436 | 679 | 290 | 434 | 32 | 1 |  | 391 |
 
-Archicad 25–30 DevKits; updated 2026-10-28 21:20 UTC.
+Archicad 25–30 DevKits; updated 2026-10-28 21:33 UTC.
 
 | | Status |
 |---|---|
@@ -338,8 +338,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_GetDef` – Retrieves extended information for an attribute.
 - ✅ `ACAPI_Attribute_GetDefExt` – Retrieves extended information for an attribute. — [#1398](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1398 "Allow partial modify of Composites and Layer Combinations"), [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table")
 - ⬜ `ACAPI_Attribute_GetFirstValidAttribute` <sub>AC27–30</sub> – Returns the first valid attribute index.
-- ✅ `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid. — [#1624](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1624 "GetAttributesByType: return the attribute folder path (replaces #1026)"), [#1026](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1026 "[3/4] Add folderPath to GetAttributesByType")
-- 🚧 `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type. — [#1624](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1624 "GetAttributesByType: return the attribute folder path (replaces #1026)"), [#1026](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1026 "[3/4] Add folderPath to GetAttributesByType")
+- ✅ `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid. — [#1625](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1625 "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"), [#1624](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1624 "GetAttributesByType: return the attribute folder path (replaces #1026)"), [#1026](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1026 "[3/4] Add folderPath to GetAttributesByType")
+- 🚧 `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type. — [#1625](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1625 "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages"), [#1624](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1624 "GetAttributesByType: return the attribute folder path (replaces #1026)"), [#1026](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1026 "[3/4] Add folderPath to GetAttributesByType")
 - ✅ `ACAPI_Attribute_GetNum` – Returns the number of instances of a given type of attribute.
 - 🚧 `ACAPI_Attribute_GetPen` <sub>AC27–30</sub> – Returns a pen by index from the active pen table. — [#1536](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1536 "[4/5] Pens, attribute classification and built-in properties, element info strings")
 - ✅ `ACAPI_Attribute_GetPenNum` <sub>AC27–30</sub> – Get the number of pens in the active pen table. — [#1536](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1536 "[4/5] Pens, attribute classification and built-in properties, element info strings")
@@ -355,7 +355,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_ModifyExt` – Modifies an attribute. — [#1619](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1619 "Add ImportAttributesFromProject (lines, fills, zone categories, pen tables, operation profiles)"), [#975](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/975 "Add ModifyPens: change single pens of the active pen table")
 - ⬜ `ACAPI_Attribute_ModifyPen` <sub>AC27–30</sub> – Modify a pen by index in the active pen table.
 - 🚧 `ACAPI_Attribute_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple attributes. If the property is not available for at least one of the given attribute then returns with an error without changing any property value. — [#1365](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1365 "[3/4] Batch attribute property changes: SetProperties per attribute and SetPropertyValueOfAttributes")
-- ✅ `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders.
+- ✅ `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders. — [#1625](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1625 "MoveAttributesAndFolders: already in the target folder counts as moved; requested paths in folder messages")
 - 🔀 `ACAPI_Attribute_RemoveClassificationItem` – Removes a classification from an attribute.
 - ✅ `ACAPI_Attribute_RenameFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name. — [#1532](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1532 "[2/5] Add grid, 3D filter and cut, dimension standard search and place settings commands")
