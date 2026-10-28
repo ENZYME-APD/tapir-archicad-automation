@@ -352,6 +352,18 @@
             "isPhysicallyConnected": {
                 "type": "boolean"
             },
+            "connectionStyle": {
+                "$ref": "#/MEPConnectionStyle",
+                "description": "The connection style of the port. Available from Archicad 30."
+            },
+            "flowDirection": {
+                "$ref": "#/MEPFlowDirection",
+                "description": "The flow direction of a piping or ventilation port."
+            },
+            "nominalSize": {
+                "type": "string",
+                "description": "The nominal size of a piping port. Available from Archicad 30."
+            },
             "connectedPortId": {
                 "$ref": "#/Guid"
             },
@@ -3860,7 +3872,7 @@
     },
     "MEPCrossSectionShape": {
         "type": "string",
-        "description": "Shape of an MEP routing segment's cross section.",
+        "description": "Shape of an MEP routing segment's cross section or of an MEP port.",
         "enum": [
             "Rectangular",
             "Circular",
@@ -3870,11 +3882,20 @@
     },
     "MEPConnectionStyle": {
         "type": "string",
-        "description": "How the pieces of an MEP routing segment are connected.",
+        "description": "How the pieces of an MEP routing segment, or an MEP port, are connected.",
         "enum": [
             "SimpleBody",
             "Flanged",
             "Welded"
+        ]
+    },
+    "MEPFlowDirection": {
+        "type": "string",
+        "description": "The flow direction of a piping or ventilation port.",
+        "enum": [
+            "FlowNotDefined",
+            "FlowIn",
+            "FlowOut"
         ]
     },
     "MEPPreferredTransitionPlacement": {
