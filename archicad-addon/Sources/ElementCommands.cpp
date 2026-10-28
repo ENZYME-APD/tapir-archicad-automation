@@ -1467,6 +1467,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
+                AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -2412,6 +2413,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (referencePosition != nullptr && !elem.zone.manual) {
                             elem.zone.refPos = Get2DCoordinateFromObjectState (*referencePosition);
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, refPos);
+                        }
+                        const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (*typeSpecificDetails, elem.zone, &mask);
+                        if (contourAndFillError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *contourAndFillError));
+                            continue;
                         }
                     } break;
                     case API_LineID: {

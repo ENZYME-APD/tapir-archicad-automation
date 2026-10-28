@@ -67,6 +67,12 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+// The contour line and cover fill of a zone on the floor plan (contourLine, coverFill), shared by
+// GetDetailsOfElements, SetDetailsOfElements and CreateZones. Apply only sets the given fields and,
+// with a mask, marks them in it; it returns an error message for an unknown attribute id.
+void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
+
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {
 public:

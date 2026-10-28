@@ -593,6 +593,100 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    GS::ObjectState contourLine;
+    contourLine.Add ("use", zone.useContourLine);
+    contourLine.Add ("pen", static_cast<Int32> (zone.floorContLPen));
+    contourLine.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, zone.floorContLType)));
+    details.Add ("contourLine", contourLine);
+
+    GS::ObjectState coverFill;
+    coverFill.Add ("use", zone.useFloorFill);
+    coverFill.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, zone.floorFillInd)));
+    coverFill.Add ("foregroundPen", static_cast<Int32> (zone.floorFillPen));
+    coverFill.Add ("backgroundPen", static_cast<Int32> (zone.floorFillBGPen));
+    details.Add ("coverFill", coverFill);
+}
+
+GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    // The attribute ids and the pens are all checked before anything is changed.
+    GS::ObjectState contourLine;
+    const bool hasContourLine = details.Get ("contourLine", contourLine);
+    GS::ObjectState coverFill;
+    const bool hasCoverFill = details.Get ("coverFill", coverFill);
+
+    GS::Optional<API_AttributeIndex> lineTypeIndex;
+    GS::ObjectState lineTypeId;
+    if (hasContourLine && contourLine.Get ("lineTypeId", lineTypeId)) {
+        lineTypeIndex = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (lineTypeId));
+        if (*lineTypeIndex == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Line type attribute was found for contourLine.lineTypeId.");
+        }
+    }
+    GS::Optional<API_AttributeIndex> fillIndex;
+    GS::ObjectState fillId;
+    if (hasCoverFill && coverFill.Get ("fillId", fillId)) {
+        fillIndex = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (fillId));
+        if (*fillIndex == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Fill attribute was found for coverFill.fillId.");
+        }
+    }
+
+    // SetDetailsOfElements does not hold typeSpecificDetails to the pen ranges of the schema.
+    const auto isPenInRange = [] (const GS::ObjectState& os, const char* field, Int32 minimum) {
+        Int32 pen = 0;
+        return !os.Get (field, pen) || (pen >= minimum && pen <= 255);
+    };
+    if (hasContourLine && !isPenInRange (contourLine, "pen", 1)) {
+        return GS::UniString ("contourLine.pen must be between 1 and 255.");
+    }
+    if (hasCoverFill && !isPenInRange (coverFill, "foregroundPen", 1)) {
+        return GS::UniString ("coverFill.foregroundPen must be between 1 and 255.");
+    }
+    if (hasCoverFill && !isPenInRange (coverFill, "backgroundPen", 0)) {
+        return GS::UniString ("coverFill.backgroundPen must be between 0 and 255.");
+    }
+
+    if (hasContourLine) {
+        if (contourLine.Get ("use", zone.useContourLine) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, useContourLine);
+        }
+        Int32 pen = 0;
+        if (contourLine.Get ("pen", pen)) {
+            zone.floorContLPen = static_cast<short> (pen);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorContLPen);
+        }
+        if (lineTypeIndex.HasValue ()) {
+            zone.floorContLType = *lineTypeIndex;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorContLType);
+        }
+    }
+
+    if (hasCoverFill) {
+        if (coverFill.Get ("use", zone.useFloorFill) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, useFloorFill);
+        }
+        if (fillIndex.HasValue ()) {
+            zone.floorFillInd = *fillIndex;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorFillInd);
+        }
+        Int32 foregroundPen = 0;
+        if (coverFill.Get ("foregroundPen", foregroundPen)) {
+            zone.floorFillPen = static_cast<short> (foregroundPen);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorFillPen);
+        }
+        Int32 backgroundPen = 0;
+        if (coverFill.Get ("backgroundPen", backgroundPen)) {
+            zone.floorFillBGPen = static_cast<short> (backgroundPen);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorFillBGPen);
+        }
+    }
+
+    return {};
+}
+
 CreateZonesCommand::CreateZonesCommand () :
     CreateElementsCommandBase ("CreateZones", API_ZoneID, "zonesData")
 {
@@ -756,6 +850,14 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "boolean",
                         "description" : "If true, the zone stamp angle remains fixed when the element is rotated."
                     },
+                    "contourLine": {
+                        "$ref": "#/ZoneContourLine",
+                        "description": "Optional contour line of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
+                    "coverFill": {
+                        "$ref": "#/ZoneCoverFill",
+                        "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -805,6 +907,11 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     bool fixedAngle = false;
     parameters.Get ("fixedStampAngle", fixedAngle);
     element.zone.fixedAngle = fixedAngle;
+
+    const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
+    if (contourAndFillError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
 
     GS::ObjectState referencePosition;
     if (geometry.Get ("referencePosition", referencePosition)) {
