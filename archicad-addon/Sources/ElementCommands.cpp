@@ -1196,6 +1196,31 @@ static const API_CWFrameType* FindNextFrameOfPanel (std::vector<const API_CWFram
 
 using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 
+// The reference line of a railing (memo.coords from index 1, one vertex per node) and the height of
+// each generated segment, which can differ from defSegment.height once a segment was edited.
+static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const auto& referenceLine = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLine");
+    const auto& segmentHeights = typeSpecificDetails.AddList<double> ("segmentHeights");
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon | APIMemoMask_RailingSegment) != NoError) {
+        return;
+    }
+    if (memo.coords != nullptr) {
+        const Int32 nCoords = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+        const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (elem.railing.nVertices));
+        for (Int32 i = 1; i <= nVertices; ++i) {
+            referenceLine (Create2DCoordinateObjectState ((*memo.coords)[i]));
+        }
+    }
+    if (memo.railingSegments != nullptr) {
+        for (UInt32 i = 0; i < elem.railing.nSegments; ++i) {
+            segmentHeights (memo.railingSegments[i].height);
+        }
+    }
+}
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -1706,6 +1731,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("closed", elem.spline.closed);
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.spline.linePen, elem.spline.ltypeInd, elem.spline.roomSeparator);
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+            } break;
+
+            case API_RailingID: {
+                typeSpecificDetails.Add ("bottomOffset", elem.railing.bottomOffset);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.railing.bottomOffset, stories));
+                typeSpecificDetails.Add ("height", elem.railing.defSegment.height);
+                AddRailingReferenceLineAndSegments (elem, typeSpecificDetails);
             } break;
 
             case API_CurtainWallID: {

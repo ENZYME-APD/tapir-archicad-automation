@@ -3012,6 +3012,211 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
+CreateRailingsCommand::CreateRailingsCommand () :
+    CreateElementsCommandBase ("CreateRailings", API_RailingID, "railingsData")
+{
+}
+
+// ACAPI_Element_Create puts a new railing on the story that is active in the floor plan, whatever
+// header.floorInd says (confirmed live: with the basement active, floorIndex 0 and 1 both gave a railing
+// homed on the basement, with bottomOffset recomputed from the vertex elevations). As CreateZones does for
+// automatic zones (#853), the items are created in groups of one story each, with that story made active
+// (APIStory_GoTo), and the previously active story is put back afterwards. The responses keep the order
+// of the request. A call whose items all stay on the active story runs exactly as before.
+GS::ObjectState CreateRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    GS::Array<GS::ObjectState> railingsData;
+    parameters.Get (arrayFieldName, railingsData);
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (railingsData.GetSize ());
+    for (const GS::ObjectState& data : railingsData) {
+        short story = originalActStory;
+        data.Get ("floorIndex", story);
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateElementsCommandBase::Execute (parameters, processControl);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (railingsData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::ObjectState groupParameters;
+        const auto& groupItems = groupParameters.AddList<GS::ObjectState> (arrayFieldName);
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems (railingsData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where the railing is created; see GetStories for the valid story indices.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateElementsCommandBase::Execute (groupParameters, processControl);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create the Railing.");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
+}
+
+GS::Optional<GS::UniString> CreateRailingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "railingsData": {
+            "type": "array",
+            "description": "Array of data to create Railings.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Railing. Everything not given here - the posts, rails, handrails, toprails, panels and balusters - comes from the favorite or from the Railing tool defaults of the open project. Archicad generates one node per vertex and one segment per pair of consecutive vertices from them.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The 2D coordinates of the reference line of the railing on the floor plan. Each pair of consecutive coordinates becomes one straight segment.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 2
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index (home story) of the railing. The story is made active in the floor plan while the railing is created and the previously active story is restored afterwards. When omitted, the current story."
+                    },
+                    "bottomOffset": {
+                        "type": "number",
+                        "description": "Optional base height of the railing relative to the floor level. When omitted, the value of the favorite (or of the Railing tool defaults) is kept."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
+                        "exclusiveMinimum": 0.0
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "railingsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+    if (coordinates.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
+        }
+    }
+
+    short floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    }
+    parameters.Get ("bottomOffset", element.railing.bottomOffset);
+    // The height is a segment setting; defSegment is the segment every generated segment is made from.
+    parameters.Get ("height", element.railing.defSegment.height);
+
+    // Only the reference line is written, as in the DevKit's Element_Test (Do_CreateRailing): memo.coords
+    // from index 1 (index 0 is unused) and one relative z per vertex. ACAPI_Element_Create generates the
+    // nodes, segments, posts and rails from defNode/defSegment and the subelement defaults in the memo.
+    const UInt32 nCoords = coordinates.GetSize ();
+    if (memo.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    if (memo.polyZCoords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.polyZCoords));
+    }
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    for (UIndex i = 0; i < nCoords; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+    }
+    // polyZCoords is the elevation of each vertex: Archicad takes the base of the railing from it and
+    // derives bottomOffset from it, so every vertex gets the level of the home story plus bottomOffset.
+    const double baseZ = GetZPos (element.header.floorInd, element.railing.bottomOffset, stories);
+    memo.polyZCoords = reinterpret_cast<double**> (BMAllocateHandle ((nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
+    for (UIndex i = 1; i <= nCoords; ++i) {
+        (*memo.polyZCoords)[i] = baseZ;
+    }
+    element.railing.nVertices = nCoords;
+
+    return {};
+}
+
 CreateCurtainWallsCommand::CreateCurtainWallsCommand () :
     CreateElementsCommandBase ("CreateCurtainWalls", API_CurtainWallID, "curtainWallsData")
 {
